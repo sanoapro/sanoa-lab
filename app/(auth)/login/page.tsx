@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import ColorEmoji from "@/components/ColorEmoji";
+import { useToast } from "@/components/Toast";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,10 +13,12 @@ const supabase = createClient(
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
+
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null); // seguimos mostrando inline por accesibilidad
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -25,21 +28,34 @@ export default function LoginPage() {
     setLoading(false);
     if (error) {
       setMsg(error.message);
+      toast({
+        variant: "error",
+        title: "No se pudo iniciar sesión",
+        description: error.message,
+      });
       return;
     }
+    toast({ variant: "success", title: "¡Bienvenido!", description: "Sesión iniciada." });
     router.push("/dashboard");
   }
 
   async function signInGoogle() {
     setMsg(null);
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/dashboard` },
     });
     setLoading(false);
-    if (error) setMsg(error.message);
-    // Si usa PKCE redirige automáticamente
+    if (error) {
+      setMsg(error.message);
+      toast({
+        variant: "error",
+        title: "Google dijo que no 😕",
+        description: error.message,
+      });
+    }
+    // Si usa PKCE, redirige automáticamente
   }
 
   return (
@@ -68,7 +84,6 @@ export default function LoginPage() {
           {/* Email */}
           <label className="block text-[var(--color-brand-text)] font-medium mb-1">
             <span className="inline-flex items-center gap-2">
-              {/* ¡Aquí el cambio! */}
               <ColorEmoji emoji="📧" mode="native" />
               Correo
             </span>
@@ -142,12 +157,11 @@ export default function LoginPage() {
               transition
             "
           >
-            {/* En Google prefiero mantener colores nativos para que nunca se “camufle” */}
             <ColorEmoji emoji="🌐" mode="native" />
             Continuar con Google
           </button>
 
-          {/* Mensaje */}
+          {/* Mensaje inline (accesibilidad) */}
           {msg && (
             <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               {msg}
