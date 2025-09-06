@@ -2,52 +2,56 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import clsx from "clsx";
+import ColorEmoji from "@/components/ColorEmoji";
 
-const nav = [
-  { href: "/dashboard", label: "Tablero", emoji: "📊" },
-  { href: "/test-ui", label: "Zona de pruebas", emoji: "🧪" },
-  { href: "/test-ui/upload", label: "Subir archivos", emoji: "📤" },
+type Item = { href: string; label: string; emoji: string };
+
+const items: Item[] = [
+  { href: "/dashboard",      label: "Tablero",     emoji: "📊" },
+  { href: "/test-ui/upload", label: "Mis archivos",emoji: "🗂️" },
+  { href: "/perfil",         label: "Perfil",      emoji: "👤" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-brand-border)] bg-[var(--color-brand-background)]/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link
-          href="/dashboard"
-          className="text-lg font-semibold text-[var(--color-brand-text)]"
-        >
-          <span className="mr-2">🌿</span>
-          Sanoa
+    <nav
+      className="
+        sticky top-0 z-40 backdrop-blur-md border-b border-[var(--color-brand-border)]
+        bg-[color-mix(in_oklab,white_82%,var(--color-brand-background)_18%)]
+      "
+    >
+      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
+        {/* Marca */}
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <ColorEmoji emoji="🍃" mode="native" />
+          <span className="font-semibold text-[var(--color-brand-text)]">Sanoa</span>
         </Link>
 
-        <nav className="flex items-center gap-1">
-          {nav.map((item) => {
-            const active =
-              pathname === item.href ||
-              (item.href !== "/" && pathname?.startsWith(item.href));
-
+        {/* Navegación */}
+        <ul className="ml-auto flex items-center gap-1">
+          {items.map((it) => {
+            const active = pathname === it.href;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={clsx(
-                  "rounded-xl px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-[var(--color-brand-primary)]/15 text-[var(--color-brand-text)]"
-                    : "text-[var(--color-brand-text)]/80 hover:bg-[var(--color-brand-primary)]/10 hover:text-[var(--color-brand-text)]"
-                )}
-              >
-                <span className="mr-1">{item.emoji}</span>
-                {item.label}
-              </Link>
+              <li key={it.href}>
+                <Link
+                  href={it.href}
+                  className={`
+                    inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition
+                    ${active
+                      ? "bg-[var(--color-brand-primary)] text-white"
+                      : "text-[var(--color-brand-text)] hover:bg-white border border-transparent hover:border-[var(--color-brand-border)]"}
+                  `}
+                >
+                  <ColorEmoji emoji={it.emoji} mode={it.emoji === "📊" ? "duotone" : "duotone"} />
+                  {it.label}
+                </Link>
+              </li>
             );
           })}
-        </nav>
+        </ul>
       </div>
-    </header>
+    </nav>
   );
 }
