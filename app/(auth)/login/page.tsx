@@ -68,7 +68,8 @@ export default function LoginPage() {
           {/* Email */}
           <label className="block text-[var(--color-brand-text)] font-medium mb-1">
             <span className="inline-flex items-center gap-2">
-              <ColorEmoji emoji="📧" mode="duotone" />
+              {/* ¡Aquí el cambio! */}
+              <ColorEmoji emoji="📧" mode="native" />
               Correo
             </span>
           </label>

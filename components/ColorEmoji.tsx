@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useEmojiTheme } from "@/components/EmojiTheme";
 
 /* ========= utilidades de color ========= */
 
 function parseCssColorToRgb(color: string, ctx: HTMLElement) {
-  // Resuelve var(--foo) / nombres como "red" / hex / rgb(a)
   const el = document.createElement("span");
   el.style.color = color;
   ctx.appendChild(el);
-  const rgb = getComputedStyle(el).color; // ej. "rgb(217, 122, 102)"
+  const rgb = getComputedStyle(el).color;
   ctx.removeChild(el);
 
   const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
@@ -66,7 +66,6 @@ function rgbToCss({ r, g, b }: { r: number; g: number; b: number }) {
 
 function lightenOrDarken(rgb: { r: number; g: number; b: number }, deltaL = 0.18) {
   const hsl = rgbToHsl(rgb);
-  // si es claro, oscurece; si es oscuro, aclara
   const l = hsl.l > 0.5 ? Math.max(0, hsl.l - deltaL) : Math.min(1, hsl.l + deltaL);
   return rgbToCss(hslToRgb({ ...hsl, l }));
 }
@@ -85,11 +84,11 @@ function toCodePoints(emoji: string) {
 type Mode = "auto" | "mono" | "duotone" | "native";
 
 type Props = {
-  emoji: string;                 // p.ej. "🔐"
-  size?: number;                 // px
-  color?: string;                // color base (default: var(--color-brand-primary))
-  accentColor?: string;          // deja que calculemos una si no se pasa
-  mode?: Mode;                   // 'auto' (default), 'mono', 'duotone', 'native'
+  emoji: string;
+  size?: number;
+  color?: string;
+  accentColor?: string;
+  mode?: Mode;        // si no pones, usa el registro/provider/global
   title?: string;
   className?: string;
 };
@@ -97,16 +96,39 @@ type Props = {
 export default function ColorEmoji({
   emoji,
   size = 22,
-  color = "var(--color-brand-primary)",
+  color,
   accentColor,
   mode = "auto",
   title,
   className = "",
 }: Props) {
+  const theme = useEmojiTheme();
   const hostRef = useRef<HTMLSpanElement>(null);
   const [svg, setSvg] = useState<string | null>(null);
 
   const code = useMemo(() => toCodePoints(emoji), [emoji]);
+
+  // 1) Overrides por emoji desde el registro global
+  const item = theme.perEmoji?.[emoji];
+  const itemMode = item?.mode;
+  const itemColor = item?.color;
+  const itemAccent = item?.accentColor;
+
+  // 2) Resolver modo efectivo (prioridad: prop > registro > provider > <html> > "duotone")
+  const effectiveMode: Exclude<Mode, "auto"> = useMemo(() => {
+    if (mode && mode !== "auto") return mode;
+    if (itemMode) return itemMode;
+    if (theme.mode) return theme.mode;
+    if (typeof document !== "undefined") {
+      const attr = document.documentElement.getAttribute("data-emoji-mode");
+      if (attr === "native" || attr === "duotone" || attr === "mono") return attr;
+    }
+    return "duotone";
+  }, [mode, itemMode, theme.mode]);
+
+  // 3) Colores efectivos (prioridad: prop > registro > provider > fallback CSS var)
+  const baseColor = color ?? itemColor ?? theme.color ?? "var(--color-brand-primary)";
+  const baseAccent = accentColor ?? itemAccent ?? theme.accentColor;
 
   useEffect(() => {
     const url = `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${code}.svg`;
@@ -115,40 +137,31 @@ export default function ColorEmoji({
       .then((raw) => {
         if (!hostRef.current) return;
 
-        // 1) parsear
         const parser = new DOMParser();
         const doc = parser.parseFromString(raw, "image/svg+xml");
         const svgEl = doc.querySelector("svg");
         if (!svgEl) return;
 
-        // 2) estilos base
         svgEl.setAttribute("role", "img");
         if (title) svgEl.setAttribute("aria-label", title);
         else svgEl.setAttribute("aria-hidden", "true");
         svgEl.setAttribute("style", "display:block;width:1em;height:1em");
 
-        if (mode === "native") {
+        if (effectiveMode === "native") {
           setSvg(svgEl.outerHTML);
           return;
         }
 
-        // 3) calcular colores reales
-        const baseRgb = parseCssColorToRgb(color, hostRef.current);
+        const baseRgb = parseCssColorToRgb(baseColor, hostRef.current!);
         const baseCss = rgbToCss(baseRgb);
-        const accentCss =
-          accentColor ??
-          lightenOrDarken(baseRgb, 0.22); // genera un segundo tono con buen contraste
+        const accentCss = baseAccent ?? lightenOrDarken(baseRgb, 0.22);
 
-        // 4) seleccionar nodos con relleno (paths, shapes)
         const shapes = Array.from(
           svgEl.querySelectorAll<SVGGraphicsElement>(
             "path, circle, rect, ellipse, polygon, polyline, g"
           )
         );
 
-        // Heurística duotono:
-        // - medimos "complejidad" por longitud del atributo 'd' (si existe)
-        // - el más grande queda con color base, el resto con acento
         const sorted = shapes
           .map((el) => ({
             el,
@@ -159,27 +172,23 @@ export default function ColorEmoji({
           .sort((a, b) => b.weight - a.weight);
 
         const setFillStroke = (el: Element, fill: string, stroke: string) => {
-          // No pisamos "none"
           const f = el.getAttribute("fill");
           if (f && f !== "none") el.setAttribute("fill", fill);
           const s = el.getAttribute("stroke");
           if (s && s !== "none") el.setAttribute("stroke", stroke);
         };
 
-        const effectiveMode: Mode = mode === "auto" ? "duotone" : mode;
-
         if (effectiveMode === "mono") {
           sorted.forEach(({ el }) => setFillStroke(el, baseCss, baseCss));
         } else if (effectiveMode === "duotone") {
           sorted.forEach(({ el }, i) => {
-            const isMain = i === 0; // la pieza más grande
+            const isMain = i === 0;
             setFillStroke(el, isMain ? baseCss : accentCss, isMain ? baseCss : accentCss);
           });
 
-          // Algunos emojis (key/lock) ganan contraste extra
-          const special = ["1f511", "1f510", "1f512"]; // key, lock with key, lock
+          // Contraste extra p/ key/locks
+          const special = ["1f511", "1f510", "1f512"]; // key, lock+key, lock
           if (special.includes(code)) {
-            // Forzamos último elemento como acento para resaltar detalles
             const last = sorted.at(-1)?.el;
             if (last) setFillStroke(last, accentCss, accentCss);
           }
@@ -188,7 +197,7 @@ export default function ColorEmoji({
         setSvg(svgEl.outerHTML);
       })
       .catch(() => setSvg(null));
-  }, [code, color, accentColor, mode, title]);
+  }, [code, title, effectiveMode, baseColor, baseAccent]);
 
   return (
     <span
