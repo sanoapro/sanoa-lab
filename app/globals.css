@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Plugins (animaciones de shadcn/ui y utilidades de transición) */
+@plugin "tailwindcss-animate";
+
 /* ===== Tema Sanoa (colores y tipografías) ===== */
 @theme {
   /* Colores de marca */
@@ -10,7 +13,18 @@
   --color-brand-bluegray: #9FAAB9;     /* Acento secundario */
   --color-brand-border: #DED5C9;       /* Gris estructural (bordes) */
 
-  /* Tipografías (usaremos variables que pone next/font) */
-  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-body: var(--font-lato), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  /* Tipografías (variables expuestas por next/font en layout.tsx) */
+  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-body: var(--font-lato), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* Aquí puedes añadir estilos globales opcionales si los requieres */
+/* Ejemplo: quitar el focus feo por defecto y usar uno consistente */
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
 }
