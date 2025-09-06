@@ -1,9 +1,14 @@
-// app/(app)/layout.tsx
-import type { ReactNode } from "react";
-import AppShell from "@/components/AppShell"; // ya existe en tu repo
+import AppShell from "@/components/AppShell";
+import RequireAuth from "@/components/RequireAuth";
 
-export default function AppGroupLayout({ children }: { children: ReactNode }) {
-  // Si AppShell necesita props, pásalas aquí.
-  // Mantengo esto minimal para no pisar tu AppShell actual.
-  return <AppShell>{children}</AppShell>;
+export default function AppGroupLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <RequireAuth>
+      <AppShell>{children}</AppShell>
+    </RequireAuth>
+  );
 }

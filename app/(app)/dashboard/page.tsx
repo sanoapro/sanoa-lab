@@ -1,51 +1,114 @@
-export const metadata = {
-  title: "Tablero — Sanoa",
-};
+import Link from "next/link";
+import Emoji from "@/components/Emoji";
 
-export default function DashboardPage() {
+export default function TableroPage() {
   return (
-    <section className="space-y-6">
-      <header className="rounded-2xl border border-[var(--color-brand-border)] bg-white/90 p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">
-          <span className="mr-2">📊</span> Tablero
+    <main className="p-6 md:p-10 space-y-8">
+      {/* Encabezado */}
+      <header className="space-y-2">
+        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
+          <Emoji name="tablero" size={32} />
+          Tablero
         </h1>
-        <p className="mt-2 text-sm text-[var(--color-brand-text)]/75">
-          Resumen general y accesos rápidos.
+        <p className="text-[var(--color-brand-bluegray)]">
+          Accesos rápidos a tus funciones principales.
         </p>
       </header>
 
-      {/* Ejemplo de tarjetas rápidas */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--color-brand-border)] bg-white/90 p-5 shadow-sm">
-          <div className="mb-2 text-lg font-medium">
-            <span className="mr-2">🧪</span> Zona de pruebas
+      {/* Grid de tarjetas */}
+      <section
+        className="
+          grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6
+        "
+      >
+        {/* Subir archivos */}
+        <Link
+          href="/test-ui/upload"
+          className="
+            group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+            shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
+            transition overflow-hidden
+          "
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <Emoji name="subir" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Subir archivos
+              </h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Carga documentos y gestiona tus contenidos.
+              </p>
+            </div>
           </div>
-          <p className="mb-4 text-sm text-[var(--color-brand-text)]/75">
-            Componentes de prueba y carga de archivos.
-          </p>
-          <a
-            href="/test-ui"
-            className="inline-flex items-center justify-center rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-primary)]/10 px-3 py-2 text-sm font-medium text-[var(--color-brand-text)] hover:bg-[var(--color-brand-primary)]/15"
-          >
-            Ir ahora
-          </a>
-        </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Ir ahora <Emoji name="siguiente" size={18} />
+            </span>
+          </div>
+        </Link>
 
-        <div className="rounded-2xl border border-[var(--color-brand-border)] bg-white/90 p-5 shadow-sm">
-          <div className="mb-2 text-lg font-medium">
-            <span className="mr-2">📤</span> Subir archivos
+        {/* Mis archivos (placeholder a la landing de test-ui) */}
+        <Link
+          href="/test-ui"
+          className="
+            group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+            shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
+            transition overflow-hidden
+          "
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <Emoji name="carpeta" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Mis archivos
+              </h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Revisa, descarga o comparte tus documentos.
+              </p>
+            </div>
           </div>
-          <p className="mb-4 text-sm text-[var(--color-brand-text)]/75">
-            Sube y gestiona tus archivos en Supabase.
-          </p>
-          <a
-            href="/test-ui/upload"
-            className="inline-flex items-center justify-center rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-primary)]/10 px-3 py-2 text-sm font-medium text-[var(--color-brand-text)] hover:bg-[var(--color-brand-primary)]/15"
-          >
-            Abrir
-          </a>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Ver listado <Emoji name="ver" size={18} />
+            </span>
+          </div>
+        </Link>
+
+        {/* Próximamente (ejemplo de tarjeta “deshabilitada”) */}
+        <div
+          className="
+            rounded-3xl bg-white/60 border border-[var(--color-brand-border)]
+            shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden opacity-70
+          "
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <Emoji name="laboratorio" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Laboratorio (próximamente)
+              </h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Resultados y órdenes en un solo lugar.
+              </p>
+            </div>
+          </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/70">
+            <span className="inline-flex items-center gap-2">
+              En desarrollo <Emoji name="info" size={16} />
+            </span>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
