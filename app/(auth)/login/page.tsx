@@ -2,97 +2,158 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { createClient } from "@supabase/supabase-js";
+import ColorEmoji from "@/components/ColorEmoji";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const router = useRouter();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setMsg(null);
-
-    try {
-      const supabase = getSupabaseClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: pass,
-      });
-
-      if (error) {
-        setMsg(error.message);
-      } else {
-        router.replace("/dashboard");
-      }
-    } catch (err: any) {
-      setMsg(err?.message ?? "Error de configuración de Supabase.");
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    setLoading(false);
+    if (error) {
+      setMsg(error.message);
+      return;
     }
+    router.push("/dashboard");
+  }
+
+  async function signInGoogle() {
+    setMsg(null);
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
+    setLoading(false);
+    if (error) setMsg(error.message);
+    // Si usa PKCE redirige automáticamente
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-md border-brand-border bg-white/70">
-        <CardHeader>
-          <CardTitle className="font-heading text-brand-primary">
+    <main className="min-h-dvh bg-[var(--color-brand-background)] p-6 md:p-10 flex items-center justify-center">
+      <section
+        className="
+          w-full max-w-xl rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.06)]
+          bg-white/95 border border-[var(--color-brand-border)]
+          backdrop-blur-sm overflow-hidden
+        "
+      >
+        {/* Header */}
+        <div className="px-7 md:px-10 py-8 bg-[linear-gradient(180deg,#fff,rgba(255,255,255,0.7))]">
+          <h1 className="text-4xl md:text-5xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-4">
+            <ColorEmoji emoji="🔐" size={40} mode="duotone" />
             Iniciar sesión
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Correo</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="tu@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="********"
-                minLength={8}
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-brand-primary text-white hover:opacity-90"
-            >
-              {loading ? "Entrando..." : "Entrar"}
-            </Button>
+          </h1>
+          <p className="mt-2 text-[var(--color-brand-bluegray)] text-lg">
+            <ColorEmoji emoji="✨" size={20} mode="duotone" className="mr-1" />
+            Bienvenido/a a Sanoa
+          </p>
+        </div>
 
-            {msg && <p className="text-sm mt-2">{msg}</p>}
+        {/* Form */}
+        <form onSubmit={handleLogin} className="px-7 md:px-10 py-8 space-y-6">
+          {/* Email */}
+          <label className="block text-[var(--color-brand-text)] font-medium mb-1">
+            <span className="inline-flex items-center gap-2">
+              <ColorEmoji emoji="📧" mode="duotone" />
+              Correo
+            </span>
+          </label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tucorreo@dominio.com"
+            className="
+              w-full rounded-2xl border border-[var(--color-brand-border)]
+              bg-white px-5 py-4 text-[var(--color-brand-text)]
+              placeholder:text-[color-mix(in_oklab,var(--color-brand-bluegray)_75%,white)]
+              focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]
+            "
+          />
 
-            <p className="text-sm mt-3">
-              ¿No tienes cuenta?{" "}
-              <a href="/register" className="underline text-brand-primary">
-                Crear cuenta
-              </a>
+          {/* Password */}
+          <label className="block text-[var(--color-brand-text)] font-medium mb-1 mt-4">
+            <span className="inline-flex items-center gap-2">
+              <ColorEmoji emoji="🔑" mode="duotone" />
+              Contraseña
+            </span>
+          </label>
+          <input
+            type="password"
+            required
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            className="
+              w-full rounded-2xl border border-[var(--color-brand-border)]
+              bg-white px-5 py-4 text-[var(--color-brand-text)]
+              focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]
+            "
+          />
+
+          {/* Botón Entrar */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="
+              w-full mt-4 inline-flex items-center justify-center gap-3
+              rounded-2xl px-5 py-4
+              bg-[var(--color-brand-primary)]
+              text-white hover:brightness-95 active:brightness-90
+              transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed
+            "
+          >
+            <span className="inline-flex items-center gap-2">
+              <ColorEmoji emoji="➡️" mode="native" />
+              Entrar
+            </span>
+          </button>
+
+          {/* Separador */}
+          <div className="my-4 h-px w-full bg-[var(--color-brand-border)]" />
+
+          {/* Google */}
+          <button
+            type="button"
+            onClick={signInGoogle}
+            disabled={loading}
+            className="
+              w-full inline-flex items-center justify-center gap-3
+              rounded-2xl px-5 py-4
+              bg-[color-mix(in_oklab,#fff_70%,var(--color-brand-primary)_0%)]
+              text-[var(--color-brand-text)]
+              hover:bg-[color-mix(in_oklab,#fff_80%,var(--color-brand-primary)_0%)]
+              border border-[var(--color-brand-border)]
+              transition
+            "
+          >
+            {/* En Google prefiero mantener colores nativos para que nunca se “camufle” */}
+            <ColorEmoji emoji="🌐" mode="native" />
+            Continuar con Google
+          </button>
+
+          {/* Mensaje */}
+          {msg && (
+            <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              {msg}
             </p>
-          </form>
-        </CardContent>
-      </Card>
+          )}
+        </form>
+      </section>
     </main>
   );
 }
