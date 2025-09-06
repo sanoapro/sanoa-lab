@@ -8,28 +8,28 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const router = useRouter();
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMsg(null);
-
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password: pass,
       });
-
       if (error) {
         setMsg(error.message);
       } else {
+        // Si "Confirm email" está desactivado, tendrás sesión inmediata.
+        setMsg("Cuenta creada. Redirigiendo al dashboard...");
         router.replace("/dashboard");
       }
     } catch (err: any) {
@@ -44,11 +44,11 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-brand-border bg-white/70">
         <CardHeader>
           <CardTitle className="font-heading text-brand-primary">
-            Iniciar sesión
+            Crear cuenta
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Correo</Label>
               <Input
@@ -71,7 +71,7 @@ export default function LoginPage() {
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
                 required
-                autoComplete="current-password"
+                autoComplete="new-password"
               />
             </div>
             <Button
@@ -79,15 +79,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-brand-primary text-white hover:opacity-90"
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Creando..." : "Crear cuenta"}
             </Button>
-
             {msg && <p className="text-sm mt-2">{msg}</p>}
-
             <p className="text-sm mt-3">
-              ¿No tienes cuenta?{" "}
-              <a href="/register" className="underline text-brand-primary">
-                Crear cuenta
+              ¿Ya tienes cuenta?{" "}
+              <a href="/login" className="underline text-brand-primary">
+                Inicia sesión
               </a>
             </p>
           </form>
