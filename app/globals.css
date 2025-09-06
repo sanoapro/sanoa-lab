@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* ===== Tema Sanoa (colores y tipografías) ===== */
+@theme {
+  /* Colores de marca */
+  --color-brand-primary: #D97A66;      /* Terracota Suave (acentos/marca) */
+  --color-brand-text: #3E4C59;         /* Gris oscuro azulado (texto) */
+  --color-brand-background: #FBF3E5;   /* Marfil/Crema (fondo) */
+  --color-brand-coral: #C55B4E;        /* Acento secundario */
+  --color-brand-bluegray: #9FAAB9;     /* Acento secundario */
+  --color-brand-border: #DED5C9;       /* Gris estructural (bordes) */
+
+  /* Tipografías (usaremos variables que pone next/font) */
+  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-body: var(--font-lato), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
