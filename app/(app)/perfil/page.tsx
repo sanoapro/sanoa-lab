@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient, User } from "@supabase/supabase-js";
-import Emoji from "@/components/Emoji";
+import ColorEmoji from "@/components/ColorEmoji";
+import { useToast } from "@/components/Toast";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,212 +13,253 @@ const supabase = createClient(
 
 export default function PerfilPage() {
   const router = useRouter();
+  const { toast } = useToast();
+
   const [user, setUser] = useState<User | null>(null);
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [signingOut, setSigningOut] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    let mounted = true;
     (async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (!mounted) return;
-      if (error) {
-        setMsg(error.message);
-      }
-      const u = data?.user ?? null;
-      setUser(u);
-      setLoading(false);
-
+      const { data } = await supabase.auth.getUser();
+      const u = data.user;
       if (!u) {
-        // Si no hay sesión, al login
-        router.replace("/login");
+        router.push("/login");
+        return;
       }
+      setUser(u);
+      setEmail(u.email ?? "");
+      setName((u.user_metadata as any)?.full_name ?? "");
+      const path = (u.user_metadata as any)?.avatar_path ?? null;
+      setAvatarPath(path);
+      if (path) {
+        const { data: signed } = await supabase
+          .storage
+          .from("uploads")
+          .createSignedUrl(path, 60 * 60);
+        setAvatarUrl(signed?.signedUrl ?? null);
+      }
+      setLoading(false);
     })();
-    return () => {
-      mounted = false;
-    };
   }, [router]);
 
-  const name = useMemo(() => {
-    if (!user) return "—";
-    return (
-      (user.user_metadata?.full_name as string | undefined) ||
-      (user.user_metadata?.name as string | undefined) ||
-      user.email?.split("@")[0] ||
-      "Usuario"
-    );
-  }, [user]);
-
-  const email = user?.email ?? "—";
-
-  const initials = useMemo(() => {
-    const parts = name.trim().split(/\s+/);
-    const a = parts[0]?.[0] ?? "";
-    const b = parts.length > 1 ? parts[parts.length - 1][0] : "";
-    return (a + b).toUpperCase();
-  }, [name]);
-
-  async function handleSignOut() {
-    setSigningOut(true);
-    setMsg(null);
-    const { error } = await supabase.auth.signOut();
-    setSigningOut(false);
-    if (error) {
-      setMsg(error.message);
+  async function refreshSignedUrl(path: string | null) {
+    if (!path) {
+      setAvatarUrl(null);
       return;
     }
+    const { data } = await supabase
+      .storage
+      .from("uploads")
+      .createSignedUrl(path, 60 * 60);
+    setAvatarUrl(data?.signedUrl ?? null);
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: name, avatar_path: avatarPath ?? null },
+    });
+    setSaving(false);
+    if (error) {
+      toast({ variant: "error", title: "No se pudo guardar", description: error.message });
+      return;
+    }
+    toast({ variant: "success", title: "Perfil actualizado" });
+  }
+
+  function triggerPick() {
+    fileRef.current?.click();
+  }
+
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f || !user) return;
+
+    if (!f.type.startsWith("image/")) {
+      toast({ variant: "error", title: "Archivo no válido", description: "Sube una imagen (PNG/JPG/WebP…)" });
+      e.target.value = "";
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      toast({ variant: "error", title: "Imagen muy pesada", description: "Máx. 5 MB" });
+      e.target.value = "";
+      return;
+    }
+
+    const ext = f.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `avatars/${user.id}_${Date.now()}.${ext}`.replace(/\s+/g, "_");
+
+    const { error } = await supabase.storage.from("uploads").upload(path, f, {
+      upsert: false,
+    });
+    if (error) {
+      toast({ variant: "error", title: "No se pudo subir el avatar", description: error.message });
+      e.target.value = "";
+      return;
+    }
+
+    setAvatarPath(path);
+    await refreshSignedUrl(path);
+
+    // Guarda inmediatamente en metadata para que quede persistente
+    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: path } });
+
+    toast({ variant: "success", title: "Avatar actualizado" });
+    e.target.value = "";
+  }
+
+  async function removeAvatar() {
+    if (!avatarPath) return setAvatarUrl(null);
+    const ok = window.confirm("¿Quitar avatar?");
+    if (!ok) return;
+
+    // Intenta borrar el archivo (si falla, igual limpiamos metadata)
+    await supabase.storage.from("uploads").remove([avatarPath]);
+
+    setAvatarPath(null);
+    setAvatarUrl(null);
+    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: null } });
+    toast({ variant: "success", title: "Avatar quitado" });
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
     router.push("/login");
   }
+
+  const AvatarVisual = useMemo(() => {
+    return (
+      <div className="size-28 rounded-full overflow-hidden border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] flex items-center justify-center">
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+        ) : (
+          <div className="text-4xl">
+            <ColorEmoji emoji="👤" mode="duotone" size={40} />
+          </div>
+        )}
+      </div>
+    );
+  }, [avatarUrl]);
 
   if (loading) {
     return (
       <main className="p-6 md:p-10">
-        <div
-          className="
-            rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-            shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-7
-            animate-pulse
-          "
-        >
-          <div className="h-6 w-40 bg-[var(--color-brand-background)] rounded mb-4" />
-          <div className="h-4 w-64 bg-[var(--color-brand-background)] rounded" />
+        <div className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-8 animate-pulse">
+          <div className="h-7 w-48 bg-[var(--color-brand-background)] rounded mb-4" />
+          <div className="h-5 w-80 bg-[var(--color-brand-background)] rounded" />
         </div>
       </main>
     );
   }
 
-  if (!user) {
-    return null; // redirigimos en useEffect
-  }
-
   return (
     <main className="p-6 md:p-10 space-y-8">
       {/* Encabezado */}
-      <header className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-            <Emoji name="usuario" size={30} />
-            Perfil
-          </h1>
-          <p className="text-[var(--color-brand-bluegray)]">
-            Administra tu cuenta y cierra sesión cuando lo necesites.
-          </p>
-        </div>
+      <header>
+        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
+          <ColorEmoji emoji="👤" size={30} mode="duotone" />
+          Perfil
+        </h1>
+        <p className="text-[var(--color-brand-bluegray)]">
+          Actualiza tu información básica y tu avatar.
+        </p>
       </header>
 
-      {/* Mensajes */}
-      {msg && (
-        <div
-          className="
-            rounded-2xl bg-white/95 border border-[var(--color-brand-border)]
-            shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-5 py-4 text-[var(--color-brand-text)]
-          "
-        >
-          {msg}
-        </div>
-      )}
-
-      {/* Tarjeta de perfil */}
+      {/* Card principal */}
       <section
         className="
-          w-full max-w-3xl rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.06)]
-          bg-white/95 border border-[var(--color-brand-border)]
-          overflow-hidden
+          w-full rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+          shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 md:px-8 py-7
         "
       >
-        {/* Header tarjeta */}
-        <div className="px-7 md:px-10 py-7 bg-[linear-gradient(180deg,#fff,rgba(255,255,255,0.7))] flex items-center gap-5">
-          {/* Avatar de iniciales */}
-          <div
-            className="
-              shrink-0 w-16 h-16 rounded-2xl
-              bg-[var(--color-brand-primary)] text-white
-              flex items-center justify-center text-2xl font-semibold
-              ring-4 ring-white shadow-sm
-            "
-            aria-hidden
-          >
-            {initials}
-          </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-semibold text-[var(--color-brand-text)]">{name}</h2>
-            <p className="text-[var(--color-brand-bluegray)]">{email}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={signingOut}
-              onClick={handleSignOut}
-              className="
-                inline-flex items-center gap-2 rounded-2xl px-5 py-3
-                bg-[var(--color-brand-primary)] text-white
-                hover:brightness-95 active:brightness-90 transition shadow-sm
-                disabled:opacity-60 disabled:cursor-not-allowed
-              "
-              title="Cerrar sesión"
-            >
-              <Emoji name="salir" size={18} />
-              Cerrar sesión
-            </button>
-          </div>
-        </div>
-
-        {/* Contenido */}
-        <div className="px-7 md:px-10 py-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InfoItem label="ID de usuario">
-              <code className="text-[13px] break-all">{user.id}</code>
-            </InfoItem>
-
-            <InfoItem label="Último acceso">
-              {user.last_sign_in_at
-                ? new Date(user.last_sign_in_at).toLocaleString()
-                : "—"}
-            </InfoItem>
-
-            <InfoItem label="Confirmación de correo">
-              {user.email_confirmed_at
-                ? `Confirmado (${new Date(user.email_confirmed_at).toLocaleDateString()})`
-                : "Pendiente"}
-            </InfoItem>
-
-            <InfoItem label="Proveedor">
-              {user.app_metadata?.provider ?? "email"}
-            </InfoItem>
+        <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6">
+          {/* Columna avatar */}
+          <div className="flex flex-col items-start gap-4">
+            {AvatarVisual}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={triggerPick}
+                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-[var(--color-brand-primary)] text-white hover:brightness-95">
+                <ColorEmoji emoji="🖼️" mode="native" />
+                Subir avatar
+              </button>
+              <button
+                type="button"
+                onClick={removeAvatar}
+                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95">
+                <ColorEmoji emoji="🧹" mode="native" />
+                Quitar
+              </button>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPick} />
           </div>
 
-          {/* Acciones futuras */}
-          <div className="rounded-2xl border border-[var(--color-brand-border)] p-5 bg-white/85">
-            <p className="text-[var(--color-brand-text)] flex items-center gap-2">
-              <Emoji name="info" size={18} />
-              Próximamente podrás editar nombre, avatar y preferencias.
-            </p>
+          {/* Columna formulario */}
+          <div className="space-y-5">
+            {/* Correo (solo lectura) */}
+            <div>
+              <label className="block text-sm text-[var(--color-brand-bluegray)] mb-1">
+                Correo
+              </label>
+              <input
+                value={email}
+                readOnly
+                className="
+                  w-full rounded-2xl border border-[var(--color-brand-border)]
+                  bg-[color-mix(in_oklab,#fff_92%,var(--color-brand-background)_8%)]
+                  px-5 py-3 text-[var(--color-brand-text)]
+                "
+              />
+            </div>
+
+            {/* Nombre para mostrar */}
+            <div>
+              <label className="block text-sm text-[var(--color-brand-bluegray)] mb-1">
+                Nombre para mostrar
+              </label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Tu nombre"
+                className="
+                  w-full rounded-2xl border border-[var(--color-brand-border)]
+                  bg-white px-5 py-3 text-[var(--color-brand-text)]
+                  focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]
+                "
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60">
+                <ColorEmoji emoji="💾" mode="native" />
+                Guardar cambios
+              </button>
+
+              <button
+                type="button"
+                onClick={signOut}
+                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white border border-[var(--color-brand-border)] hover:brightness-95">
+                <ColorEmoji emoji="🚪" mode="native" />
+                Cerrar sesión
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
       </section>
     </main>
-  );
-}
-
-/* ============== subcomponentes ============== */
-
-function InfoItem({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="
-        rounded-2xl border border-[var(--color-brand-border)]
-        bg-white/90 px-5 py-4
-      "
-    >
-      <div className="text-sm text-[var(--color-brand-bluegray)]">{label}</div>
-      <div className="mt-1 text-[var(--color-brand-text)]">{children}</div>
-    </div>
   );
 }
