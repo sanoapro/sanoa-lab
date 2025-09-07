@@ -2,46 +2,60 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 import ColorEmoji from "@/components/ColorEmoji";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useToast } from "@/components/Toast";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = getSupabaseBrowser();
   const { toast } = useToast();
 
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null); // seguimos mostrando inline por accesibilidad
+  const [msg, setMsg] = useState<string | null>(null);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
     setLoading(false);
+
     if (error) {
       setMsg(error.message);
       toast({
         variant: "error",
-        title: "No se pudo iniciar sesión",
+        title: "No pudimos iniciar sesión",
         description: error.message,
+        emoji: "🛑",
       });
       return;
     }
-    toast({ variant: "success", title: "¡Bienvenido!", description: "Sesión iniciada." });
+
+    toast({
+      variant: "success",
+      title: "¡Bienvenido!",
+      description: "Sesión iniciada correctamente.",
+      emoji: "✅",
+    });
     router.push("/dashboard");
   }
 
   async function signInGoogle() {
     setMsg(null);
     setLoading(true);
+    // Informamos que habrá redirección
+    toast({
+      variant: "info",
+      title: "Redirigiendo a Google…",
+      description: "Completa el inicio de sesión y volverás a Sanoa.",
+      emoji: "🌐",
+    });
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/dashboard` },
@@ -51,11 +65,11 @@ export default function LoginPage() {
       setMsg(error.message);
       toast({
         variant: "error",
-        title: "Google dijo que no 😕",
+        title: "No pudimos conectar con Google",
         description: error.message,
+        emoji: "🛑",
       });
     }
-    // Si usa PKCE, redirige automáticamente
   }
 
   return (
@@ -84,6 +98,7 @@ export default function LoginPage() {
           {/* Email */}
           <label className="block text-[var(--color-brand-text)] font-medium mb-1">
             <span className="inline-flex items-center gap-2">
+              {/* Sobre 📧 lo dejamos en nativo como pediste */}
               <ColorEmoji emoji="📧" mode="native" />
               Correo
             </span>
@@ -154,14 +169,15 @@ export default function LoginPage() {
               text-[var(--color-brand-text)]
               hover:bg-[color-mix(in_oklab,#fff_80%,var(--color-brand-primary)_0%)]
               border border-[var(--color-brand-border)]
-              transition
+              transition disabled:opacity-60 disabled:cursor-not-allowed
             "
           >
+            {/* Mantener nativo para reconocimiento instantáneo */}
             <ColorEmoji emoji="🌐" mode="native" />
             Continuar con Google
           </button>
 
-          {/* Mensaje inline (accesibilidad) */}
+          {/* Mensaje de fallback (opcional) */}
           {msg && (
             <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               {msg}
