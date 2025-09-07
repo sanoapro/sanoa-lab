@@ -1,460 +1,359 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import ColorEmoji from "@/components/ColorEmoji";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useToast } from "@/components/Toast";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-/* ====================== helpers ====================== */
-
 type FileRow = {
-  name: string;
   id?: string;
-  created_at?: string | null;
+  name: string;
   updated_at?: string | null;
+  created_at?: string | null;
   last_accessed_at?: string | null;
-  metadata?: { size?: number } | null;
+  metadata?: Record<string, any> | null;
 };
 
-type Tipo = "todos" | "imagen" | "pdf" | "audio" | "video" | "otros";
-
-const IMG = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "avif"]);
-const PDF = new Set(["pdf"]);
-const AUD = new Set(["mp3", "wav", "ogg", "m4a", "flac"]);
-const VID = new Set(["mp4", "webm", "mov", "mkv", "avi"]);
-
-function extOf(name: string) {
-  const p = name.lastIndexOf(".");
-  return p >= 0 ? name.slice(p + 1).toLowerCase() : "";
-}
-function tipoDe(name: string): Exclude<Tipo, "todos"> {
-  const e = extOf(name);
-  if (IMG.has(e)) return "imagen";
-  if (PDF.has(e)) return "pdf";
-  if (AUD.has(e)) return "audio";
-  if (VID.has(e)) return "video";
-  return "otros";
-}
-function fmtDate(d?: string | null) {
-  if (!d) return "—";
-  try {
-    return new Date(d).toLocaleString();
-  } catch {
-    return d;
-  }
-}
-function fmtBytes(n?: number) {
-  if (!n && n !== 0) return "—";
-  const units = ["B", "KB", "MB", "GB"];
-  let v = n;
-  let i = 0;
-  while (v >= 1024 && i < units.length - 1) {
-    v /= 1024;
-    i++;
-  }
-  return `${v.toFixed(v < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
-}
-
-type SortValue =
-  | "created_desc"
-  | "created_asc"
-  | "name_asc"
-  | "name_desc"
-  | "updated_desc"
-  | "updated_asc";
-
-const SORT_OPTS: { value: SortValue; label: string }[] = [
-  { value: "created_desc", label: "Más recientes" },
-  { value: "created_asc", label: "Más antiguos" },
-  { value: "name_asc", label: "Nombre (A-Z)" },
-  { value: "name_desc", label: "Nombre (Z-A)" },
-  { value: "updated_desc", label: "Actualizados ↑" },
-  { value: "updated_asc", label: "Actualizados ↓" },
-];
-
-function mapSort(v: SortValue): { column: "name" | "created_at" | "updated_at"; order: "asc" | "desc" } {
-  switch (v) {
-    case "created_asc":
-      return { column: "created_at", order: "asc" };
-    case "name_asc":
-      return { column: "name", order: "asc" };
-    case "name_desc":
-      return { column: "name", order: "desc" };
-    case "updated_desc":
-      return { column: "updated_at", order: "desc" };
-    case "updated_asc":
-      return { column: "updated_at", order: "asc" };
-    case "created_desc":
-    default:
-      return { column: "created_at", order: "desc" };
-  }
-}
-
-/* ====================== página ====================== */
-
 export default function UploadPage() {
+  const supabase = getSupabaseBrowser();
   const { toast } = useToast();
 
-  const [files, setFiles] = useState<FileRow[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
-  const [tipo, setTipo] = useState<Tipo>("todos");
-  const [sort, setSort] = useState<SortValue>("created_desc");
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [listing, setListing] = useState(false);
+  const [files, setFiles] = useState<FileRow[]>([]);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
 
-  // debounce para el buscador
+  // Obtener el UID para info visual (RLS ya lo usa por detrás)
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(search.trim()), 300);
-    return () => clearTimeout(t);
-  }, [search]);
+    supabase.auth.getUser().then(({ data }) => {
+      setSessionUserId(data.user?.id ?? null);
+    });
+  }, [supabase]);
 
-  async function cargarLista() {
-    setLoading(true);
-    const { column, order } = mapSort(sort);
-    const { data, error } = await supabase
-      .storage
-      .from("uploads")
-      .list("", {
-        limit: 200,
-        search: debounced || undefined,
-        sortBy: { column, order },
-      });
+  const bucket = "uploads";
 
-    setLoading(false);
+  async function listFiles() {
+    setListing(true);
+    const { data, error } = await supabase.storage.from(bucket).list("", {
+      limit: 100,
+      sortBy: { column: "updated_at", order: "desc" },
+    });
+    setListing(false);
 
     if (error) {
       toast({
         variant: "error",
-        title: "No se pudo cargar la lista",
+        title: "No se pudo listar",
         description: error.message,
+        emoji: "🛑",
       });
       return;
     }
-    setFiles((data as any as FileRow[]) ?? []);
+    setFiles(data ?? []);
   }
 
   useEffect(() => {
-    cargarLista();
+    listFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced, sort, refreshKey]);
+  }, []);
 
-  // filtro por tipo (cliente)
-  const filtered = useMemo(() => {
-    if (tipo === "todos") return files;
-    return files.filter((f) => tipoDe(f.name) === tipo);
-  }, [files, tipo]);
-
-  // subir archivo
-  const inputRef = useRef<HTMLInputElement>(null);
-  function clickUpload() {
+  function openPicker() {
     inputRef.current?.click();
   }
-  async function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
 
-    const safeName = `${Date.now()}_${f.name}`.replace(/\s+/g, "_");
-    const { error } = await supabase.storage.from("uploads").upload(safeName, f, {
-      upsert: false,
-    });
-    if (error) {
-      toast({ variant: "error", title: "Error al subir", description: error.message });
-      return;
+  async function handlePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files;
+    if (!picked || picked.length === 0) return;
+
+    setLoading(true);
+    try {
+      for (const f of Array.from(picked)) {
+        const filename = `${Date.now()}-${f.name}`;
+        const { error } = await supabase.storage.from(bucket).upload(filename, f, {
+          upsert: false, // evita sobrescritura accidental
+          cacheControl: "3600",
+        });
+        if (error) {
+          toast({
+            variant: "error",
+            title: "Error al subir",
+            description: `${f.name}: ${error.message}`,
+            emoji: "🛑",
+          });
+        } else {
+          toast({
+            variant: "success",
+            title: "Archivo subido",
+            description: f.name,
+            emoji: "✅",
+          });
+        }
+      }
+      await listFiles();
+    } finally {
+      setLoading(false);
+      // Limpia input para permitir subir el mismo archivo de nuevo si se quiere
+      if (inputRef.current) inputRef.current.value = "";
     }
-    toast({ variant: "success", title: "Archivo subido", description: f.name });
-    setRefreshKey((x) => x + 1);
-    if (inputRef.current) inputRef.current.value = "";
   }
 
-  // ver (preview en nueva pestaña con blob)
-  async function handleVer(name: string) {
-    const { data, error } = await supabase.storage.from("uploads").download(name);
-    if (error || !data) {
-      toast({ variant: "error", title: "No se pudo abrir", description: error?.message ?? "" });
-      return;
-    }
-    const url = URL.createObjectURL(data);
-    window.open(url, "_blank", "noopener,noreferrer");
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  }
+  async function handleCopySignedUrl(path: string) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 60 * 10); // 10 min
 
-  // descargar
-  async function handleDescargar(name: string) {
-    const { data, error } = await supabase.storage.from("uploads").download(name);
-    if (error || !data) {
-      toast({ variant: "error", title: "No se pudo descargar", description: error?.message ?? "" });
-      return;
-    }
-    const url = URL.createObjectURL(data);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name.split("/").pop() || name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    toast({ variant: "success", title: "Descarga iniciada" });
-  }
-
-  // copiar enlace (firmado)
-  async function handleCopiar(name: string) {
-    const { data, error } = await supabase.storage.from("uploads").createSignedUrl(name, 60 * 60);
     if (error || !data?.signedUrl) {
-      toast({ variant: "error", title: "No se pudo generar enlace", description: error?.message ?? "" });
+      toast({
+        variant: "error",
+        title: "No se pudo copiar el enlace",
+        description: error?.message ?? "Sin URL",
+        emoji: "🛑",
+      });
       return;
     }
     await navigator.clipboard.writeText(data.signedUrl);
-    toast({ variant: "success", title: "Enlace copiado", description: "Válido por 1 hora." });
+    toast({
+      variant: "success",
+      title: "Enlace temporal copiado",
+      description: "Válido por 10 minutos.",
+      emoji: "🔗",
+    });
   }
 
-  // borrar
-  async function handleBorrar(name: string) {
-    const ok = window.confirm(`¿Borrar "${name}"? Esta acción no se puede deshacer.`);
-    if (!ok) return;
-    const { error } = await supabase.storage.from("uploads").remove([name]);
-    if (error) {
-      toast({ variant: "error", title: "No se pudo borrar", description: error.message });
+  async function handleView(path: string) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 60 * 5); // 5 min
+
+    if (error || !data?.signedUrl) {
+      toast({
+        variant: "error",
+        title: "No se pudo abrir",
+        description: error?.message ?? "Sin URL",
+        emoji: "🛑",
+      });
       return;
     }
-    toast({ variant: "success", title: "Archivo borrado" });
-    setRefreshKey((x) => x + 1);
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
+  async function handleDownload(path: string) {
+    const { data, error } = await supabase.storage.from(bucket).download(path);
+    if (error || !data) {
+      toast({
+        variant: "error",
+        title: "No se pudo descargar",
+        description: error?.message ?? "—",
+        emoji: "🛑",
+      });
+      return;
+    }
+
+    // Forzar descarga
+    const url = URL.createObjectURL(data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = path.split("/").pop() ?? "archivo";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    toast({
+      variant: "info",
+      title: "Descarga iniciada",
+      description: a.download,
+      emoji: "⬇️",
+    });
+  }
+
+  async function handleDelete(path: string) {
+    const ok = confirm("¿Eliminar este archivo? Esta acción no se puede deshacer.");
+    if (!ok) return;
+
+    const { error } = await supabase.storage.from(bucket).remove([path]);
+    if (error) {
+      toast({
+        variant: "error",
+        title: "No se pudo eliminar",
+        description: error.message,
+        emoji: "🛑",
+      });
+      return;
+    }
+    toast({
+      variant: "success",
+      title: "Archivo eliminado",
+      description: path.split("/").pop() ?? "",
+      emoji: "🗑️",
+    });
+    await listFiles();
+  }
+
+  const isEmpty = useMemo(() => files.length === 0, [files]);
+
   return (
-    <main className="p-6 md:p-10 space-y-8">
-      {/* Encabezado */}
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-            <ColorEmoji emoji="🗂️" mode="duotone" size={30} />
-            Mis archivos
-          </h1>
-          <p className="text-[var(--color-brand-bluegray)]">
-            Sube, visualiza, descarga, copia enlaces o elimina archivos. Todo con estilo Sanoa.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setRefreshKey((x) => x + 1)}
-            className="
-              inline-flex items-center gap-2 rounded-2xl px-4 py-3
-              border border-[var(--color-brand-border)] bg-white/90
-              text-[var(--color-brand-text)] hover:brightness-95
-              shadow-sm
-            "
-            title="Actualizar lista"
-          >
-            <ColorEmoji emoji="🔄" mode="native" />
-            Actualizar lista
-          </button>
-
-          <button
-            type="button"
-            onClick={clickUpload}
-            className="
-              inline-flex items-center gap-2 rounded-2xl px-4 py-3
-              bg-[var(--color-brand-primary)] text-white
-              hover:brightness-95 active:brightness-90 shadow-sm
-            "
-            title="Subir archivo"
-          >
-            <ColorEmoji emoji="⬆️" mode="native" />
-            Subir archivo
-          </button>
-          <input
-            ref={inputRef}
-            type="file"
-            className="hidden"
-            onChange={onSelectFile}
-          />
-        </div>
-      </header>
-
-      {/* Controles: búsqueda + filtros + orden */}
-      <section
-        className="
-          w-full rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-          shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-5 md:px-7 py-5
-        "
-      >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          {/* Buscador */}
-          <div className="relative w-full md:max-w-md">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <ColorEmoji emoji="🔎" mode="native" />
+    <main className="min-h-dvh bg-[var(--color-brand-background)] px-4 py-10">
+      <div className="mx-auto max-w-6xl space-y-8">
+        {/* Encabezado */}
+        <header
+          className="
+            rounded-3xl border border-[var(--color-brand-border)] bg-white/95 backdrop-blur
+            shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 md:p-8
+          "
+        >
+          <div className="flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
+                <span className="inline-grid place-content-center h-11 w-11 rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+                  <ColorEmoji emoji="📤" mode="duotone" />
+                </span>
+                Cargas
+              </h1>
+              <p className="mt-2 text-[var(--color-brand-bluegray)]">
+                {sessionUserId ? (
+                  <>
+                    <ColorEmoji emoji="👤" mode="duotone" className="mr-1" /> Usuario:{" "}
+                    <span className="font-medium text-[var(--color-brand-text)]">
+                      {sessionUserId}
+                    </span>
+                  </>
+                ) : (
+                  "—"
+                )}
+              </p>
             </div>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre…"
-              className="
-                w-full pl-9 pr-3 py-3 rounded-2xl border border-[var(--color-brand-border)]
-                bg-white text-[var(--color-brand-text)]
-                placeholder:text-[color-mix(in_oklab,var(--color-brand-bluegray)_75%,white)]
-                focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]
-              "
-            />
-          </div>
 
-          {/* Orden */}
-          <label className="inline-flex items-center gap-2">
-            <span className="text-sm text-[var(--color-brand-bluegray)]">Ordenar por</span>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortValue)}
-              className="
-                rounded-xl border border-[var(--color-brand-border)]
-                bg-white px-3 py-2 text-[var(--color-brand-text)]
-                focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]
-              "
-            >
-              {SORT_OPTS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        {/* Chips de tipo */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {(["todos", "imagen", "pdf", "audio", "video", "otros"] as Tipo[]).map((t) => {
-            const active = tipo === t;
-            return (
+            <div className="flex flex-wrap items-center gap-3">
               <button
-                key={t}
                 type="button"
-                aria-pressed={active}
-                onClick={() => setTipo(t)}
-                className={`
-                  inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm
-                  border shadow-sm transition
-                  ${active
-                    ? "bg-[var(--color-brand-primary)] text-white border-transparent"
-                    : "bg-white text-[var(--color-brand-text)] border-[var(--color-brand-border)] hover:brightness-95"}
-                `}
+                onClick={openPicker}
+                disabled={loading}
+                className="
+                  inline-flex items-center gap-2 px-4 py-3 rounded-2xl
+                  bg-[var(--color-brand-primary)] text-white
+                  hover:brightness-95 active:brightness-90
+                  disabled:opacity-60 disabled:cursor-not-allowed transition shadow-sm
+                "
+                title="Subir archivos"
               >
-                <ColorEmoji
-                  emoji={
-                    t === "imagen" ? "🖼️" :
-                    t === "pdf" ? "📄" :
-                    t === "audio" ? "🎵" :
-                    t === "video" ? "🎥" :
-                    t === "otros" ? "📦" : "🗂️"
-                  }
-                  mode={t === "pdf" ? "native" : "duotone"}
-                />
-                {t[0].toUpperCase() + t.slice(1)}
+                <ColorEmoji emoji="⤴️" mode="native" />
+                <span>Subir archivos</span>
               </button>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* Lista */}
-      <section className="min-h-[200px]">
-        {loading ? (
-          <div
-            className="
-              rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-              shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-7 animate-pulse
-            "
-          >
-            <div className="h-5 w-64 bg-[var(--color-brand-background)] rounded mb-3" />
-            <div className="h-5 w-40 bg-[var(--color-brand-background)] rounded" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div
-            className="
-              rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-              shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-7
-              text-[var(--color-brand-bluegray)]
-            "
-          >
-            <div className="flex items-center gap-2">
-              <ColorEmoji emoji="🫥" mode="native" />
-              No hay archivos que coincidan.
+              <button
+                type="button"
+                onClick={listFiles}
+                disabled={listing}
+                className="
+                  inline-flex items-center gap-2 px-4 py-3 rounded-2xl
+                  bg-white text-[var(--color-brand-text)]
+                  border border-[var(--color-brand-border)]
+                  hover:bg-[color-mix(in_oklab,#fff_80%,var(--color-brand-background)_20%)]
+                  disabled:opacity-60 disabled:cursor-not-allowed transition
+                "
+                title="Actualizar lista"
+              >
+                <ColorEmoji emoji="🔄" mode="duotone" />
+                <span>Actualizar lista</span>
+              </button>
+
+              <input
+                ref={inputRef}
+                type="file"
+                multiple
+                onChange={handlePick}
+                className="hidden"
+              />
             </div>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((f) => {
-              const tipo = tipoDe(f.name);
-              const icon =
-                tipo === "imagen" ? "🖼️" :
-                tipo === "pdf" ? "📄" :
-                tipo === "audio" ? "🎵" :
-                tipo === "video" ? "🎥" :
-                "📦";
-              return (
-                <article
-                  key={f.name}
-                  className="
-                    rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                    shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden
-                    flex flex-col
-                  "
-                >
-                  {/* cabecera */}
-                  <div className="px-5 py-4 border-b border-[var(--color-brand-border)] flex items-center gap-3">
-                    <ColorEmoji emoji={icon} mode={icon === "📄" ? "native" : "duotone"} />
-                    <div className="min-w-0">
-                      <h3 className="text-[var(--color-brand-text)] font-medium truncate">{f.name}</h3>
-                      <p className="text-xs text-[var(--color-brand-bluegray)]">
-                        Creado: {fmtDate(f.created_at)} · Modificado: {fmtDate(f.updated_at)}
+        </header>
+
+        {/* Lista */}
+        <section
+          className="
+            rounded-3xl border border-[var(--color-brand-border)] bg-white/95 backdrop-blur
+            shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-4 md:p-6
+          "
+        >
+          {isEmpty ? (
+            <div className="grid place-items-center py-16 text-center">
+              <div className="inline-grid place-content-center h-16 w-16 rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] mb-4">
+                <ColorEmoji emoji="🗂️" mode="duotone" size={28} />
+              </div>
+              <p className="text-[var(--color-brand-text)] text-lg font-medium">
+                Aún no tienes archivos
+              </p>
+              <p className="text-[var(--color-brand-bluegray)]">
+                Usa <em>Subir archivos</em> para comenzar.
+              </p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-[var(--color-brand-border)]">
+              {files.map((f) => {
+                const path = f.name; // estamos en raíz
+                return (
+                  <li
+                    key={`${f.id ?? ""}:${f.name}`}
+                    className="py-4 flex items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-[var(--color-brand-text)] truncate flex items-center gap-2">
+                        <ColorEmoji emoji="📄" mode="duotone" />
+                        {f.name}
+                      </p>
+                      <p className="text-sm text-[var(--color-brand-bluegray)]">
+                        {f.updated_at
+                          ? new Date(f.updated_at).toLocaleString()
+                          : f.created_at
+                          ? new Date(f.created_at).toLocaleString()
+                          : "—"}
                       </p>
                     </div>
-                  </div>
 
-                  {/* acciones */}
-                  <div className="px-5 py-4 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => handleVer(f.name)}
-                      className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95"
-                      title="Ver"
-                    >
-                      <ColorEmoji emoji="👁️" mode="native" />
-                      Ver
-                    </button>
-                    <button
-                      onClick={() => handleDescargar(f.name)}
-                      className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95"
-                      title="Descargar"
-                    >
-                      <ColorEmoji emoji="⬇️" mode="native" />
-                      Descargar
-                    </button>
-                    <button
-                      onClick={() => handleCopiar(f.name)}
-                      className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95"
-                      title="Copiar enlace"
-                    >
-                      <ColorEmoji emoji="🔗" mode="native" />
-                      Copiar enlace
-                    </button>
-                    <div className="ml-auto" />
-                    <button
-                      onClick={() => handleBorrar(f.name)}
-                      className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-                      title="Borrar"
-                    >
-                      <ColorEmoji emoji="🗑️" mode="native" />
-                      Borrar
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--color-brand-border)] bg-white hover:bg-[var(--color-brand-background)]"
+                        onClick={() => handleView(path)}
+                        title="Ver"
+                      >
+                        <ColorEmoji emoji="👁️" mode="duotone" />
+                        <span>Ver</span>
+                      </button>
+                      <button
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--color-brand-border)] bg-white hover:bg-[var(--color-brand-background)]"
+                        onClick={() => handleDownload(path)}
+                        title="Descargar"
+                      >
+                        <ColorEmoji emoji="⬇️" mode="native" />
+                        <span>Descargar</span>
+                      </button>
+                      <button
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--color-brand-border)] bg-white hover:bg-[var(--color-brand-background)]"
+                        onClick={() => handleCopySignedUrl(path)}
+                        title="Copiar enlace"
+                      >
+                        <ColorEmoji emoji="🔗" mode="duotone" />
+                        <span>Copiar enlace</span>
+                      </button>
+                      <button
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600 text-white hover:brightness-95"
+                        onClick={() => handleDelete(path)}
+                        title="Eliminar"
+                      >
+                        {/* Bote nativo como te gusta */}
+                        <ColorEmoji emoji="🗑️" mode="native" />
+                        <span>Eliminar</span>
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </div>
     </main>
   );
 }
