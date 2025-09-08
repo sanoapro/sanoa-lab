@@ -1,11 +1,18 @@
-// v3 - precache rutas clave + offline + runtime caching (Twemoji/CDNs/Supabase Storage)
-const PRECACHE = "sanoa-pre-v3";
-const RUNTIME  = "sanoa-run-v3";
+// v4 - precache + offline + runtime caching + skipWaiting message
+const PRECACHE = "sanoa-pre-v4";
+const RUNTIME  = "sanoa-run-v4";
 
 const PRECACHE_URLS = [
   "/", "/dashboard", "/login", "/reset-password", "/update-password", "/offline",
   "/favicon.ico"
 ];
+
+// Permitir que el cliente pida activar ya el nuevo SW
+self.addEventListener("message", (e) => {
+  if (e?.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
@@ -18,11 +25,7 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(
-      keys
-        .filter(k => k !== PRECACHE && k !== RUNTIME)
-        .map(k => caches.delete(k))
-    );
+    await Promise.all(keys.filter(k => k !== PRECACHE && k !== RUNTIME).map(k => caches.delete(k)));
   })());
   self.clients.claim();
 });
@@ -33,7 +36,7 @@ self.addEventListener("fetch", (e) => {
 
   const u = new URL(req.url);
 
-  // 1) Navegación: Network-First + fallback cache + /offline
+  // NAVIGATE: network-first con fallback cache + /offline
   if (req.mode === "navigate") {
     e.respondWith((async () => {
       try {
@@ -50,10 +53,7 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // 2) Runtime caching (Stale-While-Revalidate) para:
-  //    - Twemoji / CDNs (jsdelivr, unpkg, cdnjs)
-  //    - Google Fonts (gstatic)
-  //    - Supabase Storage (dominios *.supabase.co con /storage/v1/object/)
+  // Runtime caching para Twemoji/CDNs/Fonts/Supabase Storage + mismos-origen
   const host = u.hostname;
   const isCdn =
     host.includes("twemoji") ||
@@ -61,8 +61,7 @@ self.addEventListener("fetch", (e) => {
     host.includes("unpkg.com") ||
     host.includes("cdnjs.cloudflare.com") ||
     host.includes("gstatic.com");
-  const isSupabaseStorage =
-    host.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/");
+  const isSupabaseStorage = host.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/");
 
   if (isCdn || isSupabaseStorage || u.origin === self.location.origin) {
     e.respondWith((async () => {
@@ -77,15 +76,12 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // 3) Para el resto, intenta red y si falla usa cache
+  // Resto: intenta red, si no usa cache
   e.respondWith((async () => {
-    try {
-      const res = await fetch(req);
-      return res;
-    } catch {
+    try { return await fetch(req); }
+    catch {
       const cache = await caches.open(RUNTIME);
-      const cached = await cache.match(req);
-      return cached || Response.error();
+      return (await cache.match(req)) || Response.error();
     }
   })());
 });
