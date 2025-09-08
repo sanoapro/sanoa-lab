@@ -207,14 +207,14 @@ export default function UploadPage() {
             <div>
               <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
                 <span className="inline-grid place-content-center h-11 w-11 rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                  <ColorEmoji emoji="📤" mode="duotone" />
+                  <ColorEmoji emoji="📤" />
                 </span>
                 Cargas
               </h1>
               <p className="mt-2 text-[var(--color-brand-bluegray)]">
                 {sessionUserId ? (
                   <>
-                    <ColorEmoji emoji="👤" mode="duotone" className="mr-1" /> Usuario:{" "}
+                    <ColorEmoji emoji="👤" className="mr-1" /> Usuario:{" "}
                     <span className="font-medium text-[var(--color-brand-text)]">
                       {sessionUserId}
                     </span>
@@ -238,7 +238,7 @@ export default function UploadPage() {
                 "
                 title="Subir archivos"
               >
-                <ColorEmoji emoji="⤴️" mode="native" />
+                <ColorEmoji emoji="⤴️" />
                 <span>Subir archivos</span>
               </button>
 
@@ -255,7 +255,7 @@ export default function UploadPage() {
                 "
                 title="Actualizar lista"
               >
-                <ColorEmoji emoji="🔄" mode="duotone" />
+                <ColorEmoji emoji="🔄" />
                 <span>Actualizar lista</span>
               </button>
 
@@ -280,7 +280,7 @@ export default function UploadPage() {
           {isEmpty ? (
             <div className="grid place-items-center py-16 text-center">
               <div className="inline-grid place-content-center h-16 w-16 rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] mb-4">
-                <ColorEmoji emoji="🗂️" mode="duotone" size={28} />
+                <ColorEmoji emoji="🗂️" size={28} />
               </div>
               <p className="text-[var(--color-brand-text)] text-lg font-medium">
                 Aún no tienes archivos
@@ -300,7 +300,7 @@ export default function UploadPage() {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-[var(--color-brand-text)] truncate flex items-center gap-2">
-                        <ColorEmoji emoji="📄" mode="duotone" />
+                        <ColorEmoji emoji="📄" />
                         {f.name}
                       </p>
                       <p className="text-sm text-[var(--color-brand-bluegray)]">
@@ -318,7 +318,7 @@ export default function UploadPage() {
                         onClick={() => handleView(path)}
                         title="Ver"
                       >
-                        <ColorEmoji emoji="👁️" mode="duotone" />
+                        <ColorEmoji emoji="👁️" />
                         <span>Ver</span>
                       </button>
                       <button
@@ -326,7 +326,7 @@ export default function UploadPage() {
                         onClick={() => handleDownload(path)}
                         title="Descargar"
                       >
-                        <ColorEmoji emoji="⬇️" mode="native" />
+                        <ColorEmoji emoji="⬇️" />
                         <span>Descargar</span>
                       </button>
                       <button
@@ -334,7 +334,7 @@ export default function UploadPage() {
                         onClick={() => handleCopySignedUrl(path)}
                         title="Copiar enlace"
                       >
-                        <ColorEmoji emoji="🔗" mode="duotone" />
+                        <ColorEmoji emoji="🔗" />
                         <span>Copiar enlace</span>
                       </button>
                       <button
@@ -343,7 +343,7 @@ export default function UploadPage() {
                         title="Eliminar"
                       >
                         {/* Bote nativo como te gusta */}
-                        <ColorEmoji emoji="🗑️" mode="native" />
+                        <ColorEmoji emoji="🗑️" />
                         <span>Eliminar</span>
                       </button>
                     </div>

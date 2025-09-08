@@ -55,7 +55,7 @@ export default function Navbar() {
         {/* Brand */}
         <Link href="/dashboard" className="inline-flex items-center gap-2">
           <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-            <ColorEmoji emoji="🍃" mode="native" />
+            <ColorEmoji emoji="🍃" />
           </span>
           <span className="font-semibold text-[var(--color-brand-text)]">Sanoa</span>
         </Link>
@@ -76,7 +76,7 @@ export default function Navbar() {
                 `}
               >
                 {/* Para navegación, duotono suave */}
-                <ColorEmoji emoji={item.emoji} mode="duotone" />
+                <ColorEmoji emoji={item.emoji} />
                 <span className="text-[var(--color-brand-text)]">{item.label}</span>
               </Link>
             );
@@ -97,7 +97,7 @@ export default function Navbar() {
             "
             title="Cerrar sesión"
           >
-            <ColorEmoji emoji="🔓" mode="duotone" />
+            <ColorEmoji emoji="🔓" />
             <span>Cerrar sesión</span>
           </button>
         </div>
