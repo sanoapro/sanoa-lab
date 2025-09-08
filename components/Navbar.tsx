@@ -105,3 +105,13 @@ export default function Navbar() {
     </header>
   );
 }
+{/* Pacientes */}
+<Link
+  href="/pacientes"
+  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl
+             hover:bg-[color-mix(in_oklab,white_85%,var(--color-brand-primary)_0%)]
+             transition"
+>
+  <ColorEmoji emoji="👥" />
+  <span>Pacientes</span>
+</Link>
