@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
+import { showToast } from "@/components/Toaster";
 
 export default function UpdatePasswordPage() {
   const supabase = getSupabaseBrowser();
@@ -11,6 +12,7 @@ export default function UpdatePasswordPage() {
   const [okSession, setOkSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -37,14 +39,16 @@ export default function UpdatePasswordPage() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setSaving(true);
     const f = new FormData(e.currentTarget);
     const p = String(f.get("password") || "");
     const c = String(f.get("confirm") || "");
-    if (p.length < 8) { setError("La contraseña debe tener al menos 8 caracteres."); return; }
-    if (p !== c) { setError("Las contraseñas no coinciden."); return; }
+    if (p.length < 8) { setError("La contraseña debe tener al menos 8 caracteres."); setSaving(false); return; }
+    if (p !== c) { setError("Las contraseñas no coinciden."); setSaving(false); return; }
     const { error } = await supabase.auth.updateUser({ password: p });
+    setSaving(false);
     if (error) { setError(error.message); return; }
-    alert("¡Listo! Tu contraseña fue actualizada.");
+    showToast("Tu contraseña fue actualizada.", "success");
     router.replace("/login");
   }
 
@@ -60,13 +64,14 @@ export default function UpdatePasswordPage() {
 
       {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
 
-      <form onSubmit={onSubmit} className="space-y-3">
-        <input type="password" name="password" placeholder="Nueva contraseña"
+      <form onSubmit={onSubmit} className="space-y-3" aria-busy={saving}>
+        <input type="password" name="password" placeholder="Nueva contraseña" required
           className="w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]" />
-        <input type="password" name="confirm" placeholder="Repetir contraseña"
+        <input type="password" name="confirm" placeholder="Repetir contraseña" required
           className="w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]" />
-        <button className="w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90">
-          Guardar y entrar
+        <button disabled={saving}
+          className="w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60">
+          {saving ? "Guardando…" : "Guardar y entrar"}
         </button>
       </form>
     </div>

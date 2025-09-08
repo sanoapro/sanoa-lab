@@ -1,3 +1,4 @@
+import Toaster from '@/components/Toaster';
 import type { Metadata } from "next";
 import "./globals.css";
 import { Poppins, Lato } from "next/font/google";
