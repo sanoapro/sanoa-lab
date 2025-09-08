@@ -6,6 +6,7 @@ const now = new Date();
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "", "login", "dashboard", "reset-password", "update-password", "offline",
+    "instalar",
     "pacientes", "perfil", "test-ui/upload",
   ];
   return paths.map((p) => ({
