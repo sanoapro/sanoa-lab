@@ -1,14 +1,16 @@
+// app/(app)/layout.tsx
+import type { Metadata } from "next";
 import AppShell from "@/components/AppShell";
-import RequireAuth from "@/components/RequireAuth";
+import AuthGate from "@/components/AuthGate";
 
-export default function AppGroupLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const metadata: Metadata = {
+  title: "Sanoa — Tablero",
+};
+
+export default function AppGroupLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RequireAuth>
+    <AuthGate>
       <AppShell>{children}</AppShell>
-    </RequireAuth>
+    </AuthGate>
   );
 }
