@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
 
@@ -11,6 +11,14 @@ export default function LoginPage() {
   const supabase = getSupabaseBrowser();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Si ya hay sesión, redirige al Tablero
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) router.replace(redirectTo);
+    })();
+  }, [router, supabase, redirectTo]);
 
   async function onLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,11 +44,8 @@ export default function LoginPage() {
   return (
     <main className="min-h-[100dvh] grid place-items-center p-4">
       <section
-        className="
-          w-full max-w-lg rounded-3xl border border-[var(--color-brand-border)]
-          bg-white/95 shadow-[0_12px_40px_rgba(0,0,0,0.08)] backdrop-blur
-          p-6 md:p-8 space-y-6
-        "
+        className="w-full max-w-lg rounded-3xl border border-[var(--color-brand-border)]
+                   bg-white/95 shadow-[0_12px_40px_rgba(0,0,0,0.08)] backdrop-blur p-6 md:p-8 space-y-6"
       >
         {/* Encabezado */}
         <header className="space-y-1">
@@ -56,24 +61,17 @@ export default function LoginPage() {
           </p>
         </header>
 
-        {/* Formulario */}
-        {err && (
-          <p className="text-sm text-red-600" role="alert">
-            {err}
-          </p>
-        )}
+        {/* Errores */}
+        {err && <p className="text-sm text-red-600" role="alert">{err}</p>}
 
+        {/* Formulario */}
         <form onSubmit={onLogin} className="space-y-4">
           <label className="block space-y-1">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
               <ColorEmoji emoji="📧" size={16} /> Correo
             </span>
             <input
-              type="email"
-              name="email"
-              placeholder="tucorreo@ejemplo.com"
-              autoComplete="email"
-              required
+              type="email" name="email" placeholder="tucorreo@ejemplo.com" autoComplete="email" required
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
             />
           </label>
@@ -83,28 +81,18 @@ export default function LoginPage() {
               <ColorEmoji emoji="🔑" size={16} /> Contraseña
             </span>
             <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
+              type="password" name="password" placeholder="••••••••" autoComplete="current-password" required
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
             />
           </label>
 
           <div className="flex items-center justify-between">
-            <a href="/reset-password" className="text-sm text-[var(--color-brand-coral)] underline">
-              ¿Olvidaste tu contraseña?
-            </a>
+            <a href="/reset-password" className="text-sm text-[var(--color-brand-coral)] underline">¿Olvidaste tu contraseña?</a>
           </div>
 
           <button
             disabled={loading}
-            className="
-              w-full rounded-2xl bg-[var(--color-brand-primary)] px-4 py-3
-              text-white font-medium hover:opacity-90 disabled:opacity-60
-              flex items-center justify-center gap-2
-            "
+            className="w-full rounded-2xl bg-[var(--color-brand-primary)] px-4 py-3 text-white font-medium hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             <ColorEmoji emoji="➡️" size={18} />
             {loading ? "Entrando…" : "Entrar"}
@@ -114,19 +102,13 @@ export default function LoginPage() {
         {/* Separador */}
         <div className="relative">
           <div className="h-px bg-[var(--color-brand-border)]" />
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-[var(--color-brand-bluegray)]">
-            o
-          </span>
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-[var(--color-brand-bluegray)]">o</span>
         </div>
 
         {/* OAuth */}
         <button
           onClick={onGoogle}
-          className="
-            w-full rounded-2xl border border-[var(--color-brand-border)]
-            bg-white px-4 py-3 text-[var(--color-brand-text)] hover:bg-[var(--color-brand-background)]
-            flex items-center justify-center gap-2
-          "
+          className="w-full rounded-2xl border border-[var(--color-brand-border)] bg-white px-4 py-3 text-[var(--color-brand-text)] hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2"
         >
           <ColorEmoji emoji="🌐" size={18} />
           Continuar con Google
