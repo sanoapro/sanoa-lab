@@ -10,7 +10,8 @@ export default function ResetPasswordPage() {
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email") || "");
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/auth/update-password` });
+    // 🔧 Ruta correcta en App Router: /update-password (los grupos (auth) no forman parte de la URL)
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/update-password` });
     alert("Revisa tu correo: te enviamos un enlace para restablecer tu contraseña.");
   }
 
