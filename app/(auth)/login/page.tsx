@@ -1,4 +1,3 @@
-cat > 'app/(auth)/login/page.tsx' <<'EOF'
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -35,35 +34,104 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm space-y-4 p-6">
-      <h1 className="text-2xl font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
-        <ColorEmoji emoji="🔐" size={22} />
-        Entrar
-      </h1>
+    <main className="min-h-[100dvh] grid place-items-center p-4">
+      <section
+        className="
+          w-full max-w-lg rounded-3xl border border-[var(--color-brand-border)]
+          bg-white/95 shadow-[0_12px_40px_rgba(0,0,0,0.08)] backdrop-blur
+          p-6 md:p-8 space-y-6
+        "
+      >
+        {/* Encabezado */}
+        <header className="space-y-1">
+          <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji emoji="🔐" size={20} />
+            </span>
+            Iniciar sesión
+          </h1>
+          <p className="text-[var(--color-brand-bluegray)] flex items-center gap-2">
+            <ColorEmoji emoji="✨" size={16} />
+            Bienvenido/a a Sanoa
+          </p>
+        </header>
 
-      {err && <p className="text-sm text-red-600" role="alert">{err}</p>}
+        {/* Formulario */}
+        {err && (
+          <p className="text-sm text-red-600" role="alert">
+            {err}
+          </p>
+        )}
 
-      <form onSubmit={onLogin} className="space-y-3">
-        <input type="email" name="email" placeholder="Correo"
-          className="w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]" />
-        <input type="password" name="password" placeholder="Contraseña"
-          className="w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]" />
-        <button disabled={loading}
-          className="w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2">
-          <ColorEmoji emoji="🔐" size={18} />
-          {loading ? "Entrando..." : "Entrar"}
+        <form onSubmit={onLogin} className="space-y-4">
+          <label className="block space-y-1">
+            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
+              <ColorEmoji emoji="📧" size={16} /> Correo
+            </span>
+            <input
+              type="email"
+              name="email"
+              placeholder="tucorreo@ejemplo.com"
+              autoComplete="email"
+              required
+              className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
+            />
+          </label>
+
+          <label className="block space-y-1">
+            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
+              <ColorEmoji emoji="🔑" size={16} /> Contraseña
+            </span>
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+              className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
+            />
+          </label>
+
+          <div className="flex items-center justify-between">
+            <a href="/reset-password" className="text-sm text-[var(--color-brand-coral)] underline">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <button
+            disabled={loading}
+            className="
+              w-full rounded-2xl bg-[var(--color-brand-primary)] px-4 py-3
+              text-white font-medium hover:opacity-90 disabled:opacity-60
+              flex items-center justify-center gap-2
+            "
+          >
+            <ColorEmoji emoji="➡️" size={18} />
+            {loading ? "Entrando…" : "Entrar"}
+          </button>
+        </form>
+
+        {/* Separador */}
+        <div className="relative">
+          <div className="h-px bg-[var(--color-brand-border)]" />
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-[var(--color-brand-bluegray)]">
+            o
+          </span>
+        </div>
+
+        {/* OAuth */}
+        <button
+          onClick={onGoogle}
+          className="
+            w-full rounded-2xl border border-[var(--color-brand-border)]
+            bg-white px-4 py-3 text-[var(--color-brand-text)] hover:bg-[var(--color-brand-background)]
+            flex items-center justify-center gap-2
+          "
+        >
+          <ColorEmoji emoji="🌐" size={18} />
+          Continuar con Google
         </button>
-      </form>
-
-      <button onClick={onGoogle}
-        className="w-full rounded-md bg-[var(--color-brand-bluegray)] px-4 py-2 text-white hover:opacity-90">
-        Entrar con Google
-      </button>
-
-      <a href="/reset-password" className="block text-center text-sm text-[var(--color-brand-coral)] underline">
-        ¿Olvidaste tu contraseña?
-      </a>
-    </div>
+      </section>
+    </main>
   );
 }
-EOF
