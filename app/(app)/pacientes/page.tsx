@@ -300,13 +300,12 @@ export default function PacientesPage() {
                           <ColorEmoji emoji="🗑️" />
                           Eliminar
                         </button>
-                        {/* Lugar para “Ver / Editar” en próximas iteraciones */}
+
                         <Link
-                          href="#"
+                          href={`/pacientes/${p.id}`}
                           className="inline-flex items-center gap-2 rounded-xl px-3 py-2
                                      bg-[var(--color-brand-primary)] text-white hover:brightness-95 transition"
-                          title="Ver (próximamente)"
-                          onClick={(e) => { e.preventDefault(); alert("Edición/Detalle pronto ✨"); }}
+                          title="Ver"
                         >
                           <ColorEmoji emoji="👁️" />
                           Ver

@@ -32,6 +32,7 @@ export const emojiTheme = {
     "🔐": { mode: "duotone" },// candado duotono
     "🔑": { mode: "duotone" },// llave duotono
     "👥": { mode: "native" },
+    "👤": { mode: "native" },
   } as Record<string, EmojiPerItem>,
 };
 
