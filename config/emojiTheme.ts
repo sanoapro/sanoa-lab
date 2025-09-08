@@ -24,6 +24,11 @@ export const emojiTheme = {
     "🍃": { mode: "native" }, // hojita Sanoa (opción 2)
     "🗑️": { mode: "native" }, // bote de basura nativo
     "🌐": { mode: "native" }, // Google / globo nativo
+    "🧭": { mode: "native" }, // tablero
+    "📦": { mode: "native" }, // otros 
+    "👀": { mode: "native" }, // ver 
+    "📊": { mode: "native" }, // tablero 2 
+    "🧪": { mode: "native" }, // laboratorio
     "🔐": { mode: "duotone" },// candado duotono
     "🔑": { mode: "duotone" },// llave duotono
   } as Record<string, EmojiPerItem>,
@@ -48,12 +53,13 @@ export const emojiTokens = {
   register: "📝",
   home: "🏠",
   tablero: "🧭",
+  sanoa: "🌿",
 
   // Archivos / acciones
   subir: "📤",
   descargar: "⬇️",
   copiar: "📋",
-  ver: "👁️",
+  ver: "👀",
   actualizar: "🔄",
   editar: "✏️",
   guardar: "💾",

@@ -3,7 +3,7 @@ import "./globals.css";
 import { Poppins, Lato } from "next/font/google";
 import Providers from "./providers";
 
-/* Fuentes expuestas como variables CSS */
+/* Fuentes: expuestas como variables CSS */
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
@@ -29,9 +29,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${poppins.variable} ${lato.variable} font-body text-brand-text bg-brand-background`}
+        className={`${poppins.variable} ${lato.variable} font-body text-[var(--color-brand-text)] bg-[var(--color-brand-background)] min-h-dvh`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          {/* Contenedor del portal de toasts (presente en SSR, poblado en cliente) */}
+          <div id="toast-root" />
+        </Providers>
       </body>
     </html>
   );

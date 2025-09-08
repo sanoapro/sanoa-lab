@@ -1,164 +1,164 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import Emoji from "@/components/Emoji";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import ColorEmoji from "@/components/ColorEmoji";
 
-type Variant = "success" | "error" | "info" | "warning";
+type ToastVariant = "success" | "error" | "info" | "warning";
 
-export type ToastInput = {
+type ToastOptions = {
+  variant?: ToastVariant;
   title?: string;
   description?: string;
-  variant?: Variant;
-  duration?: number; // ms
-  actionLabel?: string;
-  onAction?: () => void;
+  emoji?: string;
+  duration?: number; // ms (default 3500)
 };
 
-type ToastItem = Required<ToastInput> & { id: string };
-
-type ToastCtx = {
-  toast: (t: ToastInput) => string;
-  dismiss: (id: string) => void;
+type ToastItem = {
+  id: string;
+  opts: Required<ToastOptions>;
 };
 
-const Ctx = createContext<ToastCtx | null>(null);
+type ToastContextValue = {
+  toast: (opts: ToastOptions) => void;
+};
+
+const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 export function useToast() {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useToast debe usarse dentro de <ToastProvider />");
+  const ctx = useContext(ToastContext);
+  if (!ctx) {
+    throw new Error("useToast debe usarse dentro de <ToastProvider />");
+  }
   return ctx;
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const timers = useRef<Map<string, number>>(new Map());
+  const timers = useRef<Record<string, any>>({});
+  const [mounted, setMounted] = useState(false);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  const dismiss = useCallback((id: string) => {
+  // Solo en cliente: habilitamos portal y resolvemos el contenedor
+  useEffect(() => {
+    setMounted(true);
+    setContainer(document.getElementById("toast-root") ?? document.body);
+    return () => {
+      // limpiar timers al desmontar
+      Object.values(timers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  const remove = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-    const tid = timers.current.get(id);
-    if (tid) {
-      window.clearTimeout(tid);
-      timers.current.delete(id);
+    if (timers.current[id]) {
+      clearTimeout(timers.current[id]);
+      delete timers.current[id];
     }
   }, []);
 
   const toast = useCallback(
-    (t: ToastInput) => {
-      const id = crypto.randomUUID();
+    (opts: ToastOptions) => {
+      const id = Math.random().toString(36).slice(2);
       const item: ToastItem = {
         id,
-        title: t.title ?? "",
-        description: t.description ?? "",
-        variant: t.variant ?? "info",
-        duration: t.duration ?? 3500,
-        actionLabel: t.actionLabel ?? "",
-        onAction: t.onAction ?? (() => {}),
+        opts: {
+          variant: opts.variant ?? "info",
+          title: opts.title ?? "",
+          description: opts.description ?? "",
+          emoji: opts.emoji ?? "ℹ️",
+          duration: opts.duration ?? 3500,
+        },
       };
       setToasts((prev) => [item, ...prev]);
-
-      const tid = window.setTimeout(() => dismiss(id), item.duration);
-      timers.current.set(id, tid);
-      return id;
+      timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
     },
-    [dismiss]
+    [remove]
   );
 
-  const value = useMemo(() => ({ toast, dismiss }), [toast, dismiss]);
+  const value = useMemo(() => ({ toast }), [toast]);
+
+  // Render del portal solo cuando hay DOM disponible
+  const portal =
+    mounted && container
+      ? createPortal(
+          <div
+            className="
+              pointer-events-none fixed inset-0 z-[9999] flex flex-col items-end gap-2
+              p-4 sm:p-6
+            "
+          >
+            {/* anclamos arriba a la derecha */}
+            <div className="ml-auto w-full max-w-sm space-y-2">
+              {toasts.map(({ id, opts }) => (
+                <div
+                  key={id}
+                  className={`
+                    pointer-events-auto rounded-2xl border p-4 shadow-[0_10px_30px_rgba(0,0,0,0.10)]
+                    bg-white/95 backdrop-blur
+                    animate-in fade-in zoom-in-95 duration-200
+                    ${
+                      {
+                        success: "border-green-200",
+                        error: "border-red-200",
+                        info: "border-[var(--color-brand-border)]",
+                        warning: "border-yellow-200",
+                      }[opts.variant]
+                    }
+                  `}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 grid place-content-center rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+                      {/* Mantén flexible: puedes forzar nativo si quieres colores originales */}
+                      <ColorEmoji
+                        emoji={opts.emoji}
+                        mode={opts.variant === "error" ? "native" : "duotone"}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      {opts.title && (
+                        <p className="font-semibold text-[var(--color-brand-text)] truncate">
+                          {opts.title}
+                        </p>
+                      )}
+                      {opts.description && (
+                        <p className="text-sm text-[var(--color-brand-bluegray)]">
+                          {opts.description}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => remove(id)}
+                      className="
+                        ml-1 inline-flex h-8 w-8 items-center justify-center rounded-xl
+                        hover:bg-[var(--color-brand-background)]
+                        text-[var(--color-brand-text)]
+                      "
+                      title="Cerrar"
+                    >
+                      <span className="sr-only">Cerrar</span>✖️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>,
+          container
+        )
+      : null;
 
   return (
-    <Ctx.Provider value={value}>
+    <ToastContext.Provider value={value}>
       {children}
-
-      {/* Viewport */}
-      <div
-        className="
-          pointer-events-none fixed z-[80]
-          inset-x-4 bottom-4 mx-auto max-w-md
-          md:inset-auto md:right-6 md:bottom-6 md:left-auto md:max-w-sm
-          space-y-3
-        "
-        aria-live="polite"
-        role="status"
-      >
-        {toasts.map((t) => (
-          <ToastCard key={t.id} t={t} onClose={() => dismiss(t.id)} />
-        ))}
-      </div>
-    </Ctx.Provider>
-  );
-}
-
-function ToastCard({ t, onClose }: { t: ToastItem; onClose: () => void }) {
-  const stylesByVariant: Record<Variant, string> = {
-    success:
-      "border-[color-mix(in_oklab,var(--color-brand-primary)_30%,#0ea5e9_0%)]",
-    error: "border-red-300",
-    info: "border-[var(--color-brand-border)]",
-    warning: "border-amber-300",
-  };
-
-  const iconByVariant: Record<Variant, React.ReactNode> = {
-    success: <Emoji name="ok" size={18} />,
-    error: <Emoji name="error" size={18} />,
-    info: <Emoji name="info" size={18} />,
-    warning: <Emoji name="alerta" size={18} />,
-  };
-
-  return (
-    <div
-      className={`
-        pointer-events-auto overflow-hidden
-        rounded-2xl border ${stylesByVariant[t.variant]}
-        bg-white/95 shadow-[0_10px_30px_rgba(0,0,0,0.10)]
-        backdrop-blur-sm
-        transition-transform duration-300 ease-out
-        animate-[toastIn_220ms_ease-out]
-      `}
-      style={{
-        // animación CSS inline (fallback si no existe keyframes globales)
-        ['--tw-enter' as any]: "translateY(8px)",
-      }}
-    >
-      <div className="p-4 flex items-start gap-3">
-        <div className="shrink-0 mt-[2px]">{iconByVariant[t.variant]}</div>
-        <div className="min-w-0 flex-1">
-          {t.title ? (
-            <div className="text-[15px] font-medium text-[var(--color-brand-text)]">
-              {t.title}
-            </div>
-          ) : null}
-          {t.description ? (
-            <div className="text-[13px] text-[var(--color-brand-bluegray)]">
-              {t.description}
-            </div>
-          ) : null}
-          {t.actionLabel ? (
-            <button
-              type="button"
-              onClick={t.onAction}
-              className="
-                mt-2 inline-flex items-center gap-1 text-[13px]
-                text-[var(--color-brand-primary)] hover:underline
-              "
-            >
-              {t.actionLabel}
-            </button>
-          ) : null}
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="
-            ml-1 rounded-xl px-2 py-1 text-[12px]
-            bg-[var(--color-brand-background)] text-[var(--color-brand-text)]
-            hover:brightness-95
-          "
-          aria-label="Cerrar notificación"
-          title="Cerrar"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
+      {portal}
+    </ToastContext.Provider>
   );
 }
