@@ -1,4 +1,3 @@
-cat > 'app/(auth)/reset-password/page.tsx' <<'EOF'
 "use client";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
@@ -32,4 +31,3 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-EOF

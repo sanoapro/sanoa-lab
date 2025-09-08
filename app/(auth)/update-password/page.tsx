@@ -1,4 +1,3 @@
-cat > 'app/(auth)/update-password/page.tsx' <<'EOF'
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -73,4 +72,3 @@ export default function UpdatePasswordPage() {
     </div>
   );
 }
-EOF
