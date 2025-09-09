@@ -145,7 +145,9 @@ export default function UploadDemoPage() {
           Subir & Gestionar archivos
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
-          Bucket privado <code className="rounded bg-[var(--color-brand-background)] px-1">uploads</code> (RLS por dueño).
+          Bucket privado{" "}
+          <code className="rounded bg-[var(--color-brand-background)] px-1">uploads</code> (RLS por
+          dueño).
         </p>
       </header>
 
@@ -165,10 +167,7 @@ export default function UploadDemoPage() {
               className="block w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
           </label>
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="hidden"
-          />
+          <button onClick={() => inputRef.current?.click()} className="hidden" />
           <form onSubmit={onUpload}>
             <button
               disabled={uploading}

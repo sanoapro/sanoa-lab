@@ -1,12 +1,7 @@
 "use client";
 
 import ColorEmoji from "./ColorEmoji";
-import {
-  emojiTheme,
-  getEmojiChar,
-  getEmojiSettings,
-  EmojiTokenName,
-} from "@/config/emojiTheme";
+import { emojiTheme, getEmojiChar, getEmojiSettings, EmojiTokenName } from "@/config/emojiTheme";
 
 type Props =
   | { name: EmojiTokenName; size?: number; className?: string; title?: string }

@@ -20,7 +20,7 @@ type FileRow = {
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 export default function MisArchivosPage() {
@@ -36,12 +36,10 @@ export default function MisArchivosPage() {
     setMsg(null);
 
     // Importante: listará sólo lo que las RLS permitan (dueño).
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .list("", {
-        limit: 1000,
-        sortBy: { column: "updated_at", order: "desc" },
-      });
+    const { data, error } = await supabase.storage.from(bucket).list("", {
+      limit: 1000,
+      sortBy: { column: "updated_at", order: "desc" },
+    });
 
     setLoading(false);
     if (error) {
@@ -111,9 +109,7 @@ export default function MisArchivosPage() {
     setMsg(null);
     try {
       // URL firmada 10 minutos (600 s)
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(name, 600);
+      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(name, 600);
       if (error) throw error;
       await navigator.clipboard.writeText(data.signedUrl);
       setMsg("🔗 Enlace copiado (válido por 10 minutos).");
@@ -192,20 +188,24 @@ export default function MisArchivosPage() {
 
       {/* Mensajes */}
       {msg && (
-        <div className="
+        <div
+          className="
           rounded-2xl bg-white/95 border border-[var(--color-brand-border)]
           shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-5 py-4 text-[var(--color-brand-text)]
-        ">
+        "
+        >
           {msg}
         </div>
       )}
 
       {/* Estado cargando */}
       {loading && (
-        <div className="
+        <div
+          className="
           rounded-3xl bg-white/90 border border-[var(--color-brand-border)]
           shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 py-6
-        ">
+        "
+        >
           <p className="text-[var(--color-brand-text)] flex items-center gap-2">
             <ColorEmoji name="info" size={18} /> Cargando…
           </p>
@@ -253,9 +253,7 @@ export default function MisArchivosPage() {
       {files && !isEmpty && !loading && (
         <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {files.map((f) => {
-            const size =
-              f.metadata?.size ??
-              (f.metadata?.contentLength as number | undefined);
+            const size = f.metadata?.size ?? (f.metadata?.contentLength as number | undefined);
             const shortName = f.name.split("/").pop() || f.name;
 
             return (
@@ -276,7 +274,8 @@ export default function MisArchivosPage() {
                       {shortName}
                     </h3>
                     <p className="text-sm text-[var(--color-brand-bluegray)] mt-1">
-                      {fmtBytes(size)} · {f.updated_at ? new Date(f.updated_at).toLocaleString() : "—"}
+                      {fmtBytes(size)} ·{" "}
+                      {f.updated_at ? new Date(f.updated_at).toLocaleString() : "—"}
                     </p>
                   </div>
                 </div>

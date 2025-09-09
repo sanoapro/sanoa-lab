@@ -8,7 +8,7 @@ import { useToast } from "@/components/Toast";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 export default function PerfilPage() {
@@ -39,8 +39,7 @@ export default function PerfilPage() {
       const path = (u.user_metadata as any)?.avatar_path ?? null;
       setAvatarPath(path);
       if (path) {
-        const { data: signed } = await supabase
-          .storage
+        const { data: signed } = await supabase.storage
           .from("uploads")
           .createSignedUrl(path, 60 * 60);
         setAvatarUrl(signed?.signedUrl ?? null);
@@ -54,10 +53,7 @@ export default function PerfilPage() {
       setAvatarUrl(null);
       return;
     }
-    const { data } = await supabase
-      .storage
-      .from("uploads")
-      .createSignedUrl(path, 60 * 60);
+    const { data } = await supabase.storage.from("uploads").createSignedUrl(path, 60 * 60);
     setAvatarUrl(data?.signedUrl ?? null);
   }
 
@@ -85,7 +81,11 @@ export default function PerfilPage() {
     if (!f || !user) return;
 
     if (!f.type.startsWith("image/")) {
-      toast({ variant: "error", title: "Archivo no válido", description: "Sube una imagen (PNG/JPG/WebP…)" });
+      toast({
+        variant: "error",
+        title: "Archivo no válido",
+        description: "Sube una imagen (PNG/JPG/WebP…)",
+      });
       e.target.value = "";
       return;
     }
@@ -190,19 +190,27 @@ export default function PerfilPage() {
               <button
                 type="button"
                 onClick={triggerPick}
-                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-[var(--color-brand-primary)] text-white hover:brightness-95">
+                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-[var(--color-brand-primary)] text-white hover:brightness-95"
+              >
                 <ColorEmoji token="imagen" />
                 Subir avatar
               </button>
               <button
                 type="button"
                 onClick={removeAvatar}
-                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95">
+                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95"
+              >
                 <ColorEmoji token="limpiar" />
                 Quitar
               </button>
             </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPick} />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onPick}
+            />
           </div>
 
           {/* Columna formulario */}
@@ -244,7 +252,8 @@ export default function PerfilPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60">
+                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60"
+              >
                 <ColorEmoji token="guardar" />
                 Guardar cambios
               </button>
@@ -252,7 +261,8 @@ export default function PerfilPage() {
               <button
                 type="button"
                 onClick={signOut}
-                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white border border-[var(--color-brand-border)] hover:brightness-95">
+                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white border border-[var(--color-brand-border)] hover:brightness-95"
+              >
                 <ColorEmoji token="salir" />
                 Cerrar sesión
               </button>

@@ -28,7 +28,9 @@ export default function InstallPrompt() {
   }
 
   function onLater() {
-    try { localStorage.setItem("pwaInstallDismissed", "1"); } catch {}
+    try {
+      localStorage.setItem("pwaInstallDismissed", "1");
+    } catch {}
     setVisible(false);
   }
 
@@ -43,7 +45,9 @@ export default function InstallPrompt() {
           </div>
           <div className="flex-1">
             <p className="text-[var(--color-brand-text)] font-medium">Instala Sanoa</p>
-            <p className="text-sm text-[var(--color-brand-bluegray)]">Acceso más rápido, pantalla completa y uso offline básico.</p>
+            <p className="text-sm text-[var(--color-brand-bluegray)]">
+              Acceso más rápido, pantalla completa y uso offline básico.
+            </p>
             <div className="mt-3 flex items-center gap-2">
               <button
                 onClick={onInstall}

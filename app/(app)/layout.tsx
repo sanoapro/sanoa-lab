@@ -1,4 +1,4 @@
-import RegisterSW from '@/components/RegisterSW';
+import RegisterSW from "@/components/RegisterSW";
 // app/(app)/layout.tsx
 import type { Metadata } from "next";
 import AppShell from "@/components/AppShell";

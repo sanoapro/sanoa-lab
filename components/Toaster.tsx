@@ -6,8 +6,9 @@ type Toast = { id: number; message: string; kind: ToastKind };
 
 let _id = 0;
 export function showToast(message: string, kind: ToastKind = "info") {
-  try { window.dispatchEvent(new CustomEvent("sanoa:toast", { detail: { message, kind } })); }
-  catch {}
+  try {
+    window.dispatchEvent(new CustomEvent("sanoa:toast", { detail: { message, kind } }));
+  } catch {}
 }
 
 export default function Toaster() {
@@ -32,13 +33,17 @@ export default function Toaster() {
       {toasts.map((t) => {
         const base = "pointer-events-auto rounded-xl border px-4 py-3 shadow bg-white";
         const border =
-          t.kind === "success" ? "border-emerald-300" :
-          t.kind === "error" ? "border-red-300" :
-          "border-[var(--color-brand-border)]";
+          t.kind === "success"
+            ? "border-emerald-300"
+            : t.kind === "error"
+              ? "border-red-300"
+              : "border-[var(--color-brand-border)]";
         const dot =
-          t.kind === "success" ? "bg-emerald-500" :
-          t.kind === "error" ? "bg-red-500" :
-          "bg-[var(--color-brand-coral)]";
+          t.kind === "success"
+            ? "bg-emerald-500"
+            : t.kind === "error"
+              ? "bg-red-500"
+              : "bg-[var(--color-brand-coral)]";
         return (
           <div key={t.id} className={`${base} ${border}`}>
             <div className="flex items-start gap-3">

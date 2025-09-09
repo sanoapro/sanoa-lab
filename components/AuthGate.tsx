@@ -47,7 +47,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-dvh grid place-items-center text-[var(--color-brand-text)]">
         <div className="flex items-center gap-3 text-lg">
-          <ColorEmoji emoji="⏳" />
+          <ColorEmoji token="reloj" />
           Cargando…
         </div>
       </div>

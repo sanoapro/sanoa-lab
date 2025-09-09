@@ -4,9 +4,9 @@ import React, { createContext, useContext } from "react";
 import type { EmojiPerItem, EmojiMode } from "@/config/emojiTheme";
 
 export type EmojiTheme = {
-  mode?: EmojiMode;              // modo global por defecto
-  color?: string;                // color global por defecto
-  accentColor?: string;          // acento global por defecto
+  mode?: EmojiMode; // modo global por defecto
+  color?: string; // color global por defecto
+  accentColor?: string; // acento global por defecto
   perEmoji?: Record<string, EmojiPerItem>; // overrides por emoji
 };
 

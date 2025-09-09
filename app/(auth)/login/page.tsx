@@ -29,7 +29,10 @@ export default function LoginPage() {
     const password = String(form.get("password") || "");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { setErr(error.message); return; }
+    if (error) {
+      setErr(error.message);
+      return;
+    }
     router.replace(redirectTo);
   }
 
@@ -37,7 +40,9 @@ export default function LoginPage() {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: origin + (redirectTo ? `?redirect_to=${encodeURIComponent(redirectTo)}` : "") },
+      options: {
+        redirectTo: origin + (redirectTo ? `?redirect_to=${encodeURIComponent(redirectTo)}` : ""),
+      },
     });
   }
 
@@ -51,50 +56,64 @@ export default function LoginPage() {
         <header className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji emoji="🔐" size={20} />
+              <ColorEmoji token="candado" size={20} />
             </span>
             Iniciar sesión
           </h1>
           <p className="text-[var(--color-brand-bluegray)] flex items-center gap-2">
-            <ColorEmoji emoji="✨" size={16} />
+            <ColorEmoji token="magia" size={16} />
             Bienvenido/a a Sanoa
           </p>
         </header>
 
         {/* Errores */}
-        {err && <p className="text-sm text-red-600" role="alert">{err}</p>}
+        {err && (
+          <p className="text-sm text-red-600" role="alert">
+            {err}
+          </p>
+        )}
 
         {/* Formulario */}
         <form onSubmit={onLogin} className="space-y-4">
           <label className="block space-y-1">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
-              <ColorEmoji emoji="📧" size={16} /> Correo
+              <ColorEmoji token="email" size={16} /> Correo
             </span>
             <input
-              type="email" name="email" placeholder="tucorreo@ejemplo.com" autoComplete="email" required
+              type="email"
+              name="email"
+              placeholder="tucorreo@ejemplo.com"
+              autoComplete="email"
+              required
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
             />
           </label>
 
           <label className="block space-y-1">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
-              <ColorEmoji emoji="🔑" size={16} /> Contraseña
+              <ColorEmoji token="llave" size={16} /> Contraseña
             </span>
             <input
-              type="password" name="password" placeholder="••••••••" autoComplete="current-password" required
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
             />
           </label>
 
           <div className="flex items-center justify-between">
-            <a href="/reset-password" className="text-sm text-[var(--color-brand-coral)] underline">¿Olvidaste tu contraseña?</a>
+            <a href="/reset-password" className="text-sm text-[var(--color-brand-coral)] underline">
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
 
           <button
             disabled={loading}
             className="w-full rounded-2xl bg-[var(--color-brand-primary)] px-4 py-3 text-white font-medium hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            <ColorEmoji emoji="➡️" size={18} />
+            <ColorEmoji token="siguiente" size={18} />
             {loading ? "Entrando…" : "Entrar"}
           </button>
         </form>
@@ -102,7 +121,9 @@ export default function LoginPage() {
         {/* Separador */}
         <div className="relative">
           <div className="h-px bg-[var(--color-brand-border)]" />
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-[var(--color-brand-bluegray)]">o</span>
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-[var(--color-brand-bluegray)]">
+            o
+          </span>
         </div>
 
         {/* OAuth */}
@@ -110,7 +131,7 @@ export default function LoginPage() {
           onClick={onGoogle}
           className="w-full rounded-2xl border border-[var(--color-brand-border)] bg-white px-4 py-3 text-[var(--color-brand-text)] hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2"
         >
-          <ColorEmoji emoji="🌐" size={18} />
+          <ColorEmoji token="web" size={18} />
           Continuar con Google
         </button>
       </section>

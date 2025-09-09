@@ -9,8 +9,9 @@ export default function TerminosPage() {
           <ColorEmoji token="info" size={22} /> Términos de uso
         </h1>
         <p className="text-[var(--color-brand-text)]/80">
-          Al usar Sanoa Lab aceptas hacerlo conforme a la ley aplicable y a estos términos.
-          No subas contenidos prohibidos ni compartas credenciales. El servicio puede cambiar sin previo aviso.
+          Al usar Sanoa Lab aceptas hacerlo conforme a la ley aplicable y a estos términos. No subas
+          contenidos prohibidos ni compartas credenciales. El servicio puede cambiar sin previo
+          aviso.
         </p>
       </section>
     </main>

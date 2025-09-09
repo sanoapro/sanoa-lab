@@ -43,9 +43,7 @@ export default function RegisterPage() {
     <main className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-md border-brand-border bg-white/70">
         <CardHeader>
-          <CardTitle className="font-heading text-brand-primary">
-            Crear cuenta
-          </CardTitle>
+          <CardTitle className="font-heading text-brand-primary">Crear cuenta</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
