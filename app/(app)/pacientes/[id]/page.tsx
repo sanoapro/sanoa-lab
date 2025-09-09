@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
-import { getPatient, type Patient } from "@/lib/patients";
+import { getPatient, updatePatient, type Patient } from "@/lib/patients";
 import { listNotes, createNote, deleteNote, type PatientNote } from "@/lib/patient-notes";
 import { showToast } from "@/components/Toaster";
+import Modal from "@/components/Modal";
 
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,11 +19,21 @@ export default function PacienteDetailPage() {
   const [savingNote, setSavingNote] = useState(false);
   const [loadingNotes, setLoadingNotes] = useState(true);
 
+  // Editar
+  const [openEdit, setOpenEdit] = useState(false);
+  const [nombre, setNombre] = useState("");
+  const [edad, setEdad] = useState<number | "">("");
+  const [genero, setGenero] = useState<"F" | "M" | "O">("O");
+  const [savingEdit, setSavingEdit] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
         const p = await getPatient(id);
         setPatient(p);
+        setNombre(p.nombre);
+        setEdad(p.edad);
+        setGenero(p.genero);
       } catch (e: any) {
         console.error(e);
         showToast(e?.message || "No se pudo cargar el paciente.", "error");
@@ -77,6 +88,35 @@ export default function PacienteDetailPage() {
     }
   }
 
+  function openEditModal() {
+    if (!patient) return;
+    setNombre(patient.nombre);
+    setEdad(patient.edad);
+    setGenero(patient.genero);
+    setOpenEdit(true);
+  }
+
+  async function onSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    const n = (nombre || "").trim();
+    const eNum = typeof(edad) === "string" ? Number(edad || 0) : edad;
+    if (!n) { showToast("El nombre es obligatorio.", "info"); return; }
+    if (!Number.isFinite(eNum) || eNum < 0) { showToast("Edad inválida.", "error"); return; }
+
+    try {
+      setSavingEdit(true);
+      const updated = await updatePatient(id, { nombre: n, edad: eNum, genero });
+      setPatient(updated);
+      setOpenEdit(false);
+      showToast("Datos actualizados.", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.message || "No se pudo actualizar.", "error");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   if (loading) {
     return <main className="p-6 md:p-10"><p>Cargando…</p></main>;
   }
@@ -100,9 +140,17 @@ export default function PacienteDetailPage() {
         <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
           <ColorEmoji token="usuario" size={24} /> {patient.nombre}
         </h1>
-        <Link href="/pacientes" className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
-          <ColorEmoji token="atras" size={16} /> Volver
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openEditModal}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            <ColorEmoji token="puzzle" size={16} /> Editar
+          </button>
+          <Link href="/pacientes" className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
+            <ColorEmoji token="atras" size={16} /> Volver
+          </Link>
+        </div>
       </div>
 
       {/* Datos básicos */}
@@ -186,6 +234,80 @@ export default function PacienteDetailPage() {
           )}
         </div>
       </section>
+
+      {/* Modal Editar paciente */}
+      <Modal
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        title="Editar paciente"
+        widthClass="max-w-xl"
+        footer={
+          <>
+            <button
+              onClick={() => setOpenEdit(false)}
+              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {}}
+              className="hidden"
+              aria-hidden
+            />
+          </>
+        }
+      >
+        <form onSubmit={onSaveEdit} className="space-y-3">
+          <label className="block">
+            <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
+            <input
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              placeholder="Nombre completo"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-sm text-[var(--color-brand-text)]/80">Edad</span>
+              <input
+                value={edad}
+                onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
+                type="number" min={0}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
+              <select
+                value={genero}
+                onChange={(e) => setGenero(e.target.value as any)}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              >
+                <option value="F">Femenino</option>
+                <option value="M">Masculino</option>
+                <option value="O">Otro</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setOpenEdit(false)}
+              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+            >
+              Cancelar
+            </button>
+            <button
+              disabled={savingEdit}
+              className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+            >
+              <ColorEmoji token="guardar" size={16} /> {savingEdit ? "Guardando…" : "Guardar cambios"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </main>
   );
 }
