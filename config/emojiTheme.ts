@@ -12,7 +12,7 @@ export const emojiTheme: {
 } = {
   global: {
     mode: "duotone",
-    color: "#D97A66",       // terracota (brand)
+    color: "#D97A66", // terracota (brand)
     accentColor: "#3E4C59", // bluegray (texto/contraste)
   },
   // Overrides puntuales (incluye variantes sin/ con VS-16)
@@ -67,6 +67,14 @@ export const emojiTokens = {
   ios: "🍎",
   android: "🤖",
   escritorio: "🖥️",
+  home: "🏠",
+  dashboard: "📊",
+  actualizar: "🔄",
+  nube: "☁️",
+  archivo: "📄",
+  descargar: "⬇️",
+  copiar: "🔗",
+  borrar: "🗑️",
 };
 
 export type EmojiTokenName = keyof typeof emojiTokens;
@@ -93,3 +101,5 @@ export function getEmojiSettings(emojiChar: string): Required<EmojiSettings> {
     accentColor: ov.accentColor ?? base.accentColor,
   };
 }
+
+export type EmojiPerItem = EmojiSettings;

@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
 
-type Paciente = { id: string; nombre: string; edad: number; genero: "F" | "M" | "O"; creadoEn: string };
+type Paciente = {
+  id: string;
+  nombre: string;
+  edad: number;
+  genero: "F" | "M" | "O";
+  creadoEn: string;
+};
 const STORAGE_KEY = "sanoa.pacientes";
 
 function loadPacientes(): Paciente[] {
@@ -19,16 +25,21 @@ function loadPacientes(): Paciente[] {
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [list, setList] = useState<Paciente[]>([]);
-  const paciente = useMemo(() => list.find(p => p.id === id), [list, id]);
+  const paciente = useMemo(() => list.find((p) => p.id === id), [list, id]);
 
-  useEffect(() => { setList(loadPacientes()); }, []);
+  useEffect(() => {
+    setList(loadPacientes());
+  }, []);
 
   if (!paciente) {
     return (
       <main className="p-6 md:p-10">
         <div className="rounded-2xl border border-[var(--color-brand-border)] bg-white p-6">
           <p className="text-red-600">Paciente no encontrado.</p>
-          <Link href="/pacientes" className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
+          <Link
+            href="/pacientes"
+            className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+          >
             <ColorEmoji token="atras" size={16} /> Volver
           </Link>
         </div>
@@ -42,7 +53,10 @@ export default function PacienteDetailPage() {
         <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
           <ColorEmoji token="usuario" size={24} /> {paciente.nombre}
         </h1>
-        <Link href="/pacientes" className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
+        <Link
+          href="/pacientes"
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+        >
           <ColorEmoji token="atras" size={16} /> Volver
         </Link>
       </div>
