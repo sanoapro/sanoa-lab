@@ -1,3 +1,5 @@
+import ThemeToggle from '@/components/ThemeToggle';
+import SiteFooter from '@/components/SiteFooter';
 import Toaster from '@/components/Toaster';
 import type { Metadata } from "next";
 import "./globals.css";
