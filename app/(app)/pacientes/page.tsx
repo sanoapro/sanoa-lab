@@ -1,187 +1,273 @@
 "use client";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
-import { showToast } from "@/components/Toaster";
-import { createPatient, deletePatient, listPatients, type Genero, type Patient } from "@/lib/patients";
-import { usePatientsRealtime } from "@/hooks/usePatientsRealtime";
+import { searchPatients, type PatientSearchFilters, type PatientSearchResult } from "@/lib/patients-search";
 
 export default function PacientesPage() {
-  const [pacientes, setPacientes] = useState<Patient[]>([]);
-  const [q, setQ] = useState("");
-  const [fGenero, setFGenero] = useState<"" | Genero>("");
-  const [creating, setCreating] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<PatientSearchFilters>({
+    q: "",
+    genero: "ALL",
+    edadMin: null,
+    edadMax: null,
+    createdFrom: null,
+    createdTo: null,
+    orderBy: "created_at",
+    orderDir: "desc",
+    page: 1,
+    pageSize: 10,
+  });
+  const [result, setResult] = useState<PatientSearchResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const totalPages = useMemo(() => {
+    if (!result) return 1;
+    return Math.max(1, Math.ceil(result.count / result.pageSize));
+  }, [result]);
+
+  async function doSearch(nextPage?: number) {
     setLoading(true);
+    setErr(null);
     try {
-      const data = await listPatients({ q, genero: fGenero });
-      setPacientes(data);
+      const rs = await searchPatients({ ...filters, page: nextPage ?? filters.page });
+      setResult(rs);
+      setFilters((f) => ({ ...f, page: rs.page })); // sincroniza
     } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo cargar pacientes.", "error");
+      setErr(e?.message || "No se pudo buscar.");
     } finally {
       setLoading(false);
     }
-  }, [q, fGenero]);
-
-  // Carga inicial
-  useEffect(() => { refresh(); }, [refresh]);
-
-  // Re-filtrado con debounce al escribir/buscar
-  useEffect(() => {
-    const t = setTimeout(() => { refresh(); }, 350);
-    return () => clearTimeout(t);
-  }, [q, fGenero, refresh]);
-
-  // 🔴 Realtime: refresca cuando hay cambios en DB (de este usuario)
-  usePatientsRealtime(refresh, 250);
-
-  const filtered = useMemo(() => pacientes, [pacientes]);
-
-  async function onCreate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const d = new FormData(e.currentTarget);
-    const nombre = String(d.get("nombre") || "").trim();
-    const edad = Number(d.get("edad") || 0);
-    const genero = (String(d.get("genero") || "O") as Genero);
-    if (!nombre) { showToast("Escribe un nombre.", "info"); return; }
-    if (!Number.isFinite(edad) || edad < 0) { showToast("Edad inválida.", "error"); return; }
-
-    try {
-      const nuevo = await createPatient({ nombre, edad, genero });
-      setPacientes(prev => [nuevo, ...prev].sort((a, b) => a.nombre.localeCompare(b.nombre)));
-      (e.currentTarget as HTMLFormElement).reset();
-      setCreating(false);
-      showToast("Paciente creado.", "success");
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo crear.", "error");
-    }
   }
 
-  async function onDelete(id: string) {
-    if (!confirm("¿Eliminar paciente?")) return;
-    try {
-      await deletePatient(id);
-      setPacientes(prev => prev.filter(p => p.id !== id));
-      showToast("Paciente eliminado.", "success");
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo eliminar.", "error");
-    }
+  useEffect(() => {
+    // primera carga
+    doSearch(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    doSearch(1);
+  }
+
+  function onClear() {
+    setFilters({
+      q: "",
+      genero: "ALL",
+      edadMin: null,
+      edadMax: null,
+      createdFrom: null,
+      createdTo: null,
+      orderBy: "created_at",
+      orderDir: "desc",
+      page: 1,
+      pageSize: 10,
+    });
+    setTimeout(() => doSearch(1), 0);
   }
 
   return (
-    <main className="p-6 md:p-10 space-y-8">
-      {/* Encabezado */}
+    <main className="p-6 md:p-10 space-y-6">
       <header className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-          <ColorEmoji token="pacientes" size={28} />
+        <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
+          <ColorEmoji token="pacientes" size={24} />
           Pacientes
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
-          Datos en Supabase con RLS por usuario (+ Realtime).
+          Filtra por nombre, género, edad y fechas. Resultados visibles respetan tus permisos (propios o compartidos).
         </p>
       </header>
 
-      {/* Barra de acciones */}
+      {/* Filtros */}
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <label className="block">
-            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
-              <ColorEmoji token="busqueda" size={16} /> Buscar
-            </span>
+        <form onSubmit={onSubmit} className="p-6 grid grid-cols-1 md:grid-cols-12 gap-3">
+          <label className="md:col-span-4">
+            <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
             <input
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              placeholder="Nombre del paciente…"
+              value={filters.q || ""}
+              onChange={(e)=>setFilters(f=>({ ...f, q: e.target.value }))}
+              placeholder="Buscar por nombre…"
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
           </label>
 
-          <label className="block">
+          <label className="md:col-span-2">
             <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
             <select
-              value={fGenero}
-              onChange={e => setFGenero(e.target.value as any)}
+              value={filters.genero || "ALL"}
+              onChange={(e)=>setFilters(f=>({ ...f, genero: e.target.value as any }))}
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             >
-              <option value="">Todos</option>
+              <option value="ALL">Todos</option>
               <option value="F">Femenino</option>
               <option value="M">Masculino</option>
               <option value="O">Otro</option>
             </select>
           </label>
 
-          <div className="flex items-end">
-            <button
-              onClick={() => setCreating(v => !v)}
-              className="w-full rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 flex items-center justify-center gap-2"
-            >
-              <ColorEmoji token="guardar" size={18} /> {creating ? "Cerrar" : "Nuevo paciente"}
-            </button>
+          <div className="md:col-span-2 grid grid-cols-2 gap-3">
+            <label>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Edad mín.</span>
+              <input
+                type="number" min={0}
+                value={filters.edadMin ?? ""}
+                onChange={(e)=>setFilters(f=>({ ...f, edadMin: e.target.value === "" ? null : Number(e.target.value) }))}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
+            <label>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Edad máx.</span>
+              <input
+                type="number" min={0}
+                value={filters.edadMax ?? ""}
+                onChange={(e)=>setFilters(f=>({ ...f, edadMax: e.target.value === "" ? null : Number(e.target.value) }))}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
           </div>
-        </div>
 
-        {creating && (
-          <>
-            <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-            <form onSubmit={onCreate} className="p-6 grid grid-cols-1 sm:grid-cols-5 gap-4">
-              <input name="nombre" placeholder="Nombre completo" className="sm:col-span-2 rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2" />
-              <input name="edad" type="number" min="0" placeholder="Edad" className="rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2" />
-              <select name="genero" className="rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2">
-                <option value="F">Femenino</option>
-                <option value="M">Masculino</option>
-                <option value="O">Otro</option>
+          <div className="md:col-span-3 grid grid-cols-2 gap-3">
+            <label>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Desde</span>
+              <input
+                type="date"
+                value={filters.createdFrom ?? ""}
+                onChange={(e)=>setFilters(f=>({ ...f, createdFrom: e.target.value || null }))}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
+            <label>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Hasta</span>
+              <input
+                type="date"
+                value={filters.createdTo ?? ""}
+                onChange={(e)=>setFilters(f=>({ ...f, createdTo: e.target.value || null }))}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
+          </div>
+
+          <div className="md:col-span-3 grid grid-cols-2 gap-3">
+            <label>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Ordenar por</span>
+              <select
+                value={filters.orderBy}
+                onChange={(e)=>setFilters(f=>({ ...f, orderBy: e.target.value as any }))}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              >
+                <option value="created_at">Fecha</option>
+                <option value="nombre">Nombre</option>
+                <option value="edad">Edad</option>
               </select>
-              <button className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 flex items-center justify-center gap-2">
-                <ColorEmoji token="guardar" size={18} /> Guardar
-              </button>
-            </form>
-          </>
-        )}
+            </label>
+            <label>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Dirección</span>
+              <select
+                value={filters.orderDir}
+                onChange={(e)=>setFilters(f=>({ ...f, orderDir: e.target.value as any }))}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              >
+                <option value="desc">Desc</option>
+                <option value="asc">Asc</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="md:col-span-12 flex flex-wrap gap-3 pt-1">
+            <button
+              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+              disabled={loading}
+              type="submit"
+            >
+              <ColorEmoji token="buscar" size={16} /> {loading ? "Buscando…" : "Buscar"}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClear}
+              className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+            >
+              <ColorEmoji token="limpiar" size={16} /> Limpiar
+            </button>
+
+            <div className="text-sm text-[var(--color-brand-bluegray)] self-center ml-auto">
+              Página {result?.page ?? 1} de {totalPages} · {result?.count ?? 0} resultados
+            </div>
+          </div>
+        </form>
       </section>
 
-      {/* Lista */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 text-[var(--color-brand-bluegray)]">
-            Cargando…
+      {/* Resultados */}
+      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-6">
+          {err && <p className="text-red-600 text-sm mb-3">{err}</p>}
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-[var(--color-brand-text)] border-b border-[var(--color-brand-border)]">
+                  <th className="py-2 pr-3">Nombre</th>
+                  <th className="py-2 px-3">Edad</th>
+                  <th className="py-2 px-3">Género</th>
+                  <th className="py-2 px-3">Creado</th>
+                  <th className="py-2 pl-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {!result || loading ? (
+                  <tr><td colSpan={5} className="py-6 text-[var(--color-brand-bluegray)]">Cargando…</td></tr>
+                ) : (result.rows.length === 0 ? (
+                  <tr><td colSpan={5} className="py-6 text-[var(--color-brand-bluegray)]">Sin resultados.</td></tr>
+                ) : (
+                  result.rows.map((p) => (
+                    <tr key={p.id} className="border-b border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]/50">
+                      <td className="py-2 pr-3 text-[var(--color-brand-text)]">{p.nombre}</td>
+                      <td className="py-2 px-3">{p.edad}</td>
+                      <td className="py-2 px-3">{p.genero}</td>
+                      <td className="py-2 px-3">{new Date(p.created_at).toLocaleString()}</td>
+                      <td className="py-2 pl-3">
+                        <Link
+                          href={`/pacientes/${p.id}`}
+                          className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)]"
+                        >
+                          Ver <ColorEmoji token="siguiente" size={14} />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 text-[var(--color-brand-bluegray)]">
-            Sin resultados.
-          </div>
-        ) : filtered.map((p) => (
-          <article key={p.id}
-            className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                       shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
-                       transition overflow-hidden">
-            <div className="p-6 flex items-start gap-4">
-              <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                <ColorEmoji token="usuario" size={28} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-[var(--color-brand-text)] truncate">{p.nombre}</h3>
-                <p className="text-sm text-[var(--color-brand-bluegray)]">Edad: {p.edad} · Género: {p.genero}</p>
-                <p className="text-xs text-[var(--color-brand-bluegray)]/80">Creado: {new Date(p.created_at).toLocaleDateString()}</p>
-              </div>
+
+          {/* Paginación */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-[var(--color-brand-bluegray)]">
+              Mostrando {(result && result.rows.length > 0) ? ((result.page-1)* (result.pageSize) + 1) : 0}
+              {" – "}
+              {(result && result.rows.length > 0) ? ((result.page-1)* (result.pageSize) + result.rows.length) : 0}
+              {" de "}
+              {result?.count ?? 0}
             </div>
-
-            <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-
-            <div className="p-4 grid grid-cols-2 gap-3">
-              <Link href={`/pacientes/${p.id}`} className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm">
-                <ColorEmoji token="ver" size={16} /> Ver ficha
-              </Link>
-              <button onClick={() => onDelete(p.id)} className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-red-50 flex items-center justify-center gap-2 text-sm text-red-600">
-                <ColorEmoji token="borrar" size={16} /> Eliminar
+            <div className="flex gap-2">
+              <button
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+                disabled={loading || (result?.page ?? 1) <= 1}
+                onClick={()=> doSearch((result?.page ?? 1) - 1)}
+              >
+                <ColorEmoji token="anterior" size={14} /> Anterior
+              </button>
+              <button
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+                disabled={loading || (result?.page ?? 1) >= totalPages}
+                onClick={()=> doSearch((result?.page ?? 1) + 1)}
+              >
+                Siguiente <ColorEmoji token="siguiente" size={14} />
               </button>
             </div>
-          </article>
-        ))}
+          </div>
+        </div>
       </section>
     </main>
   );

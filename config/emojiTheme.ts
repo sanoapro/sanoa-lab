@@ -77,6 +77,10 @@ export const emojiTokens = {
   borrar: "🗑️",
   exportar: "📄",
   actividad: "📜",
+  buscar: "🔍",
+  limpiar: "🧹",
+  anterior: "⬅️",
+  pacientes: "👥",
 };
 
 export type EmojiTokenName = keyof typeof emojiTokens;
