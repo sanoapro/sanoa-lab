@@ -115,6 +115,7 @@ export default function LoginPage() {
           >
             <ColorEmoji token="siguiente" size={18} />
             {loading ? "Entrando…" : "Entrar"}
+    <div className="text-center mt-3"><a href="/reset-password" className="text-[var(--color-brand-primary)] hover:underline">¿Olvidaste tu contraseña?</a></div>
           </button>
         </form>
 
