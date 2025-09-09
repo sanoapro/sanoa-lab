@@ -8,6 +8,7 @@ import { getPatient, updatePatient, type Patient } from "@/lib/patients";
 import { listNotes, createNote, deleteNote, type PatientNote } from "@/lib/patient-notes";
 import { listPatientFiles, uploadPatientFile, getSignedUrl, deletePatientFile, type PatientFile } from "@/lib/patient-files";
 import { listShares, addShare, revokeShare, type PatientShare } from "@/lib/patient-shares";
+import { listAudit, fmtAuditRow, type AuditEntry } from "@/lib/audit";
 import { showToast } from "@/components/Toaster";
 import Modal from "@/components/Modal";
 import { useNotesRealtime } from "@/hooks/useNotesRealtime";
@@ -53,6 +54,10 @@ export default function PacienteDetailPage() {
   const [shareEmail, setShareEmail] = useState("");
   const [shareCanEdit, setShareCanEdit] = useState(false);
   const [sharing, setSharing] = useState(false);
+
+  // Actividad
+  const [audits, setAudits] = useState<AuditEntry[]>([]);
+  const [loadingAudits, setLoadingAudits] = useState(true);
 
   // Área exportable
   const printRef = useRef<HTMLDivElement>(null);
@@ -117,7 +122,7 @@ export default function PacienteDetailPage() {
 
   useEffect(() => { refreshFiles(); }, [refreshFiles]);
 
-  // Shares: listar (owner ve todos; invitado ve el suyo)
+  // Shares: listar
   const refreshShares = useCallback(async () => {
     try {
       const data = await listShares(id);
@@ -128,6 +133,22 @@ export default function PacienteDetailPage() {
   }, [id]);
 
   useEffect(() => { refreshShares(); }, [refreshShares]);
+
+  // Auditoría: listar
+  const refreshAudits = useCallback(async () => {
+    setLoadingAudits(true);
+    try {
+      const data = await listAudit(id, 200);
+      setAudits(data);
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo cargar la actividad.", "error");
+    } finally {
+      setLoadingAudits(false);
+    }
+  }, [id]);
+
+  useEffect(() => { refreshAudits(); }, [refreshAudits]);
 
   async function onAddNote(e: React.FormEvent) {
     e.preventDefault();
@@ -520,6 +541,38 @@ export default function PacienteDetailPage() {
           </div>
         </section>
       )}
+
+      {/* Actividad (bitácora) */}
+      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
+              <ColorEmoji token="actividad" size={18} /> Actividad
+            </h2>
+            <button
+              type="button"
+              onClick={refreshAudits}
+              className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+            >
+              <ColorEmoji token="refrescar" size={16} /> Actualizar
+            </button>
+          </div>
+
+          {loadingAudits ? (
+            <p className="text-[var(--color-brand-bluegray)]">Cargando actividad…</p>
+          ) : audits.length === 0 ? (
+            <p className="text-[var(--color-brand-bluegray)]">Sin eventos aún.</p>
+          ) : (
+            <ul className="space-y-2">
+              {audits.map(a => (
+                <li key={a.id} className="rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2 text-sm text-[var(--color-brand-text)]">
+                  {fmtAuditRow(a)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
       {/* Modal Editar paciente */}
       <Modal
