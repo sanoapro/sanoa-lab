@@ -147,7 +147,7 @@ export default function MisArchivosPage() {
       <header className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-            <ColorEmoji name="carpeta" size={30} />
+            <ColorEmoji token="carpeta" size={30} />
             Mis archivos
           </h1>
           <p className="text-[var(--color-brand-bluegray)]">
@@ -164,7 +164,7 @@ export default function MisArchivosPage() {
               hover:brightness-95 active:brightness-90 transition shadow-sm
             "
           >
-            <ColorEmoji name="subir" size={18} />
+            <ColorEmoji token="subir" size={18} />
             Subir archivo
           </a>
           <button
@@ -180,7 +180,7 @@ export default function MisArchivosPage() {
             "
             title="Actualizar lista"
           >
-            <ColorEmoji name="actualizar" size={18} />
+            <ColorEmoji token="actualizar" size={18} />
             Actualizar lista
           </button>
         </div>
@@ -207,7 +207,7 @@ export default function MisArchivosPage() {
         "
         >
           <p className="text-[var(--color-brand-text)] flex items-center gap-2">
-            <ColorEmoji name="info" size={18} /> Cargando…
+            <ColorEmoji token="info" size={18} /> Cargando…
           </p>
         </div>
       )}
@@ -222,7 +222,7 @@ export default function MisArchivosPage() {
         >
           <div className="p-7 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji name="nube" size={28} />
+              <ColorEmoji token="nube" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
@@ -240,7 +240,7 @@ export default function MisArchivosPage() {
                     hover:brightness-95 active:brightness-90 transition shadow-sm
                   "
                 >
-                  <ColorEmoji name="subir" size={18} />
+                  <ColorEmoji token="subir" size={18} />
                   Subir archivo
                 </a>
               </div>
@@ -267,7 +267,7 @@ export default function MisArchivosPage() {
               >
                 <div className="p-6 flex items-start gap-4">
                   <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                    <ColorEmoji name="archivo" size={28} />
+                    <ColorEmoji token="archivo" size={28} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-[var(--color-brand-text)] font-semibold truncate">
@@ -295,7 +295,7 @@ export default function MisArchivosPage() {
                     "
                     title="Ver"
                   >
-                    <ColorEmoji name="ver" size={18} /> Ver
+                    <ColorEmoji token="ver" size={18} /> Ver
                   </button>
 
                   <button
@@ -310,7 +310,7 @@ export default function MisArchivosPage() {
                     "
                     title="Descargar"
                   >
-                    <ColorEmoji name="descargar" size={18} /> Descargar
+                    <ColorEmoji token="descargar" size={18} /> Descargar
                   </button>
 
                   <button
@@ -325,7 +325,7 @@ export default function MisArchivosPage() {
                     "
                     title="Copiar enlace"
                   >
-                    <ColorEmoji name="copiar" size={18} /> Copiar enlace
+                    <ColorEmoji token="copiar" size={18} /> Copiar enlace
                   </button>
 
                   <button
@@ -339,7 +339,7 @@ export default function MisArchivosPage() {
                     "
                     title="Eliminar"
                   >
-                    <ColorEmoji name="borrar" size={18} /> Eliminar
+                    <ColorEmoji token="borrar" size={18} /> Eliminar
                   </button>
                 </div>
               </div>

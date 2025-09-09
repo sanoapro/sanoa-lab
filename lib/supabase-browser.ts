@@ -8,3 +8,5 @@ export function getSupabaseBrowser() {
   if (!_client) _client = createClientComponentClient();
   return _client;
 }
+
+export default getSupabaseBrowser;

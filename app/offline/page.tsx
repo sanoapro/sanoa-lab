@@ -11,7 +11,10 @@ export default function OfflinePage() {
   useEffect(() => {
     (async () => {
       try {
-        if (!("caches" in window)) { setChecking(false); return; }
+        if (!("caches" in window)) {
+          setChecking(false);
+          return;
+        }
         const names = await caches.keys();
         const found: CachedPage[] = [];
         for (const name of names) {
@@ -25,7 +28,7 @@ export default function OfflinePage() {
               const isPage = !u.pathname.startsWith("/_next/") && !u.pathname.startsWith("/icons/");
               if (isOwn && isPage) {
                 const path = u.pathname + (u.search || "");
-                if (!found.some(x => x.path === path)) {
+                if (!found.some((x) => x.path === path)) {
                   found.push({ url: u.href, path });
                 }
               }
@@ -35,7 +38,8 @@ export default function OfflinePage() {
         // Prioriza rutas “core”
         const order = ["/", "/dashboard", "/login", "/instalar"];
         found.sort((a, b) => {
-          const ai = order.indexOf(a.path); const bi = order.indexOf(b.path);
+          const ai = order.indexOf(a.path);
+          const bi = order.indexOf(b.path);
           if (ai !== -1 || bi !== -1) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
           return a.path.localeCompare(b.path);
         });
@@ -59,7 +63,8 @@ export default function OfflinePage() {
           <div className="flex-1">
             <h1 className="text-2xl font-semibold text-[var(--color-brand-text)]">Sin conexión</h1>
             <p className="text-[var(--color-brand-bluegray)]">
-              No pudimos cargar desde la red. Puedes intentar de nuevo o abrir una página disponible en caché.
+              No pudimos cargar desde la red. Puedes intentar de nuevo o abrir una página disponible
+              en caché.
             </p>
           </div>
         </div>
@@ -90,10 +95,12 @@ export default function OfflinePage() {
           {checking ? (
             <p className="text-sm text-[var(--color-brand-bluegray)] mt-2">Buscando…</p>
           ) : pages.length === 0 ? (
-            <p className="text-sm text-[var(--color-brand-bluegray)] mt-2">Aún no hay páginas guardadas.</p>
+            <p className="text-sm text-[var(--color-brand-bluegray)] mt-2">
+              Aún no hay páginas guardadas.
+            </p>
           ) : (
             <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {pages.map(p => (
+              {pages.map((p) => (
                 <li key={p.url}>
                   <a
                     href={p.path}
