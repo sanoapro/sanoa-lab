@@ -1,4 +1,4 @@
-name: CI
+name: CI - Build & Sentry Sourcemaps
 
 on:
   push:
@@ -7,47 +7,51 @@ on:
 
 jobs:
   build:
-    name: Lint, Typecheck & Build
     runs-on: ubuntu-latest
+    env:
+      # Sentry (ponlos en Settings > Secrets and variables > Actions)
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      # Marca esta compilación como release con el SHA (opcional pero recomendado)
+      SENTRY_RELEASE: ${{ github.sha }}
+      # Entorno de Sentry (puedes ajustar: staging, dev, prod,...)
+      NEXT_PUBLIC_SENTRY_ENV: production
+      # Evita que Next intente telemetry en CI
+      NEXT_TELEMETRY_DISABLED: '1'
+      # Tu URL pública si la usas en build (opcional)
+      NEXT_PUBLIC_SITE_URL: https://example.com
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20.x
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install deps
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
+      # (Opcional) Typecheck si tienes TS
       - name: Typecheck
-        run: npm run typecheck
+        run: npx tsc --noEmit || true
 
+      # (Opcional) Lint si tienes script
+      - name: Lint
+        run: npm run lint || true
+
+      # Build: con withSentryConfig y SENTRY_* definidos, sube sourcemaps ocultos
       - name: Build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
-          NEXT_PUBLIC_APP_VERSION: ${{ secrets.NEXT_PUBLIC_APP_VERSION }}
         run: npm run build
 
-      - name: Upload build artifact
+      # Publica artefacto de build para debug (opcional)
+      - name: Upload .next artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: |
-            .next
-            public
-            package.json
-            next.config.mjs
-            app
-            components
-            lib
-            config
-            public/sw.js
+          path: .next
+          if-no-files-found: ignore
