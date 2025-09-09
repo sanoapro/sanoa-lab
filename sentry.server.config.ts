@@ -13,7 +13,13 @@ if (DSN) {
       // Redacta headers sensibles
       if (event.request?.headers) {
         const h = event.request.headers as Record<string, any>;
-        const block = ["cookie", "authorization", "x-supabase-auth", "sb-access-token", "sb-refresh-token"];
+        const block = [
+          "cookie",
+          "authorization",
+          "x-supabase-auth",
+          "sb-access-token",
+          "sb-refresh-token",
+        ];
         for (const k of block) {
           if (h[k] != null) h[k] = "[REDACTED]";
           if (h[k.toLowerCase?.()] != null) h[k.toLowerCase()] = "[REDACTED]";

@@ -1,4 +1,4 @@
-import '@/sentry.server.config';
+import "@/sentry.server.config";
 import ThemeToggle from "@/components/ThemeToggle";
 import SiteFooter from "@/components/SiteFooter";
 import Toaster from "@/components/Toaster";

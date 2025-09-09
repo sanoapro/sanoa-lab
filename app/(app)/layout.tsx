@@ -1,4 +1,4 @@
-import OrgSwitcherBadge from '@/components/OrgSwitcherBadge';
+import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import PendingQueueBadge from "@/components/PendingQueueBadge";
 import QueueEvents from "@/components/QueueEvents";
 import OfflineIndicator from "@/components/OfflineIndicator";

@@ -1,6 +1,12 @@
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
-export type MyOrg = { id: string; name: string; slug: string | null; is_personal: boolean; role: 'owner'|'admin'|'editor'|'viewer' };
+export type MyOrg = {
+  id: string;
+  name: string;
+  slug: string | null;
+  is_personal: boolean;
+  role: "owner" | "admin" | "editor" | "viewer";
+};
 
 const LS_KEY = "sanoa.currentOrg";
 
@@ -18,7 +24,11 @@ export async function getCurrentOrgId(): Promise<string | null> {
   if (!user.user) return null;
   const uid = user.user.id;
 
-  const { data, error } = await supabase.from("user_prefs").select("current_org_id").eq("user_id", uid).maybeSingle();
+  const { data, error } = await supabase
+    .from("user_prefs")
+    .select("current_org_id")
+    .eq("user_id", uid)
+    .maybeSingle();
   if (!error && data?.current_org_id) {
     localStorage.setItem(LS_KEY, data.current_org_id);
     return data.current_org_id;
@@ -41,7 +51,9 @@ export async function setCurrentOrgId(orgId: string): Promise<void> {
   const uid = user.user?.id;
   if (!uid) throw new Error("No hay sesión");
 
-  await supabase.from("user_prefs").upsert({ user_id: uid, current_org_id: orgId, updated_at: new Date().toISOString() });
+  await supabase
+    .from("user_prefs")
+    .upsert({ user_id: uid, current_org_id: orgId, updated_at: new Date().toISOString() });
   localStorage.setItem(LS_KEY, orgId);
   // notifica a la app
   window.dispatchEvent(new CustomEvent("sanoa:org-changed", { detail: { orgId } }));

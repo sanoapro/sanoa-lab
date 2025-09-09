@@ -55,7 +55,9 @@ export default function UpdatePasswordPage() {
         if (error) throw error;
         if (!data.session) {
           setStage("error");
-          setErrMsg("No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.");
+          setErrMsg(
+            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.",
+          );
           return;
         }
         setStage("ready");
@@ -92,7 +94,9 @@ export default function UpdatePasswordPage() {
               <ColorEmoji token="refrescar" size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">Verificando enlace…</h1>
+              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Verificando enlace…
+              </h1>
               <p className="text-sm text-[var(--color-brand-bluegray)]">Un momento por favor.</p>
             </div>
           </div>
@@ -111,15 +115,23 @@ export default function UpdatePasswordPage() {
                 <ColorEmoji token="info" size={20} />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">Enlace inválido o expirado</h1>
+                <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                  Enlace inválido o expirado
+                </h1>
                 <p className="text-sm text-[var(--color-brand-bluegray)]">{errMsg}</p>
               </div>
             </div>
             <div className="flex justify-between text-sm">
-              <Link href="/(auth)/reset-password" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline">
+              <Link
+                href="/(auth)/reset-password"
+                className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+              >
                 <ColorEmoji token="email" size={16} /> Solicitar nuevo enlace
               </Link>
-              <Link href="/login" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+              >
                 <ColorEmoji token="atras" size={16} /> Volver a login
               </Link>
             </div>
@@ -139,8 +151,12 @@ export default function UpdatePasswordPage() {
               <ColorEmoji token="candado" size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">Nueva contraseña</h1>
-              <p className="text-sm text-[var(--color-brand-bluegray)]">Escribe y confirma tu nueva contraseña.</p>
+              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Nueva contraseña
+              </h1>
+              <p className="text-sm text-[var(--color-brand-bluegray)]">
+                Escribe y confirma tu nueva contraseña.
+              </p>
             </div>
           </div>
 
@@ -150,18 +166,20 @@ export default function UpdatePasswordPage() {
               <input
                 type="password"
                 value={pwd}
-                onChange={(e)=>setPwd(e.target.value)}
+                onChange={(e) => setPwd(e.target.value)}
                 minLength={8}
                 placeholder="Mínimo 8 caracteres"
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
             <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">Confirmar contraseña</span>
+              <span className="text-sm text-[var(--color-brand-text)]/80">
+                Confirmar contraseña
+              </span>
               <input
                 type="password"
                 value={pwd2}
-                onChange={(e)=>setPwd2(e.target.value)}
+                onChange={(e) => setPwd2(e.target.value)}
                 minLength={8}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
@@ -179,10 +197,16 @@ export default function UpdatePasswordPage() {
           <div className="h-px bg-[var(--color-brand-border)]" />
 
           <div className="text-sm flex justify-between">
-            <Link href="/(auth)/reset-password" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline">
+            <Link
+              href="/(auth)/reset-password"
+              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+            >
               <ColorEmoji token="email" size={16} /> Volver a solicitar enlace
             </Link>
-            <Link href="/login" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+            >
               <ColorEmoji token="atras" size={16} /> Volver a login
             </Link>
           </div>

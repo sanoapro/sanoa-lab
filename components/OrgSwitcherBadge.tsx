@@ -27,7 +27,7 @@ export default function OrgSwitcherBadge() {
 
   if (!current || orgs.length <= 1) return null;
 
-  const cur = orgs.find(o => o.id === current);
+  const cur = orgs.find((o) => o.id === current);
   const label = cur ? (cur.is_personal ? "Personal" : cur.name) : "Organización";
 
   async function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -47,7 +47,10 @@ export default function OrgSwitcherBadge() {
   return (
     <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
       <div className="rounded-full border border-[var(--color-brand-border)] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-3 py-1.5">
-        <button onClick={() => setOpen(v => !v)} className="inline-flex items-center gap-2 text-sm">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center gap-2 text-sm"
+        >
           <ColorEmoji token="laboratorio" size={16} />
           <span className="max-w-[180px] truncate">{label}</span>
           <span aria-hidden>▾</span>
@@ -60,7 +63,7 @@ export default function OrgSwitcherBadge() {
             onChange={onChange}
             className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 text-sm"
           >
-            {orgs.map(o => (
+            {orgs.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.is_personal ? "Personal" : o.name} {o.role !== "owner" ? `· ${o.role}` : ""}
               </option>
