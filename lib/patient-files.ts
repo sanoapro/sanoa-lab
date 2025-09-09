@@ -15,17 +15,14 @@ const MAX_MB = Number(process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || 10);
 const ALLOWED = String(process.env.NEXT_PUBLIC_UPLOAD_ALLOWED || "image/*,application/pdf");
 const SIGNED_TTL = Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300);
 
-// Soporta comodines como image/*, audio/*, etc.
+// Soporta comodines tipo image/*, application/*
 function mimeAllowed(mime: string): boolean {
   if (!mime) return false;
   const parts = ALLOWED.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
-  return parts.some(p => {
-    if (p.endsWith("/*")) return mime.startsWith(p.slice(0, -1));
-    return mime.toLowerCase() === p.toLowerCase();
-  });
+  return parts.some(p => (p.endsWith("/*") ? mime.startsWith(p.slice(0, -1)) : mime.toLowerCase() === p.toLowerCase()));
 }
 
-// Slug simple de nombres
+// Slug simple
 function slugify(name: string): string {
   return name
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -64,33 +61,30 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
   if (sizeMB > MAX_MB) throw new Error(`Archivo demasiado grande. Máximo ${MAX_MB} MB.`);
   if (!mimeAllowed(file.type || "")) throw new Error(`Tipo no permitido (${file.type || "desconocido"}). Permitidos: ${ALLOWED}`);
 
-  // Key única: patients/{patientId}/{uid}/{yyyy}/{mm}/{ts}-{rand}-{slug}
+  // **CLAVE COMPATIBLE CON RLS**: <uid>/patients/<patientId>/<yyyy>/<mm>/<timestamp>-<rand>-<slug>
   const now = new Date();
   const yyyy = now.getUTCFullYear();
   const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
   const ts = now.toISOString().replace(/[:.Z]/g, "").replace("T", "-");
   const key = [
+    uid,
     "patients",
     patientId,
-    uid,
     `${yyyy}`,
     `${mm}`,
     `${ts}-${randomId(6)}-${slugify(file.name)}`
   ].join("/");
 
-  // Subida al bucket 'uploads'
+  // Subida (bucket privado 'uploads')
   const up = await supabase.storage.from("uploads")
     .upload(key, file, {
       contentType: file.type || "application/octet-stream",
       upsert: false,
       cacheControl: "3600"
     });
+  if (up.error) throw up.error;
 
-  if (up.error) {
-    throw up.error;
-  }
-
-  // Inserta metadatos en tabla (RLS: user_id debe ser auth.uid())
+  // Inserta metadatos
   const { data, error } = await supabase
     .from("patient_files")
     .insert({
@@ -105,7 +99,7 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
     .single();
 
   if (error) {
-    // Si falla el insert, limpia el objeto subido para no dejar huérfanos
+    // Limpieza si falla el insert
     await supabase.storage.from("uploads").remove([key]).catch(() => {});
     throw error;
   }
@@ -124,7 +118,7 @@ export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promi
 export async function deletePatientFile(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
 
-  // Obtén la key del registro
+  // Obtén key
   const { data: rec, error: e1 } = await supabase
     .from("patient_files")
     .select("id, storage_key")
