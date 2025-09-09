@@ -45,14 +45,12 @@ export default function Error({
           </div>
 
           <p className="text-[var(--color-brand-text)]/70 leading-relaxed">
-            Algo salió mal al cargar esta página. Puedes intentar de nuevo o
-            regresar al inicio.
+            Algo salió mal al cargar esta página. Puedes intentar de nuevo o regresar al inicio.
           </p>
 
           <div className="mt-6 rounded-xl bg-[var(--color-brand-background)]/70 ring-1 ring-[var(--color-brand-border)] p-4">
             <p className="text-sm text-[var(--color-brand-text)]/75">
-              <span className="font-semibold">Detalle:</span>{" "}
-              {error.message || "—"}
+              <span className="font-semibold">Detalle:</span> {error.message || "—"}
             </p>
             {error.digest && (
               <p className="text-xs text-[var(--color-brand-text)]/60 mt-1">

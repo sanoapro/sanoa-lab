@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       setToasts((prev) => [item, ...prev]);
       timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
     },
-    [remove]
+    [remove],
   );
 
   const value = useMemo(() => ({ toast }), [toast]);
@@ -151,7 +151,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               ))}
             </div>
           </div>,
-          container
+          container,
         )
       : null;
 

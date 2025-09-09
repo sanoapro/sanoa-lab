@@ -1,6 +1,6 @@
-import ThemeToggle from '@/components/ThemeToggle';
-import SiteFooter from '@/components/SiteFooter';
-import Toaster from '@/components/Toaster';
+import ThemeToggle from "@/components/ThemeToggle";
+import SiteFooter from "@/components/SiteFooter";
+import Toaster from "@/components/Toaster";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Poppins, Lato } from "next/font/google";
@@ -24,11 +24,7 @@ export const metadata: Metadata = {
   description: "Ecosistema clínico modular — Sanoa Lab",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
       <body

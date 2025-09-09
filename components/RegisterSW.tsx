@@ -44,7 +44,8 @@ export default function RegisterSW() {
     };
 
     registerNow();
-    return () => navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+    return () =>
+      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
   }, []);
 
   const applyUpdate = () => {
@@ -65,7 +66,9 @@ export default function RegisterSW() {
           <p className="text-sm text-[var(--color-brand-text)]">Nueva versión disponible.</p>
           <div className="flex gap-2">
             <button
-              onClick={() => { waitingSW.current = null; }}
+              onClick={() => {
+                waitingSW.current = null;
+              }}
               className="rounded-md border border-[var(--color-brand-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-brand-background)]"
             >
               Luego

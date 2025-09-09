@@ -1,89 +1,94 @@
 export type EmojiMode = "duotone" | "mono" | "native";
 
-export const emojiTheme = {
-  global: {
-    mode: "duotone" as EmojiMode,
-    color: "#D97A66",        // base terracota
-    accentColor: "#3E4C59",  // texto (contraste)
-  },
-  // Overrides puntuales por emoji (incluye variantes sin/ con VS-16)
-  perEmoji: {
-    "📧": { mode: "native" as EmojiMode },
-    "🌐": { mode: "native" as EmojiMode },
-    "🗑": { mode: "native" as EmojiMode },
-    "🗑️": { mode: "native" as EmojiMode },
-    "🍃": { mode: "native" as EmojiMode },
-    "🔐": { mode: "duotone" as EmojiMode },
-    "🔑": { mode: "duotone" as EmojiMode },
-  } as Record<string, { mode?: EmojiMode; color?: string; accentColor?: string }>,
+type EmojiSettings = {
+  mode?: EmojiMode;
+  color?: string;
+  accentColor?: string;
 };
 
-// Mapa semántico → carácter (cambia aquí y se refleja en toda la app)
+export const emojiTheme: {
+  global: Required<EmojiSettings>;
+  perEmoji: Record<string, EmojiSettings>;
+} = {
+  global: {
+    mode: "duotone",
+    color: "#D97A66",       // terracota (brand)
+    accentColor: "#3E4C59", // bluegray (texto/contraste)
+  },
+  // Overrides puntuales (incluye variantes sin/ con VS-16)
+  perEmoji: {
+    // Identidades que deben verse nativas
+    "📧": { mode: "native" },
+    "🌐": { mode: "native" },
+    "🗑": { mode: "native" },
+    "🗑️": { mode: "native" },
+    "🍃": { mode: "native" },
+
+    // Duotono para íconos de UI (buen contraste)
+    "🔐": { mode: "duotone" },
+    "🔑": { mode: "duotone" },
+    "💾": { mode: "duotone" },
+    "🧪": { mode: "duotone" },
+    "📤": { mode: "duotone" },
+    "🗂️": { mode: "duotone" },
+    "👁️": { mode: "duotone" },
+
+    // Puedes seguir afinando acá...
+  },
+};
+
+// ====== TOKENS SEMÁNTICOS ======
 export const emojiTokens = {
-  // auth & navegación
-  login: "🔐",
-  key: "🔑",
+  // Auth / navegación
   email: "📧",
-  google: "🌐",
-  siguiente: "➡️",
+  enviar: "📨",
   atras: "⬅️",
-  home: "🏠",
+  refrescar: "🔄",
   info: "ℹ️",
-  alerta: "⚠️",
-  copiar: "📋",
-  espera: "⏳",
+  candado: "🔐",
+  guardar: "💾",
+  siguiente: "➡️",
+  web: "🌐",
+  llave: "🔑",
+  magia: "✨",
+  reloj: "⏳",
 
-  // identidad / UX
-  hoja: "🍃",
-  usuario: "👤",
-  pacientes: "👥",
-
-  // tablero / secciones
+  // App
   tablero: "🧭",
+  subir: "��",
+  carpeta: "🗂️",
+  ver: "👁️",
   laboratorio: "🧪",
 
-  // archivos / storage
-  subir: "⤴️",
-  subirBandeja: "📤",
-  carpeta: "🗂️",
-  documentos: "🗂️",
-  archivo: "📄",
-  ver: "👁️",
-  descargar: "⬇️",
-  enlace: "🔗",
-  borrar: "🗑️",
-  refrescar: "🔄",
-  imagen: "🖼️",
-  limpiar: "🧹",
-  guardar: "💾",
-  salir: "🚪",
-
-  // varios
-  busqueda: "🔍",
-  dashboard: "📊",
-  puzzle: "🧩",
-} as const;
+  // PWA / instalación
+  offline: "📴",
+  instalar: "📲",
+  ok: "✅",
+  ios: "🍎",
+  android: "🤖",
+  escritorio: "🖥️",
+};
 
 export type EmojiTokenName = keyof typeof emojiTokens;
 
+// ====== HELPERS ======
+const VS16 = /\uFE0F/g;
+export function stripVS(s: string) {
+  return s.replace(VS16, "");
+}
+
 export function getEmojiChar(nameOrChar: string): string {
-  if ((nameOrChar as EmojiTokenName) in emojiTokens) {
-    return emojiTokens[nameOrChar as EmojiTokenName];
+  if (nameOrChar in emojiTokens) {
+    return (emojiTokens as Record<string, string>)[nameOrChar];
   }
   return nameOrChar;
 }
 
-function stripVS(s: string) {
-  // quita variantes de estilo (VS-16) para que los overrides "agarren"
-  return s.replace(/\uFE0F/g, "");
-}
-
-export function getEmojiSettings(emojiOrToken: string) {
-  const char = getEmojiChar(emojiOrToken);
+export function getEmojiSettings(emojiChar: string): Required<EmojiSettings> {
   const base = emojiTheme.global;
-  const ov = emojiTheme.perEmoji[char] || emojiTheme.perEmoji[stripVS(char)] || {};
+  const ov = emojiTheme.perEmoji[emojiChar] || emojiTheme.perEmoji[stripVS(emojiChar)] || {};
   return {
-    mode: ov.mode ?? base.mode,
+    mode: (ov.mode || base.mode) as EmojiMode,
     color: ov.color ?? base.color,
     accentColor: ov.accentColor ?? base.accentColor,
   };

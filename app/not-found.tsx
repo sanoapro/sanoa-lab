@@ -21,8 +21,7 @@ export default function NotFound() {
           </div>
 
           <p className="text-[var(--color-brand-text)]/70 leading-relaxed">
-            Uy… no pudimos encontrar lo que buscas (404). Verifica la URL o
-            vuelve al inicio.
+            Uy… no pudimos encontrar lo que buscas (404). Verifica la URL o vuelve al inicio.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -30,12 +29,7 @@ export default function NotFound() {
               href="/"
               className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-brand-primary)] px-4 py-2.5 text-white font-medium shadow-sm hover:opacity-95 transition"
             >
-              <ColorEmoji
-                token="home"
-                toneA="#FFFFFF"
-                toneB="#FFFFFF"
-                size={18}
-              />
+              <ColorEmoji token="home" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
               Inicio
             </Link>
 

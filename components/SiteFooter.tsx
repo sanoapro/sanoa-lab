@@ -8,10 +8,18 @@ export default function SiteFooter() {
           © {new Date().getFullYear()} Sanoa Lab · v{APP_VERSION}
         </p>
         <nav className="flex flex-wrap gap-3 text-[var(--color-brand-text)]/80">
-          <a className="hover:underline" href="/acerca">Acerca</a>
-          <a className="hover:underline" href="/privacidad">Privacidad</a>
-          <a className="hover:underline" href="/terminos">Términos</a>
-          <a className="hover:underline" href="/instalar">Instalar</a>
+          <a className="hover:underline" href="/acerca">
+            Acerca
+          </a>
+          <a className="hover:underline" href="/privacidad">
+            Privacidad
+          </a>
+          <a className="hover:underline" href="/terminos">
+            Términos
+          </a>
+          <a className="hover:underline" href="/instalar">
+            Instalar
+          </a>
         </nav>
       </div>
     </footer>

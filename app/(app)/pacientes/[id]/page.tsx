@@ -25,16 +25,16 @@ export default function PatientDetailPage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Campos editables
-  const [fullName, setFullName]     = useState("");
-  const [email, setEmail]           = useState("");
-  const [phone, setPhone]           = useState("");
-  const [birthdate, setBirthdate]   = useState("");
-  const [sex, setSex]               = useState<"M" | "F" | "O" | "">("");
-  const [photoUrl, setPhotoUrl]     = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [sex, setSex] = useState<"M" | "F" | "O" | "">("");
+  const [photoUrl, setPhotoUrl] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -42,11 +42,7 @@ export default function PatientDetailPage() {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
-        .from("patients")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const { data, error } = await supabase.from("patients").select("*").eq("id", id).single();
 
       if (error) {
         setError(error.message);
@@ -81,10 +77,7 @@ export default function PatientDetailPage() {
       photo_url: photoUrl.trim() || null,
     };
 
-    const { error } = await supabase
-      .from("patients")
-      .update(payload)
-      .eq("id", id);
+    const { error } = await supabase.from("patients").update(payload).eq("id", id);
 
     setSaving(false);
     if (error) {
@@ -107,11 +100,13 @@ export default function PatientDetailPage() {
   return (
     <main className="p-6 md:p-10 space-y-8">
       {/* Header card */}
-      <section className="
+      <section
+        className="
         w-full rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.06)]
         bg-white/95 border border-[var(--color-brand-border)]
         backdrop-blur-sm overflow-hidden
-      ">
+      "
+      >
         <div className="px-7 md:px-10 py-7 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -167,18 +162,22 @@ export default function PatientDetailPage() {
       </section>
 
       {/* Form card */}
-      <section className="
+      <section
+        className="
         w-full rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.06)]
         bg-white/95 border border-[var(--color-brand-border)]
         backdrop-blur-sm overflow-hidden
-      ">
+      "
+      >
         <div className="px-7 md:px-10 py-7">
           {loading ? (
             <div className="text-[var(--color-brand-bluegray)]">Cargando…</div>
           ) : (
             <form className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm text-[var(--color-brand-text)] mb-1">Nombre completo *</label>
+                <label className="block text-sm text-[var(--color-brand-text)] mb-1">
+                  Nombre completo *
+                </label>
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -189,7 +188,9 @@ export default function PatientDetailPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--color-brand-text)] mb-1">Foto (URL)</label>
+                <label className="block text-sm text-[var(--color-brand-text)] mb-1">
+                  Foto (URL)
+                </label>
                 <input
                   value={photoUrl}
                   onChange={(e) => setPhotoUrl(e.target.value)}
@@ -218,7 +219,9 @@ export default function PatientDetailPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--color-brand-text)] mb-1">Teléfono</label>
+                <label className="block text-sm text-[var(--color-brand-text)] mb-1">
+                  Teléfono
+                </label>
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -228,7 +231,9 @@ export default function PatientDetailPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--color-brand-text)] mb-1">Fecha de nacimiento</label>
+                <label className="block text-sm text-[var(--color-brand-text)] mb-1">
+                  Fecha de nacimiento
+                </label>
                 <input
                   type="date"
                   value={birthdate ?? ""}
@@ -258,17 +263,22 @@ export default function PatientDetailPage() {
       </section>
 
       {/* Próximamente: archivos/notas */}
-      <section className="
+      <section
+        className="
         w-full rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.06)]
         bg-white/60 border border-dashed border-[var(--color-brand-border)]
         backdrop-blur-sm overflow-hidden
-      ">
+      "
+      >
         <div className="px-7 md:px-10 py-7 text-[var(--color-brand-bluegray)]">
           <div className="flex items-center gap-2">
             <ColorEmoji token="documentos" />
             <strong>Archivos del paciente (próximamente)</strong>
           </div>
-          <p className="mt-1">Integraremos el mismo estilo de subida/visualización que en <code>/test-ui/upload</code> y lo relacionaremos por paciente.</p>
+          <p className="mt-1">
+            Integraremos el mismo estilo de subida/visualización que en <code>/test-ui/upload</code>{" "}
+            y lo relacionaremos por paciente.
+          </p>
         </div>
       </section>
     </main>

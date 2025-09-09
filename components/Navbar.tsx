@@ -70,9 +70,11 @@ export default function Navbar() {
                 href={item.href}
                 className={`
                   inline-flex items-center gap-2 px-3 py-2 rounded-xl border
-                  ${active
-                    ? "bg-[var(--color-brand-background)] border-[var(--color-brand-border)]"
-                    : "border-transparent hover:bg-[var(--color-brand-background)]"}
+                  ${
+                    active
+                      ? "bg-[var(--color-brand-background)] border-[var(--color-brand-border)]"
+                      : "border-transparent hover:bg-[var(--color-brand-background)]"
+                  }
                 `}
               >
                 {/* Para navegación, duotono suave */}
@@ -105,7 +107,9 @@ export default function Navbar() {
     </header>
   );
 }
-{/* Pacientes */}
+{
+  /* Pacientes */
+}
 <Link
   href="/pacientes"
   className="inline-flex items-center gap-2 px-3 py-2 rounded-xl
@@ -114,4 +118,4 @@ export default function Navbar() {
 >
   <ColorEmoji token="pacientes" />
   <span>Pacientes</span>
-</Link>
+</Link>;

@@ -5,11 +5,19 @@ const now = new Date();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
-    "", "login", "dashboard",
-    "reset-password", "update-password",
-    "offline", "instalar",
-    "acerca", "privacidad", "terminos",
-    "pacientes", "perfil", "test-ui/upload",
+    "",
+    "login",
+    "dashboard",
+    "reset-password",
+    "update-password",
+    "offline",
+    "instalar",
+    "acerca",
+    "privacidad",
+    "terminos",
+    "pacientes",
+    "perfil",
+    "test-ui/upload",
   ];
   return paths.map((p) => ({
     url: `${base}/${p}`.replace(/\/+$/, "/"),

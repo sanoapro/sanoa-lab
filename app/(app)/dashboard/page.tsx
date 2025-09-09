@@ -1,4 +1,4 @@
-import InstallPrompt from '@/components/InstallPrompt';
+import InstallPrompt from "@/components/InstallPrompt";
 import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
 
@@ -32,8 +32,12 @@ export default function TableroPage() {
               <ColorEmoji name="subir" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Subir archivos</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">Carga documentos y gestiona tus contenidos.</p>
+              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Subir archivos
+              </h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Carga documentos y gestiona tus contenidos.
+              </p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
@@ -57,7 +61,9 @@ export default function TableroPage() {
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Mis archivos</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">Revisa, descarga o comparte tus documentos.</p>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Revisa, descarga o comparte tus documentos.
+              </p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
@@ -69,15 +75,21 @@ export default function TableroPage() {
         </Link>
 
         {/* Próximamente */}
-        <div className="rounded-3xl bg-white/60 border border-[var(--color-brand-border)]
-                        shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden opacity-70">
+        <div
+          className="rounded-3xl bg-white/60 border border-[var(--color-brand-border)]
+                        shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden opacity-70"
+        >
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
               <ColorEmoji name="laboratorio" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Laboratorio (próximamente)</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">Resultados y órdenes en un solo lugar.</p>
+              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Laboratorio (próximamente)
+              </h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Resultados y órdenes en un solo lugar.
+              </p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
