@@ -86,7 +86,7 @@ export default function OfflinePage() {
             href="/instalar"
             className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] flex items-center gap-2"
           >
-            <ColorEmoji emoji="📲" size={18} /> Instalar app
+            <ColorEmoji token="instalar" size={18} /> Instalar app
           </a>
         </div>
 
