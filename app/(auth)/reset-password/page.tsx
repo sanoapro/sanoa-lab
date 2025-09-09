@@ -3,81 +3,79 @@ import { useState } from "react";
 import Link from "next/link";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
+import { showToast } from "@/components/Toaster";
 
-export default function ResetPasswordPage() {
+function getSiteURL() {
+  if (typeof window !== "undefined") return window.location.origin;
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+}
+
+export default function ResetPasswordRequestPage() {
   const supabase = getSupabaseBrowser();
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    const E = email.trim();
-    if (!E) {
-      setError("Escribe tu correo.");
+    const em = email.trim();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(em)) {
+      showToast("Ingresa un correo válido.", "error");
       return;
     }
-    setLoading(true);
+    setSending(true);
     try {
-      const origin =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NEXT_PUBLIC_SITE_URL || "";
-      const redirectTo = `${origin}/(auth)/update-password`;
-      const { error } = await supabase.auth.resetPasswordForEmail(E, { redirectTo });
+      const redirectTo = `${getSiteURL()}/(auth)/update-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(em, { redirectTo });
       if (error) throw error;
-      setDone(true);
+      showToast("Te enviamos un enlace para restablecer tu contraseña.", "success");
     } catch (err: any) {
-      setError(err?.message || "No se pudo enviar el correo.");
+      showToast(err?.message || "No se pudo enviar el enlace.", "error");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   }
 
   return (
     <main className="min-h-[80vh] grid place-items-center p-6">
-      <div className="w-full max-w-md rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 shadow">
-        <h1 className="text-2xl font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
-          <ColorEmoji token="llave" size={22} /> Recuperar contraseña
-        </h1>
-        <p className="text-[var(--color-brand-bluegray)] mt-1 text-sm">
-          Te enviaremos un enlace para restablecer tu contraseña.
-        </p>
-
-        {done ? (
-          <div className="mt-4 rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] p-3 text-sm">
-            Revisa tu correo y sigue el enlace para continuar.
+      <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="email" size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">Restablecer contraseña</h1>
+              <p className="text-sm text-[var(--color-brand-bluegray)]">Te enviaremos un enlace seguro a tu correo.</p>
+            </div>
           </div>
-        ) : (
-          <form onSubmit={onSubmit} className="mt-4 space-y-3">
+
+          <form onSubmit={onSubmit} className="space-y-3">
             <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">Correo</span>
+              <span className="text-sm text-[var(--color-brand-text)]/80">Correo electrónico</span>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e)=>setEmail(e.target.value)}
                 placeholder="tucorreo@dominio.com"
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-                autoFocus
               />
             </label>
-            {error && <p className="text-sm text-red-600">{error}</p>}
             <button
+              disabled={sending}
               className="w-full rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
-              disabled={loading}
             >
               <ColorEmoji token="enviar" size={16} />
-              {loading ? "Enviando…" : "Enviar enlace"}
+              {sending ? "Enviando…" : "Enviar enlace"}
             </button>
           </form>
-        )}
 
-        <div className="mt-4 text-center">
-          <Link href="/login" className="text-[var(--color-brand-primary)] hover:underline">
-            <ColorEmoji token="atras" size={14} /> Volver a iniciar sesión
-          </Link>
+          <div className="h-px bg-[var(--color-brand-border)]" />
+
+          <div className="text-sm flex justify-between">
+            <Link href="/login" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline">
+              <ColorEmoji token="atras" size={16} /> Volver a iniciar sesión
+            </Link>
+          </div>
         </div>
       </div>
     </main>
