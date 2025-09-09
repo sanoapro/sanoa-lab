@@ -1,3 +1,4 @@
+import OfflineIndicator from '@/components/OfflineIndicator';
 import RegisterSW from "@/components/RegisterSW";
 // app/(app)/layout.tsx
 import type { Metadata } from "next";
