@@ -14,7 +14,8 @@ export type PatientFile = {
 
 function slugify(name: string) {
   return name
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
@@ -60,14 +61,13 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
     size: file.size ?? null,
   };
 
-  const { data, error } = await supabase
-    .from("patient_files")
-    .insert(meta)
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("patient_files").insert(meta).select("*").single();
   if (error) {
     // Revertir objeto si falla DB
-    await supabase.storage.from(bucket).remove([path]).catch(() => {});
+    await supabase.storage
+      .from(bucket)
+      .remove([path])
+      .catch(() => {});
     throw error;
   }
   return data as PatientFile;
@@ -85,7 +85,11 @@ export async function getSignedUrl(pf: Pick<PatientFile, "bucket" | "path">, exp
 export async function deletePatientFile(id: string) {
   const supabase = getSupabaseBrowser();
   // 1) Obtener registro para conocer path/bucket
-  const { data: rec, error: e1 } = await supabase.from("patient_files").select("*").eq("id", id).single();
+  const { data: rec, error: e1 } = await supabase
+    .from("patient_files")
+    .select("*")
+    .eq("id", id)
+    .single();
   if (e1) throw e1;
   // 2) Borrar objeto
   const rem = await supabase.storage.from(rec.bucket).remove([rec.path]);

@@ -15,10 +15,16 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
     const E = email.trim();
-    if (!E) { setError("Escribe tu correo."); return; }
+    if (!E) {
+      setError("Escribe tu correo.");
+      return;
+    }
     setLoading(true);
     try {
-      const origin = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL || "";
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_SITE_URL || "";
       const redirectTo = `${origin}/(auth)/update-password`;
       const { error } = await supabase.auth.resetPasswordForEmail(E, { redirectTo });
       if (error) throw error;
@@ -51,7 +57,7 @@ export default function ResetPasswordPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e)=>setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="tucorreo@dominio.com"
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
                 autoFocus

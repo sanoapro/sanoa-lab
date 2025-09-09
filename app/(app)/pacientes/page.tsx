@@ -2,7 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
-import { searchPatients, type PatientSearchFilters, type PatientSearchResult } from "@/lib/patients-search";
+import {
+  searchPatients,
+  type PatientSearchFilters,
+  type PatientSearchResult,
+} from "@/lib/patients-search";
 
 export default function PacientesPage() {
   const [filters, setFilters] = useState<PatientSearchFilters>({
@@ -75,7 +79,8 @@ export default function PacientesPage() {
           Pacientes
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
-          Filtra por nombre, género, edad y fechas. Resultados visibles respetan tus permisos (propios o compartidos).
+          Filtra por nombre, género, edad y fechas. Resultados visibles respetan tus permisos
+          (propios o compartidos).
         </p>
       </header>
 
@@ -86,7 +91,7 @@ export default function PacientesPage() {
             <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
             <input
               value={filters.q || ""}
-              onChange={(e)=>setFilters(f=>({ ...f, q: e.target.value }))}
+              onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
               placeholder="Buscar por nombre…"
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
@@ -96,7 +101,7 @@ export default function PacientesPage() {
             <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
             <select
               value={filters.genero || "ALL"}
-              onChange={(e)=>setFilters(f=>({ ...f, genero: e.target.value as any }))}
+              onChange={(e) => setFilters((f) => ({ ...f, genero: e.target.value as any }))}
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             >
               <option value="ALL">Todos</option>
@@ -110,18 +115,30 @@ export default function PacientesPage() {
             <label>
               <span className="text-sm text-[var(--color-brand-text)]/80">Edad mín.</span>
               <input
-                type="number" min={0}
+                type="number"
+                min={0}
                 value={filters.edadMin ?? ""}
-                onChange={(e)=>setFilters(f=>({ ...f, edadMin: e.target.value === "" ? null : Number(e.target.value) }))}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    edadMin: e.target.value === "" ? null : Number(e.target.value),
+                  }))
+                }
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
             <label>
               <span className="text-sm text-[var(--color-brand-text)]/80">Edad máx.</span>
               <input
-                type="number" min={0}
+                type="number"
+                min={0}
                 value={filters.edadMax ?? ""}
-                onChange={(e)=>setFilters(f=>({ ...f, edadMax: e.target.value === "" ? null : Number(e.target.value) }))}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    edadMax: e.target.value === "" ? null : Number(e.target.value),
+                  }))
+                }
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
@@ -133,7 +150,7 @@ export default function PacientesPage() {
               <input
                 type="date"
                 value={filters.createdFrom ?? ""}
-                onChange={(e)=>setFilters(f=>({ ...f, createdFrom: e.target.value || null }))}
+                onChange={(e) => setFilters((f) => ({ ...f, createdFrom: e.target.value || null }))}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
@@ -142,7 +159,7 @@ export default function PacientesPage() {
               <input
                 type="date"
                 value={filters.createdTo ?? ""}
-                onChange={(e)=>setFilters(f=>({ ...f, createdTo: e.target.value || null }))}
+                onChange={(e) => setFilters((f) => ({ ...f, createdTo: e.target.value || null }))}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
@@ -153,7 +170,7 @@ export default function PacientesPage() {
               <span className="text-sm text-[var(--color-brand-text)]/80">Ordenar por</span>
               <select
                 value={filters.orderBy}
-                onChange={(e)=>setFilters(f=>({ ...f, orderBy: e.target.value as any }))}
+                onChange={(e) => setFilters((f) => ({ ...f, orderBy: e.target.value as any }))}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               >
                 <option value="created_at">Fecha</option>
@@ -165,7 +182,7 @@ export default function PacientesPage() {
               <span className="text-sm text-[var(--color-brand-text)]/80">Dirección</span>
               <select
                 value={filters.orderDir}
-                onChange={(e)=>setFilters(f=>({ ...f, orderDir: e.target.value as any }))}
+                onChange={(e) => setFilters((f) => ({ ...f, orderDir: e.target.value as any }))}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               >
                 <option value="desc">Desc</option>
@@ -216,12 +233,23 @@ export default function PacientesPage() {
               </thead>
               <tbody>
                 {!result || loading ? (
-                  <tr><td colSpan={5} className="py-6 text-[var(--color-brand-bluegray)]">Cargando…</td></tr>
-                ) : (result.rows.length === 0 ? (
-                  <tr><td colSpan={5} className="py-6 text-[var(--color-brand-bluegray)]">Sin resultados.</td></tr>
+                  <tr>
+                    <td colSpan={5} className="py-6 text-[var(--color-brand-bluegray)]">
+                      Cargando…
+                    </td>
+                  </tr>
+                ) : result.rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-[var(--color-brand-bluegray)]">
+                      Sin resultados.
+                    </td>
+                  </tr>
                 ) : (
                   result.rows.map((p) => (
-                    <tr key={p.id} className="border-b border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]/50">
+                    <tr
+                      key={p.id}
+                      className="border-b border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]/50"
+                    >
                       <td className="py-2 pr-3 text-[var(--color-brand-text)]">{p.nombre}</td>
                       <td className="py-2 px-3">{p.edad}</td>
                       <td className="py-2 px-3">{p.genero}</td>
@@ -236,7 +264,7 @@ export default function PacientesPage() {
                       </td>
                     </tr>
                   ))
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -244,9 +272,12 @@ export default function PacientesPage() {
           {/* Paginación */}
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-[var(--color-brand-bluegray)]">
-              Mostrando {(result && result.rows.length > 0) ? ((result.page-1)* (result.pageSize) + 1) : 0}
+              Mostrando{" "}
+              {result && result.rows.length > 0 ? (result.page - 1) * result.pageSize + 1 : 0}
               {" – "}
-              {(result && result.rows.length > 0) ? ((result.page-1)* (result.pageSize) + result.rows.length) : 0}
+              {result && result.rows.length > 0
+                ? (result.page - 1) * result.pageSize + result.rows.length
+                : 0}
               {" de "}
               {result?.count ?? 0}
             </div>
@@ -254,14 +285,14 @@ export default function PacientesPage() {
               <button
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
                 disabled={loading || (result?.page ?? 1) <= 1}
-                onClick={()=> doSearch((result?.page ?? 1) - 1)}
+                onClick={() => doSearch((result?.page ?? 1) - 1)}
               >
                 <ColorEmoji token="anterior" size={14} /> Anterior
               </button>
               <button
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
                 disabled={loading || (result?.page ?? 1) >= totalPages}
-                onClick={()=> doSearch((result?.page ?? 1) + 1)}
+                onClick={() => doSearch((result?.page ?? 1) + 1)}
               >
                 Siguiente <ColorEmoji token="siguiente" size={14} />
               </button>

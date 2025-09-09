@@ -34,7 +34,8 @@ export async function listPatients(opts?: {
   const orderBy = (opts?.orderBy as string) ?? "created_at";
   const ascending = opts?.ascending ?? false;
 
-  let query = supabase.from("patients")
+  let query = supabase
+    .from("patients")
     .select("*", { count: "exact" })
     .order(orderBy, { ascending })
     .range(offset, offset + limit - 1);
@@ -53,14 +54,13 @@ export async function listPatients(opts?: {
 /** Obtener un paciente por id (o null si no existe) */
 export async function getPatient(id: string): Promise<Patient | null> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase
-    .from("patients")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("patients").select("*").eq("id", id).single();
   if (error) {
     // Si la fila no existe, Supabase lanza error; normalizamos a null cuando es 406/No rows
-    if ((error as any)?.code === "PGRST116" || (error as any)?.details?.includes("Results contain 0 rows")) {
+    if (
+      (error as any)?.code === "PGRST116" ||
+      (error as any)?.details?.includes("Results contain 0 rows")
+    ) {
       return null;
     }
     throw error;
@@ -71,11 +71,7 @@ export async function getPatient(id: string): Promise<Patient | null> {
 /** Crear paciente; el trigger de org_id lo rellenará según user_prefs/organización actual */
 export async function createPatient(input: NewPatient): Promise<Patient> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase
-    .from("patients")
-    .insert(input)
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("patients").insert(input).select("*").single();
   if (error) throw error;
   return data as Patient;
 }

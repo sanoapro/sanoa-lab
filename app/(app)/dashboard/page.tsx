@@ -20,6 +20,32 @@ export default function TableroPage() {
 
       {/* Grid de tarjetas */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Pacientes */}
+        <Link
+          href="/pacientes"
+          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+                     shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
+                     transition overflow-hidden"
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="pacientes" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Pacientes</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Busca, registra y gestiona expedientes.
+              </p>
+            </div>
+          </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Entrar <ColorEmoji token="siguiente" size={18} />
+            </span>
+          </div>
+        </Link>
+
         {/* Subir archivos */}
         <Link
           href="/test-ui/upload"
@@ -48,7 +74,7 @@ export default function TableroPage() {
           </div>
         </Link>
 
-        {/* Mis archivos (placeholder a la landing de test-ui) */}
+        {/* Mis archivos */}
         <Link
           href="/test-ui"
           className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
@@ -74,7 +100,7 @@ export default function TableroPage() {
           </div>
         </Link>
 
-        {/* Próximamente */}
+        {/* Próximamente (ejemplo de tarjeta “deshabilitada”) */}
         <div
           className="rounded-3xl bg-white/60 border border-[var(--color-brand-border)]
                         shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden opacity-70"

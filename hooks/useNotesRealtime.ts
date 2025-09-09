@@ -14,7 +14,9 @@ export function useNotesRealtime(patientId: string, onChange: () => void, deboun
 
     const debounced = () => {
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => { if (active) onChange(); }, debounceMs);
+      timer.current = setTimeout(() => {
+        if (active) onChange();
+      }, debounceMs);
     };
 
     (async () => {
@@ -26,9 +28,13 @@ export function useNotesRealtime(patientId: string, onChange: () => void, deboun
 
       chan = supabase
         .channel(`patient-notes-${patientId}-${uid}`)
-        .on("postgres_changes", { event: "*", schema: "public", table: "patient_notes", filter }, () => {
-          debounced();
-        })
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "patient_notes", filter },
+          () => {
+            debounced();
+          },
+        )
         .subscribe();
     })();
 

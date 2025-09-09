@@ -46,7 +46,11 @@ export default function UpdatePasswordPage() {
             const { error } = await supabase.auth.setSession({ access_token, refresh_token });
             if (error) throw error;
             // limpia el hash para evitar reintentos
-            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+            window.history.replaceState(
+              null,
+              "",
+              window.location.pathname + window.location.search,
+            );
             setEnsuring(false);
             return;
           }
@@ -70,8 +74,14 @@ export default function UpdatePasswordPage() {
     setError(null);
     const p1 = pwd1.trim();
     const p2 = pwd2.trim();
-    if (p1.length < 8) { setError("La contraseña debe tener al menos 8 caracteres."); return; }
-    if (p1 !== p2) { setError("Las contraseñas no coinciden."); return; }
+    if (p1.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (p1 !== p2) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: p1 });
@@ -105,18 +115,20 @@ export default function UpdatePasswordPage() {
               <input
                 type="password"
                 value={pwd1}
-                onChange={(e)=>setPwd1(e.target.value)}
+                onChange={(e) => setPwd1(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
                 placeholder="********"
                 autoFocus
               />
             </label>
             <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">Confirmar contraseña</span>
+              <span className="text-sm text-[var(--color-brand-text)]/80">
+                Confirmar contraseña
+              </span>
               <input
                 type="password"
                 value={pwd2}
-                onChange={(e)=>setPwd2(e.target.value)}
+                onChange={(e) => setPwd2(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
                 placeholder="********"
               />

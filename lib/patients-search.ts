@@ -7,10 +7,10 @@ export type PatientSearchFilters = {
   edadMin?: number | null;
   edadMax?: number | null;
   createdFrom?: string | null; // ISO date 'YYYY-MM-DD'
-  createdTo?: string | null;   // ISO date 'YYYY-MM-DD'
+  createdTo?: string | null; // ISO date 'YYYY-MM-DD'
   orderBy?: "created_at" | "nombre" | "edad";
   orderDir?: "asc" | "desc";
-  page?: number;   // 1-based
+  page?: number; // 1-based
   pageSize?: number;
 };
 
