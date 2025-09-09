@@ -3,9 +3,11 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { getPatient, updatePatient, type Patient } from "@/lib/patients";
 import { listNotes, createNote, deleteNote, type PatientNote } from "@/lib/patient-notes";
 import { listPatientFiles, uploadPatientFile, getSignedUrl, deletePatientFile, type PatientFile } from "@/lib/patient-files";
+import { listShares, addShare, revokeShare, type PatientShare } from "@/lib/patient-shares";
 import { showToast } from "@/components/Toaster";
 import Modal from "@/components/Modal";
 import { useNotesRealtime } from "@/hooks/useNotesRealtime";
@@ -13,10 +15,21 @@ import ExportPDFButton from "@/components/ExportPDFButton";
 
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const supabase = getSupabaseBrowser();
+
+  // Usuario
+  const [meId, setMeId] = useState<string | null>(null);
+  const [meEmail, setMeEmail] = useState<string | null>(null);
 
   // Paciente
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Permisos
+  const [shares, setShares] = useState<PatientShare[]>([]);
+  const isOwner = patient && meId ? patient.user_id === meId : false;
+  const myShare = shares.find(s => s.grantee_email.toLowerCase() === (meEmail || "").toLowerCase());
+  const canEdit = Boolean(isOwner || myShare?.can_edit);
 
   // Editar Paciente
   const [openEdit, setOpenEdit] = useState(false);
@@ -36,8 +49,22 @@ export default function PacienteDetailPage() {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  // Compartir (UI)
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareCanEdit, setShareCanEdit] = useState(false);
+  const [sharing, setSharing] = useState(false);
+
   // Área exportable
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Usuario actual
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      setMeId(data.user?.id ?? null);
+      setMeEmail(data.user?.email ?? null);
+    })();
+  }, [supabase]);
 
   // Carga paciente
   useEffect(() => {
@@ -90,8 +117,21 @@ export default function PacienteDetailPage() {
 
   useEffect(() => { refreshFiles(); }, [refreshFiles]);
 
+  // Shares: listar (owner ve todos; invitado ve el suyo)
+  const refreshShares = useCallback(async () => {
+    try {
+      const data = await listShares(id);
+      setShares(data);
+    } catch (e: any) {
+      console.error(e);
+    }
+  }, [id]);
+
+  useEffect(() => { refreshShares(); }, [refreshShares]);
+
   async function onAddNote(e: React.FormEvent) {
     e.preventDefault();
+    if (!canEdit) { showToast("No tienes permisos para agregar notas.", "error"); return; }
     const text = noteText.trim();
     if (text.length < 2) { showToast("Escribe al menos 2 caracteres.", "info"); return; }
     setSavingNote(true);
@@ -109,6 +149,7 @@ export default function PacienteDetailPage() {
   }
 
   async function onDeleteNote(nid: string) {
+    if (!canEdit) { showToast("No tienes permisos para borrar notas.", "error"); return; }
     if (!confirm("¿Eliminar nota?")) return;
     try {
       await deleteNote(nid);
@@ -130,6 +171,7 @@ export default function PacienteDetailPage() {
 
   async function onSaveEdit(e: React.FormEvent) {
     e.preventDefault();
+    if (!canEdit) { showToast("No tienes permisos para editar.", "error"); return; }
     const n = (nombre || "").trim();
     const eNum = typeof(edad) === "string" ? Number(edad || 0) : edad;
     if (!n) { showToast("El nombre es obligatorio.", "info"); return; }
@@ -152,6 +194,7 @@ export default function PacienteDetailPage() {
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!canEdit) { showToast("No tienes permisos para subir archivos.", "error"); return; }
     setUploading(true);
     try {
       await uploadPatientFile(id, file);
@@ -188,6 +231,7 @@ export default function PacienteDetailPage() {
   }
 
   async function onDeleteFile(idRec: string) {
+    if (!canEdit) { showToast("No tienes permisos para eliminar archivos.", "error"); return; }
     if (!confirm("¿Eliminar archivo?")) return;
     try {
       await deletePatientFile(idRec);
@@ -196,6 +240,39 @@ export default function PacienteDetailPage() {
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo eliminar.", "error");
+    }
+  }
+
+  async function onShare(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isOwner) { showToast("Solo el dueño puede compartir.", "error"); return; }
+    const email = shareEmail.trim();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showToast("Email inválido.", "error"); return; }
+    setSharing(true);
+    try {
+      await addShare(id, email, shareCanEdit);
+      setShareEmail("");
+      setShareCanEdit(false);
+      await refreshShares();
+      showToast("Acceso compartido.", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err?.message || "No se pudo compartir.", "error");
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function onRevoke(shareId: string) {
+    if (!isOwner) return;
+    if (!confirm("¿Quitar acceso?")) return;
+    try {
+      await revokeShare(shareId);
+      setShares(prev => prev.filter(s => s.id !== shareId));
+      showToast("Acceso revocado.", "success");
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo revocar.", "error");
     }
   }
 
@@ -224,18 +301,17 @@ export default function PacienteDetailPage() {
           <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
             <ColorEmoji token="usuario" size={24} /> {patient.nombre}
           </h1>
-          {/* Botones de acción (NO exportar) */}
-          <div className="flex items-center gap-2" data-html2canvas-ignore="true">
-            <ExportPDFButton
-              targetRef={printRef}
-              filename={`Paciente-${patient.nombre}.pdf`}
-            />
-            <button
-              onClick={openEditModal}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
-            >
-              <ColorEmoji token="puzzle" size={16} /> Editar
-            </button>
+          {/* Botones (NO exportar) */}
+          <div className="flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
+            <ExportPDFButton targetRef={printRef} filename={`Paciente-${patient.nombre}.pdf`} />
+            {canEdit && (
+              <button
+                onClick={openEditModal}
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+              >
+                <ColorEmoji token="puzzle" size={16} /> Editar
+              </button>
+            )}
             <Link href="/pacientes" className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
               <ColorEmoji token="atras" size={16} /> Volver
             </Link>
@@ -272,13 +348,14 @@ export default function PacienteDetailPage() {
               <textarea
                 value={noteText}
                 onChange={e => setNoteText(e.target.value)}
-                placeholder="Escribe una nota clínica breve…"
+                placeholder={canEdit ? "Escribe una nota clínica breve…" : "Solo lectura"}
                 rows={3}
-                className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                disabled={!canEdit}
+                className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 disabled:opacity-60"
               />
               <div className="flex gap-2">
                 <button
-                  disabled={savingNote}
+                  disabled={savingNote || !canEdit}
                   className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
                 >
                   <ColorEmoji token="guardar" size={16} /> {savingNote ? "Guardando…" : "Añadir nota"}
@@ -307,15 +384,16 @@ export default function PacienteDetailPage() {
                       <div className="text-sm text-[var(--color-brand-text)] whitespace-pre-wrap">
                         {n.content}
                       </div>
-                      {/* Botón borrar (NO exportar) */}
-                      <button
-                        onClick={() => onDeleteNote(n.id)}
-                        className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
-                        title="Eliminar nota"
-                        data-html2canvas-ignore="true"
-                      >
-                        <ColorEmoji token="borrar" size={14} /> Borrar
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => onDeleteNote(n.id)}
+                          className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
+                          title="Eliminar nota"
+                          data-html2canvas-ignore="true"
+                        >
+                          <ColorEmoji token="borrar" size={14} /> Borrar
+                        </button>
+                      )}
                     </div>
                     <div className="mt-2 text-xs text-[var(--color-brand-bluegray)]">
                       {new Date(n.created_at).toLocaleString()}
@@ -329,7 +407,7 @@ export default function PacienteDetailPage() {
       </div>
       {/* === FIN ÁREA EXPORTABLE === */}
 
-      {/* Archivos clínicos (no se incluyen en el PDF) */}
+      {/* Archivos clínicos */}
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
@@ -337,9 +415,9 @@ export default function PacienteDetailPage() {
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 cursor-pointer hover:opacity-90">
+            <label className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${!canEdit ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"}`}>
               <ColorEmoji token="subir" size={18} /> {uploading ? "Subiendo…" : "Subir archivo"}
-              <input type="file" onChange={onUpload} className="hidden" />
+              <input type="file" onChange={onUpload} className="hidden" disabled={!canEdit} />
             </label>
             <button
               type="button"
@@ -374,9 +452,11 @@ export default function PacienteDetailPage() {
                         <button onClick={() => onCopy(f)} className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1">
                           <ColorEmoji token="link" size={14} /> Copiar link
                         </button>
-                        <button onClick={() => onDeleteFile(f.id)} className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1">
-                          <ColorEmoji token="borrar" size={14} /> Eliminar
-                        </button>
+                        {canEdit && (
+                          <button onClick={() => onDeleteFile(f.id)} className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1">
+                            <ColorEmoji token="borrar" size={14} /> Eliminar
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -386,6 +466,60 @@ export default function PacienteDetailPage() {
           )}
         </div>
       </section>
+
+      {/* Compartir (solo dueño) */}
+      {isOwner && (
+        <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
+              <ColorEmoji token="compartir" size={18} /> Compartir acceso
+            </h2>
+
+            <form onSubmit={onShare} className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+              <input
+                type="email"
+                value={shareEmail}
+                onChange={e => setShareEmail(e.target.value)}
+                placeholder="email@dominio.com"
+                className="sm:col-span-3 rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+              <label className="inline-flex items-center gap-2 px-2">
+                <input type="checkbox" checked={shareCanEdit} onChange={e => setShareCanEdit(e.target.checked)} />
+                Puede editar
+              </label>
+              <button
+                className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+                disabled={sharing}
+              >
+                <ColorEmoji token="enviar" size={16} /> {sharing ? "Compartiendo…" : "Compartir"}
+              </button>
+            </form>
+
+            <div className="h-px bg-[var(--color-brand-border)]" />
+
+            {shares.length === 0 ? (
+              <p className="text-[var(--color-brand-bluegray)]">Aún no has compartido este paciente.</p>
+            ) : (
+              <ul className="space-y-2">
+                {shares.map(s => (
+                  <li key={s.id} className="flex items-center justify-between rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2">
+                    <div className="min-w-0">
+                      <div className="text-sm text-[var(--color-brand-text)] truncate">{s.grantee_email}</div>
+                      <div className="text-xs text-[var(--color-brand-bluegray)]">{s.can_edit ? "Puede editar" : "Solo lectura"}</div>
+                    </div>
+                    <button
+                      onClick={() => onRevoke(s.id)}
+                      className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
+                    >
+                      <ColorEmoji token="borrar" size={14} /> Revocar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Modal Editar paciente */}
       <Modal
@@ -402,6 +536,7 @@ export default function PacienteDetailPage() {
               onChange={(e) => setNombre(e.target.value)}
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               placeholder="Nombre completo"
+              disabled={!canEdit}
             />
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -412,6 +547,7 @@ export default function PacienteDetailPage() {
                 onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
                 type="number" min={0}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                disabled={!canEdit}
               />
             </label>
             <label className="block">
@@ -420,6 +556,7 @@ export default function PacienteDetailPage() {
                 value={genero}
                 onChange={(e) => setGenero(e.target.value as any)}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                disabled={!canEdit}
               >
                 <option value="F">Femenino</option>
                 <option value="M">Masculino</option>
@@ -437,7 +574,7 @@ export default function PacienteDetailPage() {
               Cancelar
             </button>
             <button
-              disabled={savingEdit}
+              disabled={savingEdit || !canEdit}
               className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
             >
               <ColorEmoji token="guardar" size={16} /> {savingEdit ? "Guardando…" : "Guardar cambios"}
