@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import Emoji from "@/components/Emoji";
+import ColorEmoji from "@/components/ColorEmoji";
 
 type FileRow = {
   name: string;
@@ -151,7 +151,7 @@ export default function MisArchivosPage() {
       <header className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-            <Emoji name="carpeta" size={30} />
+            <ColorEmoji name="carpeta" size={30} />
             Mis archivos
           </h1>
           <p className="text-[var(--color-brand-bluegray)]">
@@ -168,7 +168,7 @@ export default function MisArchivosPage() {
               hover:brightness-95 active:brightness-90 transition shadow-sm
             "
           >
-            <Emoji name="subir" size={18} />
+            <ColorEmoji name="subir" size={18} />
             Subir archivo
           </a>
           <button
@@ -184,7 +184,7 @@ export default function MisArchivosPage() {
             "
             title="Actualizar lista"
           >
-            <Emoji name="actualizar" size={18} />
+            <ColorEmoji name="actualizar" size={18} />
             Actualizar lista
           </button>
         </div>
@@ -207,7 +207,7 @@ export default function MisArchivosPage() {
           shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 py-6
         ">
           <p className="text-[var(--color-brand-text)] flex items-center gap-2">
-            <Emoji name="info" size={18} /> Cargando…
+            <ColorEmoji name="info" size={18} /> Cargando…
           </p>
         </div>
       )}
@@ -222,7 +222,7 @@ export default function MisArchivosPage() {
         >
           <div className="p-7 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <Emoji name="nube" size={28} />
+              <ColorEmoji name="nube" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
@@ -240,7 +240,7 @@ export default function MisArchivosPage() {
                     hover:brightness-95 active:brightness-90 transition shadow-sm
                   "
                 >
-                  <Emoji name="subir" size={18} />
+                  <ColorEmoji name="subir" size={18} />
                   Subir archivo
                 </a>
               </div>
@@ -269,7 +269,7 @@ export default function MisArchivosPage() {
               >
                 <div className="p-6 flex items-start gap-4">
                   <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                    <Emoji name="archivo" size={28} />
+                    <ColorEmoji name="archivo" size={28} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-[var(--color-brand-text)] font-semibold truncate">
@@ -296,7 +296,7 @@ export default function MisArchivosPage() {
                     "
                     title="Ver"
                   >
-                    <Emoji name="ver" size={18} /> Ver
+                    <ColorEmoji name="ver" size={18} /> Ver
                   </button>
 
                   <button
@@ -311,7 +311,7 @@ export default function MisArchivosPage() {
                     "
                     title="Descargar"
                   >
-                    <Emoji name="descargar" size={18} /> Descargar
+                    <ColorEmoji name="descargar" size={18} /> Descargar
                   </button>
 
                   <button
@@ -326,7 +326,7 @@ export default function MisArchivosPage() {
                     "
                     title="Copiar enlace"
                   >
-                    <Emoji name="copiar" size={18} /> Copiar enlace
+                    <ColorEmoji name="copiar" size={18} /> Copiar enlace
                   </button>
 
                   <button
@@ -340,7 +340,7 @@ export default function MisArchivosPage() {
                     "
                     title="Eliminar"
                   >
-                    <Emoji name="borrar" size={18} /> Eliminar
+                    <ColorEmoji name="borrar" size={18} /> Eliminar
                   </button>
                 </div>
               </div>

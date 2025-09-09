@@ -55,7 +55,7 @@ export default function Navbar() {
         {/* Brand */}
         <Link href="/dashboard" className="inline-flex items-center gap-2">
           <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-            <ColorEmoji emoji="🍃" />
+            <ColorEmoji token="hoja" />
           </span>
           <span className="font-semibold text-[var(--color-brand-text)]">Sanoa</span>
         </Link>
@@ -97,7 +97,7 @@ export default function Navbar() {
             "
             title="Cerrar sesión"
           >
-            <ColorEmoji emoji="🔓" />
+            <ColorEmoji token="desbloquear" />
             <span>Cerrar sesión</span>
           </button>
         </div>
@@ -112,6 +112,6 @@ export default function Navbar() {
              hover:bg-[color-mix(in_oklab,white_85%,var(--color-brand-primary)_0%)]
              transition"
 >
-  <ColorEmoji emoji="👥" />
+  <ColorEmoji token="pacientes" />
   <span>Pacientes</span>
 </Link>

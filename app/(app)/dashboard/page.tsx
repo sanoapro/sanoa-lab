@@ -1,6 +1,6 @@
 import InstallPrompt from '@/components/InstallPrompt';
 import Link from "next/link";
-import Emoji from "@/components/Emoji";
+import ColorEmoji from "@/components/ColorEmoji";
 
 export default function TableroPage() {
   return (
@@ -10,7 +10,7 @@ export default function TableroPage() {
       {/* Encabezado */}
       <header className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-          <Emoji name="tablero" size={32} />
+          <ColorEmoji name="tablero" size={32} />
           Tablero
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
@@ -29,7 +29,7 @@ export default function TableroPage() {
         >
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <Emoji name="subir" size={28} />
+              <ColorEmoji name="subir" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Subir archivos</h3>
@@ -39,7 +39,7 @@ export default function TableroPage() {
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
             <span className="inline-flex items-center gap-2">
-              Ir ahora <Emoji name="siguiente" size={18} />
+              Ir ahora <ColorEmoji name="siguiente" size={18} />
             </span>
           </div>
         </Link>
@@ -53,7 +53,7 @@ export default function TableroPage() {
         >
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <Emoji name="carpeta" size={28} />
+              <ColorEmoji name="carpeta" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Mis archivos</h3>
@@ -63,7 +63,7 @@ export default function TableroPage() {
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
             <span className="inline-flex items-center gap-2">
-              Ver listado <Emoji name="ver" size={18} />
+              Ver listado <ColorEmoji name="ver" size={18} />
             </span>
           </div>
         </Link>
@@ -73,7 +73,7 @@ export default function TableroPage() {
                         shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden opacity-70">
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <Emoji name="laboratorio" size={28} />
+              <ColorEmoji name="laboratorio" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Laboratorio (próximamente)</h3>
@@ -83,7 +83,7 @@ export default function TableroPage() {
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/70">
             <span className="inline-flex items-center gap-2">
-              En desarrollo <Emoji name="info" size={16} />
+              En desarrollo <ColorEmoji name="info" size={16} />
             </span>
           </div>
         </div>
