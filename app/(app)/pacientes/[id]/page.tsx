@@ -1,45 +1,40 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
-
-type Paciente = {
-  id: string;
-  nombre: string;
-  edad: number;
-  genero: "F" | "M" | "O";
-  creadoEn: string;
-};
-const STORAGE_KEY = "sanoa.pacientes";
-
-function loadPacientes(): Paciente[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Paciente[]) : [];
-  } catch {
-    return [];
-  }
-}
+import { getPatient, type Patient } from "@/lib/patients";
+import { showToast } from "@/components/Toaster";
 
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [list, setList] = useState<Paciente[]>([]);
-  const paciente = useMemo(() => list.find((p) => p.id === id), [list, id]);
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setList(loadPacientes());
-  }, []);
+    (async () => {
+      try {
+        const p = await getPatient(id);
+        setPatient(p);
+      } catch (e: any) {
+        console.error(e);
+        showToast(e?.message || "No se pudo cargar el paciente.", "error");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id]);
 
-  if (!paciente) {
+  if (loading) {
+    return <main className="p-6 md:p-10"><p>Cargando…</p></main>;
+  }
+
+  if (!patient) {
     return (
       <main className="p-6 md:p-10">
         <div className="rounded-2xl border border-[var(--color-brand-border)] bg-white p-6">
           <p className="text-red-600">Paciente no encontrado.</p>
-          <Link
-            href="/pacientes"
-            className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
-          >
+          <Link href="/pacientes" className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
             <ColorEmoji token="atras" size={16} /> Volver
           </Link>
         </div>
@@ -51,12 +46,9 @@ export default function PacienteDetailPage() {
     <main className="p-6 md:p-10 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
-          <ColorEmoji token="usuario" size={24} /> {paciente.nombre}
+          <ColorEmoji token="usuario" size={24} /> {patient.nombre}
         </h1>
-        <Link
-          href="/pacientes"
-          className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
-        >
+        <Link href="/pacientes" className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]">
           <ColorEmoji token="atras" size={16} /> Volver
         </Link>
       </div>
@@ -66,13 +58,13 @@ export default function PacienteDetailPage() {
           <div>
             <h2 className="font-semibold text-[var(--color-brand-text)]">Datos básicos</h2>
             <p className="text-[var(--color-brand-bluegray)] mt-1 text-sm">
-              Edad: {paciente.edad} · Género: {paciente.genero}
+              Edad: {patient.edad} · Género: {patient.genero}
             </p>
           </div>
           <div>
             <h2 className="font-semibold text-[var(--color-brand-text)]">Creación</h2>
             <p className="text-[var(--color-brand-bluegray)] mt-1 text-sm">
-              {new Date(paciente.creadoEn).toLocaleString()}
+              {new Date(patient.created_at).toLocaleString()}
             </p>
           </div>
         </div>
