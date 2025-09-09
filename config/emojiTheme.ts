@@ -75,6 +75,7 @@ export const emojiTokens = {
   descargar: "⬇️",
   copiar: "🔗",
   borrar: "🗑️",
+  exportar: "📄",
 };
 
 export type EmojiTokenName = keyof typeof emojiTokens;

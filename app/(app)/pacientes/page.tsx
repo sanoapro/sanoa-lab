@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
 import { showToast } from "@/components/Toaster";
 import { createPatient, deletePatient, listPatients, type Genero, type Patient } from "@/lib/patients";
+import { usePatientsRealtime } from "@/hooks/usePatientsRealtime";
 
 export default function PacientesPage() {
   const [pacientes, setPacientes] = useState<Patient[]>([]);
@@ -12,7 +13,7 @@ export default function PacientesPage() {
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const data = await listPatients({ q, genero: fGenero });
@@ -23,16 +24,19 @@ export default function PacientesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [q, fGenero]);
 
   // Carga inicial
-  useEffect(() => { refresh(); /* eslint-disable react-hooks/exhaustive-deps */ }, []);
-  // Re-filtrar server-side con debounce
+  useEffect(() => { refresh(); }, [refresh]);
+
+  // Re-filtrado con debounce al escribir/buscar
   useEffect(() => {
     const t = setTimeout(() => { refresh(); }, 350);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, fGenero]);
+  }, [q, fGenero, refresh]);
+
+  // 🔴 Realtime: refresca cuando hay cambios en DB (de este usuario)
+  usePatientsRealtime(refresh, 250);
 
   const filtered = useMemo(() => pacientes, [pacientes]);
 
@@ -78,7 +82,7 @@ export default function PacientesPage() {
           Pacientes
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
-          Datos en Supabase con RLS por usuario.
+          Datos en Supabase con RLS por usuario (+ Realtime).
         </p>
       </header>
 
