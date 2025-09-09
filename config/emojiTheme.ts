@@ -12,7 +12,7 @@ export const emojiTheme: {
 } = {
   global: {
     mode: "duotone",
-    color: "#D97A66",       // terracota (brand)
+    color: "#D97A66", // terracota (brand)
     accentColor: "#3E4C59", // bluegray (texto/contraste)
   },
   // Overrides puntuales (incluye variantes sin/ con VS-16)

@@ -18,14 +18,19 @@ const SIGNED_TTL = Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300);
 // Soporta comodines tipo image/*, application/*
 function mimeAllowed(mime: string): boolean {
   if (!mime) return false;
-  const parts = ALLOWED.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
-  return parts.some(p => (p.endsWith("/*") ? mime.startsWith(p.slice(0, -1)) : mime.toLowerCase() === p.toLowerCase()));
+  const parts = ALLOWED.split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.some((p) =>
+    p.endsWith("/*") ? mime.startsWith(p.slice(0, -1)) : mime.toLowerCase() === p.toLowerCase(),
+  );
 }
 
 // Slug simple
 function slugify(name: string): string {
   return name
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^\w.\- ]+/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
@@ -35,7 +40,10 @@ function slugify(name: string): string {
 function randomId(len = 8): string {
   const bytes = new Uint8Array(len);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, len);
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, len);
 }
 
 export async function listPatientFiles(patientId: string): Promise<PatientFile[]> {
@@ -49,7 +57,10 @@ export async function listPatientFiles(patientId: string): Promise<PatientFile[]
   return (data || []) as PatientFile[];
 }
 
-export async function uploadPatientFile(patientId: string, file: File): Promise<PatientFile | null> {
+export async function uploadPatientFile(
+  patientId: string,
+  file: File,
+): Promise<PatientFile | null> {
   const supabase = getSupabaseBrowser();
 
   // Validaciones
@@ -59,7 +70,8 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
   if (!file) throw new Error("Archivo requerido.");
   const sizeMB = file.size / (1024 * 1024);
   if (sizeMB > MAX_MB) throw new Error(`Archivo demasiado grande. Máximo ${MAX_MB} MB.`);
-  if (!mimeAllowed(file.type || "")) throw new Error(`Tipo no permitido (${file.type || "desconocido"}). Permitidos: ${ALLOWED}`);
+  if (!mimeAllowed(file.type || ""))
+    throw new Error(`Tipo no permitido (${file.type || "desconocido"}). Permitidos: ${ALLOWED}`);
 
   // **CLAVE COMPATIBLE CON RLS**: <uid>/patients/<patientId>/<yyyy>/<mm>/<timestamp>-<rand>-<slug>
   const now = new Date();
@@ -72,16 +84,15 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
     patientId,
     `${yyyy}`,
     `${mm}`,
-    `${ts}-${randomId(6)}-${slugify(file.name)}`
+    `${ts}-${randomId(6)}-${slugify(file.name)}`,
   ].join("/");
 
   // Subida (bucket privado 'uploads')
-  const up = await supabase.storage.from("uploads")
-    .upload(key, file, {
-      contentType: file.type || "application/octet-stream",
-      upsert: false,
-      cacheControl: "3600"
-    });
+  const up = await supabase.storage.from("uploads").upload(key, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: false,
+    cacheControl: "3600",
+  });
   if (up.error) throw up.error;
 
   // Inserta metadatos
@@ -93,14 +104,17 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
       storage_key: key,
       file_name: file.name,
       size: file.size,
-      mime_type: file.type || null
+      mime_type: file.type || null,
     })
     .select("*")
     .single();
 
   if (error) {
     // Limpieza si falla el insert
-    await supabase.storage.from("uploads").remove([key]).catch(() => {});
+    await supabase.storage
+      .from("uploads")
+      .remove([key])
+      .catch(() => {});
     throw error;
   }
 
@@ -110,7 +124,9 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
 export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promise<string> {
   const supabase = getSupabaseBrowser();
   const sec = Number(ttlSeconds || SIGNED_TTL || 300);
-  const { data, error } = await supabase.storage.from("uploads").createSignedUrl(rec.storage_key, sec);
+  const { data, error } = await supabase.storage
+    .from("uploads")
+    .createSignedUrl(rec.storage_key, sec);
   if (error) throw error;
   return data.signedUrl;
 }

@@ -44,8 +44,12 @@ export default function ResetPasswordRequestPage() {
               <ColorEmoji token="email" size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">Restablecer contraseña</h1>
-              <p className="text-sm text-[var(--color-brand-bluegray)]">Te enviaremos un enlace seguro a tu correo.</p>
+              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Restablecer contraseña
+              </h1>
+              <p className="text-sm text-[var(--color-brand-bluegray)]">
+                Te enviaremos un enlace seguro a tu correo.
+              </p>
             </div>
           </div>
 
@@ -55,7 +59,7 @@ export default function ResetPasswordRequestPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e)=>setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="tucorreo@dominio.com"
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
@@ -72,7 +76,10 @@ export default function ResetPasswordRequestPage() {
           <div className="h-px bg-[var(--color-brand-border)]" />
 
           <div className="text-sm flex justify-between">
-            <Link href="/login" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+            >
               <ColorEmoji token="atras" size={16} /> Volver a iniciar sesión
             </Link>
           </div>

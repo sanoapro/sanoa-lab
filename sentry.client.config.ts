@@ -13,7 +13,13 @@ if (typeof window !== "undefined" && DSN) {
       // Evita enviar cualquier cookie/query sensible desde el navegador
       if (event.request?.headers) {
         const h = event.request.headers as Record<string, any>;
-        const block = ["cookie", "authorization", "x-supabase-auth", "sb-access-token", "sb-refresh-token"];
+        const block = [
+          "cookie",
+          "authorization",
+          "x-supabase-auth",
+          "sb-access-token",
+          "sb-refresh-token",
+        ];
         for (const k of block) if (h[k] != null) h[k] = "[REDACTED]";
       }
       return event;
