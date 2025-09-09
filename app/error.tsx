@@ -33,7 +33,7 @@ export default function Error({
         <div className="p-8 md:p-10">
           <div className="flex items-center gap-3 mb-2">
             <ColorEmoji
-              emoji="⚠️"
+              token="alerta"
               toneA="var(--color-brand-primary)"
               toneB="var(--color-brand-coral)"
               size={34}
@@ -66,7 +66,7 @@ export default function Error({
               onClick={() => reset()}
               className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-brand-primary)] px-4 py-2.5 text-white font-medium shadow-sm hover:opacity-95 transition"
             >
-              <ColorEmoji emoji="🔄" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
+              <ColorEmoji token="refrescar" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
               Reintentar
             </button>
 
@@ -75,7 +75,7 @@ export default function Error({
               className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-[var(--color-brand-text)] font-medium shadow-sm ring-1 ring-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)] transition"
             >
               <ColorEmoji
-                emoji="📋"
+                token="copiar"
                 toneA="var(--color-brand-text)"
                 toneB="var(--color-brand-bluegray)"
                 size={18}
@@ -87,7 +87,7 @@ export default function Error({
               href="/"
               className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-brand-coral)] px-4 py-2.5 text-white font-medium shadow-sm hover:opacity-95 transition"
             >
-              <ColorEmoji emoji="🏠" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
+              <ColorEmoji token="home" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
               Ir al inicio
             </Link>
           </div>

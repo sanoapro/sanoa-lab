@@ -1,131 +1,87 @@
-// config/emojiTheme.ts
-
-/** Modo de colorización para los emojis SVG (Twemoji) */
 export type EmojiMode = "duotone" | "mono" | "native";
 
-/** Overrides por emoji específico (clave = carácter del emoji) */
-export type EmojiPerItem = {
-  mode?: EmojiMode;      // "native" | "duotone" | "mono"
-  color?: string;        // color base por emoji
-  accentColor?: string;  // segundo tono por emoji
-};
-
-/** Tema global + overrides por emoji */
 export const emojiTheme = {
   global: {
-    mode: "duotone" as EmojiMode,                 // Modo global por defecto
-    color: "var(--color-brand-primary)",          // Color base global
-    accentColor: "var(--color-brand-coral)",      // Acento global
+    mode: "duotone" as EmojiMode,
+    color: "#D97A66",        // base terracota
+    accentColor: "#3E4C59",  // texto (contraste)
   },
-  /** Overrides por emoji (usa el carácter como clave) */
+  // Overrides puntuales por emoji (incluye variantes sin/ con VS-16)
   perEmoji: {
-    "📧": { mode: "native" }, // correo nativo (buena visibilidad)
-    "🌿": { mode: "native" }, // hojita Sanoa (opción 1)
-    "🍃": { mode: "native" }, // hojita Sanoa (opción 2)
-    "🗑️": { mode: "native" }, // bote de basura nativo
-    "🌐": { mode: "native" }, // Google / globo nativo
-    "🧭": { mode: "native" }, // tablero
-    "📦": { mode: "native" }, // otros 
-    "👀": { mode: "native" }, // ver 
-    "📊": { mode: "native" }, // tablero 2 
-    "🧪": { mode: "native" }, // laboratorio
-    "🔐": { mode: "duotone" },// candado duotono
-    "🔑": { mode: "duotone" },// llave duotono
-    "👥": { mode: "native" },
-    "👤": { mode: "native" },
-    "🛟": { mode: "native" },
-  } as Record<string, EmojiPerItem>,
+    "📧": { mode: "native" as EmojiMode },
+    "🌐": { mode: "native" as EmojiMode },
+    "🗑": { mode: "native" as EmojiMode },
+    "🗑️": { mode: "native" as EmojiMode },
+    "🍃": { mode: "native" as EmojiMode },
+    "🔐": { mode: "duotone" as EmojiMode },
+    "🔑": { mode: "duotone" as EmojiMode },
+  } as Record<string, { mode?: EmojiMode; color?: string; accentColor?: string }>,
 };
 
-/**
- * ============================
- *  Mapa semántico de emojis
- *  (¡edita aquí los íconos!)
- * ============================
- *
- * Cambia SOLO el carácter a la derecha para actualizar en toda la app.
- * Ejemplo: email: "✉️"
- */
+// Mapa semántico → carácter (cambia aquí y se refleja en toda la app)
 export const emojiTokens = {
-  // Auth / navegación
-  email: "📧",
+  // auth & navegación
   login: "🔐",
-  password: "🔑",
-  enter: "➡️",
-  logout: "🚪",
-  register: "📝",
+  key: "🔑",
+  email: "📧",
+  google: "🌐",
+  siguiente: "➡️",
+  atras: "⬅️",
   home: "🏠",
-  tablero: "🧭",
-  sanoa: "🌿",
-
-  // Archivos / acciones
-  subir: "📤",
-  descargar: "⬇️",
-  copiar: "📋",
-  ver: "👀",
-  actualizar: "🔄",
-  editar: "✏️",
-  guardar: "💾",
-  borrar: "🗑️",
-  compartir: "🔗",
-  enlace: "🔗",
-
-  // Tipos de recurso
-  carpeta: "📁",
-  archivo: "📄",
-  pdf: "📕",
-  imagen: "🖼️",
-  video: "🎬",
-
-  // Sistema / estado
-  ok: "✅",
   info: "ℹ️",
   alerta: "⚠️",
-  error: "❌",
-  ajustes: "⚙️",
-  buscar: "🔎",
-  calendario: "📅",
-  tiempo: "⏰",
+  copiar: "📋",
+  espera: "⏳",
 
-  // App / branding / varias
-  globo: "🌐",
-  marca: "🌿", // o "🍃"
-  mundo: "🌍",
-  volver: "⬅️",
-  siguiente: "➡️",
+  // identidad / UX
+  hoja: "🍃",
+  usuario: "👤",
+  pacientes: "👥",
 
-  // Salud (por si te sirven en módulos clínicos)
-  medico: "🩺",
-  paciente: "🧑‍🤝‍🧑",
-  cita: "📆",
+  // tablero / secciones
+  tablero: "🧭",
   laboratorio: "🧪",
-  receta: "💊",
-  clinica: "🏥",
-  ubicacion: "📍",
-  camara: "📷",
+
+  // archivos / storage
+  subir: "⤴️",
+  subirBandeja: "📤",
+  carpeta: "🗂️",
+  documentos: "🗂️",
+  archivo: "📄",
+  ver: "👁️",
+  descargar: "⬇️",
+  enlace: "🔗",
+  borrar: "🗑️",
+  refrescar: "🔄",
+  imagen: "🖼️",
+  limpiar: "🧹",
+  guardar: "💾",
+  salir: "🚪",
+
+  // varios
+  busqueda: "🔍",
+  dashboard: "📊",
+  puzzle: "🧩",
 } as const;
 
-/** Nombre de token semántico permitido (tipado) */
 export type EmojiTokenName = keyof typeof emojiTokens;
 
-/**
- * Devuelve el carácter emoji a partir de un nombre semántico.
- * Si pasas un carácter directamente, lo devuelve tal cual.
- */
-export function getEmojiChar(nameOrChar: EmojiTokenName | string): string {
-  if (nameOrChar in emojiTokens) {
+export function getEmojiChar(nameOrChar: string): string {
+  if ((nameOrChar as EmojiTokenName) in emojiTokens) {
     return emojiTokens[nameOrChar as EmojiTokenName];
   }
   return nameOrChar;
 }
 
-/**
- * Devuelve el set de estilo efectivo (global + override por emoji).
- * Útil si quieres inspeccionar o componer estilos fuera del componente.
- */
-export function getEmojiSettings(emojiChar: string) {
+function stripVS(s: string) {
+  // quita variantes de estilo (VS-16) para que los overrides "agarren"
+  return s.replace(/\uFE0F/g, "");
+}
+
+export function getEmojiSettings(emojiOrToken: string) {
+  const char = getEmojiChar(emojiOrToken);
   const base = emojiTheme.global;
-  const ov = emojiTheme.perEmoji[emojiChar] ?? {};
+  const ov = emojiTheme.perEmoji[char] || emojiTheme.perEmoji[stripVS(char)] || {};
   return {
     mode: ov.mode ?? base.mode,
     color: ov.color ?? base.color,

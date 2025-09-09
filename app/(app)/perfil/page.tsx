@@ -144,7 +144,7 @@ export default function PerfilPage() {
           <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         ) : (
           <div className="text-4xl">
-            <ColorEmoji emoji="👤" size={40} />
+            <ColorEmoji token="usuario" size={40} />
           </div>
         )}
       </div>
@@ -167,7 +167,7 @@ export default function PerfilPage() {
       {/* Encabezado */}
       <header>
         <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-          <ColorEmoji emoji="👤" size={30} />
+          <ColorEmoji token="usuario" size={30} />
           Perfil
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
@@ -191,14 +191,14 @@ export default function PerfilPage() {
                 type="button"
                 onClick={triggerPick}
                 className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-[var(--color-brand-primary)] text-white hover:brightness-95">
-                <ColorEmoji emoji="🖼️" />
+                <ColorEmoji token="imagen" />
                 Subir avatar
               </button>
               <button
                 type="button"
                 onClick={removeAvatar}
                 className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95">
-                <ColorEmoji emoji="🧹" />
+                <ColorEmoji token="limpiar" />
                 Quitar
               </button>
             </div>
@@ -245,7 +245,7 @@ export default function PerfilPage() {
                 type="submit"
                 disabled={saving}
                 className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60">
-                <ColorEmoji emoji="💾" />
+                <ColorEmoji token="guardar" />
                 Guardar cambios
               </button>
 
@@ -253,7 +253,7 @@ export default function PerfilPage() {
                 type="button"
                 onClick={signOut}
                 className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white border border-[var(--color-brand-border)] hover:brightness-95">
-                <ColorEmoji emoji="🚪" />
+                <ColorEmoji token="salir" />
                 Cerrar sesión
               </button>
             </div>

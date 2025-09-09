@@ -119,12 +119,12 @@ export default function PatientDetailPage() {
               className="inline-flex items-center gap-2 rounded-xl px-3 py-2 border border-[var(--color-brand-border)]
                          hover:bg-[color-mix(in_oklab,white_85%,var(--color-brand-primary)_0%)] transition"
             >
-              <ColorEmoji emoji="⬅️" />
+              <ColorEmoji token="atras" />
               Volver
             </Link>
             <div>
               <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-                <ColorEmoji emoji="👤" size={36} />
+                <ColorEmoji token="usuario" size={36} />
                 {loading ? "Cargando…" : fullName || "Paciente"}
               </h1>
               <p className="mt-1 text-[var(--color-brand-bluegray)]">
@@ -140,7 +140,7 @@ export default function PatientDetailPage() {
               className="inline-flex items-center gap-2 rounded-2xl px-4 py-3
                          bg-[var(--color-brand-primary)] text-white hover:brightness-95 active:brightness-90 transition shadow-sm disabled:opacity-60"
             >
-              <ColorEmoji emoji="💾" />
+              <ColorEmoji token="guardar" />
               Guardar
             </button>
             <button
@@ -151,7 +151,7 @@ export default function PatientDetailPage() {
                          hover:bg-[color-mix(in_oklab,white_85%,var(--color-brand-primary)_0%)]
                          transition"
             >
-              <ColorEmoji emoji="🗑️" />
+              <ColorEmoji token="borrar" />
               Eliminar
             </button>
           </div>
@@ -265,7 +265,7 @@ export default function PatientDetailPage() {
       ">
         <div className="px-7 md:px-10 py-7 text-[var(--color-brand-bluegray)]">
           <div className="flex items-center gap-2">
-            <ColorEmoji emoji="🗂️" />
+            <ColorEmoji token="documentos" />
             <strong>Archivos del paciente (próximamente)</strong>
           </div>
           <p className="mt-1">Integraremos el mismo estilo de subida/visualización que en <code>/test-ui/upload</code> y lo relacionaremos por paciente.</p>

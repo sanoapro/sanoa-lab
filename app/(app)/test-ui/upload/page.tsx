@@ -141,7 +141,7 @@ export default function UploadDemoPage() {
       {/* Encabezado */}
       <header className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-          <ColorEmoji emoji="🗂️" size={28} />
+          <ColorEmoji token="documentos" size={28} />
           Subir & Gestionar archivos
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
@@ -157,7 +157,7 @@ export default function UploadDemoPage() {
         <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-end">
           <label className="flex-1 space-y-2">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
-              <ColorEmoji emoji="📤" size={18} /> Archivo
+              <ColorEmoji token="subirBandeja" size={18} /> Archivo
             </span>
             <input
               ref={inputRef}
@@ -174,7 +174,7 @@ export default function UploadDemoPage() {
               disabled={uploading}
               className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
             >
-              <ColorEmoji emoji="⤴️" size={18} />
+              <ColorEmoji token="subir" size={18} />
               {uploading ? "Subiendo…" : "Subir"}
             </button>
           </form>
@@ -183,7 +183,7 @@ export default function UploadDemoPage() {
             disabled={loading}
             className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] flex items-center gap-2"
           >
-            <ColorEmoji emoji="🔄" size={18} />
+            <ColorEmoji token="refrescar" size={18} />
             {loading ? "Actualizando…" : "Actualizar lista"}
           </button>
         </div>
@@ -206,7 +206,7 @@ export default function UploadDemoPage() {
           >
             <div className="p-6 flex items-start gap-4">
               <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                <ColorEmoji emoji="📄" size={24} />
+                <ColorEmoji token="archivo" size={24} />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-[var(--color-brand-text)] truncate">{obj.name}</h3>
@@ -223,26 +223,26 @@ export default function UploadDemoPage() {
                 onClick={() => onView(obj)}
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
               >
-                <ColorEmoji emoji="👁️" size={16} /> Ver
+                <ColorEmoji token="ver" size={16} /> Ver
               </button>
               <button
                 onClick={() => onDownload(obj)}
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
               >
-                <ColorEmoji emoji="⬇️" size={16} /> Descargar
+                <ColorEmoji token="descargar" size={16} /> Descargar
               </button>
               <button
                 onClick={() => onCopyLink(obj)}
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
                 title="Signed URL (5 min)"
               >
-                <ColorEmoji emoji="🔗" size={16} /> Copiar enlace
+                <ColorEmoji token="enlace" size={16} /> Copiar enlace
               </button>
               <button
                 onClick={() => onDelete(obj)}
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-red-50 flex items-center justify-center gap-2 text-sm text-red-600"
               >
-                <ColorEmoji emoji="🗑️" size={16} /> Borrar
+                <ColorEmoji token="borrar" size={16} /> Borrar
               </button>
             </div>
           </article>
