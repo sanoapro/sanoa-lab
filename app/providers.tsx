@@ -1,3 +1,4 @@
+import '@/sentry.client.config';
 "use client";
 
 import React from "react";
