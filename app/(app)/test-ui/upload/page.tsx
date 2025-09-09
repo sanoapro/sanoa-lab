@@ -1,359 +1,253 @@
 "use client";
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import { useToast } from "@/components/Toast";
+import { showToast } from "@/components/Toaster";
+import { getSignedUrl } from "@/lib/storage";
 
-type FileRow = {
+type Obj = {
   id?: string;
   name: string;
-  updated_at?: string | null;
-  created_at?: string | null;
-  last_accessed_at?: string | null;
-  metadata?: Record<string, any> | null;
+  updated_at?: string;
+  created_at?: string;
+  last_accessed_at?: string;
+  metadata?: Record<string, any>;
 };
 
-export default function UploadPage() {
+const BUCKET = "uploads";
+
+export default function UploadDemoPage() {
   const supabase = getSupabaseBrowser();
-  const { toast } = useToast();
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [files, setFiles] = useState<Obj[]>([]);
   const [loading, setLoading] = useState(false);
-  const [listing, setListing] = useState(false);
-  const [files, setFiles] = useState<FileRow[]>([]);
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Obtener el UID para info visual (RLS ya lo usa por detrás)
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setSessionUserId(data.user?.id ?? null);
-    });
-  }, [supabase]);
+  const hasFiles = files.length > 0;
 
-  const bucket = "uploads";
-
-  async function listFiles() {
-    setListing(true);
-    const { data, error } = await supabase.storage.from(bucket).list("", {
-      limit: 100,
-      sortBy: { column: "updated_at", order: "desc" },
-    });
-    setListing(false);
-
-    if (error) {
-      toast({
-        variant: "error",
-        title: "No se pudo listar",
-        description: error.message,
-        emoji: "🛑",
-      });
-      return;
+  const prettyDate = (iso?: string) => {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString();
+    } catch {
+      return iso;
     }
-    setFiles(data ?? []);
+  };
+
+  async function refreshList() {
+    setLoading(true);
+    try {
+      // Listamos en raíz. RLS ya limita a objetos owner = auth.uid()
+      const { data, error } = await supabase.storage.from(BUCKET).list("", {
+        limit: 1000,
+        offset: 0,
+        sortBy: { column: "created_at", order: "desc" as const },
+      });
+      if (error) throw error;
+      setFiles(data || []);
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo obtener la lista.", "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    listFiles();
+    refreshList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function openPicker() {
-    inputRef.current?.click();
-  }
-
-  async function handlePick(e: React.ChangeEvent<HTMLInputElement>) {
-    const picked = e.target.files;
-    if (!picked || picked.length === 0) return;
-
-    setLoading(true);
+  async function onUpload(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const file = inputRef.current?.files?.[0];
+    if (!file) {
+      showToast("Elige un archivo primero.", "info");
+      return;
+    }
+    setUploading(true);
     try {
-      for (const f of Array.from(picked)) {
-        const filename = `${Date.now()}-${f.name}`;
-        const { error } = await supabase.storage.from(bucket).upload(filename, f, {
-          upsert: false, // evita sobrescritura accidental
-          cacheControl: "3600",
-        });
-        if (error) {
-          toast({
-            variant: "error",
-            title: "Error al subir",
-            description: `${f.name}: ${error.message}`,
-            emoji: "🛑",
-          });
-        } else {
-          toast({
-            variant: "success",
-            title: "Archivo subido",
-            description: f.name,
-            emoji: "✅",
-          });
-        }
-      }
-      await listFiles();
+      // Nombre con timestamp para evitar colisiones
+      const path = `${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+        cacheControl: "3600",
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
+      if (error) throw error;
+      showToast("Archivo subido.", "success");
+      inputRef.current!.value = "";
+      await refreshList();
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo subir el archivo.", "error");
     } finally {
-      setLoading(false);
-      // Limpia input para permitir subir el mismo archivo de nuevo si se quiere
-      if (inputRef.current) inputRef.current.value = "";
+      setUploading(false);
     }
   }
 
-  async function handleCopySignedUrl(path: string) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, 60 * 10); // 10 min
-
-    if (error || !data?.signedUrl) {
-      toast({
-        variant: "error",
-        title: "No se pudo copiar el enlace",
-        description: error?.message ?? "Sin URL",
-        emoji: "🛑",
-      });
-      return;
+  async function onCopyLink(obj: Obj) {
+    try {
+      const url = await getSignedUrl(obj.name, 300); // 5 minutos
+      await navigator.clipboard.writeText(url);
+      showToast("Enlace temporal copiado (5 min).", "success");
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo generar el enlace.", "error");
     }
-    await navigator.clipboard.writeText(data.signedUrl);
-    toast({
-      variant: "success",
-      title: "Enlace temporal copiado",
-      description: "Válido por 10 minutos.",
-      emoji: "🔗",
-    });
   }
 
-  async function handleView(path: string) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, 60 * 5); // 5 min
-
-    if (error || !data?.signedUrl) {
-      toast({
-        variant: "error",
-        title: "No se pudo abrir",
-        description: error?.message ?? "Sin URL",
-        emoji: "🛑",
-      });
-      return;
+  async function onView(obj: Obj) {
+    try {
+      const url = await getSignedUrl(obj.name, 300);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      console.error(e);
+      showToast("No se pudo abrir el archivo.", "error");
     }
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
-  async function handleDownload(path: string) {
-    const { data, error } = await supabase.storage.from(bucket).download(path);
-    if (error || !data) {
-      toast({
-        variant: "error",
-        title: "No se pudo descargar",
-        description: error?.message ?? "—",
-        emoji: "🛑",
-      });
-      return;
+  async function onDownload(obj: Obj) {
+    try {
+      const url = await getSignedUrl(obj.name, 300);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = obj.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (e: any) {
+      console.error(e);
+      showToast("No se pudo descargar.", "error");
     }
-
-    // Forzar descarga
-    const url = URL.createObjectURL(data);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = path.split("/").pop() ?? "archivo";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
-    toast({
-      variant: "info",
-      title: "Descarga iniciada",
-      description: a.download,
-      emoji: "⬇️",
-    });
   }
 
-  async function handleDelete(path: string) {
-    const ok = confirm("¿Eliminar este archivo? Esta acción no se puede deshacer.");
-    if (!ok) return;
-
-    const { error } = await supabase.storage.from(bucket).remove([path]);
-    if (error) {
-      toast({
-        variant: "error",
-        title: "No se pudo eliminar",
-        description: error.message,
-        emoji: "🛑",
-      });
-      return;
+  async function onDelete(obj: Obj) {
+    if (!confirm(`¿Eliminar "${obj.name}"?`)) return;
+    try {
+      const { error } = await supabase.storage.from(BUCKET).remove([obj.name]);
+      if (error) throw error;
+      showToast("Archivo eliminado.", "success");
+      await refreshList();
+    } catch (e: any) {
+      console.error(e);
+      showToast("No se pudo eliminar.", "error");
     }
-    toast({
-      variant: "success",
-      title: "Archivo eliminado",
-      description: path.split("/").pop() ?? "",
-      emoji: "🗑️",
-    });
-    await listFiles();
   }
-
-  const isEmpty = useMemo(() => files.length === 0, [files]);
 
   return (
-    <main className="min-h-dvh bg-[var(--color-brand-background)] px-4 py-10">
-      <div className="mx-auto max-w-6xl space-y-8">
-        {/* Encabezado */}
-        <header
-          className="
-            rounded-3xl border border-[var(--color-brand-border)] bg-white/95 backdrop-blur
-            shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 md:p-8
-          "
-        >
-          <div className="flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
-                <span className="inline-grid place-content-center h-11 w-11 rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                  <ColorEmoji emoji="📤" />
-                </span>
-                Cargas
-              </h1>
-              <p className="mt-2 text-[var(--color-brand-bluegray)]">
-                {sessionUserId ? (
-                  <>
-                    <ColorEmoji emoji="👤" className="mr-1" /> Usuario:{" "}
-                    <span className="font-medium text-[var(--color-brand-text)]">
-                      {sessionUserId}
-                    </span>
-                  </>
-                ) : (
-                  "—"
-                )}
-              </p>
-            </div>
+    <main className="p-6 md:p-10 space-y-8">
+      {/* Encabezado */}
+      <header className="space-y-2">
+        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
+          <ColorEmoji emoji="🗂️" size={28} />
+          Subir & Gestionar archivos
+        </h1>
+        <p className="text-[var(--color-brand-bluegray)]">
+          Bucket privado <code className="rounded bg-[var(--color-brand-background)] px-1">uploads</code> (RLS por dueño).
+        </p>
+      </header>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={openPicker}
-                disabled={loading}
-                className="
-                  inline-flex items-center gap-2 px-4 py-3 rounded-2xl
-                  bg-[var(--color-brand-primary)] text-white
-                  hover:brightness-95 active:brightness-90
-                  disabled:opacity-60 disabled:cursor-not-allowed transition shadow-sm
-                "
-                title="Subir archivos"
-              >
-                <ColorEmoji emoji="⤴️" />
-                <span>Subir archivos</span>
-              </button>
+      {/* Uploader */}
+      <section
+        className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+                   shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden"
+      >
+        <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-end">
+          <label className="flex-1 space-y-2">
+            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
+              <ColorEmoji emoji="📤" size={18} /> Archivo
+            </span>
+            <input
+              ref={inputRef}
+              type="file"
+              className="block w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+            />
+          </label>
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="hidden"
+          />
+          <form onSubmit={onUpload}>
+            <button
+              disabled={uploading}
+              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+            >
+              <ColorEmoji emoji="⤴️" size={18} />
+              {uploading ? "Subiendo…" : "Subir"}
+            </button>
+          </form>
+          <button
+            onClick={refreshList}
+            disabled={loading}
+            className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] flex items-center gap-2"
+          >
+            <ColorEmoji emoji="🔄" size={18} />
+            {loading ? "Actualizando…" : "Actualizar lista"}
+          </button>
+        </div>
+      </section>
 
-              <button
-                type="button"
-                onClick={listFiles}
-                disabled={listing}
-                className="
-                  inline-flex items-center gap-2 px-4 py-3 rounded-2xl
-                  bg-white text-[var(--color-brand-text)]
-                  border border-[var(--color-brand-border)]
-                  hover:bg-[color-mix(in_oklab,#fff_80%,var(--color-brand-background)_20%)]
-                  disabled:opacity-60 disabled:cursor-not-allowed transition
-                "
-                title="Actualizar lista"
-              >
-                <ColorEmoji emoji="🔄" />
-                <span>Actualizar lista</span>
-              </button>
-
-              <input
-                ref={inputRef}
-                type="file"
-                multiple
-                onChange={handlePick}
-                className="hidden"
-              />
-            </div>
+      {/* Lista */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        {!hasFiles && !loading && (
+          <div className="col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 text-[var(--color-brand-bluegray)]">
+            No hay archivos aún.
           </div>
-        </header>
+        )}
 
-        {/* Lista */}
-        <section
-          className="
-            rounded-3xl border border-[var(--color-brand-border)] bg-white/95 backdrop-blur
-            shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-4 md:p-6
-          "
-        >
-          {isEmpty ? (
-            <div className="grid place-items-center py-16 text-center">
-              <div className="inline-grid place-content-center h-16 w-16 rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] mb-4">
-                <ColorEmoji emoji="🗂️" size={28} />
+        {files.map((obj) => (
+          <article
+            key={obj.name}
+            className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+                       shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
+                       transition overflow-hidden"
+          >
+            <div className="p-6 flex items-start gap-4">
+              <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+                <ColorEmoji emoji="📄" size={24} />
               </div>
-              <p className="text-[var(--color-brand-text)] text-lg font-medium">
-                Aún no tienes archivos
-              </p>
-              <p className="text-[var(--color-brand-bluegray)]">
-                Usa <em>Subir archivos</em> para comenzar.
-              </p>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-[var(--color-brand-text)] truncate">{obj.name}</h3>
+                <p className="text-sm text-[var(--color-brand-bluegray)]">
+                  Actualizado: {prettyDate(obj.updated_at || obj.created_at)}
+                </p>
+              </div>
             </div>
-          ) : (
-            <ul className="divide-y divide-[var(--color-brand-border)]">
-              {files.map((f) => {
-                const path = f.name; // estamos en raíz
-                return (
-                  <li
-                    key={`${f.id ?? ""}:${f.name}`}
-                    className="py-4 flex items-center justify-between gap-4"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-[var(--color-brand-text)] truncate flex items-center gap-2">
-                        <ColorEmoji emoji="📄" />
-                        {f.name}
-                      </p>
-                      <p className="text-sm text-[var(--color-brand-bluegray)]">
-                        {f.updated_at
-                          ? new Date(f.updated_at).toLocaleString()
-                          : f.created_at
-                          ? new Date(f.created_at).toLocaleString()
-                          : "—"}
-                      </p>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--color-brand-border)] bg-white hover:bg-[var(--color-brand-background)]"
-                        onClick={() => handleView(path)}
-                        title="Ver"
-                      >
-                        <ColorEmoji emoji="👁️" />
-                        <span>Ver</span>
-                      </button>
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--color-brand-border)] bg-white hover:bg-[var(--color-brand-background)]"
-                        onClick={() => handleDownload(path)}
-                        title="Descargar"
-                      >
-                        <ColorEmoji emoji="⬇️" />
-                        <span>Descargar</span>
-                      </button>
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--color-brand-border)] bg-white hover:bg-[var(--color-brand-background)]"
-                        onClick={() => handleCopySignedUrl(path)}
-                        title="Copiar enlace"
-                      >
-                        <ColorEmoji emoji="🔗" />
-                        <span>Copiar enlace</span>
-                      </button>
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600 text-white hover:brightness-95"
-                        onClick={() => handleDelete(path)}
-                        title="Eliminar"
-                      >
-                        {/* Bote nativo como te gusta */}
-                        <ColorEmoji emoji="🗑️" />
-                        <span>Eliminar</span>
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      </div>
+            <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+
+            <div className="p-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <button
+                onClick={() => onView(obj)}
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
+              >
+                <ColorEmoji emoji="👁️" size={16} /> Ver
+              </button>
+              <button
+                onClick={() => onDownload(obj)}
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
+              >
+                <ColorEmoji emoji="⬇️" size={16} /> Descargar
+              </button>
+              <button
+                onClick={() => onCopyLink(obj)}
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
+                title="Signed URL (5 min)"
+              >
+                <ColorEmoji emoji="🔗" size={16} /> Copiar enlace
+              </button>
+              <button
+                onClick={() => onDelete(obj)}
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-red-50 flex items-center justify-center gap-2 text-sm text-red-600"
+              >
+                <ColorEmoji emoji="🗑️" size={16} /> Borrar
+              </button>
+            </div>
+          </article>
+        ))}
+      </section>
     </main>
   );
 }
