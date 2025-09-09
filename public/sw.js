@@ -1,16 +1,27 @@
-// v4 - precache + offline + runtime caching + skipWaiting message
-const PRECACHE = "sanoa-pre-v4";
-const RUNTIME  = "sanoa-run-v4";
+// v5 - cache-first estáticos, SWR para runtime, límite por tamaño y limpieza bajo demanda
+const PRECACHE = "sanoa-pre-v5";
+const RUNTIME  = "sanoa-run-v5";
 
+// Rutas que precacheamos (públicas/claves)
 const PRECACHE_URLS = [
-  "/", "/dashboard", "/login", "/reset-password", "/update-password", "/offline",
+  "/", "/login", "/dashboard",
+  "/reset-password", "/update-password",
+  "/offline", "/instalar", "/acerca", "/privacidad", "/terminos",
   "/favicon.ico"
 ];
 
-// Permitir que el cliente pida activar ya el nuevo SW
+// Límite de tamaño para cachear (bytes) — evita PDFs/video pesados
+const MAX_CACHE_BYTES = 8 * 1024 * 1024; // 8MB
+// Máximo de entradas en el cache runtime
+const RUNTIME_MAX_ENTRIES = 200;
+
+// Mensajes desde el cliente
 self.addEventListener("message", (e) => {
-  if (e?.data?.type === "SKIP_WAITING") {
-    self.skipWaiting();
+  const msg = e?.data?.type;
+  if (msg === "SKIP_WAITING") self.skipWaiting();
+  if (msg === "CLEANUP_RUNTIME") {
+    const limit = e?.data?.limit ?? RUNTIME_MAX_ENTRIES;
+    e.waitUntil(cleanupRuntime(limit));
   }
 });
 
@@ -26,62 +37,146 @@ self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(k => k !== PRECACHE && k !== RUNTIME).map(k => caches.delete(k)));
+    await cleanupRuntime(RUNTIME_MAX_ENTRIES);
   })());
   self.clients.claim();
 });
 
+// Utilidades
+function isSameOrigin(u) {
+  try { return new URL(u).origin === self.location.origin; } catch { return false; }
+}
+
+function isIconOrFavicon(u) {
+  try {
+    const url = new URL(u);
+    return url.pathname.startsWith("/icons/") ||
+           url.pathname.endsWith(".png") && url.pathname.includes("/icons/") ||
+           url.pathname === "/favicon.ico";
+  } catch { return false; }
+}
+
+function isNextStatic(u) {
+  try { return new URL(u).pathname.startsWith("/_next/static/"); } catch { return false; }
+}
+
+function isCdn(u) {
+  try {
+    const host = new URL(u).hostname;
+    return host.includes("twemoji") ||
+           host.includes("jsdelivr.net") ||
+           host.includes("unpkg.com") ||
+           host.includes("cdnjs.cloudflare.com") ||
+           host.includes("gstatic.com");
+  } catch { return false; }
+}
+
+function isSupabaseStorage(u) {
+  try {
+    const url = new URL(u);
+    return url.hostname.endsWith(".supabase.co") && url.pathname.includes("/storage/v1/object/");
+  } catch { return false; }
+}
+
+function shouldCacheResponse(req, res) {
+  try {
+    // No cachear si status no-OK
+    if (!res || !res.ok) return false;
+
+    const ct = res.headers.get("content-type") || "";
+    const cl = res.headers.get("content-length");
+    const len = cl ? parseInt(cl, 10) : null;
+
+    // Evitar binarios pesados si no sabemos el tamaño
+    if (len !== null && len > MAX_CACHE_BYTES) return false;
+    if (len === null && (ct.startsWith("video/") || ct === "application/zip")) return false;
+
+    // Do not cache POST responses etc. (ya filtrado por método GET en fetch)
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+async function cacheFirst(e, cacheName = RUNTIME) {
+  const req = e.request;
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+  if (cached) {
+    // Revalida en segundo plano
+    e.waitUntil(fetch(req).then(res => { if (shouldCacheResponse(req, res)) cache.put(req, res.clone()); }));
+    return cached;
+  }
+  try {
+    const net = await fetch(req);
+    if (shouldCacheResponse(req, net)) cache.put(req, net.clone());
+    return net;
+  } catch {
+    return caches.match(req);
+  }
+}
+
+async function staleWhileRevalidate(e, cacheName = RUNTIME) {
+  const req = e.request;
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+  const fetchPromise = fetch(req).then(res => {
+    if (shouldCacheResponse(req, res)) cache.put(req, res.clone());
+    return res;
+  }).catch(() => cached);
+  return cached || fetchPromise;
+}
+
+async function cleanupRuntime(limit = RUNTIME_MAX_ENTRIES) {
+  const cache = await caches.open(RUNTIME);
+  const keys = await cache.keys();
+  if (keys.length <= limit) return;
+  const excess = keys.length - limit;
+  const toDelete = keys.slice(0, excess); // inserción cronológica
+  await Promise.all(toDelete.map(k => cache.delete(k)));
+}
+
+// Estrategias
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
 
-  const u = new URL(req.url);
-
-  // NAVIGATE: network-first con fallback cache + /offline
+  // Navegaciones → network-first con fallback /offline
   if (req.mode === "navigate") {
     e.respondWith((async () => {
       try {
         const net = await fetch(req);
         const c = await caches.open(RUNTIME);
-        c.put(req, net.clone());
+        if (shouldCacheResponse(req, net)) c.put(req, net.clone());
         return net;
       } catch {
         const pre = await caches.open(PRECACHE);
-        const hit = await pre.match(req);
-        return hit || pre.match("/offline");
+        return (await pre.match(req)) || (await pre.match("/offline"));
       }
     })());
     return;
   }
 
-  // Runtime caching para Twemoji/CDNs/Fonts/Supabase Storage + mismos-origen
-  const host = u.hostname;
-  const isCdn =
-    host.includes("twemoji") ||
-    host.includes("jsdelivr.net") ||
-    host.includes("unpkg.com") ||
-    host.includes("cdnjs.cloudflare.com") ||
-    host.includes("gstatic.com");
-  const isSupabaseStorage = host.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/");
+  const url = req.url;
 
-  if (isCdn || isSupabaseStorage || u.origin === self.location.origin) {
-    e.respondWith((async () => {
-      const cache = await caches.open(RUNTIME);
-      const cached = await cache.match(req);
-      const fetchPromise = fetch(req).then(res => {
-        cache.put(req, res.clone());
-        return res;
-      }).catch(() => cached);
-      return cached || fetchPromise;
-    })());
+  // Estáticos del propio sitio
+  if (isIconOrFavicon(url) || isNextStatic(url)) {
+    e.respondWith(cacheFirst(e));
     return;
   }
 
-  // Resto: intenta red, si no usa cache
+  // CDNs, Google Fonts, Supabase Storage → SWR
+  if (isCdn(url) || isSupabaseStorage(url) || isSameOrigin(url)) {
+    e.respondWith(staleWhileRevalidate(e));
+    return;
+  }
+
+  // Resto: intenta red y si falla, cache
   e.respondWith((async () => {
     try { return await fetch(req); }
     catch {
-      const cache = await caches.open(RUNTIME);
-      return (await cache.match(req)) || Response.error();
+      const c = await caches.open(RUNTIME);
+      return (await c.match(req)) || Response.error();
     }
   })());
 });
