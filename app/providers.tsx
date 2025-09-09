@@ -1,8 +1,8 @@
-import '@/sentry.client.config';
-"use client";
+'use client';
 
-import React from "react";
-import { ToastProvider } from "@/components/Toast";
+import '@/sentry.client.config';
+import React from 'react';
+import { ToastProvider } from '@/components/Toast';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return <ToastProvider>{children}</ToastProvider>;
