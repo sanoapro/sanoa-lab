@@ -25,7 +25,7 @@ if (self.workbox) {
     })
   );
 
-  // Next.js static chunks
+  // Next static
   routing.registerRoute(
     ({url}) => url.pathname.startsWith('/_next/static/'),
     new strategies.StaleWhileRevalidate({
@@ -34,7 +34,7 @@ if (self.workbox) {
     })
   );
 
-  // Imágenes / iconos
+  // Imágenes
   routing.registerRoute(
     ({request}) => request.destination === 'image',
     new strategies.StaleWhileRevalidate({
@@ -62,20 +62,15 @@ if (self.workbox) {
   };
 
   const bgSyncPlugin = new backgroundSync.BackgroundSyncPlugin('sanoa-queue', {
-    maxRetentionTime: 24 * 60 // minutos
+    maxRetentionTime: 24 * 60 // en minutos
   });
 
-  // Captura escrituras (se reintentarán cuando vuelva la red)
-  routing.registerRoute(
-    isSupabaseWrite,
-    new strategies.NetworkOnly({ plugins: [bgSyncPlugin] }),
-    'POST'
-  );
+  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin] }), 'POST');
   routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin] }), 'PUT');
   routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin] }), 'DELETE');
   routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin] }), 'PATCH');
 
-  // Fallback: si falla una navegación, sirve offline.html
+  // Fallback de navegación → offline
   routing.setCatchHandler(async ({event}) => {
     if (event.request.destination === 'document') {
       return (await caches.match('/offline.html')) || Response.error();
