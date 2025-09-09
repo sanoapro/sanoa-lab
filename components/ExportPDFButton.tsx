@@ -4,10 +4,10 @@ import ColorEmoji from "@/components/ColorEmoji";
 
 type Props = {
   targetRef?: React.RefObject<HTMLElement>;
-  targetId?: string;                 // alternativa si no usas ref
-  filename?: string;                 // ej: "Paciente-Juan Perez.pdf"
+  targetId?: string; // alternativa si no usas ref
+  filename?: string; // ej: "Paciente-Juan Perez.pdf"
   className?: string;
-  label?: string;                    // texto del botón
+  label?: string; // texto del botón
 };
 
 export default function ExportPDFButton({

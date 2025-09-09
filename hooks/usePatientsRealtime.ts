@@ -13,7 +13,9 @@ export function usePatientsRealtime(onChange: () => void, debounceMs = 250) {
 
     const debounced = () => {
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => { if (active) onChange(); }, debounceMs);
+      timer.current = setTimeout(() => {
+        if (active) onChange();
+      }, debounceMs);
     };
 
     (async () => {

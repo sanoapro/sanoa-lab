@@ -10,10 +10,19 @@ type Props = {
   widthClass?: string; // ej. "max-w-lg"
 };
 
-export default function Modal({ open, onClose, title, children, footer, widthClass="max-w-lg" }: Props) {
+export default function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  widthClass = "max-w-lg",
+}: Props) {
   useEffect(() => {
     if (!open) return;
-    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onEsc);
     document.body.style.overflow = "hidden";
     return () => {
@@ -32,7 +41,9 @@ export default function Modal({ open, onClose, title, children, footer, widthCla
         aria-hidden
       />
       <div className="absolute inset-0 grid place-items-center p-4">
-        <div className={`w-full ${widthClass} rounded-2xl border border-[var(--color-brand-border)] bg-white shadow-xl`}>
+        <div
+          className={`w-full ${widthClass} rounded-2xl border border-[var(--color-brand-border)] bg-white shadow-xl`}
+        >
           {title && (
             <div className="px-5 py-4 border-b border-[var(--color-brand-border)]">
               <h3 className="text-[var(--color-brand-text)] font-semibold">{title}</h3>
