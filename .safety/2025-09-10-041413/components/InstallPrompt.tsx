@@ -27,7 +27,9 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-3 left-0 right-0 mx-auto w-full max-w-sm rounded-2xl border bg-white p-4 shadow">
-      <p className="mb-3 text-sm">¿Quieres instalar <b>Sanoa</b> como app?</p>
+      <p className="mb-3 text-sm">
+        ¿Quieres instalar <b>Sanoa</b> como app?
+      </p>
       <button
         onClick={onInstall}
         className="w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90"

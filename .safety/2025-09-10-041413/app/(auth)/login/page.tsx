@@ -20,7 +20,10 @@ export default function LoginPage() {
     const password = String(form.get("password") || "");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { setErr(error.message); return; }
+    if (error) {
+      setErr(error.message);
+      return;
+    }
     router.replace(redirectTo);
   }
 
@@ -66,7 +69,10 @@ export default function LoginPage() {
         Entrar con Google
       </button>
 
-      <a href="/reset-password" className="block text-center text-sm text-[var(--color-brand-coral)] underline">
+      <a
+        href="/reset-password"
+        className="block text-center text-sm text-[var(--color-brand-coral)] underline"
+      >
         ¿Olvidaste tu contraseña?
       </a>
     </div>

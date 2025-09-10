@@ -39,16 +39,26 @@ export default function UpdatePasswordPage() {
     const form = new FormData(e.currentTarget);
     const p = String(form.get("password") || "");
     const c = String(form.get("confirm") || "");
-    if (p.length < 8) { setError("La contraseña debe tener al menos 8 caracteres."); return; }
-    if (p !== c) { setError("Las contraseñas no coinciden."); return; }
+    if (p.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (p !== c) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
     const { error } = await supabase.auth.updateUser({ password: p });
-    if (error) { setError(error.message); return; }
+    if (error) {
+      setError(error.message);
+      return;
+    }
     alert("¡Listo! Tu contraseña fue actualizada.");
     router.replace("/login");
   }
 
   if (loading) return <p className="text-center p-4">Validando enlace…</p>;
-  if (!okSession) return <p className="text-center p-4 text-red-600">Enlace inválido o expirado.</p>;
+  if (!okSession)
+    return <p className="text-center p-4 text-red-600">Enlace inválido o expirado.</p>;
 
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-sm space-y-4 p-4">

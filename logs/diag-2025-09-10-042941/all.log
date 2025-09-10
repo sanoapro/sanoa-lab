@@ -1,0 +1,525 @@
+▶️  Iniciando diagnóstico 2025-09-10-042941
+
+=== Contexto Git ===
+## fix/supabase-sync-250910-0131
+ M .safety/2025-09-10-041413/app/(auth)/login/page.tsx
+ M .safety/2025-09-10-041413/app/(auth)/update-password/page.tsx
+ M .safety/2025-09-10-041413/components/InstallPrompt.tsx
+ M lib/database.types.ts
+ M logs/diag-2025-09-10-040633/eslint.json
+?? logs/diag-2025-09-10-042508.tgz
+?? logs/diag-2025-09-10-042508/
+?? logs/diag-2025-09-10-042941/
+8fe22711afef239e79ef6b8819aa37e0d9421d47
+commit 8fe22711afef239e79ef6b8819aa37e0d9421d47
+Author:     Sanoa <martin.maldonado32@gmail.com>
+AuthorDate: Wed Sep 10 04:21:37 2025 +0000
+Commit:     Sanoa <martin.maldonado32@gmail.com>
+CommitDate: Wed Sep 10 04:21:37 2025 +0000
+
+    chore(eslint): flat config para TS en todo el repo; fix segment configs; tsc ok
+
+=== Versiones básicas ===
+v22.17.0
+9.8.1
+10.13.1
+1.22.22
+
+  System:
+    OS: Linux 6.8 Ubuntu 24.04.2 LTS 24.04.2 LTS (Noble Numbat)
+    CPU: (2) x64 AMD EPYC 7763 64-Core Processor
+    Memory: 5.47 GB / 7.76 GB
+    Container: Yes
+    Shell: 5.2.21 - /bin/bash
+  Binaries:
+    Node: 22.17.0 - ~/nvm/current/bin/node
+    Yarn: 1.22.22 - /usr/bin/yarn
+    npm: 9.8.1 - ~/nvm/current/bin/npm
+    pnpm: 10.13.1 - ~/nvm/current/bin/pnpm
+
+
+=== Paquetes del proyecto ===
+{
+  "deps": {
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@sentry/nextjs": "^10.11.0",
+    "@supabase/auth-helpers-nextjs": "0.10.0",
+    "@supabase/supabase-js": "2.57.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
+    "lucide-react": "^0.542.0",
+    "next": "15.5.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDeps": {
+    "@eslint/eslintrc": "^3",
+    "@next/eslint-plugin-next": "^15.5.2",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.13",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "^15.5.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-formatter-unix": "^8.40.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.8",
+    "typescript": "^5",
+    "typescript-eslint": "^8.43.0"
+  }
+}
+
+=== Variables de entorno (enmascaradas) ===
+--- .env.local ---
+NEXT_PUBLIC_SUPABASE_URL=***MASKED***
+NEXT_PUBLIC_SUPABASE_ANON_KEY=***MASKED***
+NEXT_PUBLIC_SITE_URL=***MASKED***
+NEXT_PUBLIC_APP_VERSION=***MASKED***
+NEXT_PUBLIC_UPLOAD_MAX_MB=***MASKED***
+NEXT_PUBLIC_UPLOAD_ALLOWED=***MASKED***
+NEXT_PUBLIC_SIGNED_URL_TTL=***MASKED***
+NEXT_PUBLIC_SENTRY_DSN=***MASKED***
+NEXT_PUBLIC_SENTRY_ENV=***MASKED***
+
+=== Configuración de Next/TS/ESLint ===
+--- next.config.ts ---
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+--- tsconfig.json ---
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "baseUrl": ".",
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "app",
+    "components",
+    "lib",
+    "next-env.d.ts",
+    "scripts",
+    "types",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next", "logs/**", "logs"]
+}
+--- .prettierrc.json ---
+{
+  "semi": true,
+  "singleQuote": false,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "trailingComma": "all"
+}
+
+=== tsconfig efectivo (tsc --showConfig) ===
+tsconfig efectivo guardado.
+
+=== ESLint efectivo para un archivo conflictivo ===
+
+=== Greps rápidos (pistas de errores) ===
+-- usos de storage_key --
+lib/patient-files.ts:7:  storage_key: string;
+lib/patient-files.ts:107:      storage_key: key,
+lib/patient-files.ts:134:    .createSignedUrl(rec.storage_key, sec);
+lib/patient-files.ts:148:    .select("id, storage_key")
+lib/patient-files.ts:152:  const key = rec!.storage_key as string;
+-- usos de EmojiPerItem --
+-- imports getSupabaseClient (posible import incorrecto) --
+-- ocurrencias ': any' en TS/TSX --
+lib/patients.ts:12:function raise(error: any): never {
+lib/audit.ts:11:  data: any | null;
+components/InstallPrompt.tsx:13:    const handler = (e: any) => {
+components/OrgSwitcherBadge.tsx:23:    const onChanged = (e: any) => setCurrent(e.detail?.orgId || null);
+-- console.error(…) --
+grep: Unmatched ( or \(
+-- enums Gender tipado --
+
+=== Snapshot de archivos relevantes (para revisar tipos/llamadas) ===
+  ✓ lib/database.types.ts
+  ✓ lib/supabase-browser.ts
+  ✓ lib/supabase/client.ts
+  ✓ lib/types.ts
+  ✓ lib/patients.ts
+  ✓ lib/patient-files.ts
+  ✓ lib/patient-notes.ts
+  ✓ lib/patient-shares.ts
+  ✓ lib/org.ts
+  ✓ lib/audit.ts
+  ✓ config/emojiTheme.ts
+  ✓ components/EmojiTheme.tsx
+  ✓ components/OrgSwitcherBadge.tsx
+  ✓ components/InstallPrompt.tsx
+  ✓ components/ExportPDFButton.tsx
+  ✓ components/Toast.tsx
+  ✓ app/(app)/pacientes/[id]/page.tsx
+  ✓ app/(app)/pacientes/page.tsx
+  ✓ app/(app)/perfil/page.tsx
+  ✓ app/(app)/test-ui/upload/page.tsx
+
+=== Estado Supabase CLI (si está instalada) ===
+⚠️  Supabase CLI no encontrada (opcional). Instalar: npm i -g supabase
+
+=== Linter ===
+
+> sanoa-lab@0.1.0 format
+> prettier --write "**/*.{ts,tsx,js,jsx,json,css,md}"
+
+.prettierrc.json 30ms (unchanged)
+.safety/2025-09-10-041413/app/(auth)/login/page.tsx 67ms (unchanged)
+.safety/2025-09-10-041413/app/(auth)/reset-password/page.tsx 14ms (unchanged)
+.safety/2025-09-10-041413/app/(auth)/update-password/page.tsx 45ms (unchanged)
+.safety/2025-09-10-041413/components/InstallPrompt.tsx 12ms (unchanged)
+app/(app)/dashboard/page.tsx 56ms (unchanged)
+app/(app)/layout.tsx 8ms (unchanged)
+app/(app)/pacientes/[id]/page.tsx 332ms (unchanged)
+app/(app)/pacientes/page.tsx 51ms (unchanged)
+app/(app)/perfil/page.tsx 79ms (unchanged)
+app/(app)/test-ui/page.tsx 71ms (unchanged)
+app/(app)/test-ui/upload/page.tsx 79ms (unchanged)
+app/(auth)/login/page.tsx 54ms (unchanged)
+app/(auth)/register/page.tsx 19ms (unchanged)
+app/(auth)/reset-password/page.tsx 9ms (unchanged)
+app/(auth)/update-password/page.tsx 16ms (unchanged)
+app/acerca/page.tsx 2ms (unchanged)
+app/api/sentry-debug/route.ts 1ms (unchanged)
+app/error.tsx 9ms (unchanged)
+app/globals.css 49ms (unchanged)
+app/head.tsx 3ms (unchanged)
+app/instalar/page.tsx 20ms (unchanged)
+app/layout.tsx 5ms (unchanged)
+app/manifest.ts 4ms (unchanged)
+app/not-found.tsx 6ms (unchanged)
+app/offline/page.tsx 30ms (unchanged)
+app/page.tsx 2ms (unchanged)
+app/privacidad/page.tsx 3ms (unchanged)
+app/providers.tsx 2ms (unchanged)
+app/robots.ts 2ms (unchanged)
+app/sitemap.ts 2ms (unchanged)
+app/terminos/page.tsx 3ms (unchanged)
+components.json 3ms (unchanged)
+components/AppShell.tsx 3ms (unchanged)
+components/AuthGate.tsx 12ms (unchanged)
+components/ColorEmoji.tsx 60ms (unchanged)
+components/Emoji.tsx 8ms (unchanged)
+components/EmojiTheme.tsx 7ms (unchanged)
+components/ExportPDFButton.tsx 32ms (unchanged)
+components/InstallPrompt.tsx 8ms (unchanged)
+components/Modal.tsx 10ms (unchanged)
+components/Navbar.tsx 19ms (unchanged)
+components/OfflineIndicator.tsx 8ms (unchanged)
+components/OrgSwitcherBadge.tsx 18ms (unchanged)
+components/PendingQueueBadge.tsx 8ms (unchanged)
+components/QueueEvents.tsx 15ms (unchanged)
+components/RegisterSW.tsx 4ms (unchanged)
+components/RequireAuth.tsx 7ms (unchanged)
+components/SiteFooter.tsx 4ms (unchanged)
+components/ThemeToggle.tsx 6ms (unchanged)
+components/Toast.tsx 19ms (unchanged)
+components/Toaster.tsx 13ms (unchanged)
+components/ui/button.tsx 24ms (unchanged)
+components/ui/card.tsx 11ms (unchanged)
+components/ui/input.tsx 8ms (unchanged)
+components/ui/label.tsx 2ms (unchanged)
+components/UiCard.tsx 2ms (unchanged)
+components/UploadHint.tsx 2ms (unchanged)
+config/emojiTheme.ts 19ms (unchanged)
+hooks/useNotesRealtime.ts 17ms (unchanged)
+hooks/usePatientsRealtime.ts 15ms (unchanged)
+lib/audit.ts 20ms (unchanged)
+lib/database.types.ts 1ms (unchanged)
+lib/org.ts 27ms (unchanged)
+lib/patient-files.ts 50ms (unchanged)
+lib/patient-notes.ts 11ms (unchanged)
+lib/patient-shares.ts 8ms (unchanged)
+lib/patients-search.ts 10ms (unchanged)
+lib/patients.ts 10ms (unchanged)
+lib/storage.ts 3ms (unchanged)
+lib/supabase-browser.ts 4ms (unchanged)
+lib/supabase/client.ts 4ms (unchanged)
+lib/types.ts 8ms (unchanged)
+lib/utils.ts 2ms (unchanged)
+logs/diag-2025-09-10-013258/.eslintrc.json 3ms (unchanged)
+logs/diag-2025-09-10-013258/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-013258/eslint.effective.pacientes-id.json 131ms (unchanged)
+logs/diag-2025-09-10-013258/eslint.json 260ms (unchanged)
+logs/diag-2025-09-10-013258/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-013258/package.deps.json 2ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/pacientes/[id]/page.tsx 180ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/pacientes/page.tsx 52ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/perfil/page.tsx 52ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/test-ui/upload/page.tsx 36ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/EmojiTheme.tsx 5ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/ExportPDFButton.tsx 8ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/InstallPrompt.tsx 6ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/OrgSwitcherBadge.tsx 11ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/Toast.tsx 17ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/config/emojiTheme.ts 8ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/audit.ts 3ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/database.types.ts 10ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/org.ts 6ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patient-files.ts 17ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patient-notes.ts 12ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patient-shares.ts 7ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patients.ts 9ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/supabase/client.ts 2ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/types.ts 4ms (unchanged)
+logs/diag-2025-09-10-013258/tsconfig.effective.json 6ms (unchanged)
+logs/diag-2025-09-10-013258/tsconfig.json 3ms (unchanged)
+logs/diag-2025-09-10-031752/.eslintrc.json 3ms (unchanged)
+logs/diag-2025-09-10-031752/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-031752/eslint.effective.pacientes-id.json 22ms (unchanged)
+logs/diag-2025-09-10-031752/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-031752/package.deps.json 3ms (unchanged)
+logs/diag-2025-09-10-031752/tsconfig.effective.json 3ms (unchanged)
+logs/diag-2025-09-10-031752/tsconfig.json 2ms (unchanged)
+logs/diag-2025-09-10-033332/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/eslint.effective.pacientes-id.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/eslint.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-033332/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/pacientes/[id]/page.tsx 102ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/pacientes/page.tsx 31ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/perfil/page.tsx 46ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/test-ui/upload/page.tsx 47ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/EmojiTheme.tsx 7ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/ExportPDFButton.tsx 12ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/InstallPrompt.tsx 6ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/OrgSwitcherBadge.tsx 29ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/Toast.tsx 31ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/config/emojiTheme.ts 15ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/audit.ts 6ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/database.types.ts 14ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/org.ts 9ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patient-files.ts 33ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patient-notes.ts 20ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patient-shares.ts 15ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patients.ts 9ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/types.ts 2ms (unchanged)
+logs/diag-2025-09-10-033332/tsconfig.effective.json 2ms (unchanged)
+logs/diag-2025-09-10-033332/tsconfig.json 1ms (unchanged)
+logs/diag-2025-09-10-034410/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-034410/eslint.effective.pacientes-id.json 3ms (unchanged)
+logs/diag-2025-09-10-034410/eslint.json 67ms (unchanged)
+logs/diag-2025-09-10-034410/next.config.ts 4ms (unchanged)
+logs/diag-2025-09-10-034410/package.deps.json 4ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/pacientes/[id]/page.tsx 117ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/pacientes/page.tsx 61ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/perfil/page.tsx 26ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/test-ui/upload/page.tsx 22ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/EmojiTheme.tsx 7ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/ExportPDFButton.tsx 14ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/InstallPrompt.tsx 8ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/OrgSwitcherBadge.tsx 14ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/Toast.tsx 24ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/config/emojiTheme.ts 12ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/audit.ts 11ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/database.types.ts 17ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/org.ts 12ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patient-files.ts 27ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patient-notes.ts 4ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patient-shares.ts 3ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patients.ts 10ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/types.ts 2ms (unchanged)
+logs/diag-2025-09-10-034410/tsconfig.effective.json 2ms (unchanged)
+logs/diag-2025-09-10-034410/tsconfig.json 1ms (unchanged)
+logs/diag-2025-09-10-035844/.prettierrc.json 0ms (unchanged)
+logs/diag-2025-09-10-035844/eslint.effective.pacientes-id.json 2ms (unchanged)
+logs/diag-2025-09-10-035844/eslint.json 24ms (unchanged)
+logs/diag-2025-09-10-035844/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-035844/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/app/(app)/pacientes/[id]/page.tsx 83ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/app/(app)/pacientes/page.tsx 32ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/app/(app)/perfil/page.tsx 24ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/app/(app)/test-ui/upload/page.tsx 40ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/components/EmojiTheme.tsx 5ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/components/ExportPDFButton.tsx 10ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/components/InstallPrompt.tsx 6ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/components/OrgSwitcherBadge.tsx 5ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/components/Toast.tsx 9ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/config/emojiTheme.ts 8ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/audit.ts 4ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/database.types.ts 16ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/org.ts 7ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/patient-files.ts 17ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/patient-notes.ts 6ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/patient-shares.ts 17ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/patients.ts 10ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/supabase-browser.ts 3ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/supabase/client.ts 2ms (unchanged)
+logs/diag-2025-09-10-035844/snapshot/lib/types.ts 2ms (unchanged)
+logs/diag-2025-09-10-035844/tsconfig.effective.json 5ms (unchanged)
+logs/diag-2025-09-10-035844/tsconfig.json 3ms (unchanged)
+logs/diag-2025-09-10-040633/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-040633/eslint.effective.pacientes-id.json 4ms (unchanged)
+logs/diag-2025-09-10-040633/eslint.json 25ms (unchanged)
+logs/diag-2025-09-10-040633/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-040633/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/app/(app)/pacientes/[id]/page.tsx 126ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/app/(app)/pacientes/page.tsx 43ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/app/(app)/perfil/page.tsx 41ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/app/(app)/test-ui/upload/page.tsx 28ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/components/EmojiTheme.tsx 4ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/components/ExportPDFButton.tsx 9ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/components/InstallPrompt.tsx 5ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/components/OrgSwitcherBadge.tsx 13ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/components/Toast.tsx 14ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/config/emojiTheme.ts 10ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/audit.ts 6ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/database.types.ts 9ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/org.ts 4ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/patient-files.ts 18ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/patient-notes.ts 8ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/patient-shares.ts 14ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/patients.ts 13ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-040633/snapshot/lib/types.ts 4ms (unchanged)
+logs/diag-2025-09-10-040633/tsconfig.effective.json 4ms (unchanged)
+logs/diag-2025-09-10-040633/tsconfig.json 6ms (unchanged)
+logs/diag-2025-09-10-042508/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-042508/eslint.effective.pacientes-id.json 1ms (unchanged)
+logs/diag-2025-09-10-042508/eslint.json 56ms
+logs/diag-2025-09-10-042508/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-042508/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/app/(app)/pacientes/[id]/page.tsx 58ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/app/(app)/pacientes/page.tsx 19ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/app/(app)/perfil/page.tsx 24ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/app/(app)/test-ui/upload/page.tsx 23ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/components/EmojiTheme.tsx 3ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/components/ExportPDFButton.tsx 7ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/components/InstallPrompt.tsx 3ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/components/OrgSwitcherBadge.tsx 5ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/components/Toast.tsx 7ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/config/emojiTheme.ts 6ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/audit.ts 4ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/database.types.ts 10ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/org.ts 5ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/patient-files.ts 27ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/patient-notes.ts 11ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/patient-shares.ts 13ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/patients.ts 13ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-042508/snapshot/lib/types.ts 1ms (unchanged)
+logs/diag-2025-09-10-042508/tsconfig.effective.json 2ms (unchanged)
+logs/diag-2025-09-10-042508/tsconfig.json 1ms (unchanged)
+logs/diag-2025-09-10-042941/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-042941/eslint.effective.pacientes-id.json 1ms
+logs/diag-2025-09-10-042941/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-042941/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/app/(app)/pacientes/[id]/page.tsx 45ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/app/(app)/pacientes/page.tsx 26ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/app/(app)/perfil/page.tsx 24ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/app/(app)/test-ui/upload/page.tsx 15ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/components/EmojiTheme.tsx 2ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/components/ExportPDFButton.tsx 5ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/components/InstallPrompt.tsx 3ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/components/OrgSwitcherBadge.tsx 6ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/components/Toast.tsx 8ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/config/emojiTheme.ts 7ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/audit.ts 4ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/database.types.ts 0ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/org.ts 4ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/patient-files.ts 10ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/patient-notes.ts 5ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/patient-shares.ts 4ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/patients.ts 5ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/supabase/client.ts 2ms (unchanged)
+logs/diag-2025-09-10-042941/snapshot/lib/types.ts 1ms (unchanged)
+logs/diag-2025-09-10-042941/tsconfig.effective.json 1ms
+logs/diag-2025-09-10-042941/tsconfig.json 1ms (unchanged)
+middleware.ts 1ms (unchanged)
+next.config.ts 1ms (unchanged)
+package-lock.json 67ms (unchanged)
+package.json 1ms (unchanged)
+README.md 25ms (unchanged)
+sentry.client.config.ts 4ms (unchanged)
+sentry.server.config.ts 7ms (unchanged)
+tsconfig.json 1ms (unchanged)
+tsconfig.typecheck.json 1ms (unchanged)
+Logs de ESLint en logs/diag-2025-09-10-042941/eslint.*
+
+=== TypeScript (tsc -noEmit) ===
+app/(app)/pacientes/[id]/page.tsx(2,29): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/patients.ts(6,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/supabase-browser.ts(2,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/supabase/client.ts(3,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/types.ts(1,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+
+=== Build Next.js (Turbopack) ===
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 68ms
+ ✓ Compiled successfully in 14.4s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+Failed to compile.
+
+./app/(app)/pacientes/[id]/page.tsx:2:29
+Type error: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+
+[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m type { [33mGender[39m } [36mfrom[39m [32m"@/lib/database.types"[39m[33m;[39m
+ [90m   |[39m                             [31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m { useEffect[33m,[39m useState[33m,[39m useCallback[33m,[39m useRef } [36mfrom[39m [32m"react"[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m [33mLink[39m [36mfrom[39m [32m"next/link"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { useParams } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+=== Conteos rápidos ===
+Archivos TS/TSX:
+66
+Coincidencias ': any' (aprox):
+4 logs/diag-2025-09-10-042941/colon-any.txt
+
+=== Comprimir resultados ===
+📦 Paquete generado: logs/diag-2025-09-10-042941.tgz
+
+✅ Diagnóstico finalizado. Comparte:
+  1) logs/diag-2025-09-10-042941/all.log
+  2) logs/diag-2025-09-10-042941.tgz  (contiene todo lo anterior)

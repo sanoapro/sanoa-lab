@@ -1,0 +1,5 @@
+app/(app)/pacientes/[id]/page.tsx(2,29): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/patients.ts(6,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/supabase-browser.ts(2,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/supabase/client.ts(3,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+lib/types.ts(1,31): error TS2306: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.

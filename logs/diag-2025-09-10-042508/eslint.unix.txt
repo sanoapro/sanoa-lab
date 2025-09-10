@@ -1,0 +1,10 @@
+/workspaces/sanoa-lab/.safety/2025-09-10-041413/app/(auth)/login/page.tsx:0:0: Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): .safety/2025-09-10-041413/app/(auth)/login/page.tsx [Error]
+/workspaces/sanoa-lab/.safety/2025-09-10-041413/app/(auth)/reset-password/page.tsx:0:0: Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): .safety/2025-09-10-041413/app/(auth)/reset-password/page.tsx [Error]
+/workspaces/sanoa-lab/.safety/2025-09-10-041413/app/(auth)/update-password/page.tsx:0:0: Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): .safety/2025-09-10-041413/app/(auth)/update-password/page.tsx [Error]
+/workspaces/sanoa-lab/.safety/2025-09-10-041413/components/InstallPrompt.tsx:0:0: Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): .safety/2025-09-10-041413/components/InstallPrompt.tsx [Error]
+
+4 problems

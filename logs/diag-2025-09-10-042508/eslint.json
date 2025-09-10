@@ -1,5 +1,85 @@
 [
   {
+    "filePath": "/workspaces/sanoa-lab/.safety/2025-09-10-041413/app/(auth)/login/page.tsx",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): .safety/2025-09-10-041413/app/(auth)/login/page.tsx"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\nimport { useRouter, useSearchParams } from \"next/navigation\";\nimport { useState } from \"react\";\nimport { getSupabaseBrowser } from \"@/lib/supabase-browser\";\n\nexport default function LoginPage() {\n  const router = useRouter();\n  const search = useSearchParams();\n  const redirectTo = search.get(\"redirect_to\") || \"/dashboard\";\n  const supabase = getSupabaseBrowser();\n  const [loading, setLoading] = useState(false);\n  const [err, setErr] = useState<string | null>(null);\n\n  async function onLogin(e: React.FormEvent<HTMLFormElement>) {\n    e.preventDefault();\n    setErr(null);\n    setLoading(true);\n    const form = new FormData(e.currentTarget);\n    const email = String(form.get(\"email\") || \"\");\n    const password = String(form.get(\"password\") || \"\");\n    const { error } = await supabase.auth.signInWithPassword({ email, password });\n    setLoading(false);\n    if (error) {\n      setErr(error.message);\n      return;\n    }\n    router.replace(redirectTo);\n  }\n\n  async function onGoogle() {\n    const origin = typeof window !== \"undefined\" ? window.location.origin : \"\";\n    await supabase.auth.signInWithOAuth({\n      provider: \"google\",\n      options: {\n        redirectTo: origin + (redirectTo ? `?redirect_to=${encodeURIComponent(redirectTo)}` : \"\"),\n      },\n    });\n  }\n\n  return (\n    <div className=\"mx-auto max-w-sm space-y-4 p-6\">\n      <h1 className=\"text-2xl font-semibold\">Entrar</h1>\n      {err && <p className=\"text-sm text-red-600\">{err}</p>}\n      <form onSubmit={onLogin} className=\"space-y-3\">\n        <input\n          type=\"email\"\n          name=\"email\"\n          placeholder=\"Correo\"\n          className=\"w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]\"\n        />\n        <input\n          type=\"password\"\n          name=\"password\"\n          placeholder=\"Contraseña\"\n          className=\"w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]\"\n        />\n        <button\n          disabled={loading}\n          className=\"w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60\"\n        >\n          {loading ? \"Entrando...\" : \"Entrar\"}\n        </button>\n      </form>\n\n      <button\n        onClick={onGoogle}\n        className=\"w-full rounded-md bg-[var(--color-brand-bluegray)] px-4 py-2 text-white hover:opacity-90\"\n      >\n        Entrar con Google\n      </button>\n\n      <a\n        href=\"/reset-password\"\n        className=\"block text-center text-sm text-[var(--color-brand-coral)] underline\"\n      >\n        ¿Olvidaste tu contraseña?\n      </a>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/.safety/2025-09-10-041413/app/(auth)/reset-password/page.tsx",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): .safety/2025-09-10-041413/app/(auth)/reset-password/page.tsx"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\nimport { getSupabaseBrowser } from \"@/lib/supabase-browser\";\n\nexport default function ResetPasswordPage() {\n  const supabase = getSupabaseBrowser();\n\n  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {\n    e.preventDefault();\n    const form = new FormData(e.currentTarget);\n    const email = String(form.get(\"email\") || \"\");\n    const origin = typeof window !== \"undefined\" ? window.location.origin : \"\";\n\n    await supabase.auth.resetPasswordForEmail(email, {\n      redirectTo: `${origin}/auth/update-password`,\n    });\n\n    alert(\"Revisa tu correo: te enviamos un enlace para restablecer tu contraseña.\");\n  }\n\n  return (\n    <form onSubmit={onSubmit} className=\"mx-auto max-w-sm space-y-4 p-4\">\n      <input\n        type=\"email\"\n        name=\"email\"\n        placeholder=\"Tu correo\"\n        className=\"w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]\"\n      />\n      <button className=\"w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90\">\n        Enviar enlace\n      </button>\n    </form>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/.safety/2025-09-10-041413/app/(auth)/update-password/page.tsx",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): .safety/2025-09-10-041413/app/(auth)/update-password/page.tsx"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\nimport { useEffect, useState } from \"react\";\nimport { useRouter, useSearchParams } from \"next/navigation\";\nimport { getSupabaseBrowser } from \"@/lib/supabase-browser\";\n\nexport default function UpdatePasswordPage() {\n  const supabase = getSupabaseBrowser();\n  const router = useRouter();\n  const search = useSearchParams();\n  const [okSession, setOkSession] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    (async () => {\n      try {\n        const code = search.get(\"code\");\n        if (code) {\n          const { error } = await supabase.auth.exchangeCodeForSession(code);\n          if (error) throw error;\n          setOkSession(true);\n          setLoading(false);\n          return;\n        }\n        const { data, error } = await supabase.auth.getSession();\n        if (error) throw error;\n        setOkSession(!!data.session);\n      } catch (e: any) {\n        setError(e?.message || \"No se pudo validar el enlace.\");\n      } finally {\n        setLoading(false);\n      }\n    })();\n  }, [search, supabase]);\n\n  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {\n    e.preventDefault();\n    setError(null);\n    const form = new FormData(e.currentTarget);\n    const p = String(form.get(\"password\") || \"\");\n    const c = String(form.get(\"confirm\") || \"\");\n    if (p.length < 8) {\n      setError(\"La contraseña debe tener al menos 8 caracteres.\");\n      return;\n    }\n    if (p !== c) {\n      setError(\"Las contraseñas no coinciden.\");\n      return;\n    }\n    const { error } = await supabase.auth.updateUser({ password: p });\n    if (error) {\n      setError(error.message);\n      return;\n    }\n    alert(\"¡Listo! Tu contraseña fue actualizada.\");\n    router.replace(\"/login\");\n  }\n\n  if (loading) return <p className=\"text-center p-4\">Validando enlace…</p>;\n  if (!okSession)\n    return <p className=\"text-center p-4 text-red-600\">Enlace inválido o expirado.</p>;\n\n  return (\n    <form onSubmit={onSubmit} className=\"mx-auto max-w-sm space-y-4 p-4\">\n      {error && <p className=\"text-sm text-red-600\">{error}</p>}\n      <input\n        type=\"password\"\n        name=\"password\"\n        placeholder=\"Nueva contraseña\"\n        className=\"w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]\"\n      />\n      <input\n        type=\"password\"\n        name=\"confirm\"\n        placeholder=\"Repetir contraseña\"\n        className=\"w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]\"\n      />\n      <button className=\"w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90\">\n        Guardar y entrar\n      </button>\n    </form>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/.safety/2025-09-10-041413/components/InstallPrompt.tsx",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): .safety/2025-09-10-041413/components/InstallPrompt.tsx"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\nimport { useEffect, useState } from \"react\";\n\nexport default function InstallPrompt() {\n  const [deferred, setDeferred] = useState<any>(null);\n  const [visible, setVisible] = useState(false);\n\n  useEffect(() => {\n    const handler = (e: any) => {\n      e.preventDefault();\n      setDeferred(e);\n      setVisible(true);\n    };\n    window.addEventListener(\"beforeinstallprompt\", handler);\n    return () => window.removeEventListener(\"beforeinstallprompt\", handler);\n  }, []);\n\n  async function onInstall() {\n    if (!deferred) return;\n    deferred.prompt();\n    await deferred.userChoice;\n    setDeferred(null);\n    setVisible(false);\n  }\n\n  if (!visible) return null;\n\n  return (\n    <div className=\"fixed bottom-3 left-0 right-0 mx-auto w-full max-w-sm rounded-2xl border bg-white p-4 shadow\">\n      <p className=\"mb-3 text-sm\">\n        ¿Quieres instalar <b>Sanoa</b> como app?\n      </p>\n      <button\n        onClick={onInstall}\n        className=\"w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90\"\n      >\n        Instalar\n      </button>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
     "filePath": "/workspaces/sanoa-lab/app/(app)/dashboard/page.tsx",
     "messages": [],
     "suppressedMessages": [],
@@ -561,6 +641,17 @@
     "usedDeprecatedRules": []
   },
   {
+    "filePath": "/workspaces/sanoa-lab/config/emojiTheme.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
     "filePath": "/workspaces/sanoa-lab/hooks/useNotesRealtime.ts",
     "messages": [],
     "suppressedMessages": [],
@@ -726,7 +817,40 @@
     "usedDeprecatedRules": []
   },
   {
+    "filePath": "/workspaces/sanoa-lab/middleware.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next-env.d.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
     "filePath": "/workspaces/sanoa-lab/next.config.mjs",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next.config.ts",
     "messages": [],
     "suppressedMessages": [],
     "errorCount": 0,
@@ -748,47 +872,36 @@
     "usedDeprecatedRules": []
   },
   {
-    "filePath": "/workspaces/sanoa-lab/sentry.client.config.ts",
-    "messages": [
-      {
-        "ruleId": null,
-        "nodeType": null,
-        "fatal": true,
-        "severity": 2,
-        "message": "Parsing error: Unexpected token as",
-        "line": 15,
-        "column": 41
-      }
-    ],
+    "filePath": "/workspaces/sanoa-lab/scripts/generate-icons.mjs",
+    "messages": [],
     "suppressedMessages": [],
-    "errorCount": 1,
-    "fatalErrorCount": 1,
+    "errorCount": 0,
+    "fatalErrorCount": 0,
     "warningCount": 0,
     "fixableErrorCount": 0,
     "fixableWarningCount": 0,
-    "source": "import * as Sentry from \"@sentry/nextjs\";\n\nconst DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || \"\";\nconst ENV = process.env.NEXT_PUBLIC_SENTRY_ENV || process.env.NODE_ENV || \"development\";\n\nif (typeof window !== \"undefined\" && DSN) {\n  Sentry.init({\n    dsn: DSN,\n    environment: ENV,\n    tracesSampleRate: 0.1, // cliente un poco menor\n    sendDefaultPii: false,\n    beforeSend(event) {\n      // Evita enviar cualquier cookie/query sensible desde el navegador\n      if (event.request?.headers) {\n        const h = event.request.headers as Record<string, any>;\n        const block = [\n          \"cookie\",\n          \"authorization\",\n          \"x-supabase-auth\",\n          \"sb-access-token\",\n          \"sb-refresh-token\",\n        ];\n        for (const k of block) if (h[k] != null) h[k] = \"[REDACTED]\";\n      }\n      return event;\n    },\n  });\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/sentry.client.config.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
     "usedDeprecatedRules": []
   },
   {
     "filePath": "/workspaces/sanoa-lab/sentry.server.config.ts",
-    "messages": [
-      {
-        "ruleId": null,
-        "nodeType": null,
-        "fatal": true,
-        "severity": 2,
-        "message": "Parsing error: Unexpected token as",
-        "line": 15,
-        "column": 41
-      }
-    ],
+    "messages": [],
     "suppressedMessages": [],
-    "errorCount": 1,
-    "fatalErrorCount": 1,
+    "errorCount": 0,
+    "fatalErrorCount": 0,
     "warningCount": 0,
     "fixableErrorCount": 0,
     "fixableWarningCount": 0,
-    "source": "import * as Sentry from \"@sentry/nextjs\";\n\nconst DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || \"\";\nconst ENV = process.env.NEXT_PUBLIC_SENTRY_ENV || process.env.NODE_ENV || \"development\";\n\nif (DSN) {\n  Sentry.init({\n    dsn: DSN,\n    environment: ENV,\n    tracesSampleRate: 0.15, // ajusta si necesitas más/menos performance\n    sendDefaultPii: false,\n    beforeSend(event) {\n      // Redacta headers sensibles\n      if (event.request?.headers) {\n        const h = event.request.headers as Record<string, any>;\n        const block = [\n          \"cookie\",\n          \"authorization\",\n          \"x-supabase-auth\",\n          \"sb-access-token\",\n          \"sb-refresh-token\",\n        ];\n        for (const k of block) {\n          if (h[k] != null) h[k] = \"[REDACTED]\";\n          if (h[k.toLowerCase?.()] != null) h[k.toLowerCase()] = \"[REDACTED]\";\n          if (h[k.toUpperCase?.()] != null) h[k.toUpperCase()] = \"[REDACTED]\";\n        }\n      }\n      return event;\n    },\n  });\n}\n",
     "usedDeprecatedRules": []
   }
 ]

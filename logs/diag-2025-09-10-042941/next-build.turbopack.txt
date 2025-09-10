@@ -1,0 +1,21 @@
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 68ms
+ ✓ Compiled successfully in 14.4s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+Failed to compile.
+
+./app/(app)/pacientes/[id]/page.tsx:2:29
+Type error: File '/workspaces/sanoa-lab/lib/database.types.ts' is not a module.
+
+[0m [90m 1 |[39m [32m"use client"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m type { [33mGender[39m } [36mfrom[39m [32m"@/lib/database.types"[39m[33m;[39m
+ [90m   |[39m                             [31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m { useEffect[33m,[39m useState[33m,[39m useCallback[33m,[39m useRef } [36mfrom[39m [32m"react"[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m [33mLink[39m [36mfrom[39m [32m"next/link"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { useParams } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
