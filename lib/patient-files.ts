@@ -1,16 +1,14 @@
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export type PatientFile = {
-  path: string;
   id: string;
   user_id: string;
   patient_id: string;
+  path: string;
   file_name: string;
   size: number | null;
   mime_type: string | null;
   created_at: string;
-
-  [key: string]: any;
 };
 
 const MAX_MB = Number(process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || 10);
@@ -55,7 +53,10 @@ export async function listPatientFiles(patientId: string): Promise<PatientFile[]
     .select("*")
     .eq("patient_id", patientId)
     .order("created_at", { ascending: false });
-  if (error) throw error;
+  if (error)
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
   return (data || []) as PatientFile[];
 }
 
@@ -117,7 +118,9 @@ export async function uploadPatientFile(
       .from("uploads")
       .remove([key])
       .catch(() => {});
-    throw error;
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
   }
 
   return data as PatientFile;
@@ -126,8 +129,13 @@ export async function uploadPatientFile(
 export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promise<string> {
   const supabase = getSupabaseBrowser();
   const sec = Number(ttlSeconds || SIGNED_TTL || 300);
-  const { data, error } = await supabase.storage.from("uploads").createSignedUrl(rec.path, sec);
-  if (error) throw error;
+  const { data, error } = await supabase.storage
+    .from("uploads")
+    .createSignedUrl(rec.path, sec);
+  if (error)
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
   return data.signedUrl;
 }
 

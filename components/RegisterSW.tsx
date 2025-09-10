@@ -39,7 +39,7 @@ export default function RegisterSW() {
         });
         navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
       } catch (e) {
-        console.error("SW register error:", e);
+        console.error(("SW register error:", e) instanceof Error ? "SW register error:", e : (()=>{ try { return JSON.stringify("SW register error:", e); } catch { return String("SW register error:", e); }})());
       }
     };
 
@@ -52,7 +52,7 @@ export default function RegisterSW() {
     try {
       waitingSW.current?.postMessage({ type: "SKIP_WAITING" });
     } catch (e) {
-      console.error(e);
+      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
       window.location.reload();
     }
   };

@@ -20,7 +20,10 @@ export async function listAudit(patientId: string, limit = 200): Promise<AuditEn
     .eq("patient_id", patientId)
     .order("created_at", { ascending: false })
     .limit(limit);
-  if (error) throw error;
+  if (error)
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
   return (data || []) as AuditEntry[];
 }
 

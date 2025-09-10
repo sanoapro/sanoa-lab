@@ -1,198 +1,217 @@
-// app/(auth)/update-password/page.tsx
 "use client";
-
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
-import { Field, Input } from "@/components/ui/field";
 import { showToast } from "@/components/Toaster";
-import { toSpanishError } from "@/lib/i18n-errors";
 
-export default function UpdatePasswordPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-[100dvh] grid place-items-center p-6 text-[var(--color-brand-bluegray)]">
-          Cargando…
-        </main>
-      }
-    >
-      <UpdatePasswordClient />
-    </Suspense>
-  );
+type Stage = "checking" | "ready" | "error";
+
+function parseHashTokens(hash: string) {
+  const h = hash.startsWith("#") ? hash.slice(1) : hash;
+  const p = new URLSearchParams(h);
+  return {
+    access_token: p.get("access_token"),
+    refresh_token: p.get("refresh_token"),
+    type: p.get("type"),
+  };
 }
 
-function UpdatePasswordClient() {
+export default function UpdatePasswordPage() {
+  const supabase = getSupabaseBrowser();
   const router = useRouter();
-  const params = useSearchParams();
+  const search = useSearchParams();
 
-  const [p1, setP1] = useState("");
-  const [p2, setP2] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [stage, setStage] = useState<Stage>("checking");
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [pwd, setPwd] = useState("");
+  const [pwd2, setPwd2] = useState("");
   const [saving, setSaving] = useState(false);
-  const [ready, setReady] = useState<"checking" | "ready" | "error">("checking");
 
-  // Redirección segura al finalizar
-  const safeRedirect = useMemo(() => {
-    const r = params.get("redirect_to") || "/dashboard";
-    return r.startsWith("/") && !r.startsWith("//") ? r : "/dashboard";
-  }, [params]);
+  const canSubmit = useMemo(() => {
+    return pwd.length >= 8 && pwd2.length >= 8 && pwd === pwd2 && !saving;
+  }, [pwd, pwd2, saving]);
 
   useEffect(() => {
     (async () => {
       try {
-        const supabase = getSupabaseBrowser();
-        // Si el hash venía en la URL, supabase-js (detectSessionInUrl=true) ya lo habrá almacenado.
+        // 1) Si llega con ?code=..., intercambia por sesión
+        const code = search.get("code");
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        } else if (typeof window !== "undefined") {
+          // 2) Si llega con #access_token=... maneja hash tokens
+          const { access_token, refresh_token } = parseHashTokens(window.location.hash || "");
+          if (access_token && refresh_token) {
+            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (error) throw error;
+          }
+        }
+
+        // 3) Verifica sesión activa
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (!data.session) {
-          setErr(
+          setStage("error");
+          setErrMsg(
             "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.",
           );
-          setReady("error");
           return;
         }
-        setReady("ready");
-      } catch (e) {
-        setErr(toSpanishError(e));
-        setReady("error");
+        setStage("ready");
+      } catch (e: unknown) {
+        setStage("error");
+        setErrMsg(e?.message || "Ocurrió un problema al validar el enlace.");
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (saving) return;
-    setErr(null);
-
-    if (p1.length < 8) {
-      setErr("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-    if (p1 !== p2) {
-      setErr("Las contraseñas no coinciden.");
-      return;
-    }
-
+    if (!canSubmit) return;
     setSaving(true);
     try {
-      const supabase = getSupabaseBrowser();
-      const { error } = await supabase.auth.updateUser({ password: p1 });
+      const { error } = await supabase.auth.updateUser({ password: pwd });
       if (error) throw error;
-      showToast({
-        title: "Contraseña actualizada",
-        description: "¡Bienvenido/a!",
-        variant: "success",
-      });
-      router.replace(safeRedirect);
-    } catch (e) {
-      setErr(toSpanishError(e));
+      showToast("Contraseña actualizada. ¡Bienvenido!", "success");
+      router.replace("/dashboard");
+    } catch (e: unknown) {
+      showToast(e?.message || "No se pudo actualizar la contraseña.", "error");
+    } finally {
       setSaving(false);
     }
   }
 
-  const lengthError = err && /al menos 8/i.test(err) ? err : undefined;
-  const matchError = err && /no coinciden/i.test(err) ? err : undefined;
-  const generalError = err && !lengthError && !matchError ? err : null;
-
-  if (ready === "checking") {
+  if (stage === "checking") {
     return (
-      <main className="min-h-[100dvh] grid place-items-center p-6 text-[var(--color-brand-bluegray)]">
-        Verificando…
-      </main>
-    );
-  }
-
-  if (ready === "error") {
-    return (
-      <main className="min-h-[100dvh] grid place-items-center p-6">
-        <section className="w-full max-w-md rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 shadow">
-          <div className="mb-3 text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 text-sm">
-            {err}
+      <main className="min-h-[80vh] grid place-items-center p-6">
+        <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="p-6 flex items-center gap-3">
+            <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="refrescar" size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Verificando enlace…
+              </h1>
+              <p className="text-sm text-[var(--color-brand-bluegray)]">Un momento por favor.</p>
+            </div>
           </div>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-[var(--color-brand-text)] underline"
-          >
-            <ColorEmoji token="atras" size={16} /> Volver a login
-          </Link>
-        </section>
+        </div>
       </main>
     );
   }
 
+  if (stage === "error") {
+    return (
+      <main className="min-h-[80vh] grid place-items-center p-6">
+        <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+                <ColorEmoji token="info" size={20} />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                  Enlace inválido o expirado
+                </h1>
+                <p className="text-sm text-[var(--color-brand-bluegray)]">{errMsg}</p>
+              </div>
+            </div>
+            <div className="flex justify-between text-sm">
+              <Link
+                href="/(auth)/reset-password"
+                className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+              >
+                <ColorEmoji token="email" size={16} /> Solicitar nuevo enlace
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+              >
+                <ColorEmoji token="atras" size={16} /> Volver a login
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // stage === "ready"
   return (
-    <main className="min-h-[100dvh] grid place-items-center p-6">
-      <section className="w-full max-w-md rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 shadow">
-        <header className="mb-4 flex items-center gap-3">
-          <ColorEmoji token="llave" size={20} />
-          <h1 className="text-lg font-semibold text-[var(--color-brand-text)]">
-            Definir nueva contraseña
-          </h1>
-        </header>
-
-        {generalError && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {generalError}
+    <main className="min-h-[80vh] grid place-items-center p-6">
+      <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="candado" size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+                Nueva contraseña
+              </h1>
+              <p className="text-sm text-[var(--color-brand-bluegray)]">
+                Escribe y confirma tu nueva contraseña.
+              </p>
+            </div>
           </div>
-        )}
 
-        <form onSubmit={onSubmit} className="space-y-4" noValidate>
-          <Field
-            label={
-              <span className="inline-flex items-center gap-2 text-[var(--color-brand-text)]">
-                <ColorEmoji token="llave" size={16} /> Nueva contraseña
+          <form onSubmit={onSubmit} className="space-y-3">
+            <label className="block">
+              <span className="text-sm text-[var(--color-brand-text)]/80">Contraseña nueva</span>
+              <input
+                type="password"
+                value={pwd}
+                onChange={(e) => setPwd(e.target.value)}
+                minLength={8}
+                placeholder="Mínimo 8 caracteres"
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm text-[var(--color-brand-text)]/80">
+                Confirmar contraseña
               </span>
-            }
-            required
-            error={lengthError}
-            errorId={lengthError ? "update-password-length" : undefined}
-            hint="Mínimo 8 caracteres"
-          >
-            <Input
-              type="password"
-              value={p1}
-              onChange={(e) => setP1(e.target.value)}
-              placeholder="••••••••"
-              required
-              invalid={Boolean(lengthError)}
-              aria-describedby={lengthError ? "update-password-length" : undefined}
-            />
-          </Field>
+              <input
+                type="password"
+                value={pwd2}
+                onChange={(e) => setPwd2(e.target.value)}
+                minLength={8}
+                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              />
+            </label>
 
-          <Field
-            label={
-              <span className="inline-flex items-center gap-2 text-[var(--color-brand-text)]">
-                <ColorEmoji token="llave" size={16} /> Confirmar contraseña
-              </span>
-            }
-            required
-            error={matchError}
-            errorId={matchError ? "update-password-match" : undefined}
-          >
-            <Input
-              type="password"
-              value={p2}
-              onChange={(e) => setP2(e.target.value)}
-              placeholder="••••••••"
-              required
-              invalid={Boolean(matchError)}
-              aria-describedby={matchError ? "update-password-match" : undefined}
-            />
-          </Field>
+            <button
+              disabled={!canSubmit}
+              className="w-full rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+            >
+              <ColorEmoji token="guardar" size={16} />
+              {saving ? "Guardando…" : "Guardar y entrar"}
+            </button>
+          </form>
 
-          <button
-            type="submit"
-            disabled={saving}
-            data-loading={saving ? "1" : undefined}
-            className="w-full rounded-xl bg-[var(--color-brand-bluegray)] px-4 py-3 text-white font-semibold transition-opacity disabled:opacity-60 data-[loading=1]:pointer-events-none"
-          >
-            {saving ? "Guardando…" : "Guardar y entrar"}
-          </button>
-        </form>
-      </section>
+          <div className="h-px bg-[var(--color-brand-border)]" />
+
+          <div className="text-sm flex justify-between">
+            <Link
+              href="/(auth)/reset-password"
+              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+            >
+              <ColorEmoji token="email" size={16} /> Volver a solicitar enlace
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
+            >
+              <ColorEmoji token="atras" size={16} /> Volver a login
+            </Link>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

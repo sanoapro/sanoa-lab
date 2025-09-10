@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ export default function RegisterPage() {
     setLoading(true);
     setMsg(null);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = getSupabaseBrowser();
       const { data, error } = await supabase.auth.signUp({
         email,
         password: pass,
@@ -37,7 +37,7 @@ export default function RegisterPage() {
           setMsg("Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de acceder.");
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMsg(err?.message ?? "Error de configuración de Supabase.");
     } finally {
       setLoading(false);
