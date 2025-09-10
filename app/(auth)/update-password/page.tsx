@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import ColorEmoji from "@/components/ColorEmoji";
+import { Suspense, useEffect, useMemo, useState } from "react";
+
 import { showToast } from "@/components/Toaster";
+import ColorEmoji from "@/components/ColorEmoji";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 type Stage = "checking" | "ready" | "error";
 
