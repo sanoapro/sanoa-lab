@@ -4,19 +4,16 @@ import * as React from "react";
 import clsx from "clsx";
 
 export type Props = {
-  token?: string;
+  emoji: string;
   size?: number;
+  mode?: any;
+  color?: string;
+  accentColor?: string;
+  className?: string;
+  title?: string;
+  token?: string;
   toneA?: string;
   toneB?: string;
-  className?: string;
-
-  className?: string;
-  accentColor?: string;
-  color?: string;
-  emoji?: string;
-  mode?: any;
-  size?: number;
-  title?: string;
 };
 
 const MAP: Record<string, string> = {
