@@ -63,10 +63,9 @@ export default function UpdatePasswordPage() {
         setStage("ready");
       } catch (e: unknown) {
         setStage("error");
-        setErrMsg(e?.message || "Ocurrió un problema al validar el enlace.");
+        setErrMsg((e as any)?.message || "Ocurrió un problema al validar el enlace.");
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -79,7 +78,7 @@ export default function UpdatePasswordPage() {
       showToast("Contraseña actualizada. ¡Bienvenido!", "success");
       router.replace("/dashboard");
     } catch (e: unknown) {
-      showToast(e?.message || "No se pudo actualizar la contraseña.", "error");
+      showToast((e as any)?.message || "No se pudo actualizar la contraseña.", "error");
     } finally {
       setSaving(false);
     }

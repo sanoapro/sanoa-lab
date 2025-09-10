@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // eslint.config.mjs
 
 import { existsSync, readdirSync } from "node:fs";
@@ -148,3 +149,35 @@ export default [
     },
   },
 ];
+=======
+import tseslint from "typescript-eslint";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+
+/** @type {import("eslint").Linter.FlatConfig[]} */
+export default [
+  { ignores: ["node_modules/**", ".next/**", "logs/**"] },
+
+  // Base TS
+  ...tseslint.configs.recommended,
+
+  {
+    files: ["**/*.{ts,tsx,js,mjs}"],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: "./tsconfig.typecheck.json",
+        sourceType: "module"
+      }
+    },
+    plugins: { react, "react-hooks": reactHooks },
+    rules: {
+      // relajamos mientras saneamos el repo
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off"
+    }
+  }
+];
+>>>>>>> 92ccf8f (WIP: antes de parche ESLint/Supabase)

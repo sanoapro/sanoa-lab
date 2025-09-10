@@ -59,7 +59,7 @@ export default function UploadDemoPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo obtener la lista.", "error");
+      showToast((e as any)?.message || "No se pudo obtener la lista.", "error");
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,6 @@ export default function UploadDemoPage() {
 
   useEffect(() => {
     refreshList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onUpload(e: React.FormEvent<HTMLFormElement>) {
@@ -102,7 +101,7 @@ export default function UploadDemoPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo subir el archivo.", "error");
+      showToast((e as any)?.message || "No se pudo subir el archivo.", "error");
     } finally {
       setUploading(false);
     }
@@ -125,7 +124,7 @@ export default function UploadDemoPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo generar el enlace.", "error");
+      showToast((e as any)?.message || "No se pudo generar el enlace.", "error");
     }
   }
 

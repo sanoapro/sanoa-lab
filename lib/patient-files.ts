@@ -4,7 +4,7 @@ export type PatientFile = {
   id: string;
   user_id: string;
   patient_id: string;
-  path: string;
+  storage_key: string;
   file_name: string;
   size: number | null;
   mime_type: string | null;
@@ -104,7 +104,7 @@ export async function uploadPatientFile(
     .insert({
       user_id: uid,
       patient_id: patientId,
-      path: key,
+      storage_key: key,
       file_name: file.name,
       size: file.size,
       mime_type: file.type || null,
@@ -129,7 +129,9 @@ export async function uploadPatientFile(
 export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promise<string> {
   const supabase = getSupabaseBrowser();
   const sec = Number(ttlSeconds || SIGNED_TTL || 300);
-  const { data, error } = await supabase.storage.from("uploads").createSignedUrl(rec.path, sec);
+  const { data, error } = await supabase.storage
+    .from("uploads")
+    .createSignedUrl(rec.storage_key, sec);
   if (error)
     throw new Error(
       (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
@@ -143,11 +145,11 @@ export async function deletePatientFile(id: string): Promise<void> {
   // Obtén key
   const { data: rec, error: e1 } = await supabase
     .from("patient_files")
-    .select("id, path")
+    .select("id, storage_key")
     .eq("id", id)
     .single();
   if (e1) throw e1;
-  const key = rec!.path as string;
+  const key = rec!.storage_key as string;
 
   // Borra en Storage
   const r1 = await supabase.storage.from("uploads").remove([key]);

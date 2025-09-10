@@ -1,10 +1,9 @@
-import type { Database } from "./database.types";
 export type Patient = Database["public"]["Tables"]["patients"]["Row"];
 export type NewPatient = Database["public"]["Tables"]["patients"]["Insert"];
 export type PatchPatient = Database["public"]["Tables"]["patients"]["Update"];
 export type Gender = Database["public"]["Enums"]["Gender"];
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import type { Database, Gender } from "@/lib/database.types";
+import type { Database } from "@/lib/database.types";
 
 type PatientRow = Database["public"]["Tables"]["patients"]["Row"];
 type PatientInsert = Database["public"]["Tables"]["patients"]["Insert"];

@@ -38,7 +38,7 @@ export default function PacientesPage() {
       setResult(rs);
       setFilters((f) => ({ ...f, page: rs.page })); // sincroniza
     } catch (e: unknown) {
-      setErr(e?.message || "No se pudo buscar.");
+      setErr((e as any)?.message || "No se pudo buscar.");
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,6 @@ export default function PacientesPage() {
   useEffect(() => {
     // primera carga
     doSearch(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onSubmit(e: React.FormEvent) {

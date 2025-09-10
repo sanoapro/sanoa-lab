@@ -19,7 +19,7 @@ export default function OrgSwitcherBadge({ variant = "fixed" }: OrgSwitcherBadge
         const [list, cur] = await Promise.all([listMyOrgs(), getCurrentOrgId()]);
         setOrgs(list);
         setCurrent(cur);
-      } catch (e) {
+      } catch (e: unknown) {
         // silencioso
       }
     })();
@@ -43,7 +43,7 @@ export default function OrgSwitcherBadge({ variant = "fixed" }: OrgSwitcherBadge
       // Opcional: refresca la página para que queries lean nueva org_id por triggers
       // location.reload();
     } catch (err: unknown) {
-      showToast(err?.message || "No se pudo cambiar la organización.", "error");
+      showToast((err as any)?.message || "No se pudo cambiar la organización.", "error");
     }
     setOpen(false);
   }

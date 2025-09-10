@@ -35,7 +35,7 @@ export default function PacienteDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const [shares, setShares] = useState<PatientShare[]>([]);
-  const isOwner = patient && meId ? patient.user_id === meId : false;
+  const isOwner = (patient as any)?.user_id === meId;
   const myShare = shares.find(
     (s) => s.grantee_email.toLowerCase() === (meEmail || "").toLowerCase(),
   );
@@ -93,7 +93,7 @@ export default function PacienteDetailPage() {
                 }
               })(),
         );
-        showToast(e?.message || "No se pudo cargar el paciente.", "error");
+        showToast((e as any)?.message || "No se pudo cargar el paciente.", "error");
       } finally {
         setLoading(false);
       }
@@ -117,7 +117,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudieron cargar las notas.", "error");
+      showToast((e as any)?.message || "No se pudieron cargar las notas.", "error");
     } finally {
       setLoadingNotes(false);
     }
@@ -151,7 +151,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudieron cargar los archivos.", "error");
+      showToast((e as any)?.message || "No se pudieron cargar los archivos.", "error");
     } finally {
       setLoadingFiles(false);
     }
@@ -201,7 +201,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo cargar la actividad.", "error");
+      showToast((e as any)?.message || "No se pudo cargar la actividad.", "error");
     } finally {
       setLoadingAudits(false);
     }
@@ -266,7 +266,7 @@ export default function PacienteDetailPage() {
                 }
               })(),
         );
-        showToast(e?.message || "No se pudo guardar la nota.", "error");
+        showToast((e as any)?.message || "No se pudo guardar la nota.", "error");
       }
     } finally {
       setSavingNote(false);
@@ -300,7 +300,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo eliminar la nota.", "error");
+      showToast((e as any)?.message || "No se pudo eliminar la nota.", "error");
     }
   }
 
@@ -331,7 +331,7 @@ export default function PacienteDetailPage() {
 
     try {
       setSavingEdit(true);
-      const updated = await updatePatient(id, { nombre: n, edad: eNum, genero });
+      const updated = await updatePatient(id, { nombre: n, edad: eNum, genero: genero || null });
       setPatient(updated);
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
@@ -347,7 +347,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(err?.message || "No se pudo actualizar.", "error");
+      showToast((err as any)?.message || "No se pudo actualizar.", "error");
     } finally {
       setSavingEdit(false);
     }
@@ -393,7 +393,7 @@ export default function PacienteDetailPage() {
                 }
               })(),
         );
-        showToast(err?.message || "No se pudo subir el archivo.", "error");
+        showToast((err as any)?.message || "No se pudo subir el archivo.", "error");
       }
     } finally {
       setUploading(false);
@@ -416,7 +416,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo generar el enlace.", "error");
+      showToast((e as any)?.message || "No se pudo generar el enlace.", "error");
     }
   }
 
@@ -437,7 +437,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo copiar el enlace.", "error");
+      showToast((e as any)?.message || "No se pudo copiar el enlace.", "error");
     }
   }
 
@@ -468,7 +468,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo eliminar.", "error");
+      showToast((e as any)?.message || "No se pudo eliminar.", "error");
     }
   }
 
@@ -502,7 +502,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(err?.message || "No se pudo compartir.", "error");
+      showToast((err as any)?.message || "No se pudo compartir.", "error");
     } finally {
       setSharing(false);
     }
@@ -527,7 +527,7 @@ export default function PacienteDetailPage() {
               }
             })(),
       );
-      showToast(e?.message || "No se pudo revocar.", "error");
+      showToast((e as any)?.message || "No se pudo revocar.", "error");
     }
   }
 

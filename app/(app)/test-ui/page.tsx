@@ -77,7 +77,7 @@ export default function MisArchivosPage() {
       // Limpieza diferida del blob URL
       setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (e: unknown) {
-      setMsg(e?.message ?? "No se pudo abrir el archivo");
+      setMsg((e as any)?.message ?? "No se pudo abrir el archivo");
     } finally {
       setBusyName(null);
     }
@@ -98,7 +98,7 @@ export default function MisArchivosPage() {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e: unknown) {
-      setMsg(e?.message ?? "No se pudo descargar");
+      setMsg((e as any)?.message ?? "No se pudo descargar");
     } finally {
       setBusyName(null);
     }
@@ -114,7 +114,7 @@ export default function MisArchivosPage() {
       await navigator.clipboard.writeText(data.signedUrl);
       setMsg("🔗 Enlace copiado (válido por 10 minutos).");
     } catch (e: unknown) {
-      setMsg(e?.message ?? "No se pudo copiar el enlace");
+      setMsg((e as any)?.message ?? "No se pudo copiar el enlace");
     } finally {
       setBusyName(null);
     }
@@ -133,7 +133,7 @@ export default function MisArchivosPage() {
       setFiles((prev) => (prev || []).filter((f) => f.name !== name));
       setMsg("🗑️ Archivo eliminado.");
     } catch (e: unknown) {
-      setMsg(e?.message ?? "No se pudo eliminar");
+      setMsg((e as any)?.message ?? "No se pudo eliminar");
     } finally {
       setBusyName(null);
     }

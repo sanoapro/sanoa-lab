@@ -63,7 +63,7 @@ export default function ExportPDFButton({
       }
 
       pdf.save(filename);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(
         err instanceof Error
           ? err

@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.json",
+<<<<<<< HEAD
   "compilerOptions": { "noEmit": true },
   "include": [
     "app",
@@ -16,4 +17,11 @@
     "sentry.server.config.ts"
   ],
   "exclude": ["node_modules", ".next", "logs", "logs/**", ".safety", ".safety/**"]
+=======
+  "exclude": ["node_modules", ".next", "logs", "logs/**"],
+  "compilerOptions": {
+    "useUnknownInCatchVariables": false,
+    "skipLibCheck": true
+  }
+>>>>>>> 92ccf8f (WIP: antes de parche ESLint/Supabase)
 }

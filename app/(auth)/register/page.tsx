@@ -38,7 +38,7 @@ export default function RegisterPage() {
         }
       }
     } catch (err: unknown) {
-      setMsg(err?.message ?? "Error de configuración de Supabase.");
+      setMsg((err as any)?.message ?? "Error de configuración de Supabase.");
     } finally {
       setLoading(false);
     }

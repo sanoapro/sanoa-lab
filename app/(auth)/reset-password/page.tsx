@@ -29,7 +29,7 @@ export default function ResetPasswordRequestPage() {
       if (error) throw error;
       showToast("Te enviamos un enlace para restablecer tu contraseña.", "success");
     } catch (err: unknown) {
-      showToast(err?.message || "No se pudo enviar el enlace.", "error");
+      showToast((err as any)?.message || "No se pudo enviar el enlace.", "error");
     } finally {
       setSending(false);
     }
