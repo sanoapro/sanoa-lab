@@ -1,1 +1,977 @@
-[{"filePath":"/workspaces/sanoa-lab/app/(app)/dashboard/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(app)/layout.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(app)/pacientes/[id]/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(app)/pacientes/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(app)/perfil/page.tsx","messages":[{"ruleId":"@next/next/no-img-element","message":"Definition for rule '@next/next/no-img-element' was not found.","line":143,"column":11,"endLine":143,"endColumn":64,"severity":2,"nodeType":null}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"\"use client\";\n\nimport { useEffect, useMemo, useRef, useState } from \"react\";\nimport { useRouter } from \"next/navigation\";\nimport { createClient, User } from \"@supabase/supabase-js\";\nimport ColorEmoji from \"@/components/ColorEmoji\";\nimport { useToast } from \"@/components/Toast\";\n\nconst supabase = createClient(\n  process.env.NEXT_PUBLIC_SUPABASE_URL!,\n  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,\n);\n\nexport default function PerfilPage() {\n  const router = useRouter();\n  const { toast } = useToast();\n\n  const [user, setUser] = useState<User | null>(null);\n  const [email, setEmail] = useState(\"\");\n  const [name, setName] = useState(\"\");\n  const [avatarPath, setAvatarPath] = useState<string | null>(null);\n  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);\n  const [loading, setLoading] = useState(true);\n  const [saving, setSaving] = useState(false);\n\n  const fileRef = useRef<HTMLInputElement>(null);\n\n  useEffect(() => {\n    (async () => {\n      const { data } = await supabase.auth.getUser();\n      const u = data.user;\n      if (!u) {\n        router.push(\"/login\");\n        return;\n      }\n      setUser(u);\n      setEmail(u.email ?? \"\");\n      setName((u.user_metadata as any)?.full_name ?? \"\");\n      const path = (u.user_metadata as any)?.avatar_path ?? null;\n      setAvatarPath(path);\n      if (path) {\n        const { data: signed } = await supabase.storage\n          .from(\"uploads\")\n          .createSignedUrl(path, 60 * 60);\n        setAvatarUrl(signed?.signedUrl ?? null);\n      }\n      setLoading(false);\n    })();\n  }, [router]);\n\n  async function refreshSignedUrl(path: string | null) {\n    if (!path) {\n      setAvatarUrl(null);\n      return;\n    }\n    const { data } = await supabase.storage.from(\"uploads\").createSignedUrl(path, 60 * 60);\n    setAvatarUrl(data?.signedUrl ?? null);\n  }\n\n  async function handleSave(e: React.FormEvent) {\n    e.preventDefault();\n    if (!user) return;\n    setSaving(true);\n    const { error } = await supabase.auth.updateUser({\n      data: { full_name: name, avatar_path: avatarPath ?? null },\n    });\n    setSaving(false);\n    if (error) {\n      toast({ variant: \"error\", title: \"No se pudo guardar\", description: error.message });\n      return;\n    }\n    toast({ variant: \"success\", title: \"Perfil actualizado\" });\n  }\n\n  function triggerPick() {\n    fileRef.current?.click();\n  }\n\n  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {\n    const f = e.target.files?.[0];\n    if (!f || !user) return;\n\n    if (!f.type.startsWith(\"image/\")) {\n      toast({\n        variant: \"error\",\n        title: \"Archivo no válido\",\n        description: \"Sube una imagen (PNG/JPG/WebP…)\",\n      });\n      e.target.value = \"\";\n      return;\n    }\n    if (f.size > 5 * 1024 * 1024) {\n      toast({ variant: \"error\", title: \"Imagen muy pesada\", description: \"Máx. 5 MB\" });\n      e.target.value = \"\";\n      return;\n    }\n\n    const ext = f.name.split(\".\").pop()?.toLowerCase() || \"png\";\n    const path = `avatars/${user.id}_${Date.now()}.${ext}`.replace(/\\s+/g, \"_\");\n\n    const { error } = await supabase.storage.from(\"uploads\").upload(path, f, {\n      upsert: false,\n    });\n    if (error) {\n      toast({ variant: \"error\", title: \"No se pudo subir el avatar\", description: error.message });\n      e.target.value = \"\";\n      return;\n    }\n\n    setAvatarPath(path);\n    await refreshSignedUrl(path);\n\n    // Guarda inmediatamente en metadata para que quede persistente\n    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: path } });\n\n    toast({ variant: \"success\", title: \"Avatar actualizado\" });\n    e.target.value = \"\";\n  }\n\n  async function removeAvatar() {\n    if (!avatarPath) return setAvatarUrl(null);\n    const ok = window.confirm(\"¿Quitar avatar?\");\n    if (!ok) return;\n\n    // Intenta borrar el archivo (si falla, igual limpiamos metadata)\n    await supabase.storage.from(\"uploads\").remove([avatarPath]);\n\n    setAvatarPath(null);\n    setAvatarUrl(null);\n    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: null } });\n    toast({ variant: \"success\", title: \"Avatar quitado\" });\n  }\n\n  async function signOut() {\n    await supabase.auth.signOut();\n    router.push(\"/login\");\n  }\n\n  const AvatarVisual = useMemo(() => {\n    return (\n      <div className=\"size-28 rounded-full overflow-hidden border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] flex items-center justify-center\">\n        {avatarUrl ? (\n          // eslint-disable-next-line @next/next/no-img-element\n          <img src={avatarUrl} alt=\"Avatar\" className=\"w-full h-full object-cover\" />\n        ) : (\n          <div className=\"text-4xl\">\n            <ColorEmoji token=\"usuario\" size={40} />\n          </div>\n        )}\n      </div>\n    );\n  }, [avatarUrl]);\n\n  if (loading) {\n    return (\n      <main className=\"p-6 md:p-10\">\n        <div className=\"rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-8 animate-pulse\">\n          <div className=\"h-7 w-48 bg-[var(--color-brand-background)] rounded mb-4\" />\n          <div className=\"h-5 w-80 bg-[var(--color-brand-background)] rounded\" />\n        </div>\n      </main>\n    );\n  }\n\n  return (\n    <main className=\"p-6 md:p-10 space-y-8\">\n      {/* Encabezado */}\n      <header>\n        <h1 className=\"text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3\">\n          <ColorEmoji token=\"usuario\" size={30} />\n          Perfil\n        </h1>\n        <p className=\"text-[var(--color-brand-bluegray)]\">\n          Actualiza tu información básica y tu avatar.\n        </p>\n      </header>\n\n      {/* Card principal */}\n      <section\n        className=\"\n          w-full rounded-3xl bg-white/95 border border-[var(--color-brand-border)]\n          shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 md:px-8 py-7\n        \"\n      >\n        <form onSubmit={handleSave} className=\"grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6\">\n          {/* Columna avatar */}\n          <div className=\"flex flex-col items-start gap-4\">\n            {AvatarVisual}\n            <div className=\"flex gap-2\">\n              <button\n                type=\"button\"\n                onClick={triggerPick}\n                className=\"inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-[var(--color-brand-primary)] text-white hover:brightness-95\"\n              >\n                <ColorEmoji token=\"imagen\" />\n                Subir avatar\n              </button>\n              <button\n                type=\"button\"\n                onClick={removeAvatar}\n                className=\"inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95\"\n              >\n                <ColorEmoji token=\"limpiar\" />\n                Quitar\n              </button>\n            </div>\n            <input\n              ref={fileRef}\n              type=\"file\"\n              accept=\"image/*\"\n              className=\"hidden\"\n              onChange={onPick}\n            />\n          </div>\n\n          {/* Columna formulario */}\n          <div className=\"space-y-5\">\n            {/* Correo (solo lectura) */}\n            <div>\n              <label className=\"block text-sm text-[var(--color-brand-bluegray)] mb-1\">\n                Correo\n              </label>\n              <input\n                value={email}\n                readOnly\n                className=\"\n                  w-full rounded-2xl border border-[var(--color-brand-border)]\n                  bg-[color-mix(in_oklab,#fff_92%,var(--color-brand-background)_8%)]\n                  px-5 py-3 text-[var(--color-brand-text)]\n                \"\n              />\n            </div>\n\n            {/* Nombre para mostrar */}\n            <div>\n              <label className=\"block text-sm text-[var(--color-brand-bluegray)] mb-1\">\n                Nombre para mostrar\n              </label>\n              <input\n                value={name}\n                onChange={(e) => setName(e.target.value)}\n                placeholder=\"Tu nombre\"\n                className=\"\n                  w-full rounded-2xl border border-[var(--color-brand-border)]\n                  bg-white px-5 py-3 text-[var(--color-brand-text)]\n                  focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]\n                \"\n              />\n            </div>\n\n            <div className=\"flex flex-wrap gap-3 pt-2\">\n              <button\n                type=\"submit\"\n                disabled={saving}\n                className=\"inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60\"\n              >\n                <ColorEmoji token=\"guardar\" />\n                Guardar cambios\n              </button>\n\n              <button\n                type=\"button\"\n                onClick={signOut}\n                className=\"inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white border border-[var(--color-brand-border)] hover:brightness-95\"\n              >\n                <ColorEmoji token=\"salir\" />\n                Cerrar sesión\n              </button>\n            </div>\n          </div>\n        </form>\n      </section>\n    </main>\n  );\n}\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(app)/test-ui/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(app)/test-ui/upload/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(auth)/login/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(auth)/register/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(auth)/reset-password/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/(auth)/update-password/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/acerca/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/api/sentry-debug/route.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/error.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/head.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/instalar/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/layout.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/manifest.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/not-found.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/offline/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/privacidad/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/providers.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/robots.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/sitemap.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/app/terminos/page.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/AppShell.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/AuthGate.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ColorEmoji.tsx","messages":[],"suppressedMessages":[{"ruleId":"prefer-const","severity":2,"message":"'l' is never reassigned. Use 'const' instead.","line":27,"column":5,"nodeType":"Identifier","messageId":"useConst","endLine":27,"endColumn":6,"suppressions":[{"kind":"directive","justification":""}]}],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/Emoji.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/EmojiTheme.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ExportPDFButton.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/InstallPrompt.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/Modal.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/Navbar.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/OfflineIndicator.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/OrgSwitcherBadge.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/PendingQueueBadge.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/QueueEvents.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/RegisterSW.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/RequireAuth.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/SiteFooter.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ThemeToggle.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/Toast.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/Toaster.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/UiCard.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/UploadHint.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ui/button.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ui/card.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ui/input.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/components/ui/label.tsx","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/config/emojiTheme.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/eslint.config.mjs","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): eslint.config.mjs"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"import tseslint from \"typescript-eslint\";\nimport react from \"eslint-plugin-react\";\nimport reactHooks from \"eslint-plugin-react-hooks\";\n\n/** @type {import(\"eslint\").Linter.FlatConfig[]} */\nexport default [\n  { ignores: [\"node_modules/**\", \".next/**\", \"logs/**\"] },\n\n  // Base TS\n  ...tseslint.configs.recommended,\n\n  {\n    files: [\"**/*.{ts,tsx,js,mjs}\"],\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: {\n        project: \"./tsconfig.typecheck.json\",\n        sourceType: \"module\"\n      }\n    },\n    plugins: { react, \"react-hooks\": reactHooks },\n    rules: {\n      // relajamos mientras saneamos el repo\n      \"@typescript-eslint/no-explicit-any\": \"off\",\n      \"@typescript-eslint/no-unused-vars\": \"off\",\n      \"no-unused-vars\": \"off\",\n      \"react-hooks/exhaustive-deps\": \"off\"\n    }\n  }\n];\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/hooks/useNotesRealtime.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/hooks/usePatientsRealtime.ts","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): hooks/usePatientsRealtime.ts"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"\"use client\";\nimport { useEffect, useRef } from \"react\";\nimport { getSupabaseBrowser } from \"@/lib/supabase-browser\";\n\n/** Llama a onChange (debounced) ante insert/update/delete en public.patients del usuario actual. */\nexport function usePatientsRealtime(onChange: () => void, debounceMs = 250) {\n  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);\n\n  useEffect(() => {\n    const supabase = getSupabaseBrowser();\n    let active = true;\n    let chan: ReturnType<typeof supabase.channel> | null = null;\n\n    const debounced = () => {\n      if (timer.current) clearTimeout(timer.current);\n      timer.current = setTimeout(() => {\n        if (active) onChange();\n      }, debounceMs);\n    };\n\n    (async () => {\n      // opcional: filtrar por user_id del cliente\n      const { data: u } = await supabase.auth.getUser();\n      const uid = u?.user?.id ?? \"anon\";\n      const filter = u?.user?.id ? `user_id=eq.${u.user.id}` : undefined;\n\n      chan = supabase\n        .channel(`patients-${uid}`)\n        .on(\"postgres_changes\", { event: \"*\", schema: \"public\", table: \"patients\", filter }, () => {\n          debounced();\n        })\n        .subscribe();\n    })();\n\n    return () => {\n      active = false;\n      if (timer.current) clearTimeout(timer.current);\n      if (chan) supabase.removeChannel(chan);\n    };\n  }, [onChange, debounceMs]);\n}\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/audit.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/database.types.ts","messages":[{"ruleId":"@typescript-eslint/no-empty-object-type","severity":2,"message":"The `{}` (\"empty object\") type allows any non-nullish value, including literals like `0` and `\"\"`.\n- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.\n- If you want a type meaning \"any object\", you probably want `object` instead.\n- If you want a type meaning \"any value\", you probably want `unknown` instead.","line":210,"column":16,"nodeType":"TSTypeLiteral","messageId":"noEmptyObject","endLine":210,"endColumn":18,"suggestions":[{"messageId":"replaceEmptyObjectType","data":{"replacement":"object"},"fix":{"range":[5238,5240],"text":"object"},"desc":"Replace `{}` with `object`."},{"messageId":"replaceEmptyObjectType","data":{"replacement":"unknown"},"fix":{"range":[5238,5240],"text":"unknown"},"desc":"Replace `{}` with `unknown`."}]}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];\n\nexport type Gender = \"M\" | \"F\" | \"O\" | \"male\" | \"female\" | \"other\" | (string & {});\n\nexport type Database = {\n  public: {\n    Tables: {\n      patients: {\n        Row: {\n          id: string;\n          nombre: string;\n          edad: number | null;\n          genero: Gender | null;\n          created_at: string;\n          updated_at: string | null;\n          user_id?: string | null; // usado en app/(app)/pacientes/[id]\n        };\n        Insert: {\n          id?: string;\n          nombre: string;\n          edad?: number | null;\n          genero?: Gender | null;\n          user_id?: string | null;\n          created_at?: string;\n          updated_at?: string | null;\n        };\n        Update: Partial<{\n          id: string;\n          nombre: string;\n          edad: number | null;\n          genero: Gender | null;\n          user_id: string | null;\n          created_at: string;\n          updated_at: string | null;\n        }>;\n        Relationships: [];\n      };\n\n      patient_files: {\n        Row: {\n          id: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string; // clave en storage\n          file_name: string;\n          size: number;\n          mime_type: string | null;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string;\n          file_name: string;\n          size: number;\n          mime_type?: string | null;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string;\n          file_name: string;\n          size: number;\n          mime_type: string | null;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      patient_notes: {\n        Row: {\n          id: string;\n          user_id: string | null;\n          patient_id: string;\n          content: string;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          user_id?: string | null; // opcional para que compile tu insert actual\n          patient_id: string;\n          content: string;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          user_id: string | null;\n          patient_id: string;\n          content: string;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Alineado a tu código (owner_id, grantee_email, can_edit)\n      patient_shares: {\n        Row: {\n          id: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Preferencias de usuario (usado en lib/org.ts)\n      user_prefs: {\n        Row: {\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        };\n        Insert: {\n          user_id: string;\n          current_org_id: string;\n          updated_at?: string;\n        };\n        Update: Partial<{\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Si también usas user_org_prefs en algún lado, lo dejamos:\n      user_org_prefs: {\n        Row: {\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        };\n        Insert: {\n          user_id: string;\n          current_org_id: string;\n          updated_at?: string;\n        };\n        Update: Partial<{\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Bitácora usada en lib/audit.ts\n      audit_log: {\n        Row: {\n          id: string;\n          patient_id: string;\n          action: string;\n          user_id: string | null;\n          meta: Json | null;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          patient_id: string;\n          action: string;\n          user_id?: string | null;\n          meta?: Json | null;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          patient_id: string;\n          action: string;\n          user_id: string | null;\n          meta: Json | null;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n    };\n\n    Views: {\n      // Vista usada en lib/org.ts\n      v_my_orgs: {\n        Row: {\n          id: string;\n          name: string;\n          slug: string;\n          is_personal: boolean;\n          role: string;\n        };\n      };\n    };\n\n    Functions: {};\n    Enums: {\n      Gender: Gender;\n    };\n  };\n};\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/org.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/patient-files.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/patient-notes.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/patient-shares.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/patients-search.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/patients.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/storage.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/supabase-browser.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/supabase/client.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/types.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/lib/utils.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/middleware.ts","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): middleware.ts"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"// middleware.ts\nimport { NextResponse } from \"next/server\";\n\n/**\n * Middleware desactivado a propósito.\n * La protección de rutas la hace <AuthGate/> en el layout del grupo (app).\n * Si en el futuro quieres SSR protegido con cookies de Supabase,\n * reactivamos aquí y sincronizamos sesión vía route handlers.\n */\nexport function middleware() {\n  return NextResponse.next();\n}\n\n// Sin matcher => no corre en ninguna ruta\nexport const config = {\n  matcher: [] as string[],\n};\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/next-env.d.ts","messages":[{"ruleId":"@typescript-eslint/triple-slash-reference","severity":2,"message":"Do not use a triple slash reference for ./.next/types/routes.d.ts, use `import` style instead.","line":3,"column":1,"nodeType":"Line","messageId":"tripleSlashReference","endLine":3,"endColumn":51}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"/// <reference types=\"next\" />\n/// <reference types=\"next/image-types/global\" />\n/// <reference path=\"./.next/types/routes.d.ts\" />\n\n// NOTE: This file should not be edited\n// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/next.config.mjs","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): next.config.mjs"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"/** @type {import('next').NextConfig} */\nconst nextConfig = {\n  async headers() {\n    const cspReportOnly = [\n      \"default-src 'self'\",\n      // Dev y Next: eval para React refresh en dev; inline estilos por styled-jsx\n      \"script-src 'self' 'unsafe-eval'\",\n      \"style-src 'self' 'unsafe-inline'\",\n      // Imágenes y blobs (Twemoji SVG puede venir desde CDNs)\n      \"img-src 'self' data: blob: https:\",\n      // Conexiones a Supabase + CDNs y gstatic\n      \"connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://fonts.gstatic.com\",\n      \"font-src 'self' https://fonts.gstatic.com data:\",\n      \"object-src 'none'\",\n      \"base-uri 'self'\",\n      \"form-action 'self'\",\n      \"frame-ancestors 'none'\",\n      \"upgrade-insecure-requests\"\n    ].join(\"; \");\n\n    return [\n      {\n        source: \"/:path*\",\n        headers: [\n          { key: \"X-Content-Type-Options\", value: \"nosniff\" },\n          { key: \"Referrer-Policy\", value: \"strict-origin-when-cross-origin\" },\n          { key: \"X-Frame-Options\", value: \"DENY\" },\n          { key: \"Permissions-Policy\", value: \"geolocation=(), microphone=(), camera=()\" },\n          { key: \"Content-Security-Policy-Report-Only\", value: cspReportOnly }\n          // En producción HTTPS puedes activar HSTS:\n          // { key: \"Strict-Transport-Security\", value: \"max-age=31536000; includeSubDomains; preload\" },\n        ],\n      },\n    ];\n  },\n};\n\nexport default nextConfig;\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/next.config.ts","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): next.config.ts"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"import type { NextConfig } from \"next\";\n\nconst nextConfig: NextConfig = {\n  /* config options here */\n};\n\nexport default nextConfig;\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/postcss.config.mjs","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): postcss.config.mjs"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"const config = {\n  plugins: [\"@tailwindcss/postcss\"],\n};\n\nexport default config;\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/public/sw.js","messages":[{"ruleId":null,"nodeType":null,"fatal":true,"severity":2,"message":"Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): public/sw.js"}],"suppressedMessages":[],"errorCount":1,"fatalErrorCount":1,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"source":"/* Sanoa SW v3 — Workbox + Background Sync + app events */\nimportScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js');\n\nself.addEventListener('install', () => self.skipWaiting());\nself.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });\n\nlet PENDING = 0;\n\nasync function postAll(message) {\n  const cs = await self.clients.matchAll({ type: 'window' });\n  for (const c of cs) c.postMessage(message);\n}\n\nif (self.workbox) {\n  const {routing, strategies, expiration, backgroundSync, precaching} = workbox;\n  workbox.setConfig({debug:false});\n\n  const PRECACHE_URLS = ['/', '/dashboard', '/pacientes', '/perfil', '/offline.html', '/favicon.ico'];\n  precaching.precacheAndRoute(PRECACHE_URLS.map(u => ({url: u, revision: null})));\n\n  routing.registerRoute(\n    ({request}) => request.mode === 'navigate',\n    new strategies.NetworkFirst({\n      cacheName: 'pages',\n      networkTimeoutSeconds: 3,\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 7*24*3600 }) ]\n    })\n  );\n\n  routing.registerRoute(\n    ({url}) => url.pathname.startsWith('/_next/static/'),\n    new strategies.StaleWhileRevalidate({\n      cacheName: 'next-static',\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 30*24*3600 }) ]\n    })\n  );\n\n  routing.registerRoute(\n    ({request}) => request.destination === 'image',\n    new strategies.StaleWhileRevalidate({\n      cacheName: 'images',\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 30*24*3600 }) ]\n    })\n  );\n\n  routing.registerRoute(\n    ({request}) => request.destination === 'font',\n    new strategies.StaleWhileRevalidate({\n      cacheName: 'fonts',\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 365*24*3600 }) ]\n    })\n  );\n\n  const SUPABASE_HOST = 'mmeybpohqtpvaxuhipjr.supabase.co';\n  const isSupabaseWrite = ({url, request}) => {\n    const m = request.method.toUpperCase();\n    if (!['POST','PUT','DELETE','PATCH'].includes(m)) return false;\n    if (url.host !== SUPABASE_HOST) return false;\n    return url.pathname.startsWith('/rest/v1/') || url.pathname.startsWith('/storage/v1/');\n  };\n\n  // Notifica cuando una escritura falla y se encola\n  const notifyPlugin = {\n    fetchDidFail: async ({request}) => {\n      PENDING++;\n      postAll({ type: 'queue:added', pending: PENDING, info: { method: request.method, url: request.url } });\n    }\n  };\n\n  // Reproduce la cola y notifica resultado\n  const bgSyncPlugin = new backgroundSync.BackgroundSyncPlugin('sanoa-queue', {\n    maxRetentionTime: 24 * 60,\n    onSync: async ({queue}) => {\n      let processed = 0;\n      try {\n        // Algunos entornos no exponen getAll(); mantenemos el conteo aproximado.\n        if (queue.getAll) {\n          const before = await queue.getAll();\n          processed = Array.isArray(before) ? before.length : 0;\n        }\n        await queue.replayRequests();\n        if (!processed) processed = 1; // fallback\n        PENDING = Math.max(0, PENDING - processed);\n        postAll({ type: 'queue:replay-success', pending: PENDING, info: { processed } });\n      } catch (err) {\n        postAll({ type: 'queue:replay-fail', pending: PENDING, info: { error: String(err) } });\n        throw err;\n      }\n    }\n  });\n\n  // Rutas de escrituras Supabase: se encolarán si falla la red\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'POST');\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'PUT');\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'DELETE');\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'PATCH');\n\n  routing.setCatchHandler(async ({event}) => {\n    if (event.request.destination === 'document') {\n      return (await caches.match('/offline.html')) || Response.error();\n    }\n    return Response.error();\n  });\n}\n\n// Mensajes desde la página (extensible)\nself.addEventListener('message', (evt) => {\n  const msg = evt.data || {};\n  if (msg && msg.type === 'queue:reset') {\n    PENDING = 0;\n    postAll({ type: 'queue:count', pending: PENDING });\n  }\n});\n","usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/scripts/generate-icons.mjs","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/sentry.client.config.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]},{"filePath":"/workspaces/sanoa-lab/sentry.server.config.ts","messages":[],"suppressedMessages":[],"errorCount":0,"fatalErrorCount":0,"warningCount":0,"fixableErrorCount":0,"fixableWarningCount":0,"usedDeprecatedRules":[]}]
+[
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/dashboard/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/layout.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/pacientes/[id]/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/pacientes/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/perfil/page.tsx",
+    "messages": [
+      {
+        "ruleId": "@next/next/no-img-element",
+        "message": "Definition for rule '@next/next/no-img-element' was not found.",
+        "line": 143,
+        "column": 11,
+        "endLine": 143,
+        "endColumn": 64,
+        "severity": 2,
+        "nodeType": null
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useMemo, useRef, useState } from \"react\";\nimport { useRouter } from \"next/navigation\";\nimport { createClient, User } from \"@supabase/supabase-js\";\nimport ColorEmoji from \"@/components/ColorEmoji\";\nimport { useToast } from \"@/components/Toast\";\n\nconst supabase = createClient(\n  process.env.NEXT_PUBLIC_SUPABASE_URL!,\n  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,\n);\n\nexport default function PerfilPage() {\n  const router = useRouter();\n  const { toast } = useToast();\n\n  const [user, setUser] = useState<User | null>(null);\n  const [email, setEmail] = useState(\"\");\n  const [name, setName] = useState(\"\");\n  const [avatarPath, setAvatarPath] = useState<string | null>(null);\n  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);\n  const [loading, setLoading] = useState(true);\n  const [saving, setSaving] = useState(false);\n\n  const fileRef = useRef<HTMLInputElement>(null);\n\n  useEffect(() => {\n    (async () => {\n      const { data } = await supabase.auth.getUser();\n      const u = data.user;\n      if (!u) {\n        router.push(\"/login\");\n        return;\n      }\n      setUser(u);\n      setEmail(u.email ?? \"\");\n      setName((u.user_metadata as any)?.full_name ?? \"\");\n      const path = (u.user_metadata as any)?.avatar_path ?? null;\n      setAvatarPath(path);\n      if (path) {\n        const { data: signed } = await supabase.storage\n          .from(\"uploads\")\n          .createSignedUrl(path, 60 * 60);\n        setAvatarUrl(signed?.signedUrl ?? null);\n      }\n      setLoading(false);\n    })();\n  }, [router]);\n\n  async function refreshSignedUrl(path: string | null) {\n    if (!path) {\n      setAvatarUrl(null);\n      return;\n    }\n    const { data } = await supabase.storage.from(\"uploads\").createSignedUrl(path, 60 * 60);\n    setAvatarUrl(data?.signedUrl ?? null);\n  }\n\n  async function handleSave(e: React.FormEvent) {\n    e.preventDefault();\n    if (!user) return;\n    setSaving(true);\n    const { error } = await supabase.auth.updateUser({\n      data: { full_name: name, avatar_path: avatarPath ?? null },\n    });\n    setSaving(false);\n    if (error) {\n      toast({ variant: \"error\", title: \"No se pudo guardar\", description: error.message });\n      return;\n    }\n    toast({ variant: \"success\", title: \"Perfil actualizado\" });\n  }\n\n  function triggerPick() {\n    fileRef.current?.click();\n  }\n\n  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {\n    const f = e.target.files?.[0];\n    if (!f || !user) return;\n\n    if (!f.type.startsWith(\"image/\")) {\n      toast({\n        variant: \"error\",\n        title: \"Archivo no válido\",\n        description: \"Sube una imagen (PNG/JPG/WebP…)\",\n      });\n      e.target.value = \"\";\n      return;\n    }\n    if (f.size > 5 * 1024 * 1024) {\n      toast({ variant: \"error\", title: \"Imagen muy pesada\", description: \"Máx. 5 MB\" });\n      e.target.value = \"\";\n      return;\n    }\n\n    const ext = f.name.split(\".\").pop()?.toLowerCase() || \"png\";\n    const path = `avatars/${user.id}_${Date.now()}.${ext}`.replace(/\\s+/g, \"_\");\n\n    const { error } = await supabase.storage.from(\"uploads\").upload(path, f, {\n      upsert: false,\n    });\n    if (error) {\n      toast({ variant: \"error\", title: \"No se pudo subir el avatar\", description: error.message });\n      e.target.value = \"\";\n      return;\n    }\n\n    setAvatarPath(path);\n    await refreshSignedUrl(path);\n\n    // Guarda inmediatamente en metadata para que quede persistente\n    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: path } });\n\n    toast({ variant: \"success\", title: \"Avatar actualizado\" });\n    e.target.value = \"\";\n  }\n\n  async function removeAvatar() {\n    if (!avatarPath) return setAvatarUrl(null);\n    const ok = window.confirm(\"¿Quitar avatar?\");\n    if (!ok) return;\n\n    // Intenta borrar el archivo (si falla, igual limpiamos metadata)\n    await supabase.storage.from(\"uploads\").remove([avatarPath]);\n\n    setAvatarPath(null);\n    setAvatarUrl(null);\n    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: null } });\n    toast({ variant: \"success\", title: \"Avatar quitado\" });\n  }\n\n  async function signOut() {\n    await supabase.auth.signOut();\n    router.push(\"/login\");\n  }\n\n  const AvatarVisual = useMemo(() => {\n    return (\n      <div className=\"size-28 rounded-full overflow-hidden border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] flex items-center justify-center\">\n        {avatarUrl ? (\n          // eslint-disable-next-line @next/next/no-img-element\n          <img src={avatarUrl} alt=\"Avatar\" className=\"w-full h-full object-cover\" />\n        ) : (\n          <div className=\"text-4xl\">\n            <ColorEmoji token=\"usuario\" size={40} />\n          </div>\n        )}\n      </div>\n    );\n  }, [avatarUrl]);\n\n  if (loading) {\n    return (\n      <main className=\"p-6 md:p-10\">\n        <div className=\"rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-8 animate-pulse\">\n          <div className=\"h-7 w-48 bg-[var(--color-brand-background)] rounded mb-4\" />\n          <div className=\"h-5 w-80 bg-[var(--color-brand-background)] rounded\" />\n        </div>\n      </main>\n    );\n  }\n\n  return (\n    <main className=\"p-6 md:p-10 space-y-8\">\n      {/* Encabezado */}\n      <header>\n        <h1 className=\"text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3\">\n          <ColorEmoji token=\"usuario\" size={30} />\n          Perfil\n        </h1>\n        <p className=\"text-[var(--color-brand-bluegray)]\">\n          Actualiza tu información básica y tu avatar.\n        </p>\n      </header>\n\n      {/* Card principal */}\n      <section\n        className=\"\n          w-full rounded-3xl bg-white/95 border border-[var(--color-brand-border)]\n          shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 md:px-8 py-7\n        \"\n      >\n        <form onSubmit={handleSave} className=\"grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6\">\n          {/* Columna avatar */}\n          <div className=\"flex flex-col items-start gap-4\">\n            {AvatarVisual}\n            <div className=\"flex gap-2\">\n              <button\n                type=\"button\"\n                onClick={triggerPick}\n                className=\"inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-[var(--color-brand-primary)] text-white hover:brightness-95\"\n              >\n                <ColorEmoji token=\"imagen\" />\n                Subir avatar\n              </button>\n              <button\n                type=\"button\"\n                onClick={removeAvatar}\n                className=\"inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm bg-white border border-[var(--color-brand-border)] hover:brightness-95\"\n              >\n                <ColorEmoji token=\"limpiar\" />\n                Quitar\n              </button>\n            </div>\n            <input\n              ref={fileRef}\n              type=\"file\"\n              accept=\"image/*\"\n              className=\"hidden\"\n              onChange={onPick}\n            />\n          </div>\n\n          {/* Columna formulario */}\n          <div className=\"space-y-5\">\n            {/* Correo (solo lectura) */}\n            <div>\n              <label className=\"block text-sm text-[var(--color-brand-bluegray)] mb-1\">\n                Correo\n              </label>\n              <input\n                value={email}\n                readOnly\n                className=\"\n                  w-full rounded-2xl border border-[var(--color-brand-border)]\n                  bg-[color-mix(in_oklab,#fff_92%,var(--color-brand-background)_8%)]\n                  px-5 py-3 text-[var(--color-brand-text)]\n                \"\n              />\n            </div>\n\n            {/* Nombre para mostrar */}\n            <div>\n              <label className=\"block text-sm text-[var(--color-brand-bluegray)] mb-1\">\n                Nombre para mostrar\n              </label>\n              <input\n                value={name}\n                onChange={(e) => setName(e.target.value)}\n                placeholder=\"Tu nombre\"\n                className=\"\n                  w-full rounded-2xl border border-[var(--color-brand-border)]\n                  bg-white px-5 py-3 text-[var(--color-brand-text)]\n                  focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]\n                \"\n              />\n            </div>\n\n            <div className=\"flex flex-wrap gap-3 pt-2\">\n              <button\n                type=\"submit\"\n                disabled={saving}\n                className=\"inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60\"\n              >\n                <ColorEmoji token=\"guardar\" />\n                Guardar cambios\n              </button>\n\n              <button\n                type=\"button\"\n                onClick={signOut}\n                className=\"inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white border border-[var(--color-brand-border)] hover:brightness-95\"\n              >\n                <ColorEmoji token=\"salir\" />\n                Cerrar sesión\n              </button>\n            </div>\n          </div>\n        </form>\n      </section>\n    </main>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/test-ui/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/test-ui/upload/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/login/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/register/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/reset-password/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/update-password/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/acerca/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/api/sentry-debug/route.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/error.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/head.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/instalar/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/layout.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/manifest.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/not-found.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/offline/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/privacidad/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/providers.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/robots.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/sitemap.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/terminos/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/AppShell.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/AuthGate.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ColorEmoji.tsx",
+    "messages": [],
+    "suppressedMessages": [
+      {
+        "ruleId": "prefer-const",
+        "severity": 2,
+        "message": "'l' is never reassigned. Use 'const' instead.",
+        "line": 27,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "useConst",
+        "endLine": 27,
+        "endColumn": 6,
+        "suppressions": [{ "kind": "directive", "justification": "" }]
+      }
+    ],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Emoji.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/EmojiTheme.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ExportPDFButton.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/InstallPrompt.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Modal.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Navbar.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/OfflineIndicator.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/OrgSwitcherBadge.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/PendingQueueBadge.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/QueueEvents.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/RegisterSW.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/RequireAuth.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/SiteFooter.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ThemeToggle.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Toast.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Toaster.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/UiCard.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/UploadHint.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/button.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/card.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/input.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/label.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/config/emojiTheme.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/eslint.config.mjs",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): eslint.config.mjs"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import tseslint from \"typescript-eslint\";\nimport react from \"eslint-plugin-react\";\nimport reactHooks from \"eslint-plugin-react-hooks\";\n\n/** @type {import(\"eslint\").Linter.FlatConfig[]} */\nexport default [\n  { ignores: [\"node_modules/**\", \".next/**\", \"logs/**\"] },\n\n  // Base TS\n  ...tseslint.configs.recommended,\n\n  {\n    files: [\"**/*.{ts,tsx,js,mjs}\"],\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: {\n        project: \"./tsconfig.typecheck.json\",\n        sourceType: \"module\"\n      }\n    },\n    plugins: { react, \"react-hooks\": reactHooks },\n    rules: {\n      // relajamos mientras saneamos el repo\n      \"@typescript-eslint/no-explicit-any\": \"off\",\n      \"@typescript-eslint/no-unused-vars\": \"off\",\n      \"no-unused-vars\": \"off\",\n      \"react-hooks/exhaustive-deps\": \"off\"\n    }\n  }\n];\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/hooks/useNotesRealtime.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/hooks/usePatientsRealtime.ts",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): hooks/usePatientsRealtime.ts"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\nimport { useEffect, useRef } from \"react\";\nimport { getSupabaseBrowser } from \"@/lib/supabase-browser\";\n\n/** Llama a onChange (debounced) ante insert/update/delete en public.patients del usuario actual. */\nexport function usePatientsRealtime(onChange: () => void, debounceMs = 250) {\n  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);\n\n  useEffect(() => {\n    const supabase = getSupabaseBrowser();\n    let active = true;\n    let chan: ReturnType<typeof supabase.channel> | null = null;\n\n    const debounced = () => {\n      if (timer.current) clearTimeout(timer.current);\n      timer.current = setTimeout(() => {\n        if (active) onChange();\n      }, debounceMs);\n    };\n\n    (async () => {\n      // opcional: filtrar por user_id del cliente\n      const { data: u } = await supabase.auth.getUser();\n      const uid = u?.user?.id ?? \"anon\";\n      const filter = u?.user?.id ? `user_id=eq.${u.user.id}` : undefined;\n\n      chan = supabase\n        .channel(`patients-${uid}`)\n        .on(\"postgres_changes\", { event: \"*\", schema: \"public\", table: \"patients\", filter }, () => {\n          debounced();\n        })\n        .subscribe();\n    })();\n\n    return () => {\n      active = false;\n      if (timer.current) clearTimeout(timer.current);\n      if (chan) supabase.removeChannel(chan);\n    };\n  }, [onChange, debounceMs]);\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/audit.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/database.types.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-empty-object-type",
+        "severity": 2,
+        "message": "The `{}` (\"empty object\") type allows any non-nullish value, including literals like `0` and `\"\"`.\n- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.\n- If you want a type meaning \"any object\", you probably want `object` instead.\n- If you want a type meaning \"any value\", you probably want `unknown` instead.",
+        "line": 210,
+        "column": 16,
+        "nodeType": "TSTypeLiteral",
+        "messageId": "noEmptyObject",
+        "endLine": 210,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "replaceEmptyObjectType",
+            "data": { "replacement": "object" },
+            "fix": { "range": [5238, 5240], "text": "object" },
+            "desc": "Replace `{}` with `object`."
+          },
+          {
+            "messageId": "replaceEmptyObjectType",
+            "data": { "replacement": "unknown" },
+            "fix": { "range": [5238, 5240], "text": "unknown" },
+            "desc": "Replace `{}` with `unknown`."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];\n\nexport type Gender = \"M\" | \"F\" | \"O\" | \"male\" | \"female\" | \"other\" | (string & {});\n\nexport type Database = {\n  public: {\n    Tables: {\n      patients: {\n        Row: {\n          id: string;\n          nombre: string;\n          edad: number | null;\n          genero: Gender | null;\n          created_at: string;\n          updated_at: string | null;\n          user_id?: string | null; // usado en app/(app)/pacientes/[id]\n        };\n        Insert: {\n          id?: string;\n          nombre: string;\n          edad?: number | null;\n          genero?: Gender | null;\n          user_id?: string | null;\n          created_at?: string;\n          updated_at?: string | null;\n        };\n        Update: Partial<{\n          id: string;\n          nombre: string;\n          edad: number | null;\n          genero: Gender | null;\n          user_id: string | null;\n          created_at: string;\n          updated_at: string | null;\n        }>;\n        Relationships: [];\n      };\n\n      patient_files: {\n        Row: {\n          id: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string; // clave en storage\n          file_name: string;\n          size: number;\n          mime_type: string | null;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string;\n          file_name: string;\n          size: number;\n          mime_type?: string | null;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string;\n          file_name: string;\n          size: number;\n          mime_type: string | null;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      patient_notes: {\n        Row: {\n          id: string;\n          user_id: string | null;\n          patient_id: string;\n          content: string;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          user_id?: string | null; // opcional para que compile tu insert actual\n          patient_id: string;\n          content: string;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          user_id: string | null;\n          patient_id: string;\n          content: string;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Alineado a tu código (owner_id, grantee_email, can_edit)\n      patient_shares: {\n        Row: {\n          id: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Preferencias de usuario (usado en lib/org.ts)\n      user_prefs: {\n        Row: {\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        };\n        Insert: {\n          user_id: string;\n          current_org_id: string;\n          updated_at?: string;\n        };\n        Update: Partial<{\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Si también usas user_org_prefs en algún lado, lo dejamos:\n      user_org_prefs: {\n        Row: {\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        };\n        Insert: {\n          user_id: string;\n          current_org_id: string;\n          updated_at?: string;\n        };\n        Update: Partial<{\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Bitácora usada en lib/audit.ts\n      audit_log: {\n        Row: {\n          id: string;\n          patient_id: string;\n          action: string;\n          user_id: string | null;\n          meta: Json | null;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          patient_id: string;\n          action: string;\n          user_id?: string | null;\n          meta?: Json | null;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          patient_id: string;\n          action: string;\n          user_id: string | null;\n          meta: Json | null;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n    };\n\n    Views: {\n      // Vista usada en lib/org.ts\n      v_my_orgs: {\n        Row: {\n          id: string;\n          name: string;\n          slug: string;\n          is_personal: boolean;\n          role: string;\n        };\n      };\n    };\n\n    Functions: {};\n    Enums: {\n      Gender: Gender;\n    };\n  };\n};\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/org.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patient-files.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patient-notes.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patient-shares.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patients-search.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patients.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/storage.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/supabase-browser.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/supabase/client.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/types.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/utils.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/middleware.ts",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): middleware.ts"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "// middleware.ts\nimport { NextResponse } from \"next/server\";\n\n/**\n * Middleware desactivado a propósito.\n * La protección de rutas la hace <AuthGate/> en el layout del grupo (app).\n * Si en el futuro quieres SSR protegido con cookies de Supabase,\n * reactivamos aquí y sincronizamos sesión vía route handlers.\n */\nexport function middleware() {\n  return NextResponse.next();\n}\n\n// Sin matcher => no corre en ninguna ruta\nexport const config = {\n  matcher: [] as string[],\n};\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next-env.d.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/triple-slash-reference",
+        "severity": 2,
+        "message": "Do not use a triple slash reference for ./.next/types/routes.d.ts, use `import` style instead.",
+        "line": 3,
+        "column": 1,
+        "nodeType": "Line",
+        "messageId": "tripleSlashReference",
+        "endLine": 3,
+        "endColumn": 51
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "/// <reference types=\"next\" />\n/// <reference types=\"next/image-types/global\" />\n/// <reference path=\"./.next/types/routes.d.ts\" />\n\n// NOTE: This file should not be edited\n// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next.config.mjs",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): next.config.mjs"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "/** @type {import('next').NextConfig} */\nconst nextConfig = {\n  async headers() {\n    const cspReportOnly = [\n      \"default-src 'self'\",\n      // Dev y Next: eval para React refresh en dev; inline estilos por styled-jsx\n      \"script-src 'self' 'unsafe-eval'\",\n      \"style-src 'self' 'unsafe-inline'\",\n      // Imágenes y blobs (Twemoji SVG puede venir desde CDNs)\n      \"img-src 'self' data: blob: https:\",\n      // Conexiones a Supabase + CDNs y gstatic\n      \"connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://fonts.gstatic.com\",\n      \"font-src 'self' https://fonts.gstatic.com data:\",\n      \"object-src 'none'\",\n      \"base-uri 'self'\",\n      \"form-action 'self'\",\n      \"frame-ancestors 'none'\",\n      \"upgrade-insecure-requests\"\n    ].join(\"; \");\n\n    return [\n      {\n        source: \"/:path*\",\n        headers: [\n          { key: \"X-Content-Type-Options\", value: \"nosniff\" },\n          { key: \"Referrer-Policy\", value: \"strict-origin-when-cross-origin\" },\n          { key: \"X-Frame-Options\", value: \"DENY\" },\n          { key: \"Permissions-Policy\", value: \"geolocation=(), microphone=(), camera=()\" },\n          { key: \"Content-Security-Policy-Report-Only\", value: cspReportOnly }\n          // En producción HTTPS puedes activar HSTS:\n          // { key: \"Strict-Transport-Security\", value: \"max-age=31536000; includeSubDomains; preload\" },\n        ],\n      },\n    ];\n  },\n};\n\nexport default nextConfig;\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next.config.ts",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): next.config.ts"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { NextConfig } from \"next\";\n\nconst nextConfig: NextConfig = {\n  /* config options here */\n};\n\nexport default nextConfig;\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/postcss.config.mjs",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): postcss.config.mjs"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "const config = {\n  plugins: [\"@tailwindcss/postcss\"],\n};\n\nexport default config;\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/public/sw.js",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): public/sw.js"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "/* Sanoa SW v3 — Workbox + Background Sync + app events */\nimportScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js');\n\nself.addEventListener('install', () => self.skipWaiting());\nself.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });\n\nlet PENDING = 0;\n\nasync function postAll(message) {\n  const cs = await self.clients.matchAll({ type: 'window' });\n  for (const c of cs) c.postMessage(message);\n}\n\nif (self.workbox) {\n  const {routing, strategies, expiration, backgroundSync, precaching} = workbox;\n  workbox.setConfig({debug:false});\n\n  const PRECACHE_URLS = ['/', '/dashboard', '/pacientes', '/perfil', '/offline.html', '/favicon.ico'];\n  precaching.precacheAndRoute(PRECACHE_URLS.map(u => ({url: u, revision: null})));\n\n  routing.registerRoute(\n    ({request}) => request.mode === 'navigate',\n    new strategies.NetworkFirst({\n      cacheName: 'pages',\n      networkTimeoutSeconds: 3,\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 7*24*3600 }) ]\n    })\n  );\n\n  routing.registerRoute(\n    ({url}) => url.pathname.startsWith('/_next/static/'),\n    new strategies.StaleWhileRevalidate({\n      cacheName: 'next-static',\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 30*24*3600 }) ]\n    })\n  );\n\n  routing.registerRoute(\n    ({request}) => request.destination === 'image',\n    new strategies.StaleWhileRevalidate({\n      cacheName: 'images',\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 30*24*3600 }) ]\n    })\n  );\n\n  routing.registerRoute(\n    ({request}) => request.destination === 'font',\n    new strategies.StaleWhileRevalidate({\n      cacheName: 'fonts',\n      plugins: [ new expiration.ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 365*24*3600 }) ]\n    })\n  );\n\n  const SUPABASE_HOST = 'mmeybpohqtpvaxuhipjr.supabase.co';\n  const isSupabaseWrite = ({url, request}) => {\n    const m = request.method.toUpperCase();\n    if (!['POST','PUT','DELETE','PATCH'].includes(m)) return false;\n    if (url.host !== SUPABASE_HOST) return false;\n    return url.pathname.startsWith('/rest/v1/') || url.pathname.startsWith('/storage/v1/');\n  };\n\n  // Notifica cuando una escritura falla y se encola\n  const notifyPlugin = {\n    fetchDidFail: async ({request}) => {\n      PENDING++;\n      postAll({ type: 'queue:added', pending: PENDING, info: { method: request.method, url: request.url } });\n    }\n  };\n\n  // Reproduce la cola y notifica resultado\n  const bgSyncPlugin = new backgroundSync.BackgroundSyncPlugin('sanoa-queue', {\n    maxRetentionTime: 24 * 60,\n    onSync: async ({queue}) => {\n      let processed = 0;\n      try {\n        // Algunos entornos no exponen getAll(); mantenemos el conteo aproximado.\n        if (queue.getAll) {\n          const before = await queue.getAll();\n          processed = Array.isArray(before) ? before.length : 0;\n        }\n        await queue.replayRequests();\n        if (!processed) processed = 1; // fallback\n        PENDING = Math.max(0, PENDING - processed);\n        postAll({ type: 'queue:replay-success', pending: PENDING, info: { processed } });\n      } catch (err) {\n        postAll({ type: 'queue:replay-fail', pending: PENDING, info: { error: String(err) } });\n        throw err;\n      }\n    }\n  });\n\n  // Rutas de escrituras Supabase: se encolarán si falla la red\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'POST');\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'PUT');\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'DELETE');\n  routing.registerRoute(isSupabaseWrite, new strategies.NetworkOnly({ plugins: [bgSyncPlugin, notifyPlugin] }), 'PATCH');\n\n  routing.setCatchHandler(async ({event}) => {\n    if (event.request.destination === 'document') {\n      return (await caches.match('/offline.html')) || Response.error();\n    }\n    return Response.error();\n  });\n}\n\n// Mensajes desde la página (extensible)\nself.addEventListener('message', (evt) => {\n  const msg = evt.data || {};\n  if (msg && msg.type === 'queue:reset') {\n    PENDING = 0;\n    postAll({ type: 'queue:count', pending: PENDING });\n  }\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/scripts/generate-icons.mjs",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/sentry.client.config.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/sentry.server.config.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  }
+]

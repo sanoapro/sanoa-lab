@@ -1,0 +1,939 @@
+[
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/dashboard/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/layout.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/pacientes/[id]/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/pacientes/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/perfil/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/test-ui/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(app)/test-ui/upload/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/login/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/register/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/reset-password/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/(auth)/update-password/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/acerca/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/api/sentry-debug/route.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/error.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/head.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/instalar/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/layout.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/manifest.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/not-found.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/offline/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/privacidad/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/providers.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/robots.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/sitemap.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/app/terminos/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/AppShell.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/AuthGate.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ColorEmoji.tsx",
+    "messages": [],
+    "suppressedMessages": [
+      {
+        "ruleId": "prefer-const",
+        "severity": 2,
+        "message": "'l' is never reassigned. Use 'const' instead.",
+        "line": 27,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "useConst",
+        "endLine": 27,
+        "endColumn": 6,
+        "suppressions": [{ "kind": "directive", "justification": "" }]
+      }
+    ],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Emoji.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/EmojiTheme.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ExportPDFButton.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/InstallPrompt.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Modal.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Navbar.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/OfflineIndicator.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/OrgSwitcherBadge.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/PendingQueueBadge.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/QueueEvents.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/RegisterSW.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/RequireAuth.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/SiteFooter.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ThemeToggle.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Toast.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/Toaster.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/UiCard.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/UploadHint.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/button.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/card.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/input.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/components/ui/label.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/config/emojiTheme.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/hooks/useNotesRealtime.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/hooks/usePatientsRealtime.ts",
+    "messages": [
+      {
+        "ruleId": null,
+        "nodeType": null,
+        "fatal": true,
+        "severity": 2,
+        "message": "Parsing error: \"parserOptions.project\" has been provided for @typescript-eslint/parser.\nThe file was not found in any of the provided project(s): hooks/usePatientsRealtime.ts"
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\nimport { useEffect, useRef } from \"react\";\nimport { getSupabaseBrowser } from \"@/lib/supabase-browser\";\n\n/** Llama a onChange (debounced) ante insert/update/delete en public.patients del usuario actual. */\nexport function usePatientsRealtime(onChange: () => void, debounceMs = 250) {\n  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);\n\n  useEffect(() => {\n    const supabase = getSupabaseBrowser();\n    let active = true;\n    let chan: ReturnType<typeof supabase.channel> | null = null;\n\n    const debounced = () => {\n      if (timer.current) clearTimeout(timer.current);\n      timer.current = setTimeout(() => {\n        if (active) onChange();\n      }, debounceMs);\n    };\n\n    (async () => {\n      // opcional: filtrar por user_id del cliente\n      const { data: u } = await supabase.auth.getUser();\n      const uid = u?.user?.id ?? \"anon\";\n      const filter = u?.user?.id ? `user_id=eq.${u.user.id}` : undefined;\n\n      chan = supabase\n        .channel(`patients-${uid}`)\n        .on(\"postgres_changes\", { event: \"*\", schema: \"public\", table: \"patients\", filter }, () => {\n          debounced();\n        })\n        .subscribe();\n    })();\n\n    return () => {\n      active = false;\n      if (timer.current) clearTimeout(timer.current);\n      if (chan) supabase.removeChannel(chan);\n    };\n  }, [onChange, debounceMs]);\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/audit.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/database.types.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-empty-object-type",
+        "severity": 2,
+        "message": "The `{}` (\"empty object\") type allows any non-nullish value, including literals like `0` and `\"\"`.\n- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.\n- If you want a type meaning \"any object\", you probably want `object` instead.\n- If you want a type meaning \"any value\", you probably want `unknown` instead.",
+        "line": 210,
+        "column": 16,
+        "nodeType": "TSTypeLiteral",
+        "messageId": "noEmptyObject",
+        "endLine": 210,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "replaceEmptyObjectType",
+            "data": { "replacement": "object" },
+            "fix": { "range": [5231, 5233], "text": "object" },
+            "desc": "Replace `{}` with `object`."
+          },
+          {
+            "messageId": "replaceEmptyObjectType",
+            "data": { "replacement": "unknown" },
+            "fix": { "range": [5231, 5233], "text": "unknown" },
+            "desc": "Replace `{}` with `unknown`."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];\n\nexport type Gender = \"M\" | \"F\" | \"O\" | \"male\" | \"female\" | \"other\" | string;\n\nexport type Database = {\n  public: {\n    Tables: {\n      patients: {\n        Row: {\n          id: string;\n          nombre: string;\n          edad: number | null;\n          genero: Gender | null;\n          created_at: string;\n          updated_at: string | null;\n          user_id?: string | null; // usado en app/(app)/pacientes/[id]\n        };\n        Insert: {\n          id?: string;\n          nombre: string;\n          edad?: number | null;\n          genero?: Gender | null;\n          user_id?: string | null;\n          created_at?: string;\n          updated_at?: string | null;\n        };\n        Update: Partial<{\n          id: string;\n          nombre: string;\n          edad: number | null;\n          genero: Gender | null;\n          user_id: string | null;\n          created_at: string;\n          updated_at: string | null;\n        }>;\n        Relationships: [];\n      };\n\n      patient_files: {\n        Row: {\n          id: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string; // clave en storage\n          file_name: string;\n          size: number;\n          mime_type: string | null;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string;\n          file_name: string;\n          size: number;\n          mime_type?: string | null;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          user_id: string;\n          patient_id: string;\n          storage_key: string;\n          file_name: string;\n          size: number;\n          mime_type: string | null;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      patient_notes: {\n        Row: {\n          id: string;\n          user_id: string | null;\n          patient_id: string;\n          content: string;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          user_id?: string | null; // opcional para que compile tu insert actual\n          patient_id: string;\n          content: string;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          user_id: string | null;\n          patient_id: string;\n          content: string;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Alineado a tu código (owner_id, grantee_email, can_edit)\n      patient_shares: {\n        Row: {\n          id: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          owner_id: string;\n          patient_id: string;\n          grantee_email: string;\n          can_edit: boolean;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Preferencias de usuario (usado en lib/org.ts)\n      user_prefs: {\n        Row: {\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        };\n        Insert: {\n          user_id: string;\n          current_org_id: string;\n          updated_at?: string;\n        };\n        Update: Partial<{\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Si también usas user_org_prefs en algún lado, lo dejamos:\n      user_org_prefs: {\n        Row: {\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        };\n        Insert: {\n          user_id: string;\n          current_org_id: string;\n          updated_at?: string;\n        };\n        Update: Partial<{\n          user_id: string;\n          current_org_id: string;\n          updated_at: string;\n        }>;\n        Relationships: [];\n      };\n\n      // Bitácora usada en lib/audit.ts\n      audit_log: {\n        Row: {\n          id: string;\n          patient_id: string;\n          action: string;\n          user_id: string | null;\n          meta: Json | null;\n          created_at: string;\n        };\n        Insert: {\n          id?: string;\n          patient_id: string;\n          action: string;\n          user_id?: string | null;\n          meta?: Json | null;\n          created_at?: string;\n        };\n        Update: Partial<{\n          id: string;\n          patient_id: string;\n          action: string;\n          user_id: string | null;\n          meta: Json | null;\n          created_at: string;\n        }>;\n        Relationships: [];\n      };\n    };\n\n    Views: {\n      // Vista usada en lib/org.ts\n      v_my_orgs: {\n        Row: {\n          id: string;\n          name: string;\n          slug: string;\n          is_personal: boolean;\n          role: string;\n        };\n      };\n    };\n\n    Functions: {};\n    Enums: {\n      Gender: Gender;\n    };\n  };\n};\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/org.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patient-files.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patient-notes.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patient-shares.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patients-search.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/patients.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/storage.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/supabase-browser.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/supabase/client.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/types.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/lib/utils.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/middleware.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next-env.d.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next.config.mjs",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/next.config.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/postcss.config.mjs",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/scripts/generate-icons.mjs",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 2,
+        "message": "'maskable' is assigned a value but never used.",
+        "line": 7,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 34
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import fs from \"fs/promises\";\nimport sharp from \"sharp\";\n\nconst brandBg = \"#D97A66\";   // terracota\nconst brandText = \"#FFFFFF\"; // texto claro\n\nfunction svgIcon(size, { maskable = false } = {}) {\n  const r = Math.round(size * 0.18);               // radio de borde redondeado\n  const fontSize = Math.round(size * 0.52);        // tamaño letra \"S\"\n  // Para maskable, el arte debe ser \"full-bleed\". Centramos el contenido igual.\n  return `\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${size}\" height=\"${size}\">\n  <rect width=\"${size}\" height=\"${size}\" rx=\"${r}\" ry=\"${r}\" fill=\"${brandBg}\"/>\n  <g transform=\"translate(${size/2},${size/2})\">\n    <text x=\"0\" y=\"${fontSize/3}\" text-anchor=\"middle\"\n      font-family=\"Poppins, Lato, system-ui, sans-serif\"\n      font-size=\"${fontSize}\" font-weight=\"700\" fill=\"${brandText}\">\n      S\n    </text>\n  </g>\n</svg>\n`.trim();\n}\n\nasync function generate() {\n  await fs.mkdir(\"public/icons\", { recursive: true });\n\n  // 192x192\n  await sharp(Buffer.from(svgIcon(192)))\n    .png()\n    .toFile(\"public/icons/icon-192.png\");\n\n  // 512x512\n  await sharp(Buffer.from(svgIcon(512)))\n    .png()\n    .toFile(\"public/icons/icon-512.png\");\n\n  // Maskable 512x512 (mismo arte, válido para \"maskable\")\n  await sharp(Buffer.from(svgIcon(512, { maskable: true })))\n    .png()\n    .toFile(\"public/icons/maskable-512.png\");\n\n  console.log(\"✅ Icons escritos en public/icons/\");\n}\n\ngenerate().catch((e) => {\n  console.error(e);\n  process.exit(1);\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/sentry.client.config.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 15,
+        "column": 59,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 15,
+        "endColumn": 62,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": { "range": [553, 556], "text": "unknown" },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": { "range": [553, 556], "text": "never" },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import * as Sentry from \"@sentry/nextjs\";\n\nconst DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || \"\";\nconst ENV = process.env.NEXT_PUBLIC_SENTRY_ENV || process.env.NODE_ENV || \"development\";\n\nif (typeof window !== \"undefined\" && DSN) {\n  Sentry.init({\n    dsn: DSN,\n    environment: ENV,\n    tracesSampleRate: 0.1, // cliente un poco menor\n    sendDefaultPii: false,\n    beforeSend(event) {\n      // Evita enviar cualquier cookie/query sensible desde el navegador\n      if (event.request?.headers) {\n        const h = event.request.headers as Record<string, any>;\n        const block = [\n          \"cookie\",\n          \"authorization\",\n          \"x-supabase-auth\",\n          \"sb-access-token\",\n          \"sb-refresh-token\",\n        ];\n        for (const k of block) if (h[k] != null) h[k] = \"[REDACTED]\";\n      }\n      return event;\n    },\n  });\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/workspaces/sanoa-lab/sentry.server.config.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 15,
+        "column": 59,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 15,
+        "endColumn": 62,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": { "range": [503, 506], "text": "unknown" },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": { "range": [503, 506], "text": "never" },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import * as Sentry from \"@sentry/nextjs\";\n\nconst DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || \"\";\nconst ENV = process.env.NEXT_PUBLIC_SENTRY_ENV || process.env.NODE_ENV || \"development\";\n\nif (DSN) {\n  Sentry.init({\n    dsn: DSN,\n    environment: ENV,\n    tracesSampleRate: 0.15, // ajusta si necesitas más/menos performance\n    sendDefaultPii: false,\n    beforeSend(event) {\n      // Redacta headers sensibles\n      if (event.request?.headers) {\n        const h = event.request.headers as Record<string, any>;\n        const block = [\n          \"cookie\",\n          \"authorization\",\n          \"x-supabase-auth\",\n          \"sb-access-token\",\n          \"sb-refresh-token\",\n        ];\n        for (const k of block) {\n          if (h[k] != null) h[k] = \"[REDACTED]\";\n          if (h[k.toLowerCase?.()] != null) h[k.toLowerCase()] = \"[REDACTED]\";\n          if (h[k.toUpperCase?.()] != null) h[k.toUpperCase()] = \"[REDACTED]\";\n        }\n      }\n      return event;\n    },\n  });\n}\n",
+    "usedDeprecatedRules": []
+  }
+]

@@ -1,0 +1,33 @@
+"use client";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+
+export default function ResetPasswordPage() {
+  const supabase = getSupabaseBrowser();
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") || "");
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/auth/update-password`,
+    });
+
+    alert("Revisa tu correo: te enviamos un enlace para restablecer tu contraseña.");
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="mx-auto max-w-sm space-y-4 p-4">
+      <input
+        type="email"
+        name="email"
+        placeholder="Tu correo"
+        className="w-full rounded-md border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
+      />
+      <button className="w-full rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90">
+        Enviar enlace
+      </button>
+    </form>
+  );
+}

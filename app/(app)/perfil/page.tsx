@@ -168,7 +168,6 @@ export default function PerfilPage() {
     return (
       <div className="size-28 rounded-full overflow-hidden border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] flex items-center justify-center">
         {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         ) : (
           <div className="text-4xl">

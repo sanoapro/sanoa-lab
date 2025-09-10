@@ -1,0 +1,4 @@
+/workspaces/sanoa-lab/sentry.client.config.ts:15:41: Parsing error: Unexpected token as [Error]
+/workspaces/sanoa-lab/sentry.server.config.ts:15:41: Parsing error: Unexpected token as [Error]
+
+2 problems

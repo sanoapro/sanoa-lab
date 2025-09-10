@@ -1,0 +1,11 @@
+/workspaces/sanoa-lab/hooks/usePatientsRealtime.ts:0:0: Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
+The file was not found in any of the provided project(s): hooks/usePatientsRealtime.ts [Error]
+/workspaces/sanoa-lab/lib/database.types.ts:210:16: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead. [Error/@typescript-eslint/no-empty-object-type]
+/workspaces/sanoa-lab/scripts/generate-icons.mjs:7:26: 'maskable' is assigned a value but never used. [Error/@typescript-eslint/no-unused-vars]
+/workspaces/sanoa-lab/sentry.client.config.ts:15:59: Unexpected any. Specify a different type. [Error/@typescript-eslint/no-explicit-any]
+/workspaces/sanoa-lab/sentry.server.config.ts:15:59: Unexpected any. Specify a different type. [Error/@typescript-eslint/no-explicit-any]
+
+5 problems
