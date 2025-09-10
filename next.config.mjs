@@ -17,7 +17,6 @@ const nextConfig = {
       "frame-ancestors 'none'",
       "upgrade-insecure-requests"
     ].join("; ");
-
     return [
       {
         source: "/:path*",
@@ -32,6 +31,16 @@ const nextConfig = {
         ],
       },
     ];
+  },
+
+  // Silencia los warnings "Critical dependency" de @opentelemetry/require-in-the-middle
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      { module: /@opentelemetry\/instrumentation.*instrumentation\.js/ },
+      { module: /require-in-the-middle/ },
+    ];
+    return config;
   },
 };
 

@@ -1,247 +1,142 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { useEffect, useState } from "react";
+
 import ColorEmoji from "@/components/ColorEmoji";
-import { showToast } from "@/components/Toaster";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
-type Stage = "checking" | "ready" | "error";
-
-function parseHashTokens(hash: string) {
-  const h = hash.startsWith("#") ? hash.slice(1) : hash;
-  const p = new URLSearchParams(h);
-  return {
-    access_token: p.get("access_token"),
-    refresh_token: p.get("refresh_token"),
-    type: p.get("type"),
-  };
-}
-
-export default function UpdatePasswordPage() {
-  return (
-    <Suspense fallback={<UpdatePasswordFallback />}>
-      <UpdatePasswordInner />
-    </Suspense>
-  );
-}
-
-function UpdatePasswordFallback() {
-  return (
-    <main className="min-h-[100dvh] grid place-items-center p-6">
-      <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="p-6 flex items-center gap-3">
-          <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-            <ColorEmoji token="refrescar" size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">Cargando…</h1>
-            <p className="text-sm text-[var(--color-brand-bluegray)]">Un momento por favor.</p>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function UpdatePasswordInner() {
-  const supabase = getSupabaseBrowser();
+export default function LoginPage() {
   const router = useRouter();
   const search = useSearchParams();
-
   const redirectTo = search.get("redirect_to") || "/dashboard";
-  const codeParam = search.get("code") || null;
+  const supabase = getSupabaseBrowser();
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-  const [stage, setStage] = useState<Stage>("checking");
-  const [errMsg, setErrMsg] = useState<string | null>(null);
-  const [pwd, setPwd] = useState("");
-  const [pwd2, setPwd2] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const canSubmit = useMemo(() => {
-    return pwd.length >= 8 && pwd2.length >= 8 && pwd === pwd2 && !saving;
-  }, [pwd, pwd2, saving]);
-
+  // Si ya hay sesión, redirige al Tablero
   useEffect(() => {
     (async () => {
-      try {
-        // 1) Si llega con ?code=..., intercambia por sesión
-        if (codeParam) {
-          const { error } = await supabase.auth.exchangeCodeForSession(codeParam);
-          if (error) throw error;
-        } else if (typeof window !== "undefined") {
-          // 2) Si llega con #access_token=... maneja hash tokens
-          const { access_token, refresh_token } = parseHashTokens(window.location.hash || "");
-          if (access_token && refresh_token) {
-            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-            if (error) throw error;
-          }
-        }
-
-        // 3) Verifica sesión activa
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!data.session) {
-          setStage("error");
-          setErrMsg(
-            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.",
-          );
-          return;
-        }
-        setStage("ready");
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Ocurrió un problema al validar el enlace.";
-        setStage("error");
-        setErrMsg(msg);
-      }
+      const { data } = await supabase.auth.getSession();
+      if (data.session) router.replace(redirectTo);
     })();
-  }, [codeParam, supabase]);
+  }, [router, supabase, redirectTo]);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!canSubmit) return;
-    setSaving(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password: pwd });
-      if (error) throw error;
-      showToast("Contraseña actualizada. ¡Bienvenido!", "success");
-      router.replace(redirectTo);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "No se pudo actualizar la contraseña.";
-      showToast(msg, "error");
-    } finally {
-      setSaving(false);
+    setErr(null);
+    setLoading(true);
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") || "");
+    const password = String(form.get("password") || "");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      setErr(error.message);
+      return;
     }
+    router.replace(redirectTo);
   }
 
-  if (stage === "checking") {
-    return (
-      <main className="min-h-[80vh] grid place-items-center p-6">
-        <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-          <div className="p-6 flex items-center gap-3">
-            <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji token="refrescar" size={20} />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
-                Verificando enlace…
-              </h1>
-              <p className="text-sm text-[var(--color-brand-bluegray)]">Un momento por favor.</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+  async function onGoogle() {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: origin + (redirectTo ? `?redirect_to=${encodeURIComponent(redirectTo)}` : ""),
+      },
+    });
   }
 
-  if (stage === "error") {
-    return (
-      <main className="min-h-[80vh] grid place-items-center p-6">
-        <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-          <div className="p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                <ColorEmoji token="info" size={20} />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
-                  Enlace inválido o expirado
-                </h1>
-                <p className="text-sm text-[var(--color-brand-bluegray)]">{errMsg}</p>
-              </div>
-            </div>
-            <div className="flex justify-between text-sm">
-              <Link
-                href="/reset-password"
-                className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
-              >
-                <ColorEmoji token="email" size={16} /> Solicitar nuevo enlace
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
-              >
-                <ColorEmoji token="atras" size={16} /> Volver a login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  // stage === "ready"
   return (
-    <main className="min-h-[80vh] grid place-items-center p-6">
-      <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+    <main className="min-h-[100dvh] grid place-items-center p-4">
+      <section
+        className="w-full max-w-lg rounded-3xl border border-[var(--color-brand-border)]
+                   bg-white/95 shadow-[0_12px_40px_rgba(0,0,0,0.08)] backdrop-blur p-6 md:p-8 space-y-6"
+      >
+        {/* Encabezado */}
+        <header className="space-y-1">
+          <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
               <ColorEmoji token="candado" size={20} />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
-                Nueva contraseña
-              </h1>
-              <p className="text-sm text-[var(--color-brand-bluegray)]">
-                Escribe y confirma tu nueva contraseña.
-              </p>
-            </div>
+            </span>
+            Iniciar sesión
+          </h1>
+          <p className="text-[var(--color-brand-bluegray)] flex items-center gap-2">
+            <ColorEmoji token="magia" size={16} />
+            Bienvenido/a a Sanoa
+          </p>
+        </header>
+
+        {/* Errores */}
+        {err && (
+          <p className="text-sm text-red-600" role="alert">
+            {err}
+          </p>
+        )}
+
+        {/* Formulario */}
+        <form onSubmit={onLogin} className="space-y-4">
+          <label className="block space-y-1">
+            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
+              <ColorEmoji token="email" size={16} /> Correo
+            </span>
+            <input
+              type="email"
+              name="email"
+              placeholder="tucorreo@ejemplo.com"
+              autoComplete="email"
+              required
+              className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
+            />
+          </label>
+
+          <label className="block space-y-1">
+            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
+              <ColorEmoji token="llave" size={16} /> Contraseña
+            </span>
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+              className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-coral)]"
+            />
+          </label>
+
+          <div className="flex items-center justify-between">
+            <a href="/reset-password" className="text-sm text-[var(--color-brand-coral)] underline">
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-3">
-            <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">Contraseña nueva</span>
-              <input
-                type="password"
-                value={pwd}
-                onChange={(e) => setPwd(e.target.value)}
-                minLength={8}
-                placeholder="Mínimo 8 caracteres"
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">
-                Confirmar contraseña
-              </span>
-              <input
-                type="password"
-                value={pwd2}
-                onChange={(e) => setPwd2(e.target.value)}
-                minLength={8}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              />
-            </label>
+          <button
+            disabled={loading}
+            className="w-full rounded-2xl bg-[var(--color-brand-primary)] px-4 py-3 text-white font-medium hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            <ColorEmoji token="siguiente" size={18} />
+            {loading ? "Entrando…" : "Entrar"}
+          </button>
+        </form>
 
-            <button
-              disabled={!canSubmit}
-              className="w-full rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
-            >
-              <ColorEmoji token="guardar" size={16} />
-              {saving ? "Guardando…" : "Guardar y entrar"}
-            </button>
-          </form>
-
+        {/* Separador */}
+        <div className="relative">
           <div className="h-px bg-[var(--color-brand-border)]" />
-
-          <div className="text-sm flex justify-between">
-            <Link
-              href="/reset-password"
-              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
-            >
-              <ColorEmoji token="email" size={16} /> Volver a solicitar enlace
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-[var(--color-brand-text)] hover:underline"
-            >
-              <ColorEmoji token="atras" size={16} /> Volver a login
-            </Link>
-          </div>
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 text-xs text-[var(--color-brand-bluegray)]">
+            o
+          </span>
         </div>
-      </div>
+
+        {/* OAuth */}
+        <button
+          onClick={onGoogle}
+          className="w-full rounded-2xl border border-[var(--color-brand-border)] bg-white px-4 py-3 text-[var(--color-brand-text)] hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2"
+        >
+          <ColorEmoji token="web" size={18} />
+          Continuar con Google
+        </button>
+      </section>
     </main>
   );
 }
