@@ -14,7 +14,7 @@ function raise(error: any): never {
 }
 
 export async function listPatients(limit = 50) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase
     .from("patients")
     .select("*")
@@ -25,21 +25,21 @@ export async function listPatients(limit = 50) {
 }
 
 export async function getPatient(id: string) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase.from("patients").select("*").eq("id", id).single();
   if (error) raise(error);
   return data as PatientRow;
 }
 
 export async function createPatient(input: PatientInsert) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase.from("patients").insert(input).select("*").single();
   if (error) raise(error);
   return data as PatientRow;
 }
 
 export async function updatePatient(id: string, patch: Omit<PatientUpdate, "id">) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase
     .from("patients")
     .update(patch)
@@ -51,7 +51,7 @@ export async function updatePatient(id: string, patch: Omit<PatientUpdate, "id">
 }
 
 export async function deletePatient(id: string) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { error } = await supabase.from("patients").delete().eq("id", id);
   if (error) raise(error);
   return true;

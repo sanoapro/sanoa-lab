@@ -1,6 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export type Gender = "M" | "F" | "O" | "male" | "female" | "other" | (string & {});
+export type Gender = "M" | "F" | "O" | "male" | "female" | "other" | string;
 
 export type Database = {
   public: {

@@ -47,7 +47,7 @@ function randomId(len = 8): string {
 }
 
 export async function listPatientFiles(patientId: string): Promise<PatientFile[]> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase
     .from("patient_files")
     .select("*")
@@ -64,7 +64,7 @@ export async function uploadPatientFile(
   patientId: string,
   file: File,
 ): Promise<PatientFile | null> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
 
   // Validaciones
   const userRes = await supabase.auth.getUser();
@@ -127,7 +127,7 @@ export async function uploadPatientFile(
 }
 
 export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promise<string> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const sec = Number(ttlSeconds || SIGNED_TTL || 300);
   const { data, error } = await supabase.storage
     .from("uploads")
@@ -140,7 +140,7 @@ export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promi
 }
 
 export async function deletePatientFile(id: string): Promise<void> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
 
   // Obtén key
   const { data: rec, error: e1 } = await supabase

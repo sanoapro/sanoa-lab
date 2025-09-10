@@ -10,7 +10,7 @@ export type PatientNote = {
 };
 
 export async function listNotes(patientId: string, limit = 200): Promise<PatientNote[]> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase
     .from("patient_notes")
     .select("*")
@@ -25,7 +25,7 @@ export async function listNotes(patientId: string, limit = 200): Promise<Patient
 }
 
 export async function createNote(patientId: string, content: string): Promise<PatientNote> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase
     .from("patient_notes")
     .insert({ patient_id: patientId, content })
@@ -39,7 +39,7 @@ export async function createNote(patientId: string, content: string): Promise<Pa
 }
 
 export async function deleteNote(noteId: string): Promise<boolean> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { error } = await supabase.from("patient_notes").delete().eq("id", noteId);
   if (error)
     throw new Error(

@@ -10,7 +10,7 @@ export type PatientShare = {
 };
 
 export async function listShares(patientId: string): Promise<PatientShare[]> {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data, error } = await supabase
     .from("patient_shares")
     .select("*")
@@ -24,7 +24,7 @@ export async function listShares(patientId: string): Promise<PatientShare[]> {
 }
 
 export async function addShare(patientId: string, email: string, canEdit: boolean) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { data: me } = await supabase.auth.getUser();
   if (!me?.user) throw new Error("No hay sesión.");
   const payload = {
@@ -46,7 +46,7 @@ export async function addShare(patientId: string, email: string, canEdit: boolea
 }
 
 export async function revokeShare(shareId: string) {
-  const supabase = getSupabaseBrowser();
+  const supabase = getSupabaseBrowser() as any;
   const { error } = await supabase.from("patient_shares").delete().eq("id", shareId);
   if (error)
     throw new Error(
