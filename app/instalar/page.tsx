@@ -31,7 +31,7 @@ export default function InstalarPage() {
     const safari = ios || (/safari/.test(u) && !chrome && !edge);
     setUa({ ios, android, desktop: !(ios || android), chrome, safari, edge });
 
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault();
       setPromptEvt(e);
     };

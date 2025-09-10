@@ -64,7 +64,17 @@ export default function ExportPDFButton({
 
       pdf.save(filename);
     } catch (err) {
-      console.error((err) instanceof Error ? err : (()=>{ try { return JSON.stringify(err); } catch { return String(err); }})());
+      console.error(
+        err instanceof Error
+          ? err
+          : (() => {
+              try {
+                return JSON.stringify(err);
+              } catch {
+                return String(err);
+              }
+            })(),
+      );
       alert((err as any)?.message || "No se pudo exportar el PDF.");
     } finally {
       setBusy(false);

@@ -48,7 +48,17 @@ export default function UploadDemoPage() {
       if (error) throw error;
       setFiles(data || []);
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo obtener la lista.", "error");
     } finally {
       setLoading(false);
@@ -81,7 +91,17 @@ export default function UploadDemoPage() {
       inputRef.current!.value = "";
       await refreshList();
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo subir el archivo.", "error");
     } finally {
       setUploading(false);
@@ -94,7 +114,17 @@ export default function UploadDemoPage() {
       await navigator.clipboard.writeText(url);
       showToast("Enlace temporal copiado (5 min).", "success");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo generar el enlace.", "error");
     }
   }
@@ -104,7 +134,17 @@ export default function UploadDemoPage() {
       const url = await getSignedUrl(obj.name, 300);
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast("No se pudo abrir el archivo.", "error");
     }
   }
@@ -119,7 +159,17 @@ export default function UploadDemoPage() {
       a.click();
       a.remove();
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast("No se pudo descargar.", "error");
     }
   }
@@ -132,7 +182,17 @@ export default function UploadDemoPage() {
       showToast("Archivo eliminado.", "success");
       await refreshList();
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast("No se pudo eliminar.", "error");
     }
   }

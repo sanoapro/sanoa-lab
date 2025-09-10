@@ -129,9 +129,7 @@ export async function uploadPatientFile(
 export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promise<string> {
   const supabase = getSupabaseBrowser();
   const sec = Number(ttlSeconds || SIGNED_TTL || 300);
-  const { data, error } = await supabase.storage
-    .from("uploads")
-    .createSignedUrl(rec.path, sec);
+  const { data, error } = await supabase.storage.from("uploads").createSignedUrl(rec.path, sec);
   if (error)
     throw new Error(
       (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",

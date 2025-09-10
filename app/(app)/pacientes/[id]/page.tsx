@@ -82,7 +82,17 @@ export default function PacienteDetailPage() {
         setEdad(p?.edad ?? "");
         setGenero((p?.genero as "F" | "M" | "O") ?? "O");
       } catch (e: unknown) {
-        console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+        console.error(
+          e instanceof Error
+            ? e
+            : (() => {
+                try {
+                  return JSON.stringify(e);
+                } catch {
+                  return String(e);
+                }
+              })(),
+        );
         showToast(e?.message || "No se pudo cargar el paciente.", "error");
       } finally {
         setLoading(false);
@@ -96,7 +106,17 @@ export default function PacienteDetailPage() {
       const data = await listNotes(id);
       setNotes(data);
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudieron cargar las notas.", "error");
     } finally {
       setLoadingNotes(false);
@@ -120,7 +140,17 @@ export default function PacienteDetailPage() {
       const data = await listPatientFiles(id);
       setFiles(data);
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudieron cargar los archivos.", "error");
     } finally {
       setLoadingFiles(false);
@@ -136,7 +166,17 @@ export default function PacienteDetailPage() {
       const data = await listShares(id);
       setShares(data);
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
     }
   }, [id]);
 
@@ -150,7 +190,17 @@ export default function PacienteDetailPage() {
       const data = await listAudit(id, 200);
       setAudits(data);
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo cargar la actividad.", "error");
     } finally {
       setLoadingAudits(false);
@@ -205,7 +255,17 @@ export default function PacienteDetailPage() {
         setNoteText("");
         showToast("Nota encolada (sin conexión).", "info");
       } else {
-        console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+        console.error(
+          e instanceof Error
+            ? e
+            : (() => {
+                try {
+                  return JSON.stringify(e);
+                } catch {
+                  return String(e);
+                }
+              })(),
+        );
         showToast(e?.message || "No se pudo guardar la nota.", "error");
       }
     } finally {
@@ -229,7 +289,17 @@ export default function PacienteDetailPage() {
       setNotes((prev) => prev.filter((n) => n.id !== nid));
       showToast("Nota eliminada.", "success");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo eliminar la nota.", "error");
     }
   }
@@ -266,7 +336,17 @@ export default function PacienteDetailPage() {
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
     } catch (err: unknown) {
-      console.error((err) instanceof Error ? err : (()=>{ try { return JSON.stringify(err); } catch { return String(err); }})());
+      console.error(
+        err instanceof Error
+          ? err
+          : (() => {
+              try {
+                return JSON.stringify(err);
+              } catch {
+                return String(err);
+              }
+            })(),
+      );
       showToast(err?.message || "No se pudo actualizar.", "error");
     } finally {
       setSavingEdit(false);
@@ -302,7 +382,17 @@ export default function PacienteDetailPage() {
         (e.target as HTMLInputElement).value = "";
         showToast("Archivo encolado (sin conexión).", "info");
       } else {
-        console.error((err) instanceof Error ? err : (()=>{ try { return JSON.stringify(err); } catch { return String(err); }})());
+        console.error(
+          err instanceof Error
+            ? err
+            : (() => {
+                try {
+                  return JSON.stringify(err);
+                } catch {
+                  return String(err);
+                }
+              })(),
+        );
         showToast(err?.message || "No se pudo subir el archivo.", "error");
       }
     } finally {
@@ -315,7 +405,17 @@ export default function PacienteDetailPage() {
       const url = await getSignedUrl(pf, 300);
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo generar el enlace.", "error");
     }
   }
@@ -326,7 +426,17 @@ export default function PacienteDetailPage() {
       await navigator.clipboard.writeText(url);
       showToast("Enlace copiado (300s).", "success");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo copiar el enlace.", "error");
     }
   }
@@ -347,7 +457,17 @@ export default function PacienteDetailPage() {
       setFiles((prev) => prev.filter((f) => f.id !== idRec));
       showToast("Archivo eliminado.", "success");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo eliminar.", "error");
     }
   }
@@ -371,7 +491,17 @@ export default function PacienteDetailPage() {
       await refreshShares();
       showToast("Acceso compartido.", "success");
     } catch (err: unknown) {
-      console.error((err) instanceof Error ? err : (()=>{ try { return JSON.stringify(err); } catch { return String(err); }})());
+      console.error(
+        err instanceof Error
+          ? err
+          : (() => {
+              try {
+                return JSON.stringify(err);
+              } catch {
+                return String(err);
+              }
+            })(),
+      );
       showToast(err?.message || "No se pudo compartir.", "error");
     } finally {
       setSharing(false);
@@ -386,7 +516,17 @@ export default function PacienteDetailPage() {
       setShares((prev) => prev.filter((s) => s.id !== shareId));
       showToast("Acceso revocado.", "success");
     } catch (e: unknown) {
-      console.error((e) instanceof Error ? e : (()=>{ try { return JSON.stringify(e); } catch { return String(e); }})());
+      console.error(
+        e instanceof Error
+          ? e
+          : (() => {
+              try {
+                return JSON.stringify(e);
+              } catch {
+                return String(e);
+              }
+            })(),
+      );
       showToast(e?.message || "No se pudo revocar.", "error");
     }
   }
@@ -773,7 +913,7 @@ export default function PacienteDetailPage() {
               <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
               <select
                 value={genero}
-                onChange={(e) => setGenero(e.target.value as any)}
+                onChange={(e) => setGenero(e.target.value as "F" | "M" | "O")}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
                 disabled={!canEdit}
               >
