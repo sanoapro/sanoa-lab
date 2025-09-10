@@ -9,6 +9,14 @@ export type Props = {
   toneA?: string;
   toneB?: string;
   className?: string;
+
+  className?: string;
+  accentColor?: string;
+  color?: string;
+  emoji?: string;
+  mode?: any;
+  size?: number;
+  title?: string;
 };
 
 const MAP: Record<string, string> = {

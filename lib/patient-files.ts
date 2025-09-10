@@ -1,8 +1,8 @@
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export type PatientFile = {
-    path: string;
-id: string;
+  path: string;
+  id: string;
   user_id: string;
   patient_id: string;
   file_name: string;
