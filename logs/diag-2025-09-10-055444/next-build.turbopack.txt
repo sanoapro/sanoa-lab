@@ -1,0 +1,23 @@
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 86ms
+ ✓ Compiled successfully in 12.7s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+Failed to compile.
+
+./components/Emoji.tsx:17:7
+Type error: Type '{ emoji: string; size: any; mode: EmojiMode; color: string; accentColor: string; className: any; title: any; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
+
+[0m [90m 15 |[39m   [36mreturn[39m (
+ [90m 16 |[39m     [33m<[39m[33mColorEmoji[39m
+[31m[1m>[22m[39m[90m 17 |[39m       emoji[33m=[39m{char}
+ [90m    |[39m       [31m[1m^[22m[39m
+ [90m 18 |[39m       size[33m=[39m{size}
+ [90m 19 |[39m       mode[33m=[39m{settings[33m.[39mmode [33m?[39m[33m?[39m emojiTheme[33m.[39mglobal[33m.[39mmode}
+ [90m 20 |[39m       color[33m=[39m{settings[33m.[39mcolor [33m?[39m[33m?[39m emojiTheme[33m.[39mglobal[33m.[39mcolor}[0m
+Next.js build worker exited with code: 1 and signal: null

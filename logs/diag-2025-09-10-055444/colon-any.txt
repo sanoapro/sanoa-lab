@@ -1,0 +1,35 @@
+app/(app)/pacientes/[id]/page.tsx:83:      } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:97:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:121:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:137:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:151:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:193:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:230:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:267:    } catch (err: any) {
+app/(app)/pacientes/[id]/page.tsx:288:    } catch (err: any) {
+app/(app)/pacientes/[id]/page.tsx:316:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:327:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:348:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:372:    } catch (err: any) {
+app/(app)/pacientes/[id]/page.tsx:387:    } catch (e: any) {
+app/(app)/pacientes/page.tsx:40:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:79:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:100:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:116:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:135:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:49:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:81:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:94:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:104:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:119:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:132:    } catch (e: any) {
+app/instalar/page.tsx:34:    const handler = (e: any) => {
+app/(auth)/register/page.tsx:35:    } catch (err: any) {
+app/(auth)/update-password/page.tsx:64:      } catch (e: any) {
+app/(auth)/update-password/page.tsx:80:    } catch (e: any) {
+app/(auth)/reset-password/page.tsx:31:    } catch (err: any) {
+lib/audit.ts:11:  data: any | null;
+lib/patient-files.ts:13:  [key: string]: any;
+components/InstallPrompt.tsx:13:    const handler = (e: any) => {
+components/OrgSwitcherBadge.tsx:23:    const onChanged = (e: any) => setCurrent(e.detail?.orgId || null);
+components/OrgSwitcherBadge.tsx:41:    } catch (err: any) {
