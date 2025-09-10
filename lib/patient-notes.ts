@@ -25,7 +25,7 @@ export async function createNote(patientId: string, content: string): Promise<Pa
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("patient_notes")
-    .insert({ patient_id: patientId, content })
+    .insert({ patient_id: patientId, content } as any)
     .select("*")
     .single();
   if (error) throw error;

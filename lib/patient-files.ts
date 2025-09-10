@@ -1,14 +1,16 @@
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export type PatientFile = {
-  id: string;
+    path: string;
+id: string;
   user_id: string;
   patient_id: string;
-  storage_key: string;
   file_name: string;
   size: number | null;
   mime_type: string | null;
   created_at: string;
+
+  [key: string]: any;
 };
 
 const MAX_MB = Number(process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || 10);
@@ -101,7 +103,7 @@ export async function uploadPatientFile(
     .insert({
       user_id: uid,
       patient_id: patientId,
-      storage_key: key,
+      path: key,
       file_name: file.name,
       size: file.size,
       mime_type: file.type || null,
@@ -124,9 +126,7 @@ export async function uploadPatientFile(
 export async function getSignedUrl(rec: PatientFile, ttlSeconds?: number): Promise<string> {
   const supabase = getSupabaseBrowser();
   const sec = Number(ttlSeconds || SIGNED_TTL || 300);
-  const { data, error } = await supabase.storage
-    .from("uploads")
-    .createSignedUrl(rec.storage_key, sec);
+  const { data, error } = await supabase.storage.from("uploads").createSignedUrl(rec.path, sec);
   if (error) throw error;
   return data.signedUrl;
 }
@@ -137,11 +137,11 @@ export async function deletePatientFile(id: string): Promise<void> {
   // Obtén key
   const { data: rec, error: e1 } = await supabase
     .from("patient_files")
-    .select("id, storage_key")
+    .select("id, path")
     .eq("id", id)
     .single();
   if (e1) throw e1;
-  const key = rec!.storage_key as string;
+  const key = rec!.path as string;
 
   // Borra en Storage
   const r1 = await supabase.storage.from("uploads").remove([key]);

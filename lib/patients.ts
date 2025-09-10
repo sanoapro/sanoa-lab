@@ -71,7 +71,11 @@ export async function getPatient(id: string): Promise<Patient | null> {
 /** Crear paciente; el trigger de org_id lo rellenará según user_prefs/organización actual */
 export async function createPatient(input: NewPatient): Promise<Patient> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase.from("patients").insert(input).select("*").single();
+  const { data, error } = await supabase
+    .from("patients")
+    .insert(input as any)
+    .select("*")
+    .single();
   if (error) throw error;
   return data as Patient;
 }
@@ -81,7 +85,7 @@ export async function updatePatient(id: string, patch: PatientPatch): Promise<Pa
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("patients")
-    .update(patch)
+    .update(patch as any)
     .eq("id", id)
     .select("*")
     .single();

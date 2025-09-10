@@ -23,7 +23,7 @@ export default function QueueEvents() {
       if (!data || !data.type) return;
 
       if (data.type === "queue:added") {
-        window.__sanoaQueueCount = data.pending ?? window.__sanoaQueueCount + 1;
+        window.__sanoaQueueCount = data.pending ?? (window.__sanoaQueueCount ?? 0) + 1;
         showToast("Acción encolada (sin conexión). Se enviará al volver Internet.", "info");
         broadcastCount();
       }

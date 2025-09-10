@@ -66,7 +66,6 @@ export default function UpdatePasswordPage() {
         setErrMsg(e?.message || "Ocurrió un problema al validar el enlace.");
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onSubmit(e: React.FormEvent) {

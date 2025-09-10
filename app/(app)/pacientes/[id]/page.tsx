@@ -77,9 +77,9 @@ export default function PacienteDetailPage() {
       try {
         const p = await getPatient(id);
         setPatient(p);
-        setNombre(p.nombre);
-        setEdad(p.edad);
-        setGenero(p.genero);
+        setNombre(p?.nombre ?? "");
+        setEdad(p?.edad ?? "");
+        setGenero((p?.genero as "F" | "M" | "O") ?? "O");
       } catch (e: any) {
         console.error(e);
         showToast(e?.message || "No se pudo cargar el paciente.", "error");
@@ -236,8 +236,8 @@ export default function PacienteDetailPage() {
   function openEditModal() {
     if (!patient) return;
     setNombre(patient.nombre);
-    setEdad(patient.edad);
-    setGenero(patient.genero);
+    setEdad(patient?.edad ?? "");
+    setGenero((patient?.genero as "F" | "M" | "O") ?? "O");
     setOpenEdit(true);
   }
 
@@ -260,7 +260,7 @@ export default function PacienteDetailPage() {
 
     try {
       setSavingEdit(true);
-      const updated = await updatePatient(id, { nombre: n, edad: eNum, genero });
+      const updated = await updatePatient(id, { nombre: n, edad: eNum, genero: genero as any });
       setPatient(updated);
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");

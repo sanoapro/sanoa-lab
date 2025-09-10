@@ -3,7 +3,7 @@ import { useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 
 type Props = {
-  targetRef?: React.RefObject<HTMLElement>;
+  targetRef?: React.RefObject<HTMLElement | null>;
   targetId?: string; // alternativa si no usas ref
   filename?: string; // ej: "Paciente-Juan Perez.pdf"
   className?: string;

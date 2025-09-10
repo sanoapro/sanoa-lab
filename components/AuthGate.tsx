@@ -1,58 +1,81 @@
 "use client";
 
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
 
-export default function AuthGate({ children }: { children: React.ReactNode }) {
+/**
+ * AuthGate:
+ * - Protege rutas del app.
+ * - Redirige a /login si no hay sesión.
+ * - Si hay sesión y estás en /login, te manda al dashboard (o a /).
+ */
+export default function AuthGate({
+  children,
+  redirectToIfAuthed = "/",
+  redirectToIfAnon = "/login",
+}: {
+  children: React.ReactNode;
+  redirectToIfAuthed?: string;
+  redirectToIfAnon?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = getSupabaseBrowser();
-  const [ready, setReady] = useState(false);
+
+  const [hydrated, setHydrated] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    let unsub: (() => void) | undefined;
+    let mounted = true;
 
-    async function bootstrap() {
-      // 1) Revisa sesión actual
+    (async () => {
       const { data } = await supabase.auth.getSession();
-      const session = data.session;
+      if (!mounted) return;
+      setSession(data.session);
+      setHydrated(true);
 
-      if (!session) {
-        // 2) Si no hay sesión, manda al login con redirect_to
-        const to = encodeURIComponent(pathname || "/dashboard");
-        router.replace(`/login?redirect_to=${to}`);
-        return;
+      // Redirecciones iniciales
+      if (!data.session && pathname !== redirectToIfAnon) {
+        router.replace(redirectToIfAnon);
+      } else if (data.session && pathname === "/login") {
+        router.replace(redirectToIfAuthed);
       }
+    })();
 
-      // 3) Suscríbete a cambios por si la sesión expira
-      const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
-        if (!sess) {
-          const to = encodeURIComponent(pathname || "/dashboard");
-          router.replace(`/login?redirect_to=${to}`);
-        }
-      });
-      unsub = () => sub.subscription.unsubscribe();
+    // Escucha cambios de sesión
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
+      setSession(s ?? null);
 
-      setReady(true);
-    }
+      if (!s) {
+        router.replace(redirectToIfAnon);
+      } else {
+        // Si loguea en /login, empújalo adentro
+        if (pathname === "/login") router.replace(redirectToIfAuthed);
+      }
+    });
 
-    bootstrap();
-    return () => unsub?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
+  }, [pathname, redirectToIfAnon, redirectToIfAuthed, router, supabase]);
 
-  if (!ready) {
+  if (!hydrated) {
     return (
-      <div className="min-h-dvh grid place-items-center text-[var(--color-brand-text)]">
-        <div className="flex items-center gap-3 text-lg">
-          <ColorEmoji token="reloj" />
-          Cargando…
-        </div>
+      <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
+        <ColorEmoji token="reloj" size={18} />
+        &nbsp;Cargando sesión…
       </div>
     );
   }
+
+  // Si no hay sesión, no flashes contenido protegido
+  if (!session) return null;
 
   return <>{children}</>;
 }

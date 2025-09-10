@@ -47,7 +47,6 @@ export default function PacientesPage() {
   useEffect(() => {
     // primera carga
     doSearch(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onSubmit(e: React.FormEvent) {

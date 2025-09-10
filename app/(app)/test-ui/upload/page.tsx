@@ -56,7 +56,6 @@ export default function UploadDemoPage() {
 
   useEffect(() => {
     refreshList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onUpload(e: React.FormEvent<HTMLFormElement>) {
