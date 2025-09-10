@@ -1,22 +1,21 @@
 declare module "@/components/ColorEmoji" {
-  // Abrimos el modo para no pelear con el runtime actual
+  import * as React from "react";
+
   export type EmojiMode = "mono" | "duo" | "flat" | "native" | (string & {});
 
   export type Props = {
-    emoji?: string;          // <- clave para Navbar/Toast/Emoji
+    emoji?: string;
+    token?: string;
     size?: number;
     mode?: EmojiMode;
     color?: string;
     accentColor?: string;
     className?: string;
     title?: string;
-
-    // Campos que ya vi en tu archivo
-    token?: string;
     toneA?: string;
     toneB?: string;
   };
 
-  const ColorEmoji: (props: Props) => JSX.Element;
+  const ColorEmoji: (props: Props) => React.ReactElement | null;
   export default ColorEmoji;
 }
