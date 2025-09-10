@@ -3,7 +3,7 @@
 import * as React from "react";
 import clsx from "clsx";
 
-export type Props = {
+export type ColorEmojiProps = {
   emoji: string;
   size?: number;
   mode?: any;
@@ -62,7 +62,7 @@ const MAP: Record<string, string> = {
   tablero: "📋",
 };
 
-export default function ColorEmoji({ token, size = 16, className }: Props) {
+export default function ColorEmoji({ token, size = 16, className }: ColorEmojiProps) {
   const glyph = (token && MAP[token]) || "❓";
   const style: React.CSSProperties = {
     fontSize: size,
