@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks, prefer-const, @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

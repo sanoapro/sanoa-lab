@@ -1,0 +1,35 @@
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 96ms
+ ✓ Compiled successfully in 15.3s
+   Linting and checking validity of types ...
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next/types/**/*.ts'
+
+ ⨯ ESLint: Cannot find package 'typescript-eslint' imported from /workspaces/sanoa-lab/eslint.config.js
+(node:33333) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspaces/sanoa-lab/eslint.config.js?mtime=1757475218544 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspaces/sanoa-lab/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Failed to compile.
+
+./lib/audit.ts:18:11
+Type error: No overload matches this call.
+  Overload 1 of 2, '(relation: "patients" | "patient_files" | "patient_notes" | "patient_shares" | "user_org_prefs"): PostgrestQueryBuilder<{ PostgrestVersion: "12"; }, { Tables: { patients: { Row: { id: string; nombre: string; ... 4 more ...; user_id?: string | ... 1 more ... | undefined; }; Insert: { ...; }; Update: Partial<...>; Relationships: []; }; patient_files: { ...; }; patient_notes: { ...; }; patient_shares: { ...; }; user_org_prefs: { ...; }; }; Views: {}; Functions: {}; Enums: { ...; }; }, { ...; } | ... 3 more ... | { ...; }, "patients" | ... 3 more ... | "user_org_prefs", []>', gave the following error.
+    Argument of type '"audit_log"' is not assignable to parameter of type '"patients" | "patient_files" | "patient_notes" | "patient_shares" | "user_org_prefs"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "12"; }, { Tables: { patients: { Row: { id: string; nombre: string; edad: number | null; genero: Gender | null; created_at: string; updated_at: string | null; user_id?: string | ... 1 more ... | undefined; }; Insert: { ...; }; Update: Partial<...>; Relationships: []; }; patient_files: { ...; }; patient_notes: { ...; }; patient_shares: { ...; }; user_org_prefs: { ...; }; }; Views: {}; Functions: {}; Enums: { ...; }; }, never, never, never>', gave the following error.
+    Argument of type '"audit_log"' is not assignable to parameter of type 'never'.
+
+[0m [90m 16 |[39m   [36mconst[39m supabase [33m=[39m getSupabaseBrowser()[33m;[39m
+ [90m 17 |[39m   [36mconst[39m { data[33m,[39m error } [33m=[39m [36mawait[39m supabase
+[31m[1m>[22m[39m[90m 18 |[39m     [33m.[39m[36mfrom[39m([32m"audit_log"[39m)
+ [90m    |[39m           [31m[1m^[22m[39m
+ [90m 19 |[39m     [33m.[39mselect([32m"*"[39m)
+ [90m 20 |[39m     [33m.[39meq([32m"patient_id"[39m[33m,[39m patientId)
+ [90m 21 |[39m     [33m.[39morder([32m"created_at"[39m[33m,[39m { ascending[33m:[39m [36mfalse[39m })[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -1,0 +1,485 @@
+▶️  Iniciando diagnóstico 2025-09-10-034410
+
+=== Contexto Git ===
+## fix/supabase-sync-250910-0131
+ D .eslintrc.json
+ M .eslintrc.json.bak
+ M app/(app)/pacientes/[id]/page.tsx
+ M app/(app)/pacientes/page.tsx
+ M app/(app)/test-ui/page.tsx
+ M app/(app)/test-ui/upload/page.tsx
+ M app/(auth)/register/page.tsx
+ M app/(auth)/reset-password/page.tsx
+ M app/(auth)/update-password/page.tsx
+ M components/AuthGate.tsx
+ M components/ColorEmoji.tsx
+ M components/ExportPDFButton.tsx
+ M components/OrgSwitcherBadge.tsx
+ M components/RegisterSW.tsx
+ M eslint.config.mjs
+ M lib/database.types.ts
+ M lib/patient-files.ts
+ M lib/patients.ts
+ M lib/supabase-browser.ts
+ M lib/supabase/client.ts
+ M logs/diag-2025-09-10-013258/snapshot/app/(app)/pacientes/[id]/page.tsx
+ M logs/diag-2025-09-10-013258/snapshot/app/(app)/pacientes/page.tsx
+ M logs/diag-2025-09-10-013258/snapshot/app/(app)/test-ui/upload/page.tsx
+ M logs/diag-2025-09-10-013258/snapshot/components/ExportPDFButton.tsx
+ M logs/diag-2025-09-10-013258/snapshot/components/OrgSwitcherBadge.tsx
+ M package-lock.json
+ M package.json
+ M tsconfig.json
+?? full_dump.sql
+?? logs/diag-2025-09-10-031752/
+?? logs/diag-2025-09-10-033332.tgz
+?? logs/diag-2025-09-10-033332/
+?? logs/diag-2025-09-10-034410/
+?? package.json.bak
+?? schema_public.sql
+?? tsconfig.json.bak
+?? tsconfig.typecheck.json
+5b986cba9e913f5599306a7ad6b262e56f0220c0
+commit 5b986cba9e913f5599306a7ad6b262e56f0220c0
+Author:     Sanoa <martin.maldonado32@gmail.com>
+AuthorDate: Wed Sep 10 02:43:32 2025 +0000
+Commit:     Sanoa <martin.maldonado32@gmail.com>
+CommitDate: Wed Sep 10 02:43:32 2025 +0000
+
+    chore: relax eslint any->warn, ts useUnknownInCatchVariables, fix RegisterSW parse, tipar setGenero
+
+=== Versiones básicas ===
+v22.17.0
+9.8.1
+10.13.1
+1.22.22
+
+  System:
+    OS: Linux 6.8 Ubuntu 24.04.2 LTS 24.04.2 LTS (Noble Numbat)
+    CPU: (2) x64 AMD EPYC 7763 64-Core Processor
+    Memory: 5.50 GB / 7.76 GB
+    Container: Yes
+    Shell: 5.2.21 - /bin/bash
+  Binaries:
+    Node: 22.17.0 - ~/nvm/current/bin/node
+    Yarn: 1.22.22 - /usr/bin/yarn
+    npm: 9.8.1 - ~/nvm/current/bin/npm
+    pnpm: 10.13.1 - ~/nvm/current/bin/pnpm
+
+
+=== Paquetes del proyecto ===
+{
+  "deps": {
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@sentry/nextjs": "^10.11.0",
+    "@supabase/auth-helpers-nextjs": "0.10.0",
+    "@supabase/supabase-js": "2.57.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
+    "lucide-react": "^0.542.0",
+    "next": "15.5.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDeps": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.13",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "^15.5.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.8",
+    "typescript": "^5",
+    "typescript-eslint": "^8.43.0"
+  }
+}
+
+=== Variables de entorno (enmascaradas) ===
+--- .env.local ---
+NEXT_PUBLIC_SUPABASE_URL=***MASKED***
+NEXT_PUBLIC_SUPABASE_ANON_KEY=***MASKED***
+NEXT_PUBLIC_SITE_URL=***MASKED***
+NEXT_PUBLIC_APP_VERSION=***MASKED***
+NEXT_PUBLIC_UPLOAD_MAX_MB=***MASKED***
+NEXT_PUBLIC_UPLOAD_ALLOWED=***MASKED***
+NEXT_PUBLIC_SIGNED_URL_TTL=***MASKED***
+NEXT_PUBLIC_SENTRY_DSN=***MASKED***
+NEXT_PUBLIC_SENTRY_ENV=***MASKED***
+
+=== Configuración de Next/TS/ESLint ===
+--- next.config.ts ---
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+--- tsconfig.json ---
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "baseUrl": ".",
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "app",
+    "components",
+    "lib",
+    "next-env.d.ts",
+    "scripts",
+    "types",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "logs/**",
+    "logs"
+  ]
+}
+--- .prettierrc.json ---
+{
+  "semi": true,
+  "singleQuote": false,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "trailingComma": "all"
+}
+
+=== tsconfig efectivo (tsc --showConfig) ===
+tsconfig efectivo guardado.
+
+=== ESLint efectivo para un archivo conflictivo ===
+
+=== Greps rápidos (pistas de errores) ===
+-- usos de storage_key --
+lib/database.types.ts:50:          storage_key: string;   // clave en storage
+lib/database.types.ts:60:          storage_key: string;
+lib/database.types.ts:70:          storage_key: string;
+lib/patient-files.ts:7:  storage_key: string;
+lib/patient-files.ts:107:      storage_key: key,
+lib/patient-files.ts:134:    .createSignedUrl(rec.storage_key, sec);
+lib/patient-files.ts:148:    .select("id, storage_key")
+lib/patient-files.ts:152:  const key = rec!.storage_key as string;
+-- usos de EmojiPerItem --
+-- imports getSupabaseClient (posible import incorrecto) --
+-- ocurrencias ': any' en TS/TSX --
+lib/supabase/client.ts:6:export function getSupabaseServer(): any {
+lib/patients.ts:12:function raise(error: any): never {
+lib/audit.ts:11:  data: any | null;
+lib/supabase-browser.ts:5:let _client: any = null;
+components/InstallPrompt.tsx:13:    const handler = (e: any) => {
+components/OrgSwitcherBadge.tsx:23:    const onChanged = (e: any) => setCurrent(e.detail?.orgId || null);
+-- console.error(…) --
+grep: Unmatched ( or \(
+-- enums Gender tipado --
+
+=== Snapshot de archivos relevantes (para revisar tipos/llamadas) ===
+  ✓ lib/database.types.ts
+  ✓ lib/supabase-browser.ts
+  ✓ lib/supabase/client.ts
+  ✓ lib/types.ts
+  ✓ lib/patients.ts
+  ✓ lib/patient-files.ts
+  ✓ lib/patient-notes.ts
+  ✓ lib/patient-shares.ts
+  ✓ lib/org.ts
+  ✓ lib/audit.ts
+  ✓ config/emojiTheme.ts
+  ✓ components/EmojiTheme.tsx
+  ✓ components/OrgSwitcherBadge.tsx
+  ✓ components/InstallPrompt.tsx
+  ✓ components/ExportPDFButton.tsx
+  ✓ components/Toast.tsx
+  ✓ app/(app)/pacientes/[id]/page.tsx
+  ✓ app/(app)/pacientes/page.tsx
+  ✓ app/(app)/perfil/page.tsx
+  ✓ app/(app)/test-ui/upload/page.tsx
+
+=== Estado Supabase CLI (si está instalada) ===
+⚠️  Supabase CLI no encontrada (opcional). Instalar: npm i -g supabase
+
+=== Linter ===
+
+> sanoa-lab@0.1.0 format
+> prettier --write "**/*.{ts,tsx,js,jsx,json,css,md}"
+
+.prettierrc.json 36ms (unchanged)
+app/(app)/dashboard/page.tsx 76ms (unchanged)
+app/(app)/layout.tsx 14ms (unchanged)
+app/(app)/pacientes/[id]/page.tsx 351ms (unchanged)
+app/(app)/pacientes/page.tsx 69ms
+app/(app)/perfil/page.tsx 105ms (unchanged)
+app/(app)/test-ui/page.tsx 40ms (unchanged)
+app/(app)/test-ui/upload/page.tsx 73ms
+app/(auth)/login/page.tsx 18ms (unchanged)
+app/(auth)/register/page.tsx 11ms (unchanged)
+app/(auth)/reset-password/page.tsx 10ms (unchanged)
+app/(auth)/update-password/page.tsx 59ms
+app/acerca/page.tsx 7ms (unchanged)
+app/api/sentry-debug/route.ts 5ms (unchanged)
+app/error.tsx 20ms (unchanged)
+app/globals.css 45ms (unchanged)
+app/head.tsx 9ms (unchanged)
+app/instalar/page.tsx 31ms (unchanged)
+app/layout.tsx 3ms (unchanged)
+app/manifest.ts 2ms (unchanged)
+app/not-found.tsx 5ms (unchanged)
+app/offline/page.tsx 14ms (unchanged)
+app/page.tsx 2ms (unchanged)
+app/privacidad/page.tsx 2ms (unchanged)
+app/providers.tsx 1ms (unchanged)
+app/robots.ts 2ms (unchanged)
+app/sitemap.ts 6ms (unchanged)
+app/terminos/page.tsx 2ms (unchanged)
+components.json 3ms (unchanged)
+components/AppShell.tsx 2ms (unchanged)
+components/AuthGate.tsx 14ms
+components/ColorEmoji.tsx 68ms (unchanged)
+components/Emoji.tsx 9ms (unchanged)
+components/EmojiTheme.tsx 7ms (unchanged)
+components/ExportPDFButton.tsx 23ms (unchanged)
+components/InstallPrompt.tsx 10ms (unchanged)
+components/Modal.tsx 6ms (unchanged)
+components/Navbar.tsx 11ms (unchanged)
+components/OfflineIndicator.tsx 9ms (unchanged)
+components/OrgSwitcherBadge.tsx 31ms (unchanged)
+components/PendingQueueBadge.tsx 11ms (unchanged)
+components/QueueEvents.tsx 10ms (unchanged)
+components/RegisterSW.tsx 5ms (unchanged)
+components/RequireAuth.tsx 23ms (unchanged)
+components/SiteFooter.tsx 12ms (unchanged)
+components/ThemeToggle.tsx 8ms (unchanged)
+components/Toast.tsx 33ms (unchanged)
+components/Toaster.tsx 13ms (unchanged)
+components/ui/button.tsx 12ms (unchanged)
+components/ui/card.tsx 9ms (unchanged)
+components/ui/input.tsx 2ms (unchanged)
+components/ui/label.tsx 4ms (unchanged)
+components/UiCard.tsx 2ms (unchanged)
+components/UploadHint.tsx 2ms (unchanged)
+config/emojiTheme.ts 14ms (unchanged)
+hooks/useNotesRealtime.ts 7ms (unchanged)
+hooks/usePatientsRealtime.ts 4ms (unchanged)
+lib/audit.ts 9ms (unchanged)
+lib/database.types.ts 26ms
+lib/org.ts 12ms (unchanged)
+lib/patient-files.ts 33ms (unchanged)
+lib/patient-notes.ts 17ms (unchanged)
+lib/patient-shares.ts 10ms (unchanged)
+lib/patients-search.ts 11ms (unchanged)
+lib/patients.ts 17ms (unchanged)
+lib/storage.ts 3ms (unchanged)
+lib/supabase-browser.ts 2ms (unchanged)
+lib/supabase/client.ts 1ms (unchanged)
+lib/types.ts 3ms (unchanged)
+lib/utils.ts 1ms (unchanged)
+logs/diag-2025-09-10-013258/.eslintrc.json 5ms (unchanged)
+logs/diag-2025-09-10-013258/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-013258/eslint.effective.pacientes-id.json 74ms (unchanged)
+logs/diag-2025-09-10-013258/eslint.json 321ms (unchanged)
+logs/diag-2025-09-10-013258/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-013258/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/pacientes/[id]/page.tsx 160ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/pacientes/page.tsx 76ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/perfil/page.tsx 53ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/app/(app)/test-ui/upload/page.tsx 33ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/EmojiTheme.tsx 4ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/ExportPDFButton.tsx 14ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/InstallPrompt.tsx 5ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/OrgSwitcherBadge.tsx 9ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/components/Toast.tsx 10ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/config/emojiTheme.ts 7ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/audit.ts 6ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/database.types.ts 7ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/org.ts 10ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patient-files.ts 19ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patient-notes.ts 7ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patient-shares.ts 7ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/patients.ts 9ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-013258/snapshot/lib/types.ts 2ms (unchanged)
+logs/diag-2025-09-10-013258/tsconfig.effective.json 2ms (unchanged)
+logs/diag-2025-09-10-013258/tsconfig.json 2ms (unchanged)
+logs/diag-2025-09-10-031752/.eslintrc.json 1ms (unchanged)
+logs/diag-2025-09-10-031752/.prettierrc.json 5ms (unchanged)
+logs/diag-2025-09-10-031752/eslint.effective.pacientes-id.json 40ms (unchanged)
+logs/diag-2025-09-10-031752/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-031752/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-031752/tsconfig.effective.json 5ms (unchanged)
+logs/diag-2025-09-10-031752/tsconfig.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/eslint.effective.pacientes-id.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/eslint.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-033332/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/pacientes/[id]/page.tsx 95ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/pacientes/page.tsx 36ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/perfil/page.tsx 44ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/app/(app)/test-ui/upload/page.tsx 28ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/EmojiTheme.tsx 4ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/ExportPDFButton.tsx 9ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/InstallPrompt.tsx 6ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/OrgSwitcherBadge.tsx 19ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/components/Toast.tsx 41ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/config/emojiTheme.ts 9ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/audit.ts 11ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/database.types.ts 18ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/org.ts 11ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patient-files.ts 22ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patient-notes.ts 7ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patient-shares.ts 6ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/patients.ts 15ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-033332/snapshot/lib/types.ts 5ms (unchanged)
+logs/diag-2025-09-10-033332/tsconfig.effective.json 4ms (unchanged)
+logs/diag-2025-09-10-033332/tsconfig.json 3ms (unchanged)
+logs/diag-2025-09-10-034410/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-034410/eslint.effective.pacientes-id.json 3ms
+logs/diag-2025-09-10-034410/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-034410/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/pacientes/[id]/page.tsx 115ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/pacientes/page.tsx 30ms
+logs/diag-2025-09-10-034410/snapshot/app/(app)/perfil/page.tsx 27ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/app/(app)/test-ui/upload/page.tsx 22ms
+logs/diag-2025-09-10-034410/snapshot/components/EmojiTheme.tsx 3ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/ExportPDFButton.tsx 12ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/InstallPrompt.tsx 12ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/OrgSwitcherBadge.tsx 13ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/components/Toast.tsx 23ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/config/emojiTheme.ts 13ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/audit.ts 9ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/database.types.ts 12ms
+logs/diag-2025-09-10-034410/snapshot/lib/org.ts 8ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patient-files.ts 27ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patient-notes.ts 9ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patient-shares.ts 11ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/patients.ts 7ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-034410/snapshot/lib/types.ts 2ms (unchanged)
+logs/diag-2025-09-10-034410/tsconfig.effective.json 9ms
+logs/diag-2025-09-10-034410/tsconfig.json 2ms
+middleware.ts 2ms (unchanged)
+next.config.ts 1ms (unchanged)
+package-lock.json 68ms (unchanged)
+package.json 1ms (unchanged)
+README.md 29ms (unchanged)
+sentry.client.config.ts 3ms (unchanged)
+sentry.server.config.ts 6ms (unchanged)
+tsconfig.json 2ms
+tsconfig.typecheck.json 1ms (unchanged)
+The unix formatter is no longer part of core ESLint. Install it manually with `npm install -D eslint-formatter-unix`
+Logs de ESLint en logs/diag-2025-09-10-034410/eslint.*
+
+=== TypeScript (tsc -noEmit) ===
+lib/org.ts(32,23): error TS2339: Property 'current_org_id' does not exist on type 'never'.
+lib/org.ts(33,39): error TS2339: Property 'current_org_id' does not exist on type 'never'.
+lib/org.ts(34,17): error TS2339: Property 'current_org_id' does not exist on type 'never'.
+lib/org.ts(56,6): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { onConflict?: string | undefined; ignoreDuplicates?: boolean | undefined; count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ ...; }, ... 5 more ..., "POST">', gave the following error.
+    Argument of type '{ user_id: string; current_org_id: string; updated_at: string; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { onConflict?: string | undefined; ignoreDuplicates?: boolean | undefined; count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'user_id' does not exist in type 'never[]'.
+lib/patient-files.ts(104,6): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patient_files", never, "POST">', gave the following error.
+    Argument of type '{ user_id: string; patient_id: string; storage_key: string; file_name: string; size: number; mime_type: string | null; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patient_files", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'user_id' does not exist in type 'never[]'.
+lib/patient-files.ts(152,20): error TS2339: Property 'storage_key' does not exist on type 'never'.
+lib/patient-notes.ts(31,6): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patient_notes", never, "POST">', gave the following error.
+    Argument of type '{ patient_id: string; content: string; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patient_notes", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'patient_id' does not exist in type 'never[]'.
+lib/patient-shares.ts(38,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patient_shares", never, "POST">', gave the following error.
+    Argument of type '{ owner_id: string; patient_id: string; grantee_email: string; can_edit: boolean; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patient_shares", never, "POST">', gave the following error.
+    Argument of type '{ owner_id: string; patient_id: string; grantee_email: string; can_edit: boolean; }' is not assignable to parameter of type 'never[]'.
+      Type '{ owner_id: string; patient_id: string; grantee_email: string; can_edit: boolean; }' is missing the following properties from type 'never[]': length, pop, push, concat, and 35 more.
+lib/patients.ts(36,66): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patients", never, "POST">', gave the following error.
+    Argument of type '{ id?: string | undefined; nombre: string; edad?: number | null | undefined; genero?: Gender | null | undefined; user_id?: string | null | undefined; created_at?: string | undefined; updated_at?: string | ... 1 more ... | undefined; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "patients", never, "POST">', gave the following error.
+    Argument of type '{ id?: string | undefined; nombre: string; edad?: number | null | undefined; genero?: Gender | null | undefined; user_id?: string | null | undefined; created_at?: string | undefined; updated_at?: string | ... 1 more ... | undefined; }' is not assignable to parameter of type 'never[]'.
+      Type '{ id?: string | undefined; nombre: string; edad?: number | null | undefined; genero?: Gender | null | undefined; user_id?: string | null | undefined; created_at?: string | undefined; updated_at?: string | ... 1 more ... | undefined; }' is missing the following properties from type 'never[]': length, pop, push, concat, and 35 more.
+lib/patients.ts(45,13): error TS2345: Argument of type 'Omit<Partial<{ id: string; nombre: string; edad: number | null; genero: Gender | null; user_id: string | null; created_at: string; updated_at: string | null; }>, "id">' is not assignable to parameter of type 'never'.
+
+=== Build Next.js (Turbopack) ===
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 70ms
+ ✓ Compiled successfully in 13.2s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+
+Failed to compile.
+
+./app/(app)/perfil/page.tsx
+143:11  Error: Definition for rule '@next/next/no-img-element' was not found.  @next/next/no-img-element
+
+./lib/database.types.ts
+210:16  Error: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead.  @typescript-eslint/no-empty-object-type
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+
+=== Conteos rápidos ===
+Archivos TS/TSX:
+66
+Coincidencias ': any' (aprox):
+6 logs/diag-2025-09-10-034410/colon-any.txt
+
+=== Comprimir resultados ===
+📦 Paquete generado: logs/diag-2025-09-10-034410.tgz
+
+✅ Diagnóstico finalizado. Comparte:
+  1) logs/diag-2025-09-10-034410/all.log
+  2) logs/diag-2025-09-10-034410.tgz  (contiene todo lo anterior)

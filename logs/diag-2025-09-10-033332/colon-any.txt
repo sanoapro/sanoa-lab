@@ -1,0 +1,6 @@
+lib/supabase/client.ts:6:export function getSupabaseServer(): any {
+lib/patients.ts:13:function raise(error: any): never {
+lib/audit.ts:11:  data: any | null;
+lib/supabase-browser.ts:5:let _client: any = null;
+components/InstallPrompt.tsx:13:    const handler = (e: any) => {
+components/OrgSwitcherBadge.tsx:23:    const onChanged = (e: any) => setCurrent(e.detail?.orgId || null);
