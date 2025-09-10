@@ -1,0 +1,119 @@
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ⚠ Slow filesystem detected. The benchmark took 182ms. If /workspaces/sanoa-lab/.next is a network drive, consider moving it to a local folder. If you have an antivirus enabled, consider excluding your project directory.
+ ✓ Finished writing to disk in 66ms
+ ✓ Compiled successfully in 17.9s
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./app/(app)/layout.tsx
+1:8  Warning: 'OrgSwitcherBadge' is defined but never used.  @typescript-eslint/no-unused-vars
+2:8  Warning: 'PendingQueueBadge' is defined but never used.  @typescript-eslint/no-unused-vars
+3:8  Warning: 'QueueEvents' is defined but never used.  @typescript-eslint/no-unused-vars
+4:8  Warning: 'OfflineIndicator' is defined but never used.  @typescript-eslint/no-unused-vars
+5:8  Warning: 'RegisterSW' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/(app)/pacientes/[id]/page.tsx
+253:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+380:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+916:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/pacientes/page.tsx
+104:85  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+173:88  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+185:89  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/perfil/page.tsx
+38:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/test-ui/page.tsx
+50:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(app)/test-ui/upload/page.tsx
+3:21  Warning: 'useMemo' is defined but never used.  @typescript-eslint/no-unused-vars
+15:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/(auth)/register/page.tsx
+24:15  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/instalar/page.tsx
+5:16  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+21:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/layout.tsx
+2:8  Warning: 'ThemeToggle' is defined but never used.  @typescript-eslint/no-unused-vars
+3:8  Warning: 'SiteFooter' is defined but never used.  @typescript-eslint/no-unused-vars
+4:8  Warning: 'Toaster' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/Emoji.tsx
+11:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/ExportPDFButton.tsx
+78:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/InstallPrompt.tsx
+5:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+13:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/OrgSwitcherBadge.tsx
+18:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+23:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/PendingQueueBadge.tsx
+14:25  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/RegisterSW.tsx
+42:87  Error: Parsing error: ':' expected.
+
+./components/Toast.tsx
+46:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+56:28  Warning: The ref value 'timers.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'timers.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./lib/audit.ts
+11:9  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/patient-files.ts
+58:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+58:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+122:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+122:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+122:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+135:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+135:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+135:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/patient-notes.ts
+22:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/patient-shares.ts
+21:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+21:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+21:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+43:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/patients.ts
+13:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

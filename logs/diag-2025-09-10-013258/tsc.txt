@@ -1,0 +1,2 @@
+components/RegisterSW.tsx(42,88): error TS1005: ':' expected.
+components/RegisterSW.tsx(42,92): error TS1005: ',' expected.

@@ -1,0 +1,24 @@
+{
+  "root": true,
+  "extends": ["next/core-web-vitals", "plugin:import/recommended", "prettier"],
+  "plugins": ["import"],
+  "rules": {
+    "import/order": [
+      "warn",
+      {
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "warn"
+  }
+}

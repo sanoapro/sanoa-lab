@@ -913,7 +913,7 @@ export default function PacienteDetailPage() {
               <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
               <select
                 value={genero}
-                onChange={(e) => setGenero(e.target.value as "F" | "M" | "O")}
+                onChange={(e) => setGenero(e.target.value as any)}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
                 disabled={!canEdit}
               >
