@@ -1,0 +1,467 @@
+▶️  Iniciando diagnóstico 2025-09-10-054320
+
+=== Contexto Git ===
+## main...origin/main
+ M app/(app)/pacientes/[id]/page.tsx
+ M app/(app)/pacientes/page.tsx
+ M app/(app)/perfil/page.tsx
+ M app/(app)/test-ui/upload/page.tsx
+ M app/(auth)/update-password/page.tsx
+ M components/AuthGate.tsx
+ M components/ColorEmoji.tsx
+ M components/EmojiTheme.tsx
+ M components/ExportPDFButton.tsx
+ M components/QueueEvents.tsx
+ M eslint.config.mjs
+ M lib/patient-files.ts
+ M lib/patient-notes.ts
+ M lib/patients.ts
+ M lib/supabase-browser.ts
+ M lib/supabase/client.ts
+ M tsconfig.json
+?? lib/database.types.ts
+?? logs/
+?? supabase/.temp/
+?? tsconfig.typecheck.json
+?? types/
+69d1a2eeb0110ffcf0ccadcadc41835bb2cffa62
+commit 69d1a2eeb0110ffcf0ccadcadc41835bb2cffa62
+Author:     Sanoa <martin.maldonado32@gmail.com>
+AuthorDate: Tue Sep 9 19:15:20 2025 +0000
+Commit:     Sanoa <martin.maldonado32@gmail.com>
+CommitDate: Tue Sep 9 19:15:20 2025 +0000
+
+    nuevo commit
+
+=== Versiones básicas ===
+v22.17.0
+9.8.1
+10.13.1
+1.22.22
+
+  System:
+    OS: Linux 6.8 Ubuntu 24.04.2 LTS 24.04.2 LTS (Noble Numbat)
+    CPU: (2) x64 AMD EPYC 7763 64-Core Processor
+    Memory: 4.49 GB / 7.76 GB
+    Container: Yes
+    Shell: 5.2.21 - /bin/bash
+  Binaries:
+    Node: 22.17.0 - ~/nvm/current/bin/node
+    Yarn: 1.22.22 - /usr/bin/yarn
+    npm: 9.8.1 - ~/nvm/current/bin/npm
+    pnpm: 10.13.1 - ~/nvm/current/bin/pnpm
+
+
+=== Paquetes del proyecto ===
+{
+  "deps": {
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@sentry/nextjs": "^10.11.0",
+    "@supabase/auth-helpers-nextjs": "0.10.0",
+    "@supabase/supabase-js": "2.57.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
+    "lucide-react": "^0.542.0",
+    "next": "15.5.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDeps": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.13",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "^15.5.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.8",
+    "typescript": "^5"
+  }
+}
+
+=== Variables de entorno (enmascaradas) ===
+--- .env.local ---
+NEXT_PUBLIC_SUPABASE_URL=***MASKED***
+NEXT_PUBLIC_SUPABASE_ANON_KEY=***MASKED***
+NEXT_PUBLIC_SITE_URL=***MASKED***
+NEXT_PUBLIC_APP_VERSION=***MASKED***
+NEXT_PUBLIC_UPLOAD_MAX_MB=***MASKED***
+NEXT_PUBLIC_UPLOAD_ALLOWED=***MASKED***
+NEXT_PUBLIC_SIGNED_URL_TTL=***MASKED***
+NEXT_PUBLIC_SENTRY_DSN=***MASKED***
+NEXT_PUBLIC_SENTRY_ENV=***MASKED***
+
+=== Configuración de Next/TS/ESLint ===
+--- next.config.ts ---
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+--- tsconfig.json ---
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "baseUrl": "."
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "logs/**"
+  ],
+  "files": []
+}
+--- .eslintrc.json ---
+{
+  "root": true,
+  "extends": ["next/core-web-vitals", "plugin:import/recommended", "prettier"],
+  "plugins": ["import"],
+  "rules": {
+    "import/order": [
+      "warn",
+      { "newlines-between": "always", "alphabetize": { "order": "asc", "caseInsensitive": true } }
+    ],
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
+  }
+}
+--- .prettierrc.json ---
+{
+  "semi": true,
+  "singleQuote": false,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "trailingComma": "all"
+}
+
+=== tsconfig efectivo (tsc --showConfig) ===
+tsconfig efectivo guardado.
+
+=== ESLint efectivo para un archivo conflictivo ===
+
+=== Greps rápidos (pistas de errores) ===
+-- usos de storage_key --
+-- usos de EmojiPerItem --
+-- imports getSupabaseClient (posible import incorrecto) --
+app/(auth)/register/page.tsx:5:import { getSupabaseClient } from "@/lib/supabase/client";
+app/(auth)/register/page.tsx:23:      const supabase = getSupabaseClient();
+lib/supabase/client.ts:4:export function getSupabaseClient(): SupabaseClient<Database> {
+lib/supabase/client.ts:10:export const supabase = getSupabaseClient();
+-- ocurrencias ': any' en TS/TSX --
+app/(app)/pacientes/[id]/page.tsx:83:      } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:97:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:121:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:137:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:151:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:193:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:230:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:267:    } catch (err: any) {
+app/(app)/pacientes/[id]/page.tsx:288:    } catch (err: any) {
+app/(app)/pacientes/[id]/page.tsx:316:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:327:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:348:    } catch (e: any) {
+app/(app)/pacientes/[id]/page.tsx:372:    } catch (err: any) {
+app/(app)/pacientes/[id]/page.tsx:387:    } catch (e: any) {
+app/(app)/pacientes/page.tsx:40:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:79:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:100:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:116:    } catch (e: any) {
+app/(app)/test-ui/page.tsx:135:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:49:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:81:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:94:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:104:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:119:    } catch (e: any) {
+app/(app)/test-ui/upload/page.tsx:132:    } catch (e: any) {
+app/instalar/page.tsx:34:    const handler = (e: any) => {
+app/(auth)/register/page.tsx:35:    } catch (err: any) {
+app/(auth)/update-password/page.tsx:64:      } catch (e: any) {
+app/(auth)/update-password/page.tsx:80:    } catch (e: any) {
+app/(auth)/reset-password/page.tsx:31:    } catch (err: any) {
+lib/audit.ts:11:  data: any | null;
+components/InstallPrompt.tsx:13:    const handler = (e: any) => {
+components/OrgSwitcherBadge.tsx:23:    const onChanged = (e: any) => setCurrent(e.detail?.orgId || null);
+components/OrgSwitcherBadge.tsx:41:    } catch (err: any) {
+-- console.error(…) --
+grep: Unmatched ( or \(
+-- enums Gender tipado --
+
+=== Snapshot de archivos relevantes (para revisar tipos/llamadas) ===
+  ✓ lib/database.types.ts
+  ✓ lib/supabase-browser.ts
+  ✓ lib/supabase/client.ts
+  ✓ lib/patients.ts
+  ✓ lib/patient-files.ts
+  ✓ lib/patient-notes.ts
+  ✓ lib/patient-shares.ts
+  ✓ lib/org.ts
+  ✓ lib/audit.ts
+  ✓ config/emojiTheme.ts
+  ✓ components/EmojiTheme.tsx
+  ✓ components/OrgSwitcherBadge.tsx
+  ✓ components/InstallPrompt.tsx
+  ✓ components/ExportPDFButton.tsx
+  ✓ components/Toast.tsx
+  ✓ app/(app)/pacientes/[id]/page.tsx
+  ✓ app/(app)/pacientes/page.tsx
+  ✓ app/(app)/perfil/page.tsx
+  ✓ app/(app)/test-ui/upload/page.tsx
+
+=== Estado Supabase CLI (si está instalada) ===
+ℹ️ Supabase CLI no encontrada (opcional). Instalar: npm i -g supabase
+
+=== Linter ===
+
+> sanoa-lab@0.1.0 format
+> prettier --write "**/*.{ts,tsx,js,jsx,json,css,md}"
+
+.eslintrc.json 35ms (unchanged)
+.prettierrc.json 3ms (unchanged)
+app/(app)/dashboard/page.tsx 63ms (unchanged)
+app/(app)/layout.tsx 14ms (unchanged)
+app/(app)/pacientes/[id]/page.tsx 328ms
+app/(app)/pacientes/page.tsx 83ms (unchanged)
+app/(app)/perfil/page.tsx 81ms (unchanged)
+app/(app)/test-ui/page.tsx 74ms (unchanged)
+app/(app)/test-ui/upload/page.tsx 55ms (unchanged)
+app/(auth)/login/page.tsx 30ms (unchanged)
+app/(auth)/register/page.tsx 13ms (unchanged)
+app/(auth)/reset-password/page.tsx 26ms (unchanged)
+app/(auth)/update-password/page.tsx 65ms (unchanged)
+app/acerca/page.tsx 3ms (unchanged)
+app/api/sentry-debug/route.ts 4ms (unchanged)
+app/error.tsx 6ms (unchanged)
+app/globals.css 53ms (unchanged)
+app/head.tsx 3ms (unchanged)
+app/instalar/page.tsx 27ms (unchanged)
+app/layout.tsx 5ms (unchanged)
+app/manifest.ts 3ms (unchanged)
+app/not-found.tsx 5ms (unchanged)
+app/offline/page.tsx 18ms (unchanged)
+app/page.tsx 2ms (unchanged)
+app/privacidad/page.tsx 3ms (unchanged)
+app/providers.tsx 4ms (unchanged)
+app/robots.ts 5ms (unchanged)
+app/sitemap.ts 2ms (unchanged)
+app/terminos/page.tsx 1ms (unchanged)
+components.json 1ms (unchanged)
+components/AppShell.tsx 4ms (unchanged)
+components/AuthGate.tsx 9ms
+components/ColorEmoji.tsx 9ms
+components/Emoji.tsx 6ms (unchanged)
+components/EmojiTheme.tsx 10ms (unchanged)
+components/ExportPDFButton.tsx 15ms (unchanged)
+components/InstallPrompt.tsx 16ms (unchanged)
+components/Modal.tsx 7ms (unchanged)
+components/Navbar.tsx 13ms (unchanged)
+components/OfflineIndicator.tsx 4ms (unchanged)
+components/OrgSwitcherBadge.tsx 24ms (unchanged)
+components/PendingQueueBadge.tsx 5ms (unchanged)
+components/QueueEvents.tsx 18ms (unchanged)
+components/RegisterSW.tsx 18ms (unchanged)
+components/RequireAuth.tsx 12ms (unchanged)
+components/SiteFooter.tsx 10ms (unchanged)
+components/ThemeToggle.tsx 15ms (unchanged)
+components/Toast.tsx 30ms (unchanged)
+components/Toaster.tsx 17ms (unchanged)
+components/ui/button.tsx 18ms (unchanged)
+components/ui/card.tsx 6ms (unchanged)
+components/ui/input.tsx 2ms (unchanged)
+components/ui/label.tsx 4ms (unchanged)
+components/UiCard.tsx 3ms (unchanged)
+config/emojiTheme.ts 20ms (unchanged)
+hooks/useNotesRealtime.ts 7ms (unchanged)
+hooks/usePatientsRealtime.ts 6ms (unchanged)
+lib/audit.ts 12ms (unchanged)
+lib/database.types.ts 90ms (unchanged)
+lib/org.ts 21ms (unchanged)
+lib/patient-files.ts 45ms
+lib/patient-notes.ts 11ms (unchanged)
+lib/patient-shares.ts 11ms (unchanged)
+lib/patients-search.ts 12ms (unchanged)
+lib/patients.ts 22ms
+lib/storage.ts 5ms (unchanged)
+lib/supabase-browser.ts 2ms (unchanged)
+lib/supabase/client.ts 2ms (unchanged)
+lib/utils.ts 1ms (unchanged)
+logs/diag-2025-09-10-045437/.eslintrc.json 4ms (unchanged)
+logs/diag-2025-09-10-045437/.prettierrc.json 2ms (unchanged)
+logs/diag-2025-09-10-045437/eslint.effective.pacientes-id.json 2ms (unchanged)
+logs/diag-2025-09-10-045437/next.config.ts 3ms (unchanged)
+logs/diag-2025-09-10-045437/package.deps.json 3ms (unchanged)
+logs/diag-2025-09-10-045437/snapshot/lib/database.types.ts 10ms (unchanged)
+logs/diag-2025-09-10-045437/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-045437/snapshot/lib/supabase/client.ts 3ms (unchanged)
+logs/diag-2025-09-10-045437/tsconfig.effective.json 4ms (unchanged)
+logs/diag-2025-09-10-045437/tsconfig.json 2ms (unchanged)
+logs/diag-2025-09-10-045450/.eslintrc.json 2ms (unchanged)
+logs/diag-2025-09-10-045450/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-045450/eslint.effective.pacientes-id.json 2ms (unchanged)
+logs/diag-2025-09-10-045450/next.config.ts 2ms (unchanged)
+logs/diag-2025-09-10-045450/package.deps.json 2ms (unchanged)
+logs/diag-2025-09-10-045450/snapshot/lib/database.types.ts 9ms (unchanged)
+logs/diag-2025-09-10-045450/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-045450/snapshot/lib/supabase/client.ts 6ms (unchanged)
+logs/diag-2025-09-10-045450/tsconfig.effective.json 4ms (unchanged)
+logs/diag-2025-09-10-045450/tsconfig.json 2ms (unchanged)
+logs/diag-2025-09-10-045517/.eslintrc.json 2ms (unchanged)
+logs/diag-2025-09-10-045517/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-045517/eslint.effective.pacientes-id.json 2ms (unchanged)
+logs/diag-2025-09-10-045517/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-045517/package.deps.json 2ms (unchanged)
+logs/diag-2025-09-10-045517/snapshot/lib/database.types.ts 10ms (unchanged)
+logs/diag-2025-09-10-045517/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-045517/snapshot/lib/supabase/client.ts 3ms (unchanged)
+logs/diag-2025-09-10-045517/tsconfig.effective.json 6ms (unchanged)
+logs/diag-2025-09-10-045517/tsconfig.json 3ms (unchanged)
+logs/diag-2025-09-10-045606/.eslintrc.json 2ms (unchanged)
+logs/diag-2025-09-10-045606/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-045606/eslint.effective.pacientes-id.json 4ms (unchanged)
+logs/diag-2025-09-10-045606/next.config.ts 3ms (unchanged)
+logs/diag-2025-09-10-045606/package.deps.json 8ms (unchanged)
+logs/diag-2025-09-10-045606/snapshot/lib/database.types.ts 11ms (unchanged)
+logs/diag-2025-09-10-045606/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-045606/snapshot/lib/supabase/client.ts 3ms (unchanged)
+logs/diag-2025-09-10-045606/tsconfig.effective.json 4ms (unchanged)
+logs/diag-2025-09-10-045606/tsconfig.json 3ms (unchanged)
+logs/diag-2025-09-10-050640/.eslintrc.json 1ms (unchanged)
+logs/diag-2025-09-10-050640/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-050640/eslint.effective.pacientes-id.json 2ms (unchanged)
+logs/diag-2025-09-10-050640/eslint.json 28ms
+logs/diag-2025-09-10-050640/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-050640/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/app/(app)/pacientes/[id]/page.tsx 127ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/app/(app)/pacientes/page.tsx 55ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/app/(app)/perfil/page.tsx 39ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/app/(app)/test-ui/upload/page.tsx 27ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/components/EmojiTheme.tsx 5ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/components/ExportPDFButton.tsx 10ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/components/InstallPrompt.tsx 10ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/components/OrgSwitcherBadge.tsx 12ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/components/Toast.tsx 21ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/config/emojiTheme.ts 14ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/audit.ts 9ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/database.types.ts 41ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/org.ts 15ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/patient-files.ts 26ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/patient-notes.ts 16ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/patient-shares.ts 10ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/patients.ts 11ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/supabase-browser.ts 1ms (unchanged)
+logs/diag-2025-09-10-050640/snapshot/lib/supabase/client.ts 1ms (unchanged)
+logs/diag-2025-09-10-050640/tsconfig.effective.json 3ms (unchanged)
+logs/diag-2025-09-10-050640/tsconfig.json 1ms (unchanged)
+logs/diag-2025-09-10-054320/.eslintrc.json 1ms (unchanged)
+logs/diag-2025-09-10-054320/.prettierrc.json 1ms (unchanged)
+logs/diag-2025-09-10-054320/eslint.effective.pacientes-id.json 1ms
+logs/diag-2025-09-10-054320/next.config.ts 1ms (unchanged)
+logs/diag-2025-09-10-054320/package.deps.json 1ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/app/(app)/pacientes/[id]/page.tsx 125ms
+logs/diag-2025-09-10-054320/snapshot/app/(app)/pacientes/page.tsx 62ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/app/(app)/perfil/page.tsx 28ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/app/(app)/test-ui/upload/page.tsx 41ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/components/EmojiTheme.tsx 2ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/components/ExportPDFButton.tsx 11ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/components/InstallPrompt.tsx 6ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/components/OrgSwitcherBadge.tsx 6ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/components/Toast.tsx 11ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/config/emojiTheme.ts 7ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/audit.ts 3ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/database.types.ts 45ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/org.ts 12ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/patient-files.ts 43ms
+logs/diag-2025-09-10-054320/snapshot/lib/patient-notes.ts 8ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/patient-shares.ts 16ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/patients.ts 10ms
+logs/diag-2025-09-10-054320/snapshot/lib/supabase-browser.ts 2ms (unchanged)
+logs/diag-2025-09-10-054320/snapshot/lib/supabase/client.ts 2ms (unchanged)
+[error] logs/diag-2025-09-10-054320/tsconfig.effective.json: SyntaxError: The input should contain exactly one expression, but the first expression is followed by the unexpected character `:`. (1:21)
+[error] > 1 | tsconfig.json(42,12): error TS18002: The 'files' list in config file '/workspaces/sanoa-lab/tsconfig.json' is empty.
+[error]     |                     ^
+[error]   2 |
+logs/diag-2025-09-10-054320/tsconfig.json 2ms
+middleware.ts 3ms (unchanged)
+next.config.ts 1ms (unchanged)
+package-lock.json 134ms (unchanged)
+package.json 1ms (unchanged)
+README.md 29ms (unchanged)
+sentry.client.config.ts 5ms (unchanged)
+sentry.server.config.ts 12ms (unchanged)
+tsconfig.json 3ms
+tsconfig.typecheck.json 1ms (unchanged)
+types/color-emoji-props.d.ts 4ms
+Logs de ESLint en logs/diag-2025-09-10-054320/eslint.*
+
+=== TypeScript (tsc -noEmit) ===
+components/Emoji.tsx(17,7): error TS2322: Type '{ emoji: string; size: any; mode: EmojiMode; color: string; accentColor: string; className: any; title: any; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
+components/Navbar.tsx(81,29): error TS2322: Type '{ emoji: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
+components/Toast.tsx(122,25): error TS2322: Type '{ emoji: string; mode: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
+lib/patient-files.ts(126,86): error TS2339: Property 'path' does not exist on type 'PatientFile'.
+tsconfig.json(28,12): error TS18002: The 'files' list in config file '/workspaces/sanoa-lab/tsconfig.json' is empty.
+
+=== Build Next.js (Turbopack) ===
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+
+> Build error occurred
+[Error: error TS18002: The 'files' list in config file 'tsconfig.json' is empty.
+] {
+  type: 'FatalError'
+}
+
+=== Conteos rápidos ===
+Archivos TS/TSX:
+65
+Coincidencias ': any' (aprox):
+34 logs/diag-2025-09-10-054320/colon-any.txt
+
+=== Comprimir resultados ===
+📦 Preparando logs/diag-2025-09-10-054320.tgz

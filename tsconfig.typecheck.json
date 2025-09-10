@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true },
+  "include": [
+    "app",
+    "components",
+    "hooks",
+    "lib",
+    "types",
+    "config",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "middleware.ts",
+    "next.config.ts",
+    "sentry.client.config.ts",
+    "sentry.server.config.ts"
+  ],
+  "exclude": ["node_modules", ".next", "logs", "logs/**", ".safety", ".safety/**"]
+}

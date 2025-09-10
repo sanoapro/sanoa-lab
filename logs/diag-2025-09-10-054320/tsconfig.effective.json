@@ -1,0 +1,1 @@
+tsconfig.json(42,12): error TS18002: The 'files' list in config file '/workspaces/sanoa-lab/tsconfig.json' is empty.
