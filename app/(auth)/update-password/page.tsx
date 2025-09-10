@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -19,9 +20,42 @@ function parseHashTokens(hash: string) {
 }
 
 export default function UpdatePasswordPage() {
+  return (
+    <Suspense fallback={<UpdatePasswordFallback />}>
+      <UpdatePasswordInner />
+    </Suspense>
+  );
+}
+
+function UpdatePasswordFallback() {
+  return (
+    <main className="min-h-[100dvh] grid place-items-center p-6">
+      <div className="w-full max-w-md rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-6 flex items-center gap-3">
+          <div className="rounded-2xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+            <ColorEmoji token="refrescar" size={20} />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-[var(--color-brand-text)]">
+              Cargando…
+            </h1>
+            <p className="text-sm text-[var(--color-brand-bluegray)]">
+              Un momento por favor.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function UpdatePasswordInner() {
   const supabase = getSupabaseBrowser();
   const router = useRouter();
   const search = useSearchParams();
+
+  const redirectTo = search.get("redirect_to") || "/dashboard";
+  const codeParam = search.get("code") || null;
 
   const [stage, setStage] = useState<Stage>("checking");
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -37,9 +71,8 @@ export default function UpdatePasswordPage() {
     (async () => {
       try {
         // 1) Si llega con ?code=..., intercambia por sesión
-        const code = search.get("code");
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (codeParam) {
+          const { error } = await supabase.auth.exchangeCodeForSession(codeParam);
           if (error) throw error;
         } else if (typeof window !== "undefined") {
           // 2) Si llega con #access_token=... maneja hash tokens
@@ -61,12 +94,13 @@ export default function UpdatePasswordPage() {
           return;
         }
         setStage("ready");
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Ocurrió un problema al validar el enlace.";
         setStage("error");
-        setErrMsg(e?.message || "Ocurrió un problema al validar el enlace.");
+        setErrMsg(msg);
       }
     })();
-  }, []);
+  }, [codeParam, supabase]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,9 +110,10 @@ export default function UpdatePasswordPage() {
       const { error } = await supabase.auth.updateUser({ password: pwd });
       if (error) throw error;
       showToast("Contraseña actualizada. ¡Bienvenido!", "success");
-      router.replace("/dashboard");
-    } catch (e: any) {
-      showToast(e?.message || "No se pudo actualizar la contraseña.", "error");
+      router.replace(redirectTo);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "No se pudo actualizar la contraseña.";
+      showToast(msg, "error");
     } finally {
       setSaving(false);
     }

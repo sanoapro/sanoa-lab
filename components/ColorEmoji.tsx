@@ -17,6 +17,12 @@ export type ColorEmojiProps = {
 };
 
 const MAP: Record<string, string> = {
+  // NUEVOS
+  magia: "✨",
+  llave: "🔑",
+  web: "🌐",
+
+  // EXISTENTES
   enviar: "📤",
   atras: "◀️",
   refrescar: "🔄",
