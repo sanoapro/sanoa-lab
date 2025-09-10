@@ -1,16 +1,13 @@
-import { getSupabaseBrowser } from "./supabase-browser";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
-export type SharePermission = "read" | "write";
-
-export interface PatientShare {
+export type PatientShare = {
   id: string;
-  patient_id: string;
   owner_id: string;
-  shared_with_email: string | null;
-  shared_with_user_id: string | null;
-  permission: SharePermission;
+  patient_id: string;
+  grantee_email: string;
+  can_edit: boolean;
   created_at: string;
-}
+};
 
 export async function listShares(patientId: string): Promise<PatientShare[]> {
   const supabase = getSupabaseBrowser();
@@ -19,42 +16,41 @@ export async function listShares(patientId: string): Promise<PatientShare[]> {
     .select("*")
     .eq("patient_id", patientId)
     .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as PatientShare[];
+  if (error)
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
+  return (data || []) as PatientShare[];
 }
 
-/** Comparte por email o por user_id (pasa UNO de los dos) */
-export async function addShare(params: {
-  patientId: string;
-  email?: string;
-  userId?: string;
-  permission?: SharePermission;
-}): Promise<PatientShare> {
+export async function addShare(patientId: string, email: string, canEdit: boolean) {
   const supabase = getSupabaseBrowser();
-  const { data: auth, error: eAuth } = await supabase.auth.getUser();
-  if (eAuth || !auth.user) throw new Error("No hay sesión activa.");
-
-  if (!params.email && !params.userId) throw new Error("Debes indicar email o userId.");
-
+  const { data: me } = await supabase.auth.getUser();
+  if (!me?.user) throw new Error("No hay sesión.");
   const payload = {
-    patient_id: params.patientId,
-    owner_id: auth.user.id,
-    shared_with_email: params.email ?? null,
-    shared_with_user_id: params.userId ?? null,
-    permission: params.permission ?? "read",
+    owner_id: me.user.id,
+    patient_id: patientId,
+    grantee_email: email.trim(),
+    can_edit: !!canEdit,
   };
-
   const { data, error } = await supabase
     .from("patient_shares")
     .insert(payload)
     .select("*")
     .single();
-  if (error) throw error;
+  if (error)
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
   return data as PatientShare;
 }
 
-export async function revokeShare(shareId: string): Promise<void> {
+export async function revokeShare(shareId: string) {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase.from("patient_shares").delete().eq("id", shareId);
-  if (error) throw error;
+  if (error)
+    throw new Error(
+      (error as any)?.message ?? (error as any)?.details ?? (error as any)?.hint ?? "Unknown error",
+    );
+  return true;
 }

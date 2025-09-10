@@ -92,5 +92,29 @@ export const emojiTheme = {
   google: "G",
 } as const;
 
+<<<<<<< HEAD
 export const EMOJI_FALLBACK_TOKEN: keyof typeof emojiTheme = "info";
 export type EmojiToken = keyof typeof emojiTheme;
+=======
+export function getEmojiChar(nameOrChar: string): string {
+  if (nameOrChar in emojiTokens) {
+    return (emojiTokens as Record<string, string>)[nameOrChar];
+  }
+  return nameOrChar;
+}
+
+export function getEmojiSettings(emojiChar: string): Required<EmojiSettings> {
+  const base = emojiTheme.global;
+  const ov = emojiTheme.perEmoji[emojiChar] || emojiTheme.perEmoji[stripVS(emojiChar)] || {};
+  return {
+    mode: (ov.mode || base.mode) as EmojiMode,
+    color: ov.color ?? base.color,
+    accentColor: ov.accentColor ?? base.accentColor,
+  };
+}
+
+export type EmojiPerItem = {
+  // overrides por emoji, p.ej. { "📝": { fg: "#222", bg: "#eee" } }
+  [emoji: string]: { fg?: string; bg?: string };
+};
+>>>>>>> 9675004 (chore: sync tipos Supabase, export Patient/Gender, path en patient_files, logging robusto, ESLint relax)

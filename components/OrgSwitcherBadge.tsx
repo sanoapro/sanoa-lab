@@ -42,7 +42,7 @@ export default function OrgSwitcherBadge({ variant = "fixed" }: OrgSwitcherBadge
       showToast("Organización cambiada.", "success");
       // Opcional: refresca la página para que queries lean nueva org_id por triggers
       // location.reload();
-    } catch (err: any) {
+    } catch (err: unknown) {
       showToast(err?.message || "No se pudo cambiar la organización.", "error");
     }
     setOpen(false);
