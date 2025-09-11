@@ -10,7 +10,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "typecheck": "tsc -noEmit",
     "lint:fix": "eslint . --fix",
-    "build:clean": "rm -rf .next && next build"
+    "build:clean": "rm -rf .next && next build",
+    "emoji:check": "node scripts/check-emojis.mjs",
+    "emoji:migrate": "node scripts/emoji-migrate.mjs && pnpm run emoji:check"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
