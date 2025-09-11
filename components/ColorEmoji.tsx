@@ -1,84 +1,41 @@
-"use client";
-
-import * as React from "react";
+import Image from "next/image";
 import clsx from "clsx";
+import { getEmoji } from "@/config/emojiTheme";
 
-export type ColorEmojiProps = {
-  emoji: string;
+type Props = {
+  token?: string;
+  emoji?: string;
   size?: number;
-  mode?: any;
+  title?: string;
+  className?: string;
+  // Props extra que quizá uses en otros sitios; se ignoran aquí sin romper tipos
+  mode?: string;
   color?: string;
   accentColor?: string;
-  className?: string;
-  title?: string;
-  token?: string;
-  toneA?: string;
-  toneB?: string;
 };
 
-const MAP: Record<string, string> = {
-  // NUEVOS
-  magia: "✨",
-  llave: "🔑",
-  web: "🌐",
-
-  // EXISTENTES
-  enviar: "📤",
-  atras: "◀️",
-  refrescar: "🔄",
-  info: "ℹ️",
-  email: "✉️",
-  candado: "🔒",
-  guardar: "💾",
-  hoja: "📄",
-  alerta: "⚠️",
-  copiar: "📋",
-  home: "🏠",
-  instalar: "⬇️",
-  ok: "✅",
-  ios: "",
-  android: "🤖",
-  escritorio: "🖥️",
-  busqueda: "🔎",
-  dashboard: "📊",
-  puzzle: "🧩",
-  reloj: "⏳",
-  exportar: "📄",
-  desbloquear: "🔓",
-  pacientes: "🧑‍⚕️",
-  laboratorio: "🧪",
-  archivo: "📄",
-  ver: "👁️",
-  link: "🔗",
-  borrar: "🗑️",
-  carpeta: "📁",
-  subir: "📤",
-  actividad: "🧭",
-  documentos: "📚",
-  subirBandeja: "🗂️",
-  descargar: "⬇️",
-  enlace: "🔗",
-  usuario: "👤",
-  imagen: "🖼️",
-  limpiar: "🧹",
-  salir: "🚪",
-  buscar: "🔍",
-  siguiente: "➡️",
-  anterior: "⬅️",
-  tablero: "📋",
-};
-
-export default function ColorEmoji({ token, size = 16, className }: ColorEmojiProps) {
-  const glyph = (token && MAP[token]) || "❓";
-  const style: React.CSSProperties = {
-    fontSize: size,
-    lineHeight: 1,
-    display: "inline-block",
-    verticalAlign: "middle",
-  };
+export default function ColorEmoji({ token, emoji, size = 18, title, className }: Props) {
+  const value = emoji ?? getEmoji(token);
+  if (typeof value === "string" && value.startsWith("svg:")) {
+    const src = value.slice(4);
+    return (
+      <Image
+        src={src}
+        alt={title ?? token ?? "icono"}
+        width={size}
+        height={size}
+        className={clsx("inline-block align-[-2px]", className)}
+      />
+    );
+  }
   return (
-    <span aria-hidden className={clsx("select-none", className)} style={style}>
-      {glyph}
+    <span
+      aria-hidden
+      title={title}
+      className={clsx("inline-block align-[-2px]", className)}
+      style={{ fontSize: size, lineHeight: `${size}px` }}
+    >
+      {value || "❓"}
     </span>
   );
 }

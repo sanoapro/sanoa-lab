@@ -1,95 +1,26 @@
-export type EmojiMode = "duotone" | "mono" | "native";
+export const emojiTheme: Record<string, string> = {
+  // Navbar / Dashboard
+  tablero: "📊",
+  cargas: "📤",
+  perfil: "👤",
 
-type EmojiSettings = {
-  mode?: EmojiMode;
-  color?: string;
-  accentColor?: string;
-};
-
-export const emojiTheme: {
-  global: Required<EmojiSettings>;
-  perEmoji: Record<string, EmojiSettings>;
-} = {
-  global: {
-    mode: "duotone",
-    color: "#D97A66", // terracota (brand)
-    accentColor: "#3E4C59", // bluegray (texto/contraste)
-  },
-  // Overrides puntuales (incluye variantes sin/ con VS-16)
-  perEmoji: {
-    // Identidades que deben verse nativas
-    "📧": { mode: "native" },
-    "🌐": { mode: "native" },
-    "🗑": { mode: "native" },
-    "🗑️": { mode: "native" },
-    "🍃": { mode: "native" },
-
-    // Duotono para íconos de UI (buen contraste)
-    "🔐": { mode: "duotone" },
-    "🔑": { mode: "duotone" },
-    "💾": { mode: "duotone" },
-    "🧪": { mode: "duotone" },
-    "📤": { mode: "duotone" },
-    "🗂️": { mode: "duotone" },
-    "👁️": { mode: "duotone" },
-
-    // Puedes seguir afinando acá...
-  },
-};
-
-// ====== TOKENS SEMÁNTICOS ======
-export const emojiTokens = {
-  // Auth / navegación
-  email: "📧",
-  enviar: "📨",
+  // Comunes
   atras: "⬅️",
-  refrescar: "🔄",
-  info: "ℹ️",
-  candado: "🔐",
-  guardar: "💾",
-  siguiente: "➡️",
-  web: "🌐",
-  llave: "🔑",
-  magia: "✨",
-  reloj: "⏳",
-
-  // App
-  tablero: "🧭",
-  subir: "��",
-  carpeta: "🗂️",
-  ver: "👁️",
-  laboratorio: "🧪",
-
-  // PWA / instalación
-  offline: "📴",
-  instalar: "📲",
+  adios: "👋",
+  pacientes: "🧑‍⚕️",
+  subir: "📤",
+  archivos: "🗂️",
   ok: "✅",
-  ios: "🍎",
-  android: "🤖",
-  escritorio: "🖥️",
+  error: "❌",
+  info: "ℹ️",
+  hoja: "🍃",
+
+  // Tu logo (usa el SVG de /public/icons/logo.svg)
+  logo: "svg:/icons/logo.svg",
 };
 
-export type EmojiTokenName = keyof typeof emojiTokens;
-
-// ====== HELPERS ======
-const VS16 = /\uFE0F/g;
-export function stripVS(s: string) {
-  return s.replace(VS16, "");
-}
-
-export function getEmojiChar(nameOrChar: string): string {
-  if (nameOrChar in emojiTokens) {
-    return (emojiTokens as Record<string, string>)[nameOrChar];
-  }
-  return nameOrChar;
-}
-
-export function getEmojiSettings(emojiChar: string): Required<EmojiSettings> {
-  const base = emojiTheme.global;
-  const ov = emojiTheme.perEmoji[emojiChar] || emojiTheme.perEmoji[stripVS(emojiChar)] || {};
-  return {
-    mode: (ov.mode || base.mode) as EmojiMode,
-    color: ov.color ?? base.color,
-    accentColor: ov.accentColor ?? base.accentColor,
-  };
+// Fallback cómodo
+export function getEmoji(token?: string, fallback?: string) {
+  if (!token) return fallback ?? "❓";
+  return emojiTheme[token] ?? fallback ?? "❓";
 }

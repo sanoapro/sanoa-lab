@@ -1,46 +1,63 @@
+// /workspaces/sanoa-lab/eslint.config.mjs
+import tseslint from "typescript-eslint";
+import nextPlugin from "@next/eslint-plugin-next";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import importPlugin from "eslint-plugin-import";
-import nextPlugin from "@next/eslint-plugin-next";
-import tseslint from "typescript-eslint";
+
+// Config base de Next (core-web-vitals)
+const nextCore = nextPlugin.configs["core-web-vitals"] ?? { rules: {}, plugins: {} };
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
-  // Ignora artefactos y generados
+  // Ignora artefactos
   { ignores: ["node_modules/**", ".next/**", "logs/**", "public/sw.js", "eslint.config.*", ".safety/**"] },
 
-  // JS/MJS/CJS
+  // Bloque único JS/TS/React con Next
   {
-    files: ["**/*.{js,mjs,cjs}"],
-    languageOptions: { sourceType: "module" },
-    plugins: { "@next/next": nextPlugin, "react": react, "react-hooks": reactHooks, "import": importPlugin },
-    rules: {
-      "no-unused-vars": "off",
-      "@next/next/no-img-element": "off",
-      "import/order": "off"
-    }
-  },
-
-  // TS/TSX (proyecto tipado)
-  {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
       parser: tseslint.parser,
-      parserOptions: { project: "./tsconfig.typecheck.json", sourceType: "module", ecmaFeatures: { jsx: true } }
+      parserOptions: {
+        // Más liviano que apuntar a un tsconfig concreto:
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+        ecmaFeatures: { jsx: true },
+      },
     },
-    plugins: { "@next/next": nextPlugin, "@typescript-eslint": tseslint.plugin, "react": react, "react-hooks": reactHooks, "import": importPlugin },
+    // Mezclamos plugins del preset de Next con los nuestros
+    plugins: {
+      ...nextCore.plugins,
+      "@next/next": nextPlugin,
+      "@typescript-eslint": tseslint.plugin,
+      react,
+      "react-hooks": reactHooks,
+      import: importPlugin,
+    },
+    // (Opcional) si un día activas reglas de react:
+    // settings: { react: { version: "detect" } },
+
+    // Reglas: partimos de core-web-vitals y silenciamos lo que no quieres
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/triple-slash-reference": "off",
+      ...nextCore.rules,
       "@next/next/no-img-element": "off",
-      "import/order": "off"
-    }
+
+      // Silencios “de ruido”
+      "import/order": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "no-console": "off",
+      "no-unused-vars": "off",
+
+      // TS
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/triple-slash-reference": "off",
+    },
   },
 
   // Archivo generado por Supabase
   { files: ["lib/database.types.ts"], rules: { "@typescript-eslint/no-empty-object-type": "off" } },
 
   // Sentry boilerplate
-  { files: ["sentry.*.config.ts"], rules: { "@typescript-eslint/no-explicit-any": "off" } }
+  { files: ["sentry.*.config.ts"], rules: { "@typescript-eslint/no-explicit-any": "off" } },
 ];
