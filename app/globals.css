@@ -271,3 +271,21 @@ button { font-weight: 600; }
   color: #dc2626;                     /* red-600 */
 }
 .tile-btn--danger:hover { background: #ffe4e6; }
+/* === Mejora de contraste accesible (WCAG AA aprox.) === */
+:root {
+  --color-brand-text: #0f172a;       /* slate-900 */
+  --color-brand-bluegray: #334155;   /* slate-700 (antes más tenue) */
+  --color-brand-border: #cbd5e1;     /* slate-300, más visible */
+}
+
+/* Opcional: tipografía ligeramente más contundente en headings y labels */
+h1,h2,h3,h4,h5,h6,
+label,.form-label { font-weight: 600; color: var(--color-brand-text); }
+.small-muted { color: var(--color-brand-bluegray); }
+
+/* === Refuerzos de legibilidad globales === */
+.subtitle-muted { color: var(--color-brand-bluegray); font-weight: 500; }
+.kicker        { color: var(--color-brand-bluegray); font-size: .875rem; font-weight: 600; letter-spacing: .02em; }
+
+/* Botones principales con fuente más sólida por defecto */
+button, .btn { font-weight: 600; }
