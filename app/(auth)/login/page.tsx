@@ -8,11 +8,28 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 /** Icono oficial de Google “G” (inline, sin archivos extra) */
 function GoogleGIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true" focusable="false">
-      <path fill="#EA4335" d="M24 9.5c3.22 0 6.13 1.11 8.42 3.29l6.3-6.3C34.82 3.16 29.86 1.5 24 1.5 14.62 1.5 6.53 7.06 3.03 15.02l7.8 6.06C12.4 15.57 17.76 9.5 24 9.5z" />
-      <path fill="#34A853" d="M46.5 24c0-1.61-.15-3.16-.43-4.65H24v9.3h12.7c-.55 2.97-2.17 5.48-4.63 7.17l7.1 5.53C43.9 37.4 46.5 31.2 46.5 24z" />
-      <path fill="#FBBC05" d="M10.83 21.08l-7.8-6.06C1.66 17.5 1.5 20.7 1.5 24c0 3.28.16 6.48 1.53 8.98l7.8-6.05C10.2 25.41 10.05 24.72 10.05 24s.15-1.41.78-2.92z" />
-      <path fill="#4285F4" d="M24 46.5c5.86 0 10.82-1.93 14.17-5.15l-7.1-5.53c-1.98 1.36-4.53 2.18-7.07 2.18-6.24 0-11.6-6.07-13.17-13.56l-7.8 6.05C6.53 40.94 14.62 46.5 24 46.5z" />
+    <svg
+      viewBox="0 0 48 48"
+      className={className}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.22 0 6.13 1.11 8.42 3.29l6.3-6.3C34.82 3.16 29.86 1.5 24 1.5 14.62 1.5 6.53 7.06 3.03 15.02l7.8 6.06C12.4 15.57 17.76 9.5 24 9.5z"
+      />
+      <path
+        fill="#34A853"
+        d="M46.5 24c0-1.61-.15-3.16-.43-4.65H24v9.3h12.7c-.55 2.97-2.17 5.48-4.63 7.17l7.1 5.53C43.9 37.4 46.5 31.2 46.5 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.83 21.08l-7.8-6.06C1.66 17.5 1.5 20.7 1.5 24c0 3.28.16 6.48 1.53 8.98l7.8-6.05C10.2 25.41 10.05 24.72 10.05 24s.15-1.41.78-2.92z"
+      />
+      <path
+        fill="#4285F4"
+        d="M24 46.5c5.86 0 10.82-1.93 14.17-5.15l-7.1-5.53c-1.98 1.36-4.53 2.18-7.07 2.18-6.24 0-11.6-6.07-13.17-13.56l-7.8 6.05C6.53 40.94 14.62 46.5 24 46.5z"
+      />
     </svg>
   );
 }
@@ -20,11 +37,14 @@ function GoogleGIcon({ className }: { className?: string }) {
 /** Traducción rápida de errores comunes de Supabase */
 function toSpanishError(e: unknown): string {
   const msg =
-    typeof e === "object" && e && "message" in e ? String((e as any).message) : String(e);
+    typeof e === "object" && e && "message" in e
+      ? String((e as any).message)
+      : String(e);
   if (/Invalid login credentials/i.test(msg)) return "Credenciales inválidas.";
   if (/provider is not enabled/i.test(msg))
     return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
-  if (/Email not confirmed/i.test(msg)) return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
+  if (/Email not confirmed/i.test(msg))
+    return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
   return msg;
 }
 
@@ -43,13 +63,24 @@ function Inner() {
     return r.startsWith("/") && !r.startsWith("//") ? r : "/dashboard";
   }, [params]);
 
-  // Si ya hay sesión activa, redirige
+  // Si ya hay sesión activa, redirige. Además, escucha cambios de auth (OAuth callback).
   useEffect(() => {
-    (async () => {
-      const supabase = getSupabaseBrowser();
-      const { data } = await supabase.auth.getSession();
+    const supabase = getSupabaseBrowser();
+
+    // Checar sesión actual al montar
+    supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace(safeRedirect);
-    })();
+    });
+
+    // Suscribirse a cambios de auth (p.ej., regreso de OAuth)
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s?.access_token) router.replace(safeRedirect);
+    });
+
+    // Cleanup correcto en React
+    return () => {
+      sub.subscription.unsubscribe();
+    };
   }, [router, safeRedirect]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -58,7 +89,10 @@ function Inner() {
     setLoading(true);
     try {
       const supabase = getSupabaseBrowser();
-      const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: pass,
+      });
       if (error) throw error;
       router.replace(safeRedirect);
     } catch (e) {
@@ -73,10 +107,16 @@ function Inner() {
     setLoading(true);
     try {
       const supabase = getSupabaseBrowser();
-      // Dominio público actual (preferimos .env para Codespaces)
+
+      // Dominio público endurecido (usa .env si es URL válida; si no, usa origin del navegador)
       const site =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        (typeof window !== "undefined" ? window.location.origin : "");
+        process.env.NEXT_PUBLIC_SITE_URL &&
+        /^https?:\/\//.test(process.env.NEXT_PUBLIC_SITE_URL)
+          ? process.env.NEXT_PUBLIC_SITE_URL
+          : typeof window !== "undefined"
+          ? window.location.origin
+          : "";
+
       // Ruta pública correcta: /callback (NO /(auth)/callback). Pasamos ?next= destino.
       const url = new URL("/callback", site);
       url.searchParams.set("next", safeRedirect);
@@ -87,7 +127,7 @@ function Inner() {
         options: { redirectTo },
       });
       if (error) throw error;
-      // Se redirige a Google; la ejecución local no continúa aquí.
+      // Se redirige a Google; ejecución local no continúa aquí.
     } catch (e) {
       setErr(toSpanishError(e));
       setLoading(false);
@@ -205,7 +245,13 @@ function Inner() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}>
+    <Suspense
+      fallback={
+        <div className="p-6 text-center text-[var(--color-brand-bluegray)]">
+          Cargando…
+        </div>
+      }
+    >
       <Inner />
     </Suspense>
   );

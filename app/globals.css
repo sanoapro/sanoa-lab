@@ -48,6 +48,24 @@ body {
   color: var(--color-brand-text);
   font-family: var(--font-body);
   line-height: 1.55;
+  font-feature-settings: "liga", "kern";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Títulos más legibles por defecto */
+h1, h2, h3 {
+  color: var(--color-brand-text);
+  font-weight: 600; /* semibold */
+}
+
+a {
+  color: var(--color-brand-text);
+  text-underline-offset: 3px;
+}
+
+button {
+  font-weight: 600;
 }
 
 /* ===== Layout helpers ===== */
@@ -208,7 +226,9 @@ body {
 }
 
 /* --- Contraste más fuerte para textos --- */
-:root{
-  --color-brand-text: #111827;     /* gray-900 */
-  --color-brand-bluegray: #1f2937; /* gray-800 */
+:root {
+  /* Contraste alto y consistente en toda la app */
+  --color-brand-text: #0f172a;        /* slate-900 */
+  --color-brand-bluegray: #475569;    /* slate-600 */
+  --color-brand-border: #cbd5e1;      /* slate-300 */
 }
