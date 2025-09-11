@@ -45,6 +45,8 @@ function toSpanishError(e: unknown): string {
     return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
   if (/Email not confirmed/i.test(msg))
     return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
+  if (/Unable to exchange external code/i.test(msg) || /PKCE/i.test(msg))
+    return "No se pudo canjear el código de inicio de sesión (PKCE). Probable causa: el callback volvió a un origen distinto al que inició el login. Asegúrate de que login y callback usen exactamente el mismo dominio/puerto.";
   return msg;
 }
 
@@ -121,6 +123,12 @@ function Inner() {
       const url = new URL("/callback", site);
       url.searchParams.set("next", safeRedirect);
       const redirectTo = url.toString();
+
+      // === LOGS DE DIAGNÓSTICO (ver en DevTools → Console) ===
+      console.log("[LOGIN] window.origin =", typeof window !== "undefined" ? window.location.origin : "");
+      console.log("[LOGIN] NEXT_PUBLIC_SITE_URL =", process.env.NEXT_PUBLIC_SITE_URL);
+      console.log("[LOGIN] safeRedirect =", safeRedirect);
+      console.log("[LOGIN] redirectTo =", redirectTo);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
