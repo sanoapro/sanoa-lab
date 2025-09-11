@@ -8,6 +8,16 @@ import {
   type PatientSearchResult,
 } from "@/lib/patients-search";
 
+/** Traducción/normalización de errores frecuentes en listados */
+function toSpanishListError(e: unknown): string {
+  const msg =
+    typeof e === "object" && e && "message" in e ? String((e as any).message) : String(e ?? "");
+  if (/stack depth limit exceeded/i.test(msg)) {
+    return "La consulta es demasiado compleja o recursiva. Sugerencias: reduce filtros activos, acota el rango de fechas o intenta con menos términos. Si persiste, vuelve a intentarlo más tarde.";
+  }
+  return msg || "Ocurrió un error al buscar pacientes.";
+}
+
 export default function PacientesPage() {
   const [filters, setFilters] = useState<PatientSearchFilters>({
     q: "",
@@ -37,8 +47,8 @@ export default function PacientesPage() {
       const rs = await searchPatients({ ...filters, page: nextPage ?? filters.page });
       setResult(rs);
       setFilters((f) => ({ ...f, page: rs.page })); // sincroniza
-    } catch (e: any) {
-      setErr(e?.message || "No se pudo buscar.");
+    } catch (e) {
+      setErr(toSpanishListError(e));
     } finally {
       setLoading(false);
     }
@@ -47,6 +57,7 @@ export default function PacientesPage() {
   useEffect(() => {
     // primera carga
     doSearch(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onSubmit(e: React.FormEvent) {
@@ -78,7 +89,7 @@ export default function PacientesPage() {
           Pacientes
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
-          Filtra por nombre, género, edad y fechas. Resultados visibles respetan tus permisos
+          Filtra por nombre, género, edad y fechas. Los resultados respetan tus permisos
           (propios o compartidos).
         </p>
       </header>
@@ -87,7 +98,7 @@ export default function PacientesPage() {
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <form onSubmit={onSubmit} className="p-6 grid grid-cols-1 md:grid-cols-12 gap-3">
           <label className="md:col-span-4">
-            <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
+            <span className="text-sm font-medium text-[var(--color-brand-text)]">Nombre</span>
             <input
               value={filters.q || ""}
               onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
@@ -97,7 +108,7 @@ export default function PacientesPage() {
           </label>
 
           <label className="md:col-span-2">
-            <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
+            <span className="text-sm font-medium text-[var(--color-brand-text)]">Género</span>
             <select
               value={filters.genero || "ALL"}
               onChange={(e) => setFilters((f) => ({ ...f, genero: e.target.value as any }))}
@@ -112,7 +123,7 @@ export default function PacientesPage() {
 
           <div className="md:col-span-2 grid grid-cols-2 gap-3">
             <label>
-              <span className="text-sm text-[var(--color-brand-text)]/80">Edad mín.</span>
+              <span className="text-sm font-medium text-[var(--color-brand-text)]">Edad mín.</span>
               <input
                 type="number"
                 min={0}
@@ -127,7 +138,7 @@ export default function PacientesPage() {
               />
             </label>
             <label>
-              <span className="text-sm text-[var(--color-brand-text)]/80">Edad máx.</span>
+              <span className="text-sm font-medium text-[var(--color-brand-text)]">Edad máx.</span>
               <input
                 type="number"
                 min={0}
@@ -145,7 +156,7 @@ export default function PacientesPage() {
 
           <div className="md:col-span-3 grid grid-cols-2 gap-3">
             <label>
-              <span className="text-sm text-[var(--color-brand-text)]/80">Desde</span>
+              <span className="text-sm font-medium text-[var(--color-brand-text)]">Desde</span>
               <input
                 type="date"
                 value={filters.createdFrom ?? ""}
@@ -154,7 +165,7 @@ export default function PacientesPage() {
               />
             </label>
             <label>
-              <span className="text-sm text-[var(--color-brand-text)]/80">Hasta</span>
+              <span className="text-sm font-medium text-[var(--color-brand-text)]">Hasta</span>
               <input
                 type="date"
                 value={filters.createdTo ?? ""}
@@ -166,7 +177,7 @@ export default function PacientesPage() {
 
           <div className="md:col-span-3 grid grid-cols-2 gap-3">
             <label>
-              <span className="text-sm text-[var(--color-brand-text)]/80">Ordenar por</span>
+              <span className="text-sm font-medium text-[var(--color-brand-text)]">Ordenar por</span>
               <select
                 value={filters.orderBy}
                 onChange={(e) => setFilters((f) => ({ ...f, orderBy: e.target.value as any }))}
@@ -178,7 +189,7 @@ export default function PacientesPage() {
               </select>
             </label>
             <label>
-              <span className="text-sm text-[var(--color-brand-text)]/80">Dirección</span>
+              <span className="text-sm font-medium text-[var(--color-brand-text)]">Dirección</span>
               <select
                 value={filters.orderDir}
                 onChange={(e) => setFilters((f) => ({ ...f, orderDir: e.target.value as any }))}
@@ -217,7 +228,15 @@ export default function PacientesPage() {
       {/* Resultados */}
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-6">
-          {err && <p className="text-red-600 text-sm mb-3">{err}</p>}
+          {err && (
+            <div
+              className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              role="alert"
+              aria-live="polite"
+            >
+              {err}
+            </div>
+          )}
 
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">

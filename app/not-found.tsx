@@ -37,7 +37,7 @@ export default function NotFound() {
               href="/dashboard"
               className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-brand-coral)] px-4 py-2.5 text-white font-medium shadow-sm hover:opacity-95 transition"
             >
-              <ColorEmoji token="dashboard" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
+              <ColorEmoji token="tablero" toneA="#FFFFFF" toneB="#FFFFFF" size={18} />
               Ir al dashboard
             </Link>
 
