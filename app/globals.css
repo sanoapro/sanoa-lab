@@ -1,29 +1,32 @@
 @import "tailwindcss";
-
-/* Plugins (animaciones de shadcn/ui y utilidades de transición) */
+/* Plugins (animaciones shadcn/ui y utilidades de transición) */
 @plugin "tailwindcss-animate";
 
-/* ===== Tema Sanoa (colores y tipografías) ===== */
+/* =========================================================================
+   TEMA SANOA (variables de color y tipografías)
+   ====================================================================== */
 @theme {
   /* Colores de marca */
-  --color-brand-primary: #d97a66; /* Terracota Suave (acentos/marca) */
-  --color-brand-text: #3e4c59; /* Gris oscuro azulado (texto) */
-  --color-brand-background: #fbf3e5; /* Marfil/Crema (fondo) */
-  --color-brand-coral: #c55b4e; /* Acento secundario */
-  --color-brand-bluegray: #9faab9; /* Acento secundario */
-  --color-brand-border: #ded5c9; /* Gris estructural (bordes) */
+  --color-brand-primary: #d97a66; /* Terracota suave (acentos/marca) */
+  --color-brand-text: #0f172a;     /* slate-900 – contraste fuerte */
+  --color-brand-background: #fbf3e5; /* Marfil/Crema (base) */
+  --color-brand-coral: #c55b4e;    /* Acento secundario */
+  --color-brand-bluegray: #475569; /* slate-600 – textos secundarios */
+  --color-brand-border: #cbd5e1;   /* slate-300 – bordes */
 
-  /* UI neutrales derivadas (para botones/estados) */
-  --color-ink: #2f3a44;
-  --color-ink-muted: #63758a;
+  /* UI neutrales derivadas */
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
   --color-surface: #ffffff;
-  --color-surface-2: #f7efe3;
+  --color-surface-2: #f8fafc;
   --color-border: var(--color-brand-border);
-  --color-danger: #8c3d1e; /* marrón oscuro para estado peligro */
+  --color-danger: #8c3d1e;
+
+  /* Sombras */
   --shadow-soft: 0 10px 25px 0 rgba(34, 25, 23, 0.06);
   --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
 
-  /* Tipografías (variables expuestas por next/font en layout.tsx) */
+  /* Tipografías (inyectadas con next/font en layout.tsx) */
   --font-heading:
     var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -32,19 +35,37 @@
     Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-/* ===== Reset/accesibilidad mínima ===== */
+/* =========================================================================
+   FONDO GLOBAL ESTILO LOGIN (claro + oscuro)
+   ====================================================================== */
+:root {
+  /* “Cortina” superior como en login (#f8fafc → transparente) sobre la base crema. */
+  --app-bg:
+    linear-gradient(180deg, #f8fafc 0%, rgba(248,250,252,0) 60%),
+    var(--color-brand-background);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg:
+      linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%),
+      #0a0f1a; /* base oscura */
+  }
+}
+
+/* =========================================================================
+   RESET / ACCESIBILIDAD BÁSICA
+   ====================================================================== */
 :focus-visible {
   outline: 2px solid var(--color-brand-primary);
   outline-offset: 2px;
 }
 
-/* ===== Base de la página ===== */
-html,
+html, body { min-height: 100%; }
+
 body {
-  height: 100%;
-}
-body {
-  background: var(--color-brand-background);
+  background: var(--app-bg);
+  background-attachment: fixed; /* efecto sutil al hacer scroll */
   color: var(--color-brand-text);
   font-family: var(--font-body);
   line-height: 1.55;
@@ -53,10 +74,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Títulos más legibles por defecto */
 h1, h2, h3 {
   color: var(--color-brand-text);
-  font-weight: 600; /* semibold */
+  font-weight: 600;
+  font-family: var(--font-heading);
 }
 
 a {
@@ -64,32 +85,32 @@ a {
   text-underline-offset: 3px;
 }
 
-button {
-  font-weight: 600;
-}
+button { font-weight: 600; }
 
-/* ===== Layout helpers ===== */
+/* =========================================================================
+   LAYOUT HELPERS
+   ====================================================================== */
 .page {
   @apply min-h-screen py-10;
-  background:
-    radial-gradient(1000px 500px at 10% -10%, #fff7e9 0%, #fff1de 40%, transparent 70%),
-    radial-gradient(800px 400px at 90% -10%, #ffe6d7 0%, transparent 65%),
-    var(--color-brand-background);
+  /* IMPORTANT: dejamos transparente para que se vea el fondo global estilo login */
+  background: transparent;
 }
+
 .container {
   @apply max-w-5xl mx-auto px-4 md:px-6;
 }
 
-/* ===== Cards ===== */
+/* =========================================================================
+   CARDS
+   ====================================================================== */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 20px;
   box-shadow: var(--shadow-soft);
 }
-.card-elevated {
-  box-shadow: var(--shadow-card);
-}
+.card-elevated { box-shadow: var(--shadow-card); }
+
 .card-header {
   @apply px-6 md:px-8 pt-6 md:pt-8 pb-2;
   border-bottom: 1px solid var(--color-border);
@@ -101,113 +122,93 @@ button {
   font-family: var(--font-heading);
   @apply text-3xl md:text-4xl font-semibold tracking-tight text-ink;
 }
-.card-body {
-  @apply p-6 md:p-8;
-}
+.card-body { @apply p-6 md:p-8; }
 
-/* ===== Typography helpers ===== */
-.text-ink {
-  color: var(--color-ink);
-}
-.muted {
-  color: var(--color-ink-muted);
-}
+/* =========================================================================
+   TIPOGRAFÍA AUX
+   ====================================================================== */
+.text-ink { color: var(--color-ink); }
+.muted   { color: var(--color-ink-muted); }
+
 .section-title {
   font-family: var(--font-heading);
   @apply text-xl md:text-2xl font-semibold text-ink;
 }
 
-/* ===== Inputs ===== */
+/* =========================================================================
+   FORM / INPUTS
+   ====================================================================== */
 .input {
   @apply w-full rounded-xl border px-4 py-3 text-base;
   border-color: var(--color-border);
   background: var(--color-surface);
   color: var(--color-ink);
 }
-.input:disabled {
-  @apply opacity-50 cursor-not-allowed;
-}
+.input:disabled { @apply opacity-50 cursor-not-allowed; }
+
 .field .label {
   @apply block mb-2 text-sm font-medium;
   color: var(--color-ink);
 }
 
-/* ===== Buttons ===== */
+/* =========================================================================
+   BOTONES
+   ====================================================================== */
 .btn {
   @apply inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors;
   border: 1px solid transparent;
 }
-.btn:disabled {
-  @apply opacity-60 cursor-not-allowed;
-}
+.btn:disabled { @apply opacity-60 cursor-not-allowed; }
 
 .btn-primary {
-  color: white;
+  color: #fff;
   background: var(--color-brand-primary);
   border-color: #c9705c;
 }
-.btn-primary:hover {
-  filter: brightness(0.95);
-}
+.btn-primary:hover { filter: brightness(0.95); }
 
 .btn-secondary {
   color: #6a381f;
   background: #ffe9cc;
   border-color: #ffd7a6;
 }
-.btn-secondary:hover {
-  filter: brightness(0.97);
-}
+.btn-secondary:hover { filter: brightness(0.97); }
 
 .btn-ghost {
   color: var(--color-brand-primary);
   background: transparent;
   border-color: var(--color-border);
 }
-.btn-ghost:hover {
-  background: #fff3ec;
-}
+.btn-ghost:hover { background: #fff3ec; }
 
 .btn-soft {
   color: #6a381f;
   background: #fff4e8;
   border-color: #ffe3c9;
 }
-.btn-soft:hover {
-  filter: brightness(0.97);
-}
+.btn-soft:hover { filter: brightness(0.97); }
 
 .btn-danger {
   color: #fff;
   background: var(--color-danger);
   border-color: #6e2f17;
 }
-.btn-danger:hover {
-  filter: brightness(0.95);
-}
+.btn-danger:hover { filter: brightness(0.95); }
 
-/* ===== List / items ===== */
-.list {
-  @apply divide-y;
-  border-color: var(--color-border);
-}
-.item {
-  @apply pt-3;
-}
-.item:first-child {
-  @apply pt-0;
-}
-.item-main {
-  @apply flex items-center gap-3 flex-wrap;
-}
-.item-title {
-  @apply text-sm md:text-base font-medium break-all text-ink;
-}
-.item-actions {
-  @apply mt-2 flex flex-wrap gap-2;
-}
+/* =========================================================================
+   LISTAS / ITEMS
+   ====================================================================== */
+.list { @apply divide-y; border-color: var(--color-border); }
+.item { @apply pt-3; }
+.item:first-child { @apply pt-0; }
 
-/* ===== Badges & dividers ===== */
+.item-main { @apply flex items-center gap-3 flex-wrap; }
+.item-title { @apply text-sm md:text-base font-medium break-all text-ink; }
+.item-actions { @apply mt-2 flex flex-wrap gap-2; }
+
+/* =========================================================================
+   BADGES / DIVISORES
+   ====================================================================== */
 .badge {
   @apply text-xs px-2 py-1 rounded-md;
   background: var(--color-surface-2);
@@ -220,15 +221,53 @@ button {
   margin: 8px 0 16px;
 }
 
-/* ===== Utilidades rápidas ===== */
-.text-danger {
-  color: var(--color-danger);
+/* =========================================================================
+   UTILIDADES
+   ====================================================================== */
+.text-danger { color: var(--color-danger); }
+
+/* =========================================================================
+   ACCIONES EN TARJETAS (tiles) – para /test-ui/upload
+   Asegura que “Ver / Descargar / Copiar enlace / Borrar” queden alineados.
+   ====================================================================== */
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-/* --- Contraste más fuerte para textos --- */
-:root {
-  /* Contraste alto y consistente en toda la app */
-  --color-brand-text: #0f172a;        /* slate-900 */
-  --color-brand-bluegray: #475569;    /* slate-600 */
-  --color-brand-border: #cbd5e1;      /* slate-300 */
+.tile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 58px;
+  min-width: 152px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--color-ink);
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap; /* evita saltos raros */
 }
+.tile-btn:hover { background: #fff8f4; }
+.tile-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* asegura que iconos/emojis no empujen el texto */
+.tile-btn .emoji, .tile-btn svg, .tile-btn img {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+/* Variante de peligro para “Borrar” */
+.tile-btn--danger {
+  border-color: #fecaca;             /* red-200 */
+  background: #fff1f2;               /* rose-50 */
+  color: #dc2626;                     /* red-600 */
+}
+.tile-btn--danger:hover { background: #ffe4e6; }
