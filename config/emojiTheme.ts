@@ -1,26 +1,26 @@
-export const emojiTheme: Record<string, string> = {
-  // Navbar / Dashboard
-  tablero: "📊",
+// config/emojiTheme.ts
+// Mapa de tokens → emoji o svg:<ruta-sin-.svg> (usado por <ColorEmoji/>)
+const emojiTheme: Record<string, string> = {
+  // Marca
+  logo: "svg:icons/logo",
+
+  // Navegación principal
+  tablero: "🧭",
   cargas: "📤",
   perfil: "👤",
 
-  // Comunes
-  atras: "⬅️",
-  adios: "👋",
-  pacientes: "🧑‍⚕️",
-  subir: "📤",
-  archivos: "🗂️",
-  ok: "✅",
-  error: "❌",
+  // Acciones comunes
   info: "ℹ️",
-  hoja: "🍃",
+  llave: "🔑",
+  atras: "◀️",
+  email: "✉️",
+  web: "🌐",
+  siguiente: "➡️",
+  candado: "🔒",
 
-  // Tu logo (usa el SVG de /public/icons/logo.svg)
-  logo: "svg:/icons/logo.svg",
+  // Fallbacks conocidos
+  ok: "✅",
+  error: "⚠️",
 };
 
-// Fallback cómodo
-export function getEmoji(token?: string, fallback?: string) {
-  if (!token) return fallback ?? "❓";
-  return emojiTheme[token] ?? fallback ?? "❓";
-}
+export default emojiTheme;

@@ -13,7 +13,7 @@ export default function TableroPage() {
           <ColorEmoji token="tablero" size={32} />
           Tablero
         </h1>
-        <p className="text-[var(--color-brand-bluegray)]">
+        <p className="text-sm text-[var(--color-brand-text)]/80">
           Accesos rápidos a tus funciones principales.
         </p>
       </header>
@@ -32,7 +32,7 @@ export default function TableroPage() {
               <ColorEmoji token="pacientes" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Pacientes</h3>
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Pacientes</h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
                 Busca, registra y gestiona expedientes.
               </p>
@@ -58,7 +58,7 @@ export default function TableroPage() {
               <ColorEmoji token="subir" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">
                 Subir archivos
               </h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
@@ -86,7 +86,7 @@ export default function TableroPage() {
               <ColorEmoji token="carpeta" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">Mis archivos</h3>
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Mis archivos</h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
                 Revisa, descarga o comparte tus documentos.
               </p>
@@ -110,7 +110,7 @@ export default function TableroPage() {
               <ColorEmoji token="laboratorio" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-[var(--color-brand-text)]">
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">
                 Laboratorio (próximamente)
               </h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
@@ -119,8 +119,8 @@ export default function TableroPage() {
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/70">
-            <span className="inline-flex items-center gap-2">
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2 font-medium">
               En desarrollo <ColorEmoji token="info" size={16} />
             </span>
           </div>

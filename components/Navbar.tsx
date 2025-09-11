@@ -2,15 +2,22 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useToast } from "@/components/Toast";
-import { useState } from "react";
 
-const NAV = [
-  { href: "/dashboard", label: "Tablero", emoji: "📊" },
-  { href: "/test-ui/upload", label: "Cargas", emoji: "📤" },
-  { href: "/perfil", label: "Perfil", emoji: "👤" },
+type NavItem = {
+  href: string;
+  label: string;
+  token: string; // ColorEmoji token
+};
+
+const NAV: NavItem[] = [
+  { href: "/dashboard", label: "Tablero", token: "tablero" },
+  { href: "/test-ui/upload", label: "Cargas", token: "cargas" },
+  { href: "/pacientes", label: "Pacientes", token: "pacientes" }, // integrado
+  { href: "/perfil", label: "Perfil", token: "perfil" },
 ];
 
 export default function Navbar() {
@@ -53,9 +60,9 @@ export default function Navbar() {
     >
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
-        <Link href="/dashboard" className="inline-flex items-center gap-2">
+        <Link href="/dashboard" className="inline-flex items-center gap-2" aria-label="Ir al tablero">
           <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-            <ColorEmoji token="hoja" />
+            <ColorEmoji token="logo" />
           </span>
           <span className="font-semibold text-[var(--color-brand-text)]">Sanoa</span>
         </Link>
@@ -63,23 +70,25 @@ export default function Navbar() {
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-2">
           {NAV.map((item) => {
-            const active = pathname === item.href;
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`
-                  inline-flex items-center gap-2 px-3 py-2 rounded-xl border
-                  ${
-                    active
-                      ? "bg-[var(--color-brand-background)] border-[var(--color-brand-border)]"
-                      : "border-transparent hover:bg-[var(--color-brand-background)]"
-                  }
-                `}
+                aria-current={isActive ? "page" : undefined}
+                className="
+                  inline-flex items-center gap-2 px-3 py-2 rounded-lg
+                  text-[color-mix(in_oklab,var(--color-brand-text),#000_0%)]/90
+                  hover:bg-gray-50
+                  border border-transparent
+                  aria-[current=page]:bg-gray-100
+                  aria-[current=page]:text-[var(--color-brand-text)]
+                  aria-[current=page]:border-[var(--color-brand-border)]
+                  transition
+                "
               >
-                {/* Para navegación, duotono suave */}
-                <ColorEmoji emoji={item.emoji} />
-                <span className="text-[var(--color-brand-text)]">{item.label}</span>
+                <ColorEmoji token={item.token} />
+                <span className="font-medium">{item.label}</span>
               </Link>
             );
           })}
@@ -107,15 +116,3 @@ export default function Navbar() {
     </header>
   );
 }
-{
-  /* Pacientes */
-}
-<Link
-  href="/pacientes"
-  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl
-             hover:bg-[color-mix(in_oklab,white_85%,var(--color-brand-primary)_0%)]
-             transition"
->
-  <ColorEmoji token="pacientes" />
-  <span>Pacientes</span>
-</Link>;
