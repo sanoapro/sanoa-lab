@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { showToast } from "@/components/Toaster";
@@ -38,7 +38,6 @@ export default function UploadDemoPage() {
   async function refreshList() {
     setLoading(true);
     try {
-      // Listamos en raíz. RLS ya limita a objetos owner = auth.uid()
       const { data, error } = await supabase.storage.from(BUCKET).list("", {
         limit: 1000,
         offset: 0,
@@ -67,7 +66,6 @@ export default function UploadDemoPage() {
     }
     setUploading(true);
     try {
-      // Nombre con timestamp para evitar colisiones
       const path = `${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
         cacheControl: "3600",
@@ -76,7 +74,7 @@ export default function UploadDemoPage() {
       });
       if (error) throw error;
       showToast("Archivo subido.", "success");
-      inputRef.current!.value = "";
+      if (inputRef.current) inputRef.current.value = "";
       await refreshList();
     } catch (e: any) {
       console.error(e);
@@ -136,7 +134,7 @@ export default function UploadDemoPage() {
   }
 
   return (
-    <main className="p-6 md:p-10 space-y-8">
+    <main className="px-6 md:px-10 py-8 space-y-8">
       {/* Encabezado */}
       <header className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
@@ -145,16 +143,15 @@ export default function UploadDemoPage() {
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
           Bucket privado{" "}
-          <code className="rounded bg-[var(--color-brand-background)] px-1">uploads</code> (RLS por
-          dueño).
+          <code className="rounded px-1 bg-white/70 dark:bg-white/10 backdrop-blur">
+            uploads
+          </code>{" "}
+          (RLS por dueño).
         </p>
       </header>
 
       {/* Uploader */}
-      <section
-        className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                   shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden"
-      >
+      <section className="rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-end">
           <label className="flex-1 space-y-2">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
@@ -166,20 +163,21 @@ export default function UploadDemoPage() {
               className="block w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
           </label>
-          <button onClick={() => inputRef.current?.click()} className="hidden" />
-          <form onSubmit={onUpload}>
+
+          <form onSubmit={onUpload} className="sm:self-end">
             <button
               disabled={uploading}
-              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center gap-2 h-10"
             >
               <ColorEmoji token="subir" size={18} />
               {uploading ? "Subiendo…" : "Subir"}
             </button>
           </form>
+
           <button
             onClick={refreshList}
             disabled={loading}
-            className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] flex items-center gap-2"
+            className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 bg-white/50 dark:bg-white/[0.04] hover:bg-white/70 dark:hover:bg-white/[0.08] backdrop-blur flex items-center gap-2 h-10"
           >
             <ColorEmoji token="refrescar" size={18} />
             {loading ? "Actualizando…" : "Actualizar lista"}
@@ -190,7 +188,7 @@ export default function UploadDemoPage() {
       {/* Lista */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {!hasFiles && !loading && (
-          <div className="col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 text-[var(--color-brand-bluegray)]">
+          <div className="col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur p-6 text-[var(--color-brand-bluegray)]">
             No hay archivos aún.
           </div>
         )}
@@ -198,16 +196,17 @@ export default function UploadDemoPage() {
         {files.map((obj) => (
           <article
             key={obj.name}
-            className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                       shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
-                       transition overflow-hidden"
+            className="group rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
           >
             <div className="p-6 flex items-start gap-4">
-              <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-white/60 dark:bg-white/[0.06] backdrop-blur">
                 <ColorEmoji token="archivo" size={24} />
               </div>
+
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-[var(--color-brand-text)] truncate">{obj.name}</h3>
+                <h3 className="font-medium text-[var(--color-brand-text)] truncate">
+                  {obj.name}
+                </h3>
                 <p className="text-sm text-[var(--color-brand-bluegray)]">
                   Actualizado: {prettyDate(obj.updated_at || obj.created_at)}
                 </p>
@@ -216,29 +215,30 @@ export default function UploadDemoPage() {
 
             <div className="h-px bg-[var(--color-brand-border)] mx-6" />
 
-            <div className="p-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {/* Acciones: misma altura, sin cortes raros */}
+            <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 onClick={() => onView(obj)}
-                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
+                className="h-10 rounded-xl border border-[var(--color-brand-border)] px-3 bg-white/50 dark:bg-white/[0.04] hover:bg-white/70 dark:hover:bg-white/[0.08] backdrop-blur flex items-center justify-center gap-2 text-sm whitespace-nowrap"
               >
                 <ColorEmoji token="ver" size={16} /> Ver
               </button>
               <button
                 onClick={() => onDownload(obj)}
-                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
+                className="h-10 rounded-xl border border-[var(--color-brand-border)] px-3 bg-white/50 dark:bg-white/[0.04] hover:bg-white/70 dark:hover:bg-white/[0.08] backdrop-blur flex items-center justify-center gap-2 text-sm whitespace-nowrap"
               >
                 <ColorEmoji token="descargar" size={16} /> Descargar
               </button>
               <button
                 onClick={() => onCopyLink(obj)}
-                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] flex items-center justify-center gap-2 text-sm"
                 title="Signed URL (5 min)"
+                className="h-10 rounded-xl border border-[var(--color-brand-border)] px-3 bg-white/50 dark:bg-white/[0.04] hover:bg-white/70 dark:hover:bg-white/[0.08] backdrop-blur flex items-center justify-center gap-2 text-sm whitespace-nowrap"
               >
                 <ColorEmoji token="enlace" size={16} /> Copiar enlace
               </button>
               <button
                 onClick={() => onDelete(obj)}
-                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-red-50 flex items-center justify-center gap-2 text-sm text-red-600"
+                className="h-10 rounded-xl border border-[var(--color-brand-border)] px-3 bg-white/50 dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-red-900/20 backdrop-blur flex items-center justify-center gap-2 text-sm text-red-600 whitespace-nowrap"
               >
                 <ColorEmoji token="borrar" size={16} /> Borrar
               </button>

@@ -12,9 +12,8 @@ const nextConfig = {
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
-      "upgrade-insecure-requests",
+      "upgrade-insecure-requests"
     ].join("; ");
-
     return [
       {
         source: "/:path*",
@@ -28,9 +27,6 @@ const nextConfig = {
       },
     ];
   },
-
-  // Silenciamos ESLint en build (usamos `pnpm run lint` aparte)
-  eslint: { ignoreDuringBuilds: true },
 };
 
 export default nextConfig;

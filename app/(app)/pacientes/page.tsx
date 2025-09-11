@@ -82,7 +82,7 @@ export default function PacientesPage() {
   }
 
   return (
-    <main className="p-6 md:p-10 space-y-6">
+    <main className="page-bg min-h-[100dvh] p-6 md:p-10 space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
           <ColorEmoji token="pacientes" size={24} />
@@ -209,7 +209,6 @@ export default function PacientesPage() {
             >
               <ColorEmoji token="buscar" size={16} /> {loading ? "Buscando…" : "Buscar"}
             </button>
-
             <button
               type="button"
               onClick={onClear}
@@ -217,7 +216,6 @@ export default function PacientesPage() {
             >
               <ColorEmoji token="limpiar" size={16} /> Limpiar
             </button>
-
             <div className="text-sm text-[var(--color-brand-bluegray)] self-center ml-auto">
               Página {result?.page ?? 1} de {totalPages} · {result?.count ?? 0} resultados
             </div>
@@ -299,6 +297,7 @@ export default function PacientesPage() {
               {" de "}
               {result?.count ?? 0}
             </div>
+
             <div className="flex gap-2">
               <button
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
