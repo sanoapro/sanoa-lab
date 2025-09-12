@@ -8,46 +8,47 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 /** Icono oficial de Google “G” (inline, sin archivos extra) */
 function GoogleGIcon({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 48 48"
-      className={className}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        fill="#EA4335"
-        d="M24 9.5c3.22 0 6.13 1.11 8.42 3.29l6.3-6.3C34.82 3.16 29.86 1.5 24 1.5 14.62 1.5 6.53 7.06 3.03 15.02l7.8 6.06C12.4 15.57 17.76 9.5 24 9.5z"
-      />
-      <path
-        fill="#34A853"
-        d="M46.5 24c0-1.61-.15-3.16-.43-4.65H24v9.3h12.7c-.55 2.97-2.17 5.48-4.63 7.17l7.1 5.53C43.9 37.4 46.5 31.2 46.5 24z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M10.83 21.08l-7.8-6.06C1.66 17.5 1.5 20.7 1.5 24c0 3.28.16 6.48 1.53 8.98l7.8-6.05C10.2 25.41 10.05 24.72 10.05 24s.15-1.41.78-2.92z"
-      />
-      <path
-        fill="#4285F4"
-        d="M24 46.5c5.86 0 10.82-1.93 14.17-5.15l-7.1-5.53c-1.98 1.36-4.53 2.18-7.07 2.18-6.24 0-11.6-6.07-13.17-13.56l-7.8 6.05C6.53 40.94 14.62 46.5 24 46.5z"
-      />
+    <svg viewBox="0 0 48 48" className={className} aria-hidden="true" focusable="false">
+      <path fill="#EA4335" d="M24 9.5c3.22 0 6.13 1.11 8.42 3.29l6.3-6.3C34.82 3.16 29.86 1.5 24 1.5 14.62 1.5 6.53 7.06 3.03 15.02l7.8 6.06C12.4 15.57 17.76 9.5 24 9.5z"/>
+      <path fill="#34A853" d="M46.5 24c0-1.61-.15-3.16-.43-4.65H24v9.3h12.7c-.55 2.97-2.17 5.48-4.63 7.17l7.1 5.53C43.9 37.4 46.5 31.2 46.5 24z"/>
+      <path fill="#FBBC05" d="M10.83 21.08l-7.8-6.06C1.66 17.5 1.5 20.7 1.5 24c0 3.28.16 6.48 1.53 8.98l7.8-6.05C10.2 25.41 10.05 24.72 10.05 24s.15-1.41.78-2.92z"/>
+      <path fill="#4285F4" d="M24 46.5c5.86 0 10.82-1.93 14.17-5.15l-7.1-5.53c-1.98 1.36-4.53 2.18-7.07 2.18-6.24 0-11.6-6.07-13.17-13.56l-7.8 6.05C6.53 40.94 14.62 46.5 24 46.5z"/>
     </svg>
   );
 }
 
 /** Traducción rápida de errores comunes de Supabase */
 function toSpanishError(e: unknown): string {
-  const msg =
-    typeof e === "object" && e && "message" in e
-      ? String((e as any).message)
-      : String(e);
+  const msg = typeof e === "object" && e && "message" in e ? String((e as any).message) : String(e);
   if (/Invalid login credentials/i.test(msg)) return "Credenciales inválidas.";
-  if (/provider is not enabled/i.test(msg))
-    return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
-  if (/Email not confirmed/i.test(msg))
-    return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
+  if (/provider is not enabled/i.test(msg)) return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
+  if (/Email not confirmed/i.test(msg)) return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
   if (/Unable to exchange external code/i.test(msg) || /PKCE/i.test(msg))
     return "No se pudo canjear el código de inicio de sesión (PKCE). Probable causa: el callback volvió a un origen distinto al que inició el login. Asegúrate de que login y callback usen exactamente el mismo dominio/puerto.";
+  if (/Invalid Refresh Token/i.test(msg)) return "La sesión previa caducó. Intenta iniciar sesión de nuevo.";
   return msg;
+}
+
+/** Utilidades para limpiar sesión local sin romper la UI */
+function getProjectRef(): string {
+  try {
+    const u = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    return new URL(u).hostname.split(".")[0];
+  } catch {
+    // Tu ref real (fallback seguro en dev)
+    return "mmeybpohqtpvaxuhipjr";
+  }
+}
+const AUTH_KEY = `sb-${getProjectRef()}-auth-token`;
+
+async function clearLocalAuth() {
+  try {
+    localStorage.removeItem(AUTH_KEY);
+  } catch {}
+  try {
+    const supabase = getSupabaseBrowser();
+    await supabase.auth.signOut({ scope: "local" }); // no llama al server
+  } catch {}
 }
 
 function Inner() {
@@ -65,22 +66,34 @@ function Inner() {
     return r.startsWith("/") && !r.startsWith("//") ? r : "/dashboard";
   }, [params]);
 
-  // Si ya hay sesión activa, redirige. Además, escucha cambios de auth (OAuth callback).
+  // Checar sesión al montar + escuchar cambios de auth
   useEffect(() => {
+    let cancelled = false;
     const supabase = getSupabaseBrowser();
 
-    // Checar sesión actual al montar
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.replace(safeRedirect);
-    });
+    (async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error && /Invalid Refresh Token|Refresh Token Not Found/i.test(error.message)) {
+          // Sesión corrupta: limpiamos silenciosamente
+          await clearLocalAuth();
+        }
+        if (!cancelled && data?.session) router.replace(safeRedirect);
+      } catch (e) {
+        // No rompemos la UI; si es refresh inválido, limpiamos y seguimos en login
+        const msg = String((e as any)?.message ?? e ?? "");
+        if (/Invalid Refresh Token|Refresh Token Not Found/i.test(msg)) {
+          await clearLocalAuth();
+        }
+      }
+    })();
 
-    // Suscribirse a cambios de auth (p.ej., regreso de OAuth)
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       if (s?.access_token) router.replace(safeRedirect);
     });
 
-    // Cleanup correcto en React
     return () => {
+      cancelled = true;
       sub.subscription.unsubscribe();
     };
   }, [router, safeRedirect]);
@@ -91,10 +104,7 @@ function Inner() {
     setLoading(true);
     try {
       const supabase = getSupabaseBrowser();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: pass,
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
       if (error) throw error;
       router.replace(safeRedirect);
     } catch (e) {
@@ -110,32 +120,28 @@ function Inner() {
     try {
       const supabase = getSupabaseBrowser();
 
-      // Dominio público endurecido (usa .env si es URL válida; si no, usa origin del navegador)
+      // Dominio público: .env si es válido; si no, origin del navegador
       const site =
-        process.env.NEXT_PUBLIC_SITE_URL &&
-        /^https?:\/\//.test(process.env.NEXT_PUBLIC_SITE_URL)
+        process.env.NEXT_PUBLIC_SITE_URL && /^https?:\/\//.test(process.env.NEXT_PUBLIC_SITE_URL)
           ? process.env.NEXT_PUBLIC_SITE_URL
           : typeof window !== "undefined"
           ? window.location.origin
           : "";
 
-      // Ruta pública correcta: /callback (NO /(auth)/callback). Pasamos ?next= destino.
       const url = new URL("/callback", site);
       url.searchParams.set("next", safeRedirect);
       const redirectTo = url.toString();
 
-      // === LOGS DE DIAGNÓSTICO (ver en DevTools → Console) ===
-      console.log("[LOGIN] window.origin =", typeof window !== "undefined" ? window.location.origin : "");
-      console.log("[LOGIN] NEXT_PUBLIC_SITE_URL =", process.env.NEXT_PUBLIC_SITE_URL);
-      console.log("[LOGIN] safeRedirect =", safeRedirect);
-      console.log("[LOGIN] redirectTo =", redirectTo);
+      // Diagnóstico leve en consola
+      console.log("[LOGIN] origin=", typeof window !== "undefined" ? window.location.origin : "");
+      console.log("[LOGIN] SITE_URL=", process.env.NEXT_PUBLIC_SITE_URL);
+      console.log("[LOGIN] redirectTo=", redirectTo);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
       });
       if (error) throw error;
-      // Se redirige a Google; ejecución local no continúa aquí.
     } catch (e) {
       setErr(toSpanishError(e));
       setLoading(false);
@@ -143,7 +149,7 @@ function Inner() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[linear-gradient(180deg,#f8fafc,transparent)] flex items-center justify-center px-4 py-10">
+    <div className="min-h-[100dvh] flex items-center justify-center px-4 py-10">
       {/* Card */}
       <section className="w-full max-w-md rounded-2xl border border-[var(--color-brand-border)] bg-white shadow-lg">
         {/* Header del card */}
@@ -253,13 +259,7 @@ function Inner() {
 
 export default function Page() {
   return (
-    <Suspense
-      fallback={
-        <div className="p-6 text-center text-[var(--color-brand-bluegray)]">
-          Cargando…
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}>
       <Inner />
     </Suspense>
   );
