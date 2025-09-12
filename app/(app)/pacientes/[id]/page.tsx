@@ -62,6 +62,9 @@ export default function PacienteDetailPage() {
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [loadingAudits, setLoadingAudits] = useState(true);
 
+  // NUEVO: modal de confirmación para borrar nota
+  const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null);
+
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -105,6 +108,7 @@ export default function PacienteDetailPage() {
   useEffect(() => {
     refreshNotes();
   }, [refreshNotes]);
+
   useNotesRealtime(
     id,
     () => {
@@ -212,24 +216,33 @@ export default function PacienteDetailPage() {
     }
   }
 
-  async function onDeleteNote(nid: string) {
+  // Abrir modal de confirmación de borrado
+  function askDeleteNote(nid: string) {
     if (!canEdit) {
       showToast("No tienes permisos para borrar notas.", "error");
       return;
     }
+    setConfirmNoteId(nid);
+  }
+
+  // Ejecutar borrado confirmado
+  async function doDeleteNote() {
+    const nid = confirmNoteId;
+    if (!nid) return;
     const local = nid.startsWith("local-");
-    if (local) {
-      setNotes((prev) => prev.filter((n) => n.id !== nid));
-      return;
-    }
-    if (!confirm("¿Eliminar nota?")) return;
     try {
-      await deleteNote(nid);
-      setNotes((prev) => prev.filter((n) => n.id !== nid));
+      if (local) {
+        setNotes((prev) => prev.filter((n) => n.id !== nid));
+      } else {
+        await deleteNote(nid);
+        setNotes((prev) => prev.filter((n) => n.id !== nid));
+      }
       showToast("Nota eliminada.", "success");
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo eliminar la nota.", "error");
+    } finally {
+      setConfirmNoteId(null);
     }
   }
 
@@ -264,6 +277,8 @@ export default function PacienteDetailPage() {
       setPatient(updated);
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
+      // refrescamos actividad por si tu backend la registra al editar
+      refreshAudits();
     } catch (err: any) {
       console.error(err);
       showToast(err?.message || "No se pudo actualizar.", "error");
@@ -323,11 +338,12 @@ export default function PacienteDetailPage() {
     try {
       const url = await getSignedUrl(pf, 300);
       await navigator.clipboard.writeText(url);
-      showToast("Enlace copiado (300s).", "success");
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo copiar el enlace.", "error");
+      return;
     }
+    showToast("Enlace copiado (300s).", "success");
   }
 
   async function onDeleteFile(idRec: string) {
@@ -516,7 +532,7 @@ export default function PacienteDetailPage() {
                       </div>
                       {canEdit && (
                         <button
-                          onClick={() => onDeleteNote(n.id)}
+                          onClick={() => askDeleteNote(n.id)}
                           className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
                           title="Eliminar nota"
                           data-html2canvas-ignore="true"
@@ -544,7 +560,7 @@ export default function PacienteDetailPage() {
             <ColorEmoji token="carpeta" size={18} /> Archivos clínicos
           </h2>
 
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
             <label
               className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${!canEdit ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"}`}
             >
@@ -800,6 +816,36 @@ export default function PacienteDetailPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal Confirmación: eliminar nota */}
+      <Modal
+        open={!!confirmNoteId}
+        onClose={() => setConfirmNoteId(null)}
+        title="Eliminar nota"
+        widthClass="max-w-md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[var(--color-brand-text)]">
+            ¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmNoteId(null)}
+              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={() => void doDeleteNote()}
+              className="rounded-md bg-red-600 px-4 py-2 text-white hover:opacity-90"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
       </Modal>
     </main>
   );
