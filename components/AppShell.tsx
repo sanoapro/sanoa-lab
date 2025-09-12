@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import Navbar from "./Navbar";
 
-export default function AppShell({ children }: { children: ReactNode }) {
+export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-[var(--color-brand-background)] text-[var(--color-brand-text)]">
+    // SIN fondo aquí; el fondo global viene de globals.css (body → var(--app-bg))
+    <div className="min-h-dvh text-[var(--color-brand-text)]">
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
       <footer className="mt-12 border-t border-[var(--color-brand-border)] bg-white/60">
