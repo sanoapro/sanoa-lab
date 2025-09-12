@@ -22,8 +22,10 @@ function toSpanishListError(e: unknown): string {
   return msg || "Ocurrió un error al buscar pacientes.";
 }
 
+type SortCombo = "created_at:desc" | "created_at:asc" | "nombre:asc" | "nombre:desc";
+
 export default function PacientesPage() {
-  // ===== Mantengo tus filtros y paginación =====
+  // ===== Filtros y paginación (conservados) =====
   const [filters, setFilters] = useState<PatientSearchFilters>({
     q: "",
     genero: "ALL",
@@ -40,18 +42,35 @@ export default function PacientesPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // Debounce para búsqueda por nombre
+  const [qInput, setQInput] = useState("");
+  const [qDebounced, setQDebounced] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setQDebounced(qInput), 300);
+    return () => clearTimeout(t);
+  }, [qInput]);
+
+  // Selector de orden simplificado (4 opciones)
+  const sortValue: SortCombo = `${filters.orderBy}:${filters.orderDir}` as SortCombo;
+  function setSortFromCombo(v: SortCombo) {
+    const [orderBy, orderDir] = v.split(":") as ["created_at" | "nombre", "asc" | "desc"];
+    setFilters((f) => ({ ...f, orderBy, orderDir, page: 1 }));
+    void doSearch(1);
+  }
+
   const totalPages = useMemo(() => {
     if (!result) return 1;
     return Math.max(1, Math.ceil(result.count / result.pageSize));
   }, [result]);
 
-  async function doSearch(nextPage?: number) {
+  async function doSearch(nextPage?: number, overrides?: Partial<PatientSearchFilters>) {
     setLoading(true);
     setErr(null);
     try {
-      const rs = await searchPatients({ ...filters, page: nextPage ?? filters.page });
+      const payload: PatientSearchFilters = { ...filters, ...(overrides || {}), page: nextPage ?? filters.page };
+      const rs = await searchPatients(payload);
       setResult(rs);
-      setFilters((f) => ({ ...f, page: rs.page })); // sincroniza
+      setFilters((f) => ({ ...f, page: rs.page })); // sincroniza página mostrada
     } catch (e) {
       setErr(toSpanishListError(e));
     } finally {
@@ -59,11 +78,20 @@ export default function PacientesPage() {
     }
   }
 
+  // primera carga
   useEffect(() => {
-    // primera carga
     void doSearch(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // dispara búsqueda cuando el debounce cambia
+  useEffect(() => {
+    setFilters((f) => ({ ...f, q: qDebounced, page: 1 }));
+    if (qDebounced !== filters.q) {
+      void doSearch(1, { q: qDebounced });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qDebounced]);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,6 +99,8 @@ export default function PacientesPage() {
   }
 
   function onClear() {
+    setQInput("");
+    setQDebounced("");
     setFilters({
       q: "",
       genero: "ALL",
@@ -83,10 +113,10 @@ export default function PacientesPage() {
       page: 1,
       pageSize: 10,
     });
-    setTimeout(() => void doSearch(1), 0);
+    setTimeout(() => void doSearch(1, { q: "" }), 0);
   }
 
-  // ===== Nuevo: Crear paciente (modal) + Borrar =====
+  // ===== Crear / Borrar =====
   const [openCreate, setOpenCreate] = useState(false);
   const [nombre, setNombre] = useState("");
   const [edad, setEdad] = useState<number | "">("");
@@ -108,8 +138,7 @@ export default function PacientesPage() {
       setNombre("");
       setEdad("");
       setGeneroCrear("O");
-      // Forzamos a ver el nuevo en la primera página con los filtros actuales
-      await doSearch(1);
+      await doSearch(1); // vuelve a la primera página con filtros actuales
       showToast({ title: "Listo", description: "Paciente creado." });
     } catch (e: unknown) {
       showToast({
@@ -172,8 +201,8 @@ export default function PacientesPage() {
           <label className="md:col-span-4">
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Nombre</span>
             <input
-              value={filters.q || ""}
-              onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
+              value={qInput}
+              onChange={(e) => setQInput(e.target.value)}
               placeholder="Buscar por nombre…"
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
@@ -183,7 +212,7 @@ export default function PacientesPage() {
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Género</span>
             <select
               value={filters.genero || "ALL"}
-              onChange={(e) => setFilters((f) => ({ ...f, genero: e.target.value as any }))}
+              onChange={(e) => setFilters((f) => ({ ...f, genero: e.target.value as any, page: 1 }))}
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             >
               <option value="ALL">Todos</option>
@@ -204,6 +233,7 @@ export default function PacientesPage() {
                   setFilters((f) => ({
                     ...f,
                     edadMin: e.target.value === "" ? null : Number(e.target.value),
+                    page: 1,
                   }))
                 }
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
@@ -219,6 +249,7 @@ export default function PacientesPage() {
                   setFilters((f) => ({
                     ...f,
                     edadMax: e.target.value === "" ? null : Number(e.target.value),
+                    page: 1,
                   }))
                 }
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
@@ -232,7 +263,7 @@ export default function PacientesPage() {
               <input
                 type="date"
                 value={filters.createdFrom ?? ""}
-                onChange={(e) => setFilters((f) => ({ ...f, createdFrom: e.target.value || null }))}
+                onChange={(e) => setFilters((f) => ({ ...f, createdFrom: e.target.value || null, page: 1 }))}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
@@ -241,37 +272,26 @@ export default function PacientesPage() {
               <input
                 type="date"
                 value={filters.createdTo ?? ""}
-                onChange={(e) => setFilters((f) => ({ ...f, createdTo: e.target.value || null }))}
+                onChange={(e) => setFilters((f) => ({ ...f, createdTo: e.target.value || null, page: 1 }))}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               />
             </label>
           </div>
 
-          <div className="md:col-span-3 grid grid-cols-2 gap-3">
-            <label>
-              <span className="text-sm font-medium text-[var(--color-brand-text)]">Ordenar por</span>
-              <select
-                value={filters.orderBy}
-                onChange={(e) => setFilters((f) => ({ ...f, orderBy: e.target.value as any }))}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              >
-                <option value="created_at">Fecha</option>
-                <option value="nombre">Nombre</option>
-                <option value="edad">Edad</option>
-              </select>
-            </label>
-            <label>
-              <span className="text-sm font-medium text-[var(--color-brand-text)]">Dirección</span>
-              <select
-                value={filters.orderDir}
-                onChange={(e) => setFilters((f) => ({ ...f, orderDir: e.target.value as any }))}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              >
-                <option value="desc">Desc</option>
-                <option value="asc">Asc</option>
-              </select>
-            </label>
-          </div>
+          {/* Orden simplificado */}
+          <label className="md:col-span-3">
+            <span className="text-sm font-medium text-[var(--color-brand-text)]">Orden</span>
+            <select
+              value={sortValue}
+              onChange={(e) => setSortFromCombo(e.target.value as SortCombo)}
+              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+            >
+              <option value="created_at:desc">Más recientes primero</option>
+              <option value="created_at:asc">Más antiguos primero</option>
+              <option value="nombre:asc">Nombre A→Z</option>
+              <option value="nombre:desc">Nombre Z→A</option>
+            </select>
+          </label>
 
           <div className="md:col-span-12 flex flex-wrap gap-3 pt-1">
             <button
