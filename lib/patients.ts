@@ -1,102 +1,112 @@
-import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { getSupabaseBrowser } from "./supabase-browser";
 
-/** Dominio básico de Pacientes (ajústalo a tu esquema real si cambia) */
-export type Gender = "masculino" | "femenino" | "otro" | "no_especificado";
+export type Gender = "F" | "M" | "O";
 
-export type Patient = {
+export interface Patient {
   id: string;
-  org_id?: string | null;
-  user_id?: string | null;
+  user_id: string;
   nombre: string;
-  apellidos?: string | null;
-  edad?: number | null;
-  genero?: Gender | null;
-  email?: string | null;
-  telefono?: string | null;
+  edad: number | null;
+  genero: Gender;
   created_at: string;
-  updated_at?: string | null;
-};
+  updated_at: string;
+}
 
-export type NewPatient = Omit<Patient, "id" | "created_at" | "updated_at">;
-export type PatientPatch = Partial<Omit<Patient, "id" | "created_at" | "updated_at">>;
+export interface PatientInput {
+  nombre: string;
+  edad?: number | null;
+  genero?: Gender;
+}
 
-/** Lista con búsqueda/orden/paginación; devuelve { data, count } */
-export async function listPatients(opts?: {
+export interface ListPatientsParams {
   q?: string;
-  limit?: number;
-  offset?: number;
-  orderBy?: keyof Patient;
-  ascending?: boolean;
-}): Promise<{ data: Patient[]; count: number | null }> {
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ListResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export async function getCurrentUserId(): Promise<string> {
   const supabase = getSupabaseBrowser();
-  const limit = opts?.limit ?? 20;
-  const offset = opts?.offset ?? 0;
-  const orderBy = (opts?.orderBy as string) ?? "created_at";
-  const ascending = opts?.ascending ?? false;
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) {
+    throw new Error("No hay sesión activa.");
+  }
+  return data.user.id;
+}
+
+/** Lista pacientes del usuario (o compartidos), con búsqueda y paginación */
+export async function listPatients(params: ListPatientsParams = {}): Promise<ListResult<Patient>> {
+  const supabase = getSupabaseBrowser();
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 10;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
 
   let query = supabase
     .from("patients")
     .select("*", { count: "exact" })
-    .order(orderBy, { ascending })
-    .range(offset, offset + limit - 1);
+    .order("created_at", { ascending: false });
 
-  if (opts?.q && opts.q.trim().length > 0) {
-    const q = `%${opts.q.trim()}%`;
-    // Ajusta estos campos a tu esquema (nombre/apellidos/email)
-    query = query.or(`nombre.ilike.${q},apellidos.ilike.${q},email.ilike.${q}`);
+  if (params.q && params.q.trim() !== "") {
+    query = query.ilike("nombre", `%${params.q.trim()}%`);
   }
 
-  const { data, error, count } = await query;
+  const { data, error, count } = await query.range(from, to);
   if (error) throw error;
-  return { data: (data || []) as Patient[], count: count ?? null };
+
+  return {
+    items: (data ?? []) as Patient[],
+    total: count ?? 0,
+    page,
+    pageSize,
+  };
 }
 
-/** Obtener un paciente por id (o null si no existe) */
+/** Obtiene un paciente por id (si tienes permiso) */
 export async function getPatient(id: string): Promise<Patient | null> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase.from("patients").select("*").eq("id", id).single();
-  if (error) {
-    // Si la fila no existe, Supabase lanza error; normalizamos a null cuando es 406/No rows
-    if (
-      (error as any)?.code === "PGRST116" ||
-      (error as any)?.details?.includes("Results contain 0 rows")
-    ) {
-      return null;
-    }
-    throw error;
-  }
-  return data as Patient;
+  const { data, error } = await supabase.from("patients").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return (data as Patient) ?? null;
 }
 
-/** Crear paciente; el trigger de org_id lo rellenará según user_prefs/organización actual */
-export async function createPatient(input: NewPatient): Promise<Patient> {
+/** Crea un paciente para el usuario actual */
+export async function createPatient(input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase
-    .from("patients")
-    .insert(input as any)
-    .select("*")
-    .single();
+  const userId = await getCurrentUserId();
+  const payload = {
+    user_id: userId,
+    nombre: input.nombre,
+    edad: input.edad ?? null,
+    genero: (input.genero ?? "O") as Gender,
+  };
+  const { data, error } = await supabase.from("patients").insert(payload).select("*").single();
   if (error) throw error;
   return data as Patient;
 }
 
-/** Actualizar paciente por id */
-export async function updatePatient(id: string, patch: PatientPatch): Promise<Patient> {
+/** Actualiza un paciente (sólo dueño) */
+export async function updatePatient(id: string, input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase
-    .from("patients")
-    .update(patch as any)
-    .eq("id", id)
-    .select("*")
-    .single();
+  const patch: Record<string, unknown> = {};
+  if (typeof input.nombre === "string") patch.nombre = input.nombre;
+  if (typeof input.edad !== "undefined") patch.edad = input.edad ?? null;
+  if (typeof input.genero !== "undefined") patch.genero = input.genero;
+
+  const { data, error } = await supabase.from("patients").update(patch).eq("id", id).select("*").single();
   if (error) throw error;
   return data as Patient;
 }
 
-/** Borrar paciente por id */
-export async function deletePatient(id: string): Promise<boolean> {
+/** Elimina un paciente (sólo dueño) */
+export async function deletePatient(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase.from("patients").delete().eq("id", id);
   if (error) throw error;
-  return true;
 }
