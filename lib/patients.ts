@@ -22,6 +22,10 @@ export interface ListPatientsParams {
   q?: string;
   page?: number;
   pageSize?: number;
+  /** Campo por el que ordenar (por defecto: created_at) */
+  sortBy?: "created_at" | "nombre";
+  /** Dirección del orden (por defecto: desc si sortBy=created_at; asc en otros casos) */
+  direction?: "asc" | "desc";
 }
 
 export interface ListResult<T> {
@@ -40,18 +44,25 @@ export async function getCurrentUserId(): Promise<string> {
   return data.user.id;
 }
 
-/** Lista pacientes del usuario (o compartidos), con búsqueda y paginación */
+/** Lista pacientes del usuario (o compartidos), con búsqueda, paginación y orden */
 export async function listPatients(params: ListPatientsParams = {}): Promise<ListResult<Patient>> {
   const supabase = getSupabaseBrowser();
-  const page = params.page ?? 1;
-  const pageSize = params.pageSize ?? 10;
+
+  // Normalizaciones
+  const page = Math.max(1, Number(params.page ?? 1));
+  const pageSize = Math.min(100, Math.max(1, Number(params.pageSize ?? 10)));
+
+  const allowedSort: Array<NonNullable<ListPatientsParams["sortBy"]>> = ["created_at", "nombre"];
+  const sortBy = (params.sortBy && allowedSort.includes(params.sortBy) ? params.sortBy : "created_at") as NonNullable<ListPatientsParams["sortBy"]>;
+  const direction = (params.direction ?? (sortBy === "created_at" ? "desc" : "asc")) as NonNullable<ListPatientsParams["direction"]>;
+
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
   let query = supabase
     .from("patients")
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
+    .order(sortBy, { ascending: direction === "asc" });
 
   if (params.q && params.q.trim() !== "") {
     query = query.ilike("nombre", `%${params.q.trim()}%`);
