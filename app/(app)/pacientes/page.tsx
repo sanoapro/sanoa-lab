@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
@@ -7,6 +8,9 @@ import {
   type PatientSearchFilters,
   type PatientSearchResult,
 } from "@/lib/patients-search";
+import { createPatient, deletePatient } from "@/lib/patients";
+import Modal from "@/components/Modal";
+import { showToast } from "@/components/Toaster";
 
 /** Traducción/normalización de errores frecuentes en listados */
 function toSpanishListError(e: unknown): string {
@@ -19,6 +23,7 @@ function toSpanishListError(e: unknown): string {
 }
 
 export default function PacientesPage() {
+  // ===== Mantengo tus filtros y paginación =====
   const [filters, setFilters] = useState<PatientSearchFilters>({
     q: "",
     genero: "ALL",
@@ -56,13 +61,13 @@ export default function PacientesPage() {
 
   useEffect(() => {
     // primera carga
-    doSearch(1);
+    void doSearch(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    doSearch(1);
+    void doSearch(1);
   }
 
   function onClear() {
@@ -78,7 +83,61 @@ export default function PacientesPage() {
       page: 1,
       pageSize: 10,
     });
-    setTimeout(() => doSearch(1), 0);
+    setTimeout(() => void doSearch(1), 0);
+  }
+
+  // ===== Nuevo: Crear paciente (modal) + Borrar =====
+  const [openCreate, setOpenCreate] = useState(false);
+  const [nombre, setNombre] = useState("");
+  const [edad, setEdad] = useState<number | "">("");
+  const [generoCrear, setGeneroCrear] = useState<"F" | "M" | "O">("O");
+
+  async function handleCreate() {
+    if (!nombre.trim()) {
+      showToast({ title: "Valida", description: "El nombre es obligatorio." });
+      return;
+    }
+    setLoading(true);
+    try {
+      await createPatient({
+        nombre: nombre.trim(),
+        edad: typeof edad === "number" ? edad : null,
+        genero: generoCrear,
+      });
+      setOpenCreate(false);
+      setNombre("");
+      setEdad("");
+      setGeneroCrear("O");
+      // Forzamos a ver el nuevo en la primera página con los filtros actuales
+      await doSearch(1);
+      showToast({ title: "Listo", description: "Paciente creado." });
+    } catch (e: unknown) {
+      showToast({
+        title: "Error al crear",
+        description: (e as Error)?.message ?? "Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("¿Eliminar este paciente? Esta acción no se puede deshacer.")) return;
+    setLoading(true);
+    try {
+      await deletePatient(id);
+      await doSearch(filters.page);
+      showToast({ title: "Eliminado", description: "Paciente eliminado." });
+    } catch (e: unknown) {
+      showToast({
+        title: "Error al eliminar",
+        description: (e as Error)?.message ?? "Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -93,6 +152,19 @@ export default function PacientesPage() {
           (propios o compartidos).
         </p>
       </header>
+
+      {/* Barra de acciones (Nuevo paciente) */}
+      <div className="flex items-center justify-between">
+        <div />
+        <button
+          type="button"
+          onClick={() => setOpenCreate(true)}
+          disabled={loading}
+          className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+        >
+          <ColorEmoji token="nuevo" size={16} /> Nuevo paciente
+        </button>
+      </div>
 
       {/* Filtros */}
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
@@ -270,13 +342,22 @@ export default function PacientesPage() {
                       <td className="py-2 px-3">{p.edad}</td>
                       <td className="py-2 px-3">{p.genero}</td>
                       <td className="py-2 px-3">{new Date(p.created_at).toLocaleString()}</td>
-                      <td className="py-2 pl-3">
+                      <td className="py-2 pl-3 flex gap-2">
                         <Link
                           href={`/pacientes/${p.id}`}
                           className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)]"
                         >
                           Ver <ColorEmoji token="siguiente" size={14} />
                         </Link>
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete(p.id)}
+                          disabled={loading}
+                          className="inline-flex items-center gap-2 rounded-xl border border-red-300 text-red-700 px-3 py-1.5 hover:bg-red-50"
+                          title="Eliminar"
+                        >
+                          <ColorEmoji token="eliminar" size={14} /> Eliminar
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -302,14 +383,14 @@ export default function PacientesPage() {
               <button
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
                 disabled={loading || (result?.page ?? 1) <= 1}
-                onClick={() => doSearch((result?.page ?? 1) - 1)}
+                onClick={() => void doSearch((result?.page ?? 1) - 1)}
               >
                 <ColorEmoji token="anterior" size={14} /> Anterior
               </button>
               <button
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
                 disabled={loading || (result?.page ?? 1) >= totalPages}
-                onClick={() => doSearch((result?.page ?? 1) + 1)}
+                onClick={() => void doSearch((result?.page ?? 1) + 1)}
               >
                 Siguiente <ColorEmoji token="siguiente" size={14} />
               </button>
@@ -317,6 +398,59 @@ export default function PacientesPage() {
           </div>
         </div>
       </section>
+
+      {/* Modal: Nuevo paciente */}
+      <Modal open={openCreate} onOpenChange={setOpenCreate} title="Nuevo paciente">
+        <div className="space-y-3">
+          <label className="block text-sm text-[var(--color-brand-text)]">Nombre *</label>
+          <input
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            placeholder="Nombre completo"
+            className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+          />
+
+          <label className="block text-sm text-[var(--color-brand-text)]">Edad</label>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={edad}
+            onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
+            placeholder="Ej. 32"
+            className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+          />
+
+          <label className="block text-sm text-[var(--color-brand-text)]">Género</label>
+          <select
+            className="border rounded-md px-3 py-2 w-full"
+            value={generoCrear}
+            onChange={(e) => setGeneroCrear(e.target.value as "F" | "M" | "O")}
+          >
+            <option value="O">Otro/Prefiero no decir</option>
+            <option value="F">Femenino</option>
+            <option value="M">Masculino</option>
+          </select>
+
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+              onClick={() => setOpenCreate(false)}
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
+              onClick={() => void handleCreate()}
+              disabled={loading}
+            >
+              Crear
+            </button>
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 }

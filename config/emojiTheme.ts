@@ -9,7 +9,7 @@ export const emojiTheme = {
   tablero: "📊",
   cargas: "📤",
   perfil: "👤",
-  pacientes: "🙋🏽‍♀️",
+  pacientes: "🙋🏻‍♀️",
 
   // Autenticación
   email: "✉️",
@@ -19,7 +19,7 @@ export const emojiTheme = {
   siguiente: "➡️",
   laboratorio: "🧪",
   archivo: "📄",
-  ver: "👁️",
+  ver: "👁️‍🗨️",
   link: "🔗",
   borrar: "🗑️",
   carpeta: "📁",
@@ -54,6 +54,9 @@ export const emojiTheme = {
   reloj: "⏳",
   exportar: "📄",
   desbloquear: "🔓",
+  eliminar: "❎",
+  nuevo: "💆🏻‍♀️",
+  perfil: "🆔",
 
   // Aliases / varios
   web: "🌐",
