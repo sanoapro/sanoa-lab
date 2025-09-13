@@ -57,6 +57,15 @@ export const emojiTheme = {
   eliminar: "❎",
   nuevo: "💆🏻‍♀️",
   perfil: "🆔",
+  compartir: "🫱🏻‍🫲🏼",
+  ajustes: "⚙️",
+  ajustes2: "🛠️",
+  ayuda: "🆘",
+  chat: "💬",
+  notificaciones: "🔔",
+  mensajes: "✉️",
+  
+  
 
   // Aliases / varios
   web: "🌐",
