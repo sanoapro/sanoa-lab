@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import { showToast } from "@/components/Toaster";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   /** Referencia al nodo raíz a exportar */
@@ -13,12 +14,16 @@ type Props = {
   filename?: string; // ej: "Paciente-Juan Perez.pdf"
   /** Nombre de archivo (alias nuevo) */
   fileName?: string; // ej: "Paciente-Juan-2025-09-12-1530.pdf"
-  /** Clase extra para el botón */
+  /** Clase extra para el botón (versión simple) */
   className?: string;
   /** Texto del botón */
   label?: string;
   /** Escala de render (por defecto 2; se limita para no generar PDFs gigantes) */
   scale?: number;
+  /** Si true, renderiza el botón de shadcn/ui en lugar del <button> con ColorEmoji */
+  useUiButton?: boolean;
+  /** Deshabilitar el botón externamente (opcional) */
+  disabled?: boolean;
 };
 
 export default function ExportPDFButton({
@@ -29,8 +34,11 @@ export default function ExportPDFButton({
   className = "",
   label = "Exportar PDF",
   scale = 2,
+  useUiButton = false,
+  disabled = false,
 }: Props) {
   const [busy, setBusy] = useState(false);
+  const isDisabled = disabled || busy;
 
   async function handleExport() {
     const el =
@@ -39,7 +47,11 @@ export default function ExportPDFButton({
 
     if (!el) {
       try {
-        showToast({ title: "Error", description: "No se encontró la sección a exportar.", variant: "destructive" });
+        showToast({
+          title: "Error",
+          description: "No se encontró la sección a exportar.",
+          variant: "destructive",
+        });
       } catch {
         alert("No se encontró la sección a exportar.");
       }
@@ -49,9 +61,11 @@ export default function ExportPDFButton({
     setBusy(true);
     try {
       // Cede dos frames para estabilizar layout antes de capturar
-      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      await new Promise<void>((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => r())),
+      );
 
-      // Carga perezosa y compatible de libs
+      // Lazy import (mejor chunking que import estático)
       const html2canvasMod = await import("html2canvas");
       const html2canvas = (html2canvasMod as any).default ?? html2canvasMod;
 
@@ -61,17 +75,18 @@ export default function ExportPDFButton({
       // Limita escala para evitar archivos pesados
       const effScale = Math.min(scale || 2, 2.5);
 
+      // Captura TODO el contenido del contenedor (aunque tenga scroll)
       const canvas = await html2canvas(el, {
         backgroundColor: "#ffffff",
         scale: effScale,
         useCORS: true,
         logging: false,
-        // Captura TODO el contenido del contenedor (aunque tenga scroll)
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight,
-        // Ignora elementos marcados para no renderizar
+        windowWidth: el.scrollWidth || undefined,
+        windowHeight: el.scrollHeight || undefined,
+        // Ignora elementos marcados para no renderizar, útil para botones/acciones
         ignoreElements: (node) =>
-          node instanceof HTMLElement && node.getAttribute("data-html2canvas-ignore") === "true",
+          node instanceof HTMLElement &&
+          node.getAttribute("data-html2canvas-ignore") === "true",
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -116,14 +131,23 @@ export default function ExportPDFButton({
     }
   }
 
+  if (useUiButton) {
+    return (
+      <Button onClick={() => void handleExport()} disabled={isDisabled} variant="secondary">
+        {busy ? "Exportando…" : label}
+      </Button>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={handleExport}
-      disabled={busy}
+      onClick={() => void handleExport()}
+      disabled={isDisabled}
       className={`inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] disabled:opacity-60 ${className}`}
       title="Exportar a PDF"
       aria-busy={busy}
+      data-html2canvas-ignore="true"
     >
       <ColorEmoji token="exportar" size={16} />
       {busy ? "Exportando…" : label}
