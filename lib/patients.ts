@@ -10,6 +10,7 @@ export interface Patient {
   genero: Gender;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface PatientInput {
@@ -26,6 +27,14 @@ export interface ListPatientsParams {
   sortBy?: "created_at" | "nombre";
   /** Dirección del orden (por defecto: desc si sortBy=created_at; asc en otros casos) */
   direction?: "asc" | "desc";
+  /** Filtro de género (ALL = sin filtro) */
+  genero?: Gender | "ALL";
+  /** Filtro desde fecha de creación (YYYY-MM-DD) */
+  from?: string;
+  /** Filtro hasta fecha de creación (YYYY-MM-DD) */
+  to?: string;
+  /** Incluir registros con deleted_at != null */
+  includeDeleted?: boolean;
 }
 
 export interface ListResult<T> {
@@ -44,17 +53,22 @@ export async function getCurrentUserId(): Promise<string> {
   return data.user.id;
 }
 
-/** Lista pacientes del usuario (o compartidos), con búsqueda, paginación y orden */
+/** Lista pacientes con búsqueda, filtros, paginación y orden (respetando RLS/compartidos) */
 export async function listPatients(params: ListPatientsParams = {}): Promise<ListResult<Patient>> {
   const supabase = getSupabaseBrowser();
 
-  // Normalizaciones
+  // Normalizaciones seguras
   const page = Math.max(1, Number(params.page ?? 1));
   const pageSize = Math.min(100, Math.max(1, Number(params.pageSize ?? 10)));
 
   const allowedSort: Array<NonNullable<ListPatientsParams["sortBy"]>> = ["created_at", "nombre"];
-  const sortBy = (params.sortBy && allowedSort.includes(params.sortBy) ? params.sortBy : "created_at") as NonNullable<ListPatientsParams["sortBy"]>;
-  const direction = (params.direction ?? (sortBy === "created_at" ? "desc" : "asc")) as NonNullable<ListPatientsParams["direction"]>;
+  const sortBy = (params.sortBy && allowedSort.includes(params.sortBy)
+    ? params.sortBy
+    : "created_at") as NonNullable<ListPatientsParams["sortBy"]>;
+
+  const direction = (params.direction ?? (sortBy === "created_at" ? "desc" : "asc")) as NonNullable<
+    ListPatientsParams["direction"]
+  >;
 
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -64,8 +78,29 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
     .select("*", { count: "exact" })
     .order(sortBy, { ascending: direction === "asc" });
 
+  // Oculta borrados suavemente a menos que se pida verlos
+  if (!params.includeDeleted) {
+    query = query.is("deleted_at", null);
+  }
+
+  // Búsqueda por nombre
   if (params.q && params.q.trim() !== "") {
     query = query.ilike("nombre", `%${params.q.trim()}%`);
+  }
+
+  // Filtro de género
+  if (params.genero && params.genero !== "ALL") {
+    query = query.eq("genero", params.genero);
+  }
+
+  // Filtros de fecha de creación
+  if (params.from) {
+    const isoStart = new Date(params.from + "T00:00:00Z").toISOString();
+    query = query.gte("created_at", isoStart);
+  }
+  if (params.to) {
+    const isoEnd = new Date(params.to + "T23:59:59Z").toISOString();
+    query = query.lte("created_at", isoEnd);
   }
 
   const { data, error, count } = await query.range(from, to);
@@ -110,12 +145,43 @@ export async function updatePatient(id: string, input: PatientInput): Promise<Pa
   if (typeof input.edad !== "undefined") patch.edad = input.edad ?? null;
   if (typeof input.genero !== "undefined") patch.genero = input.genero;
 
-  const { data, error } = await supabase.from("patients").update(patch).eq("id", id).select("*").single();
+  const { data, error } = await supabase
+    .from("patients")
+    .update(patch)
+    .eq("id", id)
+    .select("*")
+    .single();
   if (error) throw error;
   return data as Patient;
 }
 
-/** Elimina un paciente (sólo dueño) */
+/** Soft delete (marca deleted_at) */
+export async function softDeletePatient(id: string): Promise<Patient> {
+  const supabase = getSupabaseBrowser();
+  const { data, error } = await supabase
+    .from("patients")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as Patient;
+}
+
+/** Restaura (borra deleted_at) */
+export async function restorePatient(id: string): Promise<Patient> {
+  const supabase = getSupabaseBrowser();
+  const { data, error } = await supabase
+    .from("patients")
+    .update({ deleted_at: null })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as Patient;
+}
+
+/** Hard delete (se usa poco; permanente) */
 export async function deletePatient(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase.from("patients").delete().eq("id", id);
