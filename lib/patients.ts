@@ -137,7 +137,7 @@ export async function createPatient(input: PatientInput): Promise<Patient> {
   return data as Patient;
 }
 
-/** Actualiza un paciente (sólo dueño) */
+/** Actualiza un paciente (sólo dueño o con permisos vía RLS) */
 export async function updatePatient(id: string, input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
   const patch: Record<string, unknown> = {};
@@ -181,7 +181,7 @@ export async function restorePatient(id: string): Promise<Patient> {
   return data as Patient;
 }
 
-/** Hard delete (se usa poco; permanente) */
+/** Hard delete (permanente) */
 export async function deletePatient(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase.from("patients").delete().eq("id", id);
