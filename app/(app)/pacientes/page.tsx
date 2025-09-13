@@ -1,3 +1,4 @@
+// /workspaces/sanoa-lab/app/(app)/pacientes/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
