@@ -1,3 +1,4 @@
+// /workspaces/sanoa-lab/lib/patients.ts
 import { getSupabaseBrowser } from "./supabase-browser";
 
 export type Gender = "F" | "M" | "O";
@@ -10,7 +11,8 @@ export interface Patient {
   genero: Gender;
   created_at: string;
   updated_at: string;
-  deleted_at: string | null;
+  /** Puede no existir si tu DB aún no tiene esta columna */
+  deleted_at?: string | null;
 }
 
 export interface PatientInput {
@@ -33,7 +35,7 @@ export interface ListPatientsParams {
   from?: string;
   /** Filtro hasta fecha de creación (YYYY-MM-DD) */
   to?: string;
-  /** Incluir registros con deleted_at != null */
+  /** Incluir registros con deleted_at != null (si la columna existe) */
   includeDeleted?: boolean;
 }
 
@@ -42,6 +44,26 @@ export interface ListResult<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+let _softDeleteSupported: boolean | null = null;
+async function softDeleteSupported(): Promise<boolean> {
+  if (_softDeleteSupported !== null) return _softDeleteSupported;
+  const supabase = getSupabaseBrowser();
+  try {
+    // Si la columna no existe, PostgREST suele responder con error "column ... does not exist"
+    const { error } = await supabase.from("patients").select("deleted_at").limit(1);
+    if (error) {
+      const msg = String((error as any)?.message || "").toLowerCase();
+      _softDeleteSupported = !(msg.includes("deleted_at") && msg.includes("does not exist"));
+    } else {
+      _softDeleteSupported = true;
+    }
+  } catch {
+    // Si hay otro error inesperado, no bloqueamos la UI
+    _softDeleteSupported = true;
+  }
+  return _softDeleteSupported!;
 }
 
 export async function getCurrentUserId(): Promise<string> {
@@ -78,8 +100,9 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
     .select("*", { count: "exact" })
     .order(sortBy, { ascending: direction === "asc" });
 
-  // Oculta borrados suavemente a menos que se pida verlos
-  if (!params.includeDeleted) {
+  // Soft-delete: sólo aplicar filtro si la columna existe
+  const hasSoft = await softDeleteSupported();
+  if (hasSoft && !params.includeDeleted) {
     query = query.is("deleted_at", null);
   }
 
@@ -155,8 +178,14 @@ export async function updatePatient(id: string, input: PatientInput): Promise<Pa
   return data as Patient;
 }
 
-/** Soft delete (marca deleted_at) */
+/** Soft delete (marca deleted_at si la columna existe) */
 export async function softDeletePatient(id: string): Promise<Patient> {
+  const hasSoft = await softDeleteSupported();
+  if (!hasSoft) {
+    throw new Error(
+      "Soft-delete no soportado: la columna 'deleted_at' no existe en 'patients'. Añádela o usa borrado definitivo."
+    );
+  }
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("patients")
@@ -168,8 +197,12 @@ export async function softDeletePatient(id: string): Promise<Patient> {
   return data as Patient;
 }
 
-/** Restaura (borra deleted_at) */
+/** Restaura (borra deleted_at si la columna existe) */
 export async function restorePatient(id: string): Promise<Patient> {
+  const hasSoft = await softDeleteSupported();
+  if (!hasSoft) {
+    throw new Error("Restaurar no soportado: la columna 'deleted_at' no existe en 'patients'.");
+  }
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("patients")
