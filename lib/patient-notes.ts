@@ -8,6 +8,7 @@ export interface PatientNote {
   contenido: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface NoteInput {
@@ -15,18 +16,36 @@ export interface NoteInput {
   contenido?: string | null;
 }
 
-export async function listNotes(patientId: string): Promise<PatientNote[]> {
+/**
+ * Lista notas de un paciente. Por defecto excluye las borradas (soft-delete).
+ * Usa listNotes(patientId, { includeDeleted: true }) para incluirlas.
+ */
+export async function listNotes(
+  patientId: string,
+  opts: { includeDeleted?: boolean } = {},
+): Promise<PatientNote[]> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase
+
+  let query = supabase
     .from("patient_notes")
     .select("*")
     .eq("patient_id", patientId)
     .order("created_at", { ascending: false });
+
+  if (!opts.includeDeleted) {
+    query = query.is("deleted_at", null);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as PatientNote[];
 }
 
-export async function createNote(patientId: string, input: NoteInput): Promise<PatientNote> {
+/** Crea una nota (título y/o contenido opcional) */
+export async function createNote(
+  patientId: string,
+  input: NoteInput,
+): Promise<PatientNote> {
   const supabase = getSupabaseBrowser();
   const { data: auth, error: eAuth } = await supabase.auth.getUser();
   if (eAuth || !auth.user) throw new Error("No hay sesión activa.");
@@ -48,7 +67,11 @@ export async function createNote(patientId: string, input: NoteInput): Promise<P
   return data as PatientNote;
 }
 
-export async function updateNote(id: string, patch: NoteInput): Promise<PatientNote> {
+/** Actualiza campos de una nota (parcial) */
+export async function updateNote(
+  id: string,
+  patch: NoteInput,
+): Promise<PatientNote> {
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("patient_notes")
@@ -64,8 +87,25 @@ export async function updateNote(id: string, patch: NoteInput): Promise<PatientN
   return data as PatientNote;
 }
 
+/** Soft-delete: marca deleted_at (no borra físicamente) */
 export async function deleteNote(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
-  const { error } = await supabase.from("patient_notes").delete().eq("id", id);
+  const { error } = await supabase
+    .from("patient_notes")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) throw error;
+}
+
+/** Restaura una nota (borra deleted_at) */
+export async function restoreNote(id: string): Promise<PatientNote> {
+  const supabase = getSupabaseBrowser();
+  const { data, error } = await supabase
+    .from("patient_notes")
+    .update({ deleted_at: null })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as PatientNote;
 }
