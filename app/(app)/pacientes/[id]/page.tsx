@@ -20,7 +20,8 @@ import { showToast } from "@/components/Toaster";
 import Modal from "@/components/Modal";
 import { useNotesRealtime } from "@/hooks/useNotesRealtime";
 import ExportPDFButton from "@/components/ExportPDFButton";
-import { getTemplate } from "@/lib/note-templates"; // ← plantillas
+import { getTemplate } from "@/lib/note-templates";
+import { listAppointmentsByPatient, unlinkAppointment, type AppointmentLink } from "@/lib/appointments";
 
 type PendingNote = PatientNote & { pending?: boolean };
 type PendingFile = PatientFile & { pending?: boolean };
@@ -56,8 +57,8 @@ export default function PacienteDetailPage() {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [notes, setNotes] = useState<PendingNote[]>([]);
-  const [noteTitulo, setNoteTitulo] = useState("");      // ← ahora título
-  const [noteContenido, setNoteContenido] = useState(""); // ← ahora contenido
+  const [noteTitulo, setNoteTitulo] = useState("");
+  const [noteContenido, setNoteContenido] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [loadingNotes, setLoadingNotes] = useState(true);
 
@@ -71,6 +72,10 @@ export default function PacienteDetailPage() {
 
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [loadingAudits, setLoadingAudits] = useState(true);
+
+  // Citas vinculadas (Cal.com)
+  const [appointments, setAppointments] = useState<AppointmentLink[]>([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
 
   // Modal de confirmación para borrar nota
   const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null);
@@ -174,6 +179,24 @@ export default function PacienteDetailPage() {
   useEffect(() => {
     refreshAudits();
   }, [refreshAudits]);
+
+  // Citas (Cal.com)
+  const refreshAppointments = useCallback(async () => {
+    setLoadingAppointments(true);
+    try {
+      const ap = await listAppointmentsByPatient(id);
+      setAppointments(ap || []);
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudieron cargar las citas.", "error");
+    } finally {
+      setLoadingAppointments(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    refreshAppointments();
+  }, [refreshAppointments]);
 
   // Al terminar el replay de la cola → refresca notas/archivos y limpia pendientes
   useEffect(() => {
@@ -306,7 +329,6 @@ export default function PacienteDetailPage() {
       setPatient(updated);
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
-      // refrescamos actividad por si tu backend la registra al editar
       refreshAudits();
     } catch (err: any) {
       console.error(err);
@@ -444,6 +466,19 @@ export default function PacienteDetailPage() {
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo restaurar.", "error");
+    }
+  }
+
+  // Desvincular cita
+  async function onUnlinkAppointment(appId: string) {
+    if (!confirm("¿Desvincular esta cita del paciente?")) return;
+    try {
+      await unlinkAppointment(appId);
+      setAppointments((prev) => prev.filter((a) => a.id !== appId));
+      showToast("Cita desvinculada.", "success");
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo desvincular la cita.", "error");
     }
   }
 
@@ -634,6 +669,77 @@ export default function PacienteDetailPage() {
                 ))}
               </ul>
             )}
+          </div>
+        </section>
+
+        {/* Citas (Cal.com) vinculadas */}
+        <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
+                <ColorEmoji token="calendario" size={18} /> Citas (Cal.com)
+              </h2>
+              <button
+                type="button"
+                onClick={refreshAppointments}
+                className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+              >
+                <ColorEmoji token="refrescar" size={16} /> Actualizar
+              </button>
+            </div>
+
+            {loadingAppointments ? (
+              <p className="text-[var(--color-brand-bluegray)]">Cargando citas…</p>
+            ) : appointments.length === 0 ? (
+              <p className="text-[var(--color-brand-bluegray)]">
+                Este paciente aún no tiene citas vinculadas.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {appointments.map((a) => (
+                  <li
+                    key={a.id}
+                    className="flex items-start justify-between rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-sm text-[var(--color-brand-text)] truncate font-medium">
+                        {a.title || "Cita"}
+                      </div>
+                      <div className="text-xs text-[var(--color-brand-bluegray)]">
+                        {new Date(a.start).toLocaleString()} – {new Date(a.end).toLocaleTimeString()}
+                      </div>
+                      {a.meeting_url && (
+                        <div className="text-xs text-[var(--color-brand-bluegray)] break-all">
+                          {a.meeting_url}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {a.meeting_url && (
+                        <button
+                          onClick={() => window.open(a.meeting_url!, "_blank", "noopener,noreferrer")}
+                          className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1"
+                        >
+                          <ColorEmoji token="link" size={14} /> Abrir
+                        </button>
+                      )}
+                      <button
+                        onClick={() => void onUnlinkAppointment(a.id)}
+                        className="rounded-md border border-red-300 text-red-700 px-2 py-1 text-xs hover:bg-red-50 inline-flex items-center gap-1 disabled:opacity-60"
+                        disabled={isDeleted}
+                        title="Desvincular cita"
+                      >
+                        <ColorEmoji token="borrar" size={14} /> Desvincular
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <p className="text-xs text-[var(--color-brand-bluegray)]">
+              Para vincular nuevas citas, ve a <span className="underline">/agenda</span> → “Vincular a paciente”.
+            </p>
           </div>
         </section>
       </div>
