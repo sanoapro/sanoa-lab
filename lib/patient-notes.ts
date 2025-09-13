@@ -1,3 +1,4 @@
+// /workspaces/sanoa-lab/lib/patient-notes.ts
 import { getSupabaseBrowser } from "./supabase-browser";
 
 export interface PatientNote {
@@ -8,7 +9,8 @@ export interface PatientNote {
   contenido: string | null;
   created_at: string;
   updated_at: string;
-  deleted_at: string | null;
+  /** Puede no existir si tu DB aún no tiene esta columna */
+  deleted_at?: string | null;
 }
 
 export interface NoteInput {
@@ -16,8 +18,29 @@ export interface NoteInput {
   contenido?: string | null;
 }
 
+/** Cache local para no checar el esquema en cada llamada */
+let _softDeleteSupported: boolean | null = null;
+async function notesSoftDeleteSupported(): Promise<boolean> {
+  if (_softDeleteSupported !== null) return _softDeleteSupported;
+  const supabase = getSupabaseBrowser();
+  try {
+    const { error } = await supabase.from("patient_notes").select("deleted_at").limit(1);
+    if (error) {
+      const msg = String(error.message || "").toLowerCase();
+      _softDeleteSupported = !(msg.includes("deleted_at") && msg.includes("does not exist"));
+    } else {
+      _softDeleteSupported = true;
+    }
+  } catch {
+    // Ante errores inesperados, asumimos que sí existe para no romper UX
+    _softDeleteSupported = true;
+  }
+  return _softDeleteSupported!;
+}
+
 /**
- * Lista notas de un paciente. Por defecto excluye las borradas (soft-delete).
+ * Lista notas de un paciente. Por defecto excluye las borradas (soft-delete),
+ * siempre que la columna 'deleted_at' exista en la tabla.
  * Usa listNotes(patientId, { includeDeleted: true }) para incluirlas.
  */
 export async function listNotes(
@@ -32,7 +55,8 @@ export async function listNotes(
     .eq("patient_id", patientId)
     .order("created_at", { ascending: false });
 
-  if (!opts.includeDeleted) {
+  const hasSoft = await notesSoftDeleteSupported();
+  if (hasSoft && !opts.includeDeleted) {
     query = query.is("deleted_at", null);
   }
 
@@ -87,18 +111,35 @@ export async function updateNote(
   return data as PatientNote;
 }
 
-/** Soft-delete: marca deleted_at (no borra físicamente) */
+/**
+ * Borra una nota.
+ * - Si existe 'deleted_at' → soft-delete (marca timestamp).
+ * - Si NO existe → hard-delete (elimina fila).
+ */
 export async function deleteNote(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
-  const { error } = await supabase
-    .from("patient_notes")
-    .update({ deleted_at: new Date().toISOString() })
-    .eq("id", id);
+  const hasSoft = await notesSoftDeleteSupported();
+
+  if (hasSoft) {
+    const { error } = await supabase
+      .from("patient_notes")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+    return;
+  }
+
+  // Fallback si no hay columna
+  const { error } = await supabase.from("patient_notes").delete().eq("id", id);
   if (error) throw error;
 }
 
-/** Restaura una nota (borra deleted_at) */
+/** Restaura una nota (borra deleted_at). Requiere que exista la columna. */
 export async function restoreNote(id: string): Promise<PatientNote> {
+  const hasSoft = await notesSoftDeleteSupported();
+  if (!hasSoft) {
+    throw new Error("Restaurar no soportado: la columna 'deleted_at' no existe en 'patient_notes'.");
+  }
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("patient_notes")
