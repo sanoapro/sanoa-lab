@@ -1,4 +1,3 @@
-// /workspaces/sanoa-lab/app/(app)/pacientes/[id]/page.tsx
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
@@ -6,7 +5,7 @@ import { useParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { getPatient, updatePatient, restorePatient, type Patient } from "@/lib/patients";
-import { listNotes, createNote, deleteNote, type PatientNote } from "@/lib/patient-notes";
+import { listNotes, createNote, deleteNote, updateNote, type PatientNote } from "@/lib/patient-notes";
 import {
   listPatientFiles,
   uploadPatientFile,
@@ -22,6 +21,7 @@ import { useNotesRealtime } from "@/hooks/useNotesRealtime";
 import ExportPDFButton from "@/components/ExportPDFButton";
 import { getTemplate } from "@/lib/note-templates";
 import { listAppointmentsByPatient, unlinkAppointment, type AppointmentLink } from "@/lib/appointments";
+import { getCalRawByUid } from "@/lib/cal-raw";
 
 type PendingNote = PatientNote & { pending?: boolean };
 type PendingFile = PatientFile & { pending?: boolean };
@@ -29,7 +29,9 @@ type PendingFile = PatientFile & { pending?: boolean };
 function tsNow() {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(
+    d.getMinutes()
+  )}`;
 }
 
 export default function PacienteDetailPage() {
@@ -62,6 +64,13 @@ export default function PacienteDetailPage() {
   const [savingNote, setSavingNote] = useState(false);
   const [loadingNotes, setLoadingNotes] = useState(true);
 
+  // NUEVO: edición de nota
+  const [editNoteOpen, setEditNoteOpen] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editTitulo, setEditTitulo] = useState("");
+  const [editContenido, setEditContenido] = useState("");
+  const [savingNoteEdit, setSavingNoteEdit] = useState(false);
+
   const [files, setFiles] = useState<PendingFile[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -77,7 +86,7 @@ export default function PacienteDetailPage() {
   const [appointments, setAppointments] = useState<AppointmentLink[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
 
-  // Modal de confirmación para borrar nota
+  // Confirmación borrar nota
   const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null);
 
   // Área exportable
@@ -201,7 +210,7 @@ export default function PacienteDetailPage() {
   // Al terminar el replay de la cola → refresca notas/archivos y limpia pendientes
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      const t = (e.data || {}).type;
+      const t = (e.data || ({} as any)).type;
       if (t === "queue:replay-success") {
         refreshNotes();
         refreshFiles();
@@ -237,6 +246,7 @@ export default function PacienteDetailPage() {
       setNoteTitulo("");
       setNoteContenido("");
       showToast("Nota guardada.", "success");
+      refreshAudits();
     } catch (e: any) {
       // Optimista: offline → agrega placeholder pendiente
       if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -264,6 +274,40 @@ export default function PacienteDetailPage() {
     }
   }
 
+  // NUEVO: editar nota (modal)
+  function openEditNote(n: PatientNote) {
+    if (!canEdit || isDeleted) {
+      showToast("No tienes permisos para editar notas.", "error");
+      return;
+    }
+    setEditingNoteId(n.id);
+    setEditTitulo(n.titulo || "");
+    setEditContenido(n.contenido || "");
+    setEditNoteOpen(true);
+  }
+
+  async function onSaveEditNote(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingNoteId) return;
+    setSavingNoteEdit(true);
+    try {
+      const nn = await updateNote(editingNoteId, {
+        titulo: (editTitulo || "").trim() || null,
+        contenido: (editContenido || "").trim() || null,
+      });
+      setNotes((prev) => prev.map((x) => (x.id === editingNoteId ? (nn as PendingNote) : x)));
+      setEditNoteOpen(false);
+      setEditingNoteId(null);
+      showToast("Nota actualizada.", "success");
+      refreshAudits();
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo actualizar la nota.", "error");
+    } finally {
+      setSavingNoteEdit(false);
+    }
+  }
+
   // Abrir modal de confirmación de borrado
   function askDeleteNote(nid: string) {
     if (!canEdit || isDeleted) {
@@ -286,6 +330,7 @@ export default function PacienteDetailPage() {
         setNotes((prev) => prev.filter((n) => n.id !== nid));
       }
       showToast("Nota eliminada.", "success");
+      refreshAudits();
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo eliminar la nota.", "error");
@@ -318,7 +363,6 @@ export default function PacienteDetailPage() {
       showToast("Edad inválida.", "error");
       return;
     }
-
     try {
       setSavingEdit(true);
       const updated = await updatePatient(id, {
@@ -482,12 +526,76 @@ export default function PacienteDetailPage() {
     }
   }
 
-  if (loading)
+  // NUEVO: Crear nota desde cita (Cal.com)
+  async function createNoteFromBooking(calUid: string) {
+    if (!canEdit || isDeleted) {
+      showToast("No tienes permisos para crear notas.", "error");
+      return;
+    }
+    try {
+      const raw: any = await getCalRawByUid(calUid);
+      const ap = appointments.find((a) => (a as any).cal_uid === calUid) || null;
+
+      const start = new Date(ap?.start || raw?.start || "");
+      const end = new Date(ap?.end || raw?.end || "");
+      const title =
+        ap?.title || raw?.payload?.title || raw?.payload?.eventTitle || "Cita";
+      const status = (ap as any)?.status || raw?.status || raw?.payload?.status || "UNKNOWN";
+      const meetingUrl =
+        ap?.meeting_url ||
+        raw?.payload?.videoCallUrl ||
+        raw?.payload?.meetingUrl ||
+        raw?.payload?.location ||
+        "";
+
+      const hosts = raw?.payload?.hosts || (raw?.payload?.organizer ? [raw?.payload?.organizer] : []);
+      const attendees = raw?.payload?.attendees || [];
+
+      const hostsStr = hosts
+        .map((h: any) => `${h?.name || ""}${h?.email ? ` <${h.email}>` : ""}`)
+        .filter(Boolean)
+        .join(", ");
+
+      const attStr = attendees
+        .map((a: any) => `${a?.name || ""}${a?.email ? ` <${a.email}>` : ""}`)
+        .filter(Boolean)
+        .join(", ");
+
+      const noteTitle = `Cita: ${title} — ${isNaN(start.getTime()) ? "" : start.toLocaleString()}`.trim();
+      const noteBody = [
+        "Resumen de cita (Cal.com)",
+        `- Estado: ${status}`,
+        `- Inicio: ${isNaN(start.getTime()) ? "—" : start.toLocaleString()}`,
+        `- Fin: ${isNaN(end.getTime()) ? "—" : end.toLocaleString()}`,
+        `- Enlace: ${meetingUrl || "—"}`,
+        `- Hosts: ${hostsStr || "—"}`,
+        `- Asistentes: ${attStr || "—"}`,
+        `- UID: ${calUid}`,
+        "",
+        "Notas clínicas:",
+        "- Motivo / Objetivo:",
+        "- Observaciones:",
+        "- Impresión clínica:",
+        "- Plan y seguimiento:",
+      ].join("\n");
+
+      const n = await createNote(id, { titulo: noteTitle, contenido: noteBody });
+      setNotes((arr) => [n as PendingNote, ...arr]);
+      showToast("Nota creada desde cita.", "success");
+      refreshAudits();
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo crear la nota desde la cita.", "error");
+    }
+  }
+
+  if (loading) {
     return (
       <main className="p-6 md:p-10">
         <p>Cargando…</p>
       </main>
     );
+  }
 
   if (!patient) {
     return (
@@ -505,7 +613,7 @@ export default function PacienteDetailPage() {
     );
   }
 
-  const pdfName = `Paciente-${(patient?.nombre || "SinNombre").replace(/\s+/g,"_")}-${tsNow()}.pdf`;
+  const pdfName = `Paciente-${(patient?.nombre || "SinNombre").replace(/\s+/g, "_")}-${tsNow()}.pdf`;
 
   return (
     <main className="p-6 md:p-10 space-y-6">
@@ -513,7 +621,8 @@ export default function PacienteDetailPage() {
       {isDeleted && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between">
           <div className="text-sm text-amber-800">
-            Este paciente está en <strong>Eliminados</strong>. No se permiten nuevas notas, archivos ni compartir hasta restaurar.
+            Este paciente está en <strong>Eliminados</strong>. No se permiten nuevas notas, archivos ni compartir hasta
+            restaurar.
           </div>
           <button
             onClick={() => void onRestore()}
@@ -615,8 +724,7 @@ export default function PacienteDetailPage() {
                   disabled={savingNote || !canEdit || isDeleted}
                   className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
                 >
-                  <ColorEmoji token="guardar" size={16} />{" "}
-                  {savingNote ? "Guardando…" : "Añadir nota"}
+                  <ColorEmoji token="guardar" size={16} /> {savingNote ? "Guardando…" : "Añadir nota"}
                 </button>
                 <button
                   type="button"
@@ -639,7 +747,9 @@ export default function PacienteDetailPage() {
                 {notes.map((n) => (
                   <li
                     key={n.id}
-                    className={`rounded-xl border bg-white p-4 ${n.pending ? "opacity-80 border-dashed" : "border-[var(--color-brand-border)]"}`}
+                    className={`rounded-xl border bg-white p-4 ${
+                      n.pending ? "opacity-80 border-dashed" : "border-[var(--color-brand-border)]"
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="text-sm text-[var(--color-brand-text)] whitespace-pre-wrap">
@@ -651,15 +761,24 @@ export default function PacienteDetailPage() {
                           </span>
                         )}
                       </div>
+
                       {canEdit && !isDeleted && (
-                        <button
-                          onClick={() => askDeleteNote(n.id)}
-                          className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
-                          title="Eliminar nota"
-                          data-html2canvas-ignore="true"
-                        >
-                          <ColorEmoji token="borrar" size={14} /> Borrar
-                        </button>
+                        <div className="flex gap-2" data-html2canvas-ignore="true">
+                          <button
+                            onClick={() => openEditNote(n)}
+                            className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1"
+                            title="Editar nota"
+                          >
+                            <ColorEmoji token="puzzle" size={14} /> Editar
+                          </button>
+                          <button
+                            onClick={() => askDeleteNote(n.id)}
+                            className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
+                            title="Eliminar nota"
+                          >
+                            <ColorEmoji token="borrar" size={14} /> Borrar
+                          </button>
+                        </div>
                       )}
                     </div>
                     <div className="mt-2 text-xs text-[var(--color-brand-bluegray)]">
@@ -691,12 +810,10 @@ export default function PacienteDetailPage() {
             {loadingAppointments ? (
               <p className="text-[var(--color-brand-bluegray)]">Cargando citas…</p>
             ) : appointments.length === 0 ? (
-              <p className="text-[var(--color-brand-bluegray)]">
-                Este paciente aún no tiene citas vinculadas.
-              </p>
+              <p className="text-[var(--color-brand-bluegray)]">Este paciente aún no tiene citas vinculadas.</p>
             ) : (
               <ul className="space-y-2">
-                {appointments.map((a) => (
+                {appointments.map((a: any) => (
                   <li
                     key={a.id}
                     className="flex items-start justify-between rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2"
@@ -709,20 +826,29 @@ export default function PacienteDetailPage() {
                         {new Date(a.start).toLocaleString()} – {new Date(a.end).toLocaleTimeString()}
                       </div>
                       {a.meeting_url && (
-                        <div className="text-xs text-[var(--color-brand-bluegray)] break-all">
-                          {a.meeting_url}
-                        </div>
+                        <div className="text-xs text-[var(--color-brand-bluegray)] break-all">{a.meeting_url}</div>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" data-html2canvas-ignore="true">
                       {a.meeting_url && (
                         <button
-                          onClick={() => window.open(a.meeting_url!, "_blank", "noopener,noreferrer")}
+                          onClick={() =>
+                            window.open(a.meeting_url as string, "_blank", "noopener,noreferrer")
+                          }
                           className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1"
                         >
                           <ColorEmoji token="link" size={14} /> Abrir
                         </button>
                       )}
+                      {/* NUEVO: Crear nota desde esta cita (usa cal_uid si está disponible) */}
+                      <button
+                        onClick={() => void createNoteFromBooking(a.cal_uid)}
+                        className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1 disabled:opacity-60"
+                        disabled={isDeleted || !a?.cal_uid}
+                        title={a?.cal_uid ? "Crear nota desde esta cita" : "Sin UID de cita"}
+                      >
+                        <ColorEmoji token="puzzle" size={14} /> Crear nota
+                      </button>
                       <button
                         onClick={() => void onUnlinkAppointment(a.id)}
                         className="rounded-md border border-red-300 text-red-700 px-2 py-1 text-xs hover:bg-red-50 inline-flex items-center gap-1 disabled:opacity-60"
@@ -752,13 +878,16 @@ export default function PacienteDetailPage() {
             <ColorEmoji token="carpeta" size={18} /> Archivos clínicos
           </h2>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3" data-html2canvas-ignore="true">
             <label
-              className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${(!canEdit || isDeleted) ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"}`}
+              className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${
+                !canEdit || isDeleted ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"
+              }`}
             >
               <ColorEmoji token="subir" size={18} /> {uploading ? "Subiendo…" : "Subir archivo"}
               <input type="file" onChange={onUpload} className="hidden" disabled={!canEdit || isDeleted} />
             </label>
+
             <button
               type="button"
               onClick={refreshFiles}
@@ -776,32 +905,29 @@ export default function PacienteDetailPage() {
             <p className="text-[var(--color-brand-bluegray)]">Aún no hay archivos.</p>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-              {files.map((f) => (
+              {files.map((f: any) => (
                 <li
                   key={f.id}
-                  className={`rounded-2xl border p-4 bg-white ${f.pending ? "opacity-80 border-dashed" : "border-[var(--color-brand-border)]"}`}
+                  className={`rounded-2xl border p-4 bg-white ${
+                    f.pending ? "opacity-80 border-dashed" : "border-[var(--color-brand-border)]"
+                  }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="rounded-xl p-3 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
                       <ColorEmoji token="archivo" size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div
-                        className="truncate text-[var(--color-brand-text)] text-sm font-medium"
-                        title={f.file_name}
-                      >
+                      <div className="truncate text-[var(--color-brand-text)] text-sm font-medium" title={f.file_name}>
                         {f.file_name}{" "}
                         {f.pending && (
-                          <span className="ml-2 text-xs text-[var(--color-brand-bluegray)]">
-                            (Pendiente)
-                          </span>
+                          <span className="ml-2 text-xs text-[var(--color-brand-bluegray)]">(Pendiente)</span>
                         )}
                       </div>
                       <div className="text-xs text-[var(--color-brand-bluegray)]">
-                        {f.mime_type || "desconocido"} ·{" "}
-                        {f.size ? `${(f.size / 1024).toFixed(1)} KB` : ""}
+                        {f.mime_type || "desconocido"} · {f.size ? `${(f.size / 1024).toFixed(1)} KB` : ""}
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
+
+                      <div className="mt-3 flex flex-wrap gap-2" data-html2canvas-ignore="true">
                         {!f.pending ? (
                           <>
                             <button
@@ -851,7 +977,7 @@ export default function PacienteDetailPage() {
               <ColorEmoji token="compartir" size={18} /> Compartir acceso
             </h2>
 
-            <form onSubmit={onShare} className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <form onSubmit={onShare} className="grid grid-cols-1 sm:grid-cols-5 gap-3" data-html2canvas-ignore="true">
               <input
                 type="email"
                 value={shareEmail}
@@ -880,9 +1006,7 @@ export default function PacienteDetailPage() {
             <div className="h-px bg-[var(--color-brand-border)]" />
 
             {shares.length === 0 ? (
-              <p className="text-[var(--color-brand-bluegray)]">
-                Aún no has compartido este paciente.
-              </p>
+              <p className="text-[var(--color-brand-bluegray)]">Aún no has compartido este paciente.</p>
             ) : (
               <ul className="space-y-2">
                 {shares.map((s) => (
@@ -891,9 +1015,7 @@ export default function PacienteDetailPage() {
                     className="flex items-center justify-between rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2"
                   >
                     <div className="min-w-0">
-                      <div className="text-sm text-[var(--color-brand-text)] truncate">
-                        {s.grantee_email}
-                      </div>
+                      <div className="text-sm text-[var(--color-brand-text)] truncate">{s.grantee_email}</div>
                       <div className="text-xs text-[var(--color-brand-bluegray)]">
                         {s.can_edit ? "Puede editar" : "Solo lectura"}
                       </div>
@@ -902,6 +1024,7 @@ export default function PacienteDetailPage() {
                       onClick={() => onRevoke(s.id)}
                       className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
                       disabled={isDeleted}
+                      data-html2canvas-ignore="true"
                     >
                       <ColorEmoji token="borrar" size={14} /> Revocar
                     </button>
@@ -948,13 +1071,8 @@ export default function PacienteDetailPage() {
         </div>
       </section>
 
-      {/* Modal Editar */}
-      <Modal
-        open={openEdit}
-        onClose={() => setOpenEdit(false)}
-        title="Editar paciente"
-        widthClass="max-w-xl"
-      >
+      {/* Modal Editar paciente */}
+      <Modal open={openEdit} onClose={() => setOpenEdit(false)} title="Editar paciente" widthClass="max-w-xl">
         <form onSubmit={onSaveEdit} className="space-y-3">
           <label className="block">
             <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
@@ -966,6 +1084,7 @@ export default function PacienteDetailPage() {
               disabled={!canEdit || isDeleted}
             />
           </label>
+
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
               <span className="text-sm text-[var(--color-brand-text)]/80">Edad</span>
@@ -1005,20 +1124,14 @@ export default function PacienteDetailPage() {
               disabled={savingEdit || !canEdit || isDeleted}
               className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
             >
-              <ColorEmoji token="guardar" size={16} />{" "}
-              {savingEdit ? "Guardando…" : "Guardar cambios"}
+              <ColorEmoji token="guardar" size={16} /> {savingEdit ? "Guardando…" : "Guardar cambios"}
             </button>
           </div>
         </form>
       </Modal>
 
       {/* Modal Confirmación: eliminar nota */}
-      <Modal
-        open={!!confirmNoteId}
-        onClose={() => setConfirmNoteId(null)}
-        title="Eliminar nota"
-        widthClass="max-w-md"
-      >
+      <Modal open={!!confirmNoteId} onClose={() => setConfirmNoteId(null)} title="Eliminar nota" widthClass="max-w-md">
         <div className="space-y-4">
           <p className="text-sm text-[var(--color-brand-text)]">
             ¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.
@@ -1040,6 +1153,46 @@ export default function PacienteDetailPage() {
             Eliminar
           </button>
         </div>
+      </Modal>
+
+      {/* Modal Editar nota (NUEVO) */}
+      <Modal open={editNoteOpen} onClose={() => setEditNoteOpen(false)} title="Editar nota" widthClass="max-w-md">
+        <form onSubmit={onSaveEditNote} className="space-y-3">
+          <label className="block">
+            <span className="text-sm text-[var(--color-brand-text)]/80">Título</span>
+            <input
+              value={editTitulo}
+              onChange={(e) => setEditTitulo(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              disabled={!canEdit || isDeleted}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm text-[var(--color-brand-text)]/80">Contenido</span>
+            <textarea
+              rows={6}
+              value={editContenido}
+              onChange={(e) => setEditContenido(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              disabled={!canEdit || isDeleted}
+            />
+          </label>
+          <div className="pt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setEditNoteOpen(false)}
+              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+            >
+              Cancelar
+            </button>
+            <button
+              disabled={savingNoteEdit || !canEdit || isDeleted}
+              className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+            >
+              <ColorEmoji token="guardar" size={16} /> {savingNoteEdit ? "Guardando…" : "Guardar"}
+            </button>
+          </div>
+        </form>
       </Modal>
     </main>
   );
