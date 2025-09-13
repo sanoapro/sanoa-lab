@@ -1,10 +1,11 @@
+cat > app/(app)/pacientes/[id]/page.tsx <<'EOF'
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import { getPatient, updatePatient, type Patient } from "@/lib/patients";
+import { getPatient, updatePatient, restorePatient, type Patient } from "@/lib/patients";
 import { listNotes, createNote, deleteNote, type PatientNote } from "@/lib/patient-notes";
 import {
   listPatientFiles,
@@ -23,6 +24,12 @@ import ExportPDFButton from "@/components/ExportPDFButton";
 type PendingNote = PatientNote & { pending?: boolean };
 type PendingFile = PatientFile & { pending?: boolean };
 
+function tsNow() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const supabase = getSupabaseBrowser();
@@ -39,6 +46,7 @@ export default function PacienteDetailPage() {
     (s) => s.grantee_email.toLowerCase() === (meEmail || "").toLowerCase(),
   );
   const canEdit = Boolean(isOwner || myShare?.can_edit);
+  const isDeleted = !!patient?.deleted_at;
 
   const [openEdit, setOpenEdit] = useState(false);
   const [nombre, setNombre] = useState("");
@@ -180,7 +188,7 @@ export default function PacienteDetailPage() {
 
   async function onAddNote(e: React.FormEvent) {
     e.preventDefault();
-    if (!canEdit) {
+    if (!canEdit || isDeleted) {
       showToast("No tienes permisos para agregar notas.", "error");
       return;
     }
@@ -191,7 +199,7 @@ export default function PacienteDetailPage() {
     }
     setSavingNote(true);
     try {
-      const n = await createNote(id, text);
+      const n = await createNote(id, { titulo: null, contenido: text });
       setNotes((prev) => [n as PendingNote, ...prev]);
       setNoteText("");
       showToast("Nota guardada.", "success");
@@ -201,8 +209,12 @@ export default function PacienteDetailPage() {
         const temp: PendingNote = {
           id: `local-${Date.now()}`,
           patient_id: id,
-          content: text + " (pendiente…)",
+          user_id: meId || "me",
+          titulo: null,
+          contenido: text + " (pendiente…)",
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          deleted_at: null,
           pending: true,
         } as any;
         setNotes((prev) => [temp, ...prev]);
@@ -219,7 +231,7 @@ export default function PacienteDetailPage() {
 
   // Abrir modal de confirmación de borrado
   function askDeleteNote(nid: string) {
-    if (!canEdit) {
+    if (!canEdit || isDeleted) {
       showToast("No tienes permisos para borrar notas.", "error");
       return;
     }
@@ -257,7 +269,7 @@ export default function PacienteDetailPage() {
 
   async function onSaveEdit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canEdit) {
+    if (!canEdit || isDeleted) {
       showToast("No tienes permisos para editar.", "error");
       return;
     }
@@ -267,14 +279,14 @@ export default function PacienteDetailPage() {
       showToast("El nombre es obligatorio.", "info");
       return;
     }
-    if (!Number.isFinite(eNum) || eNum < 0) {
+    if (!(eNum === "" || (Number.isFinite(eNum) && (eNum as number) >= 0))) {
       showToast("Edad inválida.", "error");
       return;
     }
 
     try {
       setSavingEdit(true);
-      const updated = await updatePatient(id, { nombre: n, edad: eNum, genero: genero as any });
+      const updated = await updatePatient(id, { nombre: n, edad: eNum === "" ? null : (eNum as number), genero: genero as any });
       setPatient(updated);
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
@@ -291,7 +303,7 @@ export default function PacienteDetailPage() {
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!canEdit) {
+    if (!canEdit || isDeleted) {
       showToast("No tienes permisos para subir archivos.", "error");
       return;
     }
@@ -353,7 +365,7 @@ export default function PacienteDetailPage() {
       setFiles((prev) => prev.filter((f) => f.id !== idRec));
       return;
     }
-    if (!canEdit) {
+    if (!canEdit || isDeleted) {
       showToast("No tienes permisos para eliminar archivos.", "error");
       return;
     }
@@ -370,7 +382,7 @@ export default function PacienteDetailPage() {
 
   async function onShare(e: React.FormEvent) {
     e.preventDefault();
-    if (!isOwner) {
+    if (!isOwner || isDeleted) {
       showToast("Solo el dueño puede compartir.", "error");
       return;
     }
@@ -395,7 +407,7 @@ export default function PacienteDetailPage() {
   }
 
   async function onRevoke(shareId: string) {
-    if (!isOwner) return;
+    if (!isOwner || isDeleted) return;
     if (!confirm("¿Quitar acceso?")) return;
     try {
       await revokeShare(shareId);
@@ -404,6 +416,18 @@ export default function PacienteDetailPage() {
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo revocar.", "error");
+    }
+  }
+
+  async function onRestore() {
+    try {
+      const p = await restorePatient(id);
+      setPatient(p);
+      showToast("Paciente restaurado.", "success");
+      refreshAudits();
+    } catch (e: any) {
+      console.error(e);
+      showToast(e?.message || "No se pudo restaurar.", "error");
     }
   }
 
@@ -430,8 +454,25 @@ export default function PacienteDetailPage() {
     );
   }
 
+  const pdfName = `Paciente-${(patient?.nombre || "SinNombre").replace(/\s+/g,"_")}-${tsNow()}.pdf`;
+
   return (
     <main className="p-6 md:p-10 space-y-6">
+      {/* Banner de eliminado con Restaurar */}
+      {isDeleted && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between">
+          <div className="text-sm text-amber-800">
+            Este paciente está en <strong>Eliminados</strong>. No se permiten nuevas notas, archivos ni compartir hasta restaurar.
+          </div>
+          <button
+            onClick={() => void onRestore()}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            <ColorEmoji token="refrescar" size={16} /> Restaurar
+          </button>
+        </div>
+      )}
+
       {/* === ÁREA EXPORTABLE === */}
       <div ref={printRef} className="space-y-6">
         <div className="flex items-center justify-between">
@@ -439,9 +480,8 @@ export default function PacienteDetailPage() {
             <ColorEmoji token="usuario" size={24} /> {patient.nombre}
           </h1>
           <div className="flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
-            {/* OJO: el nuevo ExportPDFButton usa prop fileName */}
-            <ExportPDFButton targetRef={printRef} fileName={`Paciente-${patient.nombre}.pdf`} />
-            {canEdit && (
+            <ExportPDFButton targetRef={printRef} fileName={pdfName} />
+            {canEdit && !isDeleted && (
               <button
                 onClick={openEditModal}
                 className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
@@ -487,14 +527,14 @@ export default function PacienteDetailPage() {
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder={canEdit ? "Escribe una nota clínica breve…" : "Solo lectura"}
+                placeholder={canEdit && !isDeleted ? "Escribe una nota clínica breve…" : "Solo lectura"}
                 rows={3}
-                disabled={!canEdit}
+                disabled={!canEdit || isDeleted}
                 className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 disabled:opacity-60"
               />
               <div className="flex gap-2">
                 <button
-                  disabled={savingNote || !canEdit}
+                  disabled={savingNote || !canEdit || isDeleted}
                   className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
                 >
                   <ColorEmoji token="guardar" size={16} />{" "}
@@ -525,14 +565,15 @@ export default function PacienteDetailPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="text-sm text-[var(--color-brand-text)] whitespace-pre-wrap">
-                        {n.content}
+                        {n.titulo ? <div className="font-medium mb-1">{n.titulo}</div> : null}
+                        {n.contenido}
                         {n.pending && (
                           <span className="ml-2 inline-flex items-center gap-1 text-xs text-[var(--color-brand-bluegray)]">
                             <ColorEmoji token="refrescar" size={14} /> Pendiente
                           </span>
                         )}
                       </div>
-                      {canEdit && (
+                      {canEdit && !isDeleted && (
                         <button
                           onClick={() => askDeleteNote(n.id)}
                           className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
@@ -564,10 +605,10 @@ export default function PacienteDetailPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <label
-              className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${!canEdit ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"}`}
+              className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${(!canEdit || isDeleted) ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"}`}
             >
               <ColorEmoji token="subir" size={18} /> {uploading ? "Subiendo…" : "Subir archivo"}
-              <input type="file" onChange={onUpload} className="hidden" disabled={!canEdit} />
+              <input type="file" onChange={onUpload} className="hidden" disabled={!canEdit || isDeleted} />
             </label>
             <button
               type="button"
@@ -626,7 +667,7 @@ export default function PacienteDetailPage() {
                             >
                               <ColorEmoji token="link" size={14} /> Copiar link
                             </button>
-                            {canEdit && (
+                            {canEdit && !isDeleted && (
                               <button
                                 onClick={() => onDeleteFile(f.id)}
                                 className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
@@ -668,18 +709,20 @@ export default function PacienteDetailPage() {
                 onChange={(e) => setShareEmail(e.target.value)}
                 placeholder="email@dominio.com"
                 className="sm:col-span-3 rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                disabled={isDeleted}
               />
               <label className="inline-flex items-center gap-2 px-2">
                 <input
                   type="checkbox"
                   checked={shareCanEdit}
                   onChange={(e) => setShareCanEdit(e.target.checked)}
+                  disabled={isDeleted}
                 />
                 Puede editar
               </label>
               <button
                 className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-                disabled={sharing}
+                disabled={sharing || isDeleted}
               >
                 <ColorEmoji token="enviar" size={16} /> {sharing ? "Compartiendo…" : "Compartir"}
               </button>
@@ -709,6 +752,7 @@ export default function PacienteDetailPage() {
                     <button
                       onClick={() => onRevoke(s.id)}
                       className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
+                      disabled={isDeleted}
                     >
                       <ColorEmoji token="borrar" size={14} /> Revocar
                     </button>
@@ -770,7 +814,7 @@ export default function PacienteDetailPage() {
               onChange={(e) => setNombre(e.target.value)}
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               placeholder="Nombre completo"
-              disabled={!canEdit}
+              disabled={!canEdit || isDeleted}
             />
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -782,7 +826,7 @@ export default function PacienteDetailPage() {
                 type="number"
                 min={0}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-                disabled={!canEdit}
+                disabled={!canEdit || isDeleted}
               />
             </label>
             <label className="block">
@@ -791,7 +835,7 @@ export default function PacienteDetailPage() {
                 value={genero}
                 onChange={(e) => setGenero(e.target.value as any)}
                 className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-                disabled={!canEdit}
+                disabled={!canEdit || isDeleted}
               >
                 <option value="F">Femenino</option>
                 <option value="M">Masculino</option>
@@ -809,7 +853,7 @@ export default function PacienteDetailPage() {
               Cancelar
             </button>
             <button
-              disabled={savingEdit || !canEdit}
+              disabled={savingEdit || !canEdit || isDeleted}
               className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
             >
               <ColorEmoji token="guardar" size={16} />{" "}
@@ -830,22 +874,22 @@ export default function PacienteDetailPage() {
           <p className="text-sm text-[var(--color-brand-text)]">
             ¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.
           </p>
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setConfirmNoteId(null)}
-              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={() => void doDeleteNote()}
-              className="rounded-md bg-red-600 px-4 py-2 text-white hover:opacity-90"
-            >
-              Eliminar
-            </button>
-          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirmNoteId(null)}
+            className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => void doDeleteNote()}
+            className="rounded-md bg-red-600 px-4 py-2 text-white hover:opacity-90"
+          >
+            Eliminar
+          </button>
         </div>
       </Modal>
     </main>
