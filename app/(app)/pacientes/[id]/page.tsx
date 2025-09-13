@@ -1,4 +1,4 @@
-cat > app/(app)/pacientes/[id]/page.tsx <<'EOF'
+// /workspaces/sanoa-lab/app/(app)/pacientes/[id]/page.tsx
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
@@ -20,6 +20,7 @@ import { showToast } from "@/components/Toaster";
 import Modal from "@/components/Modal";
 import { useNotesRealtime } from "@/hooks/useNotesRealtime";
 import ExportPDFButton from "@/components/ExportPDFButton";
+import { getTemplate } from "@/lib/note-templates"; // ← plantillas
 
 type PendingNote = PatientNote & { pending?: boolean };
 type PendingFile = PatientFile & { pending?: boolean };
@@ -55,7 +56,8 @@ export default function PacienteDetailPage() {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [notes, setNotes] = useState<PendingNote[]>([]);
-  const [noteText, setNoteText] = useState("");
+  const [noteTitulo, setNoteTitulo] = useState("");      // ← ahora título
+  const [noteContenido, setNoteContenido] = useState(""); // ← ahora contenido
   const [savingNote, setSavingNote] = useState(false);
   const [loadingNotes, setLoadingNotes] = useState(true);
 
@@ -186,22 +188,31 @@ export default function PacienteDetailPage() {
     return () => navigator.serviceWorker?.removeEventListener?.("message", onMsg);
   }, [refreshNotes, refreshFiles]);
 
+  // === Plantillas ===
+  function insertTemplate(key: "SOAP" | "DARE") {
+    const t = getTemplate(key);
+    setNoteTitulo(t.titulo || "");
+    setNoteContenido(t.contenido || "");
+  }
+
   async function onAddNote(e: React.FormEvent) {
     e.preventDefault();
     if (!canEdit || isDeleted) {
       showToast("No tienes permisos para agregar notas.", "error");
       return;
     }
-    const text = noteText.trim();
-    if (text.length < 2) {
-      showToast("Escribe al menos 2 caracteres.", "info");
+    const titulo = noteTitulo.trim();
+    const contenido = noteContenido.trim();
+    if (!titulo && !contenido) {
+      showToast("Título o contenido requerido.", "info");
       return;
     }
     setSavingNote(true);
     try {
-      const n = await createNote(id, { titulo: null, contenido: text });
+      const n = await createNote(id, { titulo: titulo || null, contenido: contenido || null });
       setNotes((prev) => [n as PendingNote, ...prev]);
-      setNoteText("");
+      setNoteTitulo("");
+      setNoteContenido("");
       showToast("Nota guardada.", "success");
     } catch (e: any) {
       // Optimista: offline → agrega placeholder pendiente
@@ -210,15 +221,16 @@ export default function PacienteDetailPage() {
           id: `local-${Date.now()}`,
           patient_id: id,
           user_id: meId || "me",
-          titulo: null,
-          contenido: text + " (pendiente…)",
+          titulo: titulo || null,
+          contenido: (contenido || "") + " (pendiente…)",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           deleted_at: null,
           pending: true,
         } as any;
         setNotes((prev) => [temp, ...prev]);
-        setNoteText("");
+        setNoteTitulo("");
+        setNoteContenido("");
         showToast("Nota encolada (sin conexión).", "info");
       } else {
         console.error(e);
@@ -286,7 +298,11 @@ export default function PacienteDetailPage() {
 
     try {
       setSavingEdit(true);
-      const updated = await updatePatient(id, { nombre: n, edad: eNum === "" ? null : (eNum as number), genero: genero as any });
+      const updated = await updatePatient(id, {
+        nombre: n,
+        edad: eNum === "" ? null : (eNum as number),
+        genero: genero as any,
+      });
       setPatient(updated);
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
@@ -523,11 +539,38 @@ export default function PacienteDetailPage() {
               <ColorEmoji token="puzzle" size={18} /> Notas clínicas
             </h2>
 
+            {/* Acciones / plantillas */}
+            <div className="flex flex-wrap gap-2" data-html2canvas-ignore="true">
+              <button
+                type="button"
+                onClick={() => insertTemplate("SOAP")}
+                disabled={!canEdit || isDeleted}
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] disabled:opacity-60"
+              >
+                <ColorEmoji token="puzzle" size={16} /> Insertar plantilla SOAP
+              </button>
+              <button
+                type="button"
+                onClick={() => insertTemplate("DARE")}
+                disabled={!canEdit || isDeleted}
+                className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] disabled:opacity-60"
+              >
+                <ColorEmoji token="puzzle" size={16} /> Insertar plantilla DARE
+              </button>
+            </div>
+
             <form onSubmit={onAddNote} className="space-y-3" data-html2canvas-ignore="true">
+              <input
+                value={noteTitulo}
+                onChange={(e) => setNoteTitulo(e.target.value)}
+                placeholder={canEdit && !isDeleted ? "Título (opcional)…" : "Solo lectura"}
+                disabled={!canEdit || isDeleted}
+                className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 disabled:opacity-60"
+              />
               <textarea
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder={canEdit && !isDeleted ? "Escribe una nota clínica breve…" : "Solo lectura"}
+                value={noteContenido}
+                onChange={(e) => setNoteContenido(e.target.value)}
+                placeholder={canEdit && !isDeleted ? "Contenido de la nota…" : "Solo lectura"}
                 rows={3}
                 disabled={!canEdit || isDeleted}
                 className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 disabled:opacity-60"
