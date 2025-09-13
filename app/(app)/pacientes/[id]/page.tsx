@@ -62,9 +62,10 @@ export default function PacienteDetailPage() {
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [loadingAudits, setLoadingAudits] = useState(true);
 
-  // NUEVO: modal de confirmación para borrar nota
+  // Modal de confirmación para borrar nota
   const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null);
 
+  // Área exportable
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -438,7 +439,8 @@ export default function PacienteDetailPage() {
             <ColorEmoji token="usuario" size={24} /> {patient.nombre}
           </h1>
           <div className="flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
-            <ExportPDFButton targetRef={printRef} filename={`Paciente-${patient.nombre}.pdf`} />
+            {/* OJO: el nuevo ExportPDFButton usa prop fileName */}
+            <ExportPDFButton targetRef={printRef} fileName={`Paciente-${patient.nombre}.pdf`} />
             {canEdit && (
               <button
                 onClick={openEditModal}
@@ -560,7 +562,7 @@ export default function PacienteDetailPage() {
             <ColorEmoji token="carpeta" size={18} /> Archivos clínicos
           </h2>
 
-        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <label
               className={`inline-flex items-center gap-2 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-[var(--color-brand-background)] px-4 py-2 ${!canEdit ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:opacity-90"}`}
             >
@@ -610,7 +612,7 @@ export default function PacienteDetailPage() {
                         {f.size ? `${(f.size / 1024).toFixed(1)} KB` : ""}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {!f.pending && (
+                        {!f.pending ? (
                           <>
                             <button
                               onClick={() => onView(f)}
@@ -633,8 +635,7 @@ export default function PacienteDetailPage() {
                               </button>
                             )}
                           </>
-                        )}
-                        {f.pending && (
+                        ) : (
                           <button
                             onClick={() => onDeleteFile(f.id)}
                             className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs inline-flex items-center gap-1"
