@@ -34,6 +34,22 @@ function tsNow() {
   )}`;
 }
 
+// Utilidad para normalizar errores raros (Response, objetos, strings, Error)
+function toErrorMessage(e: unknown, fallback = "Ocurrió un error"): string {
+  if (e instanceof Error && e.message) return e.message;
+  if (typeof e === "string" && e.trim()) return e;
+  // Si nos tiran un Response (fetch/Supabase raro)
+  if (e && typeof e === "object" && "status" in (e as any) && "statusText" in (e as any)) {
+    const res = e as Response;
+    return `HTTP ${res.status} ${res.statusText}`.trim();
+  }
+  try {
+    const s = JSON.stringify(e);
+    if (s && s !== "{}") return s;
+  } catch {}
+  return fallback;
+}
+
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const supabase = getSupabaseBrowser();
@@ -47,7 +63,7 @@ export default function PacienteDetailPage() {
   const [shares, setShares] = useState<PatientShare[]>([]);
   const isOwner = patient && meId ? patient.user_id === meId : false;
   const myShare = shares.find(
-    (s) => s.grantee_email.toLowerCase() === (meEmail || "").toLowerCase(),
+    (s) => (s.grantee_email || "").toLowerCase() === (meEmail || "").toLowerCase(),
   );
   const canEdit = Boolean(isOwner || myShare?.can_edit);
   const isDeleted = !!patient?.deleted_at;
@@ -108,9 +124,9 @@ export default function PacienteDetailPage() {
         setNombre(p?.nombre ?? "");
         setEdad(p?.edad ?? "");
         setGenero((p?.genero as "F" | "M" | "O") ?? "O");
-      } catch (e: any) {
-        console.error(e);
-        showToast(e?.message || "No se pudo cargar el paciente.", "error");
+      } catch (e: unknown) {
+        console.error("[getPatient]", e);
+        showToast(toErrorMessage(e, "No se pudo cargar el paciente."), "error");
       } finally {
         setLoading(false);
       }
@@ -122,9 +138,9 @@ export default function PacienteDetailPage() {
     try {
       const data = await listNotes(id);
       setNotes(data);
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudieron cargar las notas.", "error");
+    } catch (e: unknown) {
+      console.error("[listNotes]", e);
+      showToast(toErrorMessage(e, "No se pudieron cargar las notas."), "error");
     } finally {
       setLoadingNotes(false);
     }
@@ -147,9 +163,9 @@ export default function PacienteDetailPage() {
     try {
       const data = await listPatientFiles(id);
       setFiles(data);
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudieron cargar los archivos.", "error");
+    } catch (e: unknown) {
+      console.error("[listPatientFiles]", e);
+      showToast(toErrorMessage(e, "No se pudieron cargar los archivos."), "error");
     } finally {
       setLoadingFiles(false);
     }
@@ -163,8 +179,9 @@ export default function PacienteDetailPage() {
     try {
       const data = await listShares(id);
       setShares(data);
-    } catch (e: any) {
-      console.error(e);
+    } catch (e: unknown) {
+      console.error("[listShares]", e);
+      // sin toast, es menor prioridad
     }
   }, [id]);
 
@@ -177,9 +194,9 @@ export default function PacienteDetailPage() {
     try {
       const data = await listAudit(id, 200);
       setAudits(data);
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo cargar la actividad.", "error");
+    } catch (e: unknown) {
+      console.error("[listAudit]", e);
+      showToast(toErrorMessage(e, "No se pudo cargar la actividad."), "error");
     } finally {
       setLoadingAudits(false);
     }
@@ -195,9 +212,12 @@ export default function PacienteDetailPage() {
     try {
       const ap = await listAppointmentsByPatient(id);
       setAppointments(ap || []);
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudieron cargar las citas.", "error");
+    } catch (e: unknown) {
+      // ⬇️ Aquí estaba el console.error(e) que mostraba "{}".
+      // Ahora normalizamos para ver un mensaje claro.
+      const msg = toErrorMessage(e, "No se pudieron cargar las citas.");
+      console.error("[listAppointmentsByPatient]", e);
+      showToast(msg, "error");
     } finally {
       setLoadingAppointments(false);
     }
@@ -247,9 +267,9 @@ export default function PacienteDetailPage() {
       setNoteContenido("");
       showToast("Nota guardada.", "success");
       refreshAudits();
-    } catch (e: any) {
-      // Optimista: offline → agrega placeholder pendiente
+    } catch (e: unknown) {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
+        // Optimista: offline → agrega placeholder pendiente
         const temp: PendingNote = {
           id: `local-${Date.now()}`,
           patient_id: id,
@@ -266,8 +286,8 @@ export default function PacienteDetailPage() {
         setNoteContenido("");
         showToast("Nota encolada (sin conexión).", "info");
       } else {
-        console.error(e);
-        showToast(e?.message || "No se pudo guardar la nota.", "error");
+        console.error("[createNote]", e);
+        showToast(toErrorMessage(e, "No se pudo guardar la nota."), "error");
       }
     } finally {
       setSavingNote(false);
@@ -300,9 +320,9 @@ export default function PacienteDetailPage() {
       setEditingNoteId(null);
       showToast("Nota actualizada.", "success");
       refreshAudits();
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo actualizar la nota.", "error");
+    } catch (e: unknown) {
+      console.error("[updateNote]", e);
+      showToast(toErrorMessage(e, "No se pudo actualizar la nota."), "error");
     } finally {
       setSavingNoteEdit(false);
     }
@@ -331,9 +351,9 @@ export default function PacienteDetailPage() {
       }
       showToast("Nota eliminada.", "success");
       refreshAudits();
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo eliminar la nota.", "error");
+    } catch (e: unknown) {
+      console.error("[deleteNote]", e);
+      showToast(toErrorMessage(e, "No se pudo eliminar la nota."), "error");
     } finally {
       setConfirmNoteId(null);
     }
@@ -374,9 +394,9 @@ export default function PacienteDetailPage() {
       setOpenEdit(false);
       showToast("Datos actualizados.", "success");
       refreshAudits();
-    } catch (err: any) {
-      console.error(err);
-      showToast(err?.message || "No se pudo actualizar.", "error");
+    } catch (err: unknown) {
+      console.error("[updatePatient]", err);
+      showToast(toErrorMessage(err, "No se pudo actualizar."), "error");
     } finally {
       setSavingEdit(false);
     }
@@ -395,7 +415,7 @@ export default function PacienteDetailPage() {
       await refreshFiles();
       (e.target as HTMLInputElement).value = "";
       showToast("Archivo subido.", "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         // Optimista: archivo pendiente
         const temp: PendingFile = {
@@ -411,8 +431,8 @@ export default function PacienteDetailPage() {
         (e.target as HTMLInputElement).value = "";
         showToast("Archivo encolado (sin conexión).", "info");
       } else {
-        console.error(err);
-        showToast(err?.message || "No se pudo subir el archivo.", "error");
+        console.error("[uploadPatientFile]", err);
+        showToast(toErrorMessage(err, "No se pudo subir el archivo."), "error");
       }
     } finally {
       setUploading(false);
@@ -423,9 +443,9 @@ export default function PacienteDetailPage() {
     try {
       const url = await getSignedUrl(pf, 300);
       window.open(url, "_blank", "noopener,noreferrer");
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo generar el enlace.", "error");
+    } catch (e: unknown) {
+      console.error("[getSignedUrl:view]", e);
+      showToast(toErrorMessage(e, "No se pudo generar el enlace."), "error");
     }
   }
 
@@ -433,9 +453,9 @@ export default function PacienteDetailPage() {
     try {
       const url = await getSignedUrl(pf, 300);
       await navigator.clipboard.writeText(url);
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo copiar el enlace.", "error");
+    } catch (e: unknown) {
+      console.error("[getSignedUrl:copy]", e);
+      showToast(toErrorMessage(e, "No se pudo copiar el enlace."), "error");
       return;
     }
     showToast("Enlace copiado (300s).", "success");
@@ -456,9 +476,9 @@ export default function PacienteDetailPage() {
       await deletePatientFile(idRec);
       setFiles((prev) => prev.filter((f) => f.id !== idRec));
       showToast("Archivo eliminado.", "success");
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo eliminar.", "error");
+    } catch (e: unknown) {
+      console.error("[deletePatientFile]", e);
+      showToast(toErrorMessage(e, "No se pudo eliminar."), "error");
     }
   }
 
@@ -480,9 +500,9 @@ export default function PacienteDetailPage() {
       setShareCanEdit(false);
       await refreshShares();
       showToast("Acceso compartido.", "success");
-    } catch (err: any) {
-      console.error(err);
-      showToast(err?.message || "No se pudo compartir.", "error");
+    } catch (err: unknown) {
+      console.error("[addShare]", err);
+      showToast(toErrorMessage(err, "No se pudo compartir."), "error");
     } finally {
       setSharing(false);
     }
@@ -495,9 +515,9 @@ export default function PacienteDetailPage() {
       await revokeShare(shareId);
       setShares((prev) => prev.filter((s) => s.id !== shareId));
       showToast("Acceso revocado.", "success");
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo revocar.", "error");
+    } catch (e: unknown) {
+      console.error("[revokeShare]", e);
+      showToast(toErrorMessage(e, "No se pudo revocar."), "error");
     }
   }
 
@@ -507,9 +527,9 @@ export default function PacienteDetailPage() {
       setPatient(p);
       showToast("Paciente restaurado.", "success");
       refreshAudits();
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo restaurar.", "error");
+    } catch (e: unknown) {
+      console.error("[restorePatient]", e);
+      showToast(toErrorMessage(e, "No se pudo restaurar."), "error");
     }
   }
 
@@ -520,9 +540,9 @@ export default function PacienteDetailPage() {
       await unlinkAppointment(appId);
       setAppointments((prev) => prev.filter((a) => a.id !== appId));
       showToast("Cita desvinculada.", "success");
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo desvincular la cita.", "error");
+    } catch (e: unknown) {
+      console.error("[unlinkAppointment]", e);
+      showToast(toErrorMessage(e, "No se pudo desvincular la cita."), "error");
     }
   }
 
@@ -583,9 +603,9 @@ export default function PacienteDetailPage() {
       setNotes((arr) => [n as PendingNote, ...arr]);
       showToast("Nota creada desde cita.", "success");
       refreshAudits();
-    } catch (e: any) {
-      console.error(e);
-      showToast(e?.message || "No se pudo crear la nota desde la cita.", "error");
+    } catch (e: unknown) {
+      console.error("[createNoteFromBooking]", e);
+      showToast(toErrorMessage(e, "No se pudo crear la nota desde la cita."), "error");
     }
   }
 
