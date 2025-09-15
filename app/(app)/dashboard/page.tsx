@@ -46,6 +46,32 @@ export default function TableroPage() {
           </div>
         </Link>
 
+        {/* Agenda (Cal.com) */}
+        <Link
+          href="/agenda"
+          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
+                     shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
+                     transition overflow-hidden"
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="calendario" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Agenda</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Vincula citas de Cal.com a pacientes y crea notas desde las citas.
+              </p>
+            </div>
+          </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Abrir agenda <ColorEmoji token="siguiente" size={18} />
+            </span>
+          </div>
+        </Link>
+
         {/* Subir archivos */}
         <Link
           href="/test-ui/upload"
