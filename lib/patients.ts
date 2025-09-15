@@ -1,6 +1,9 @@
 // /workspaces/sanoa-lab/lib/patients.ts
+// Fusión: conserva tu API original y añade filtros por tags (con degradación si falta la RPC)
+// y soporte opcional para limitar por organización activa (org_id).
+
 import { getSupabaseBrowser } from "./supabase-browser";
-import { getCurrentOrgId } from "./org"; // usamos tu API existente para obtener la org activa
+import { getCurrentOrgId } from "./org"; // usamos tu API existente
 
 export type Gender = "F" | "M" | "O";
 
@@ -41,11 +44,11 @@ export interface ListPatientsParams {
   /** Incluir registros con deleted_at != null (si la columna existe) */
   includeDeleted?: boolean;
 
-  /** --- NUEVO: filtros por tags (RPC opcional) --- */
+  /** Facetas (ids de tag). Usa cualquiera/todas — con degradación si la RPC no existe */
   tagsAny?: string[];
   tagsAll?: string[];
 
-  /** --- NUEVO: limitar a la org activa (si existe org_id) --- */
+  /** Limitar a la org activa si existe la columna org_id */
   onlyActiveOrg?: boolean;
 }
 
@@ -73,6 +76,7 @@ async function softDeleteSupported(): Promise<boolean> {
       _softDeleteSupported = true;
     }
   } catch {
+    // Por compatibilidad, asumimos true si falla el chequeo
     _softDeleteSupported = true;
   }
   return _softDeleteSupported!;
@@ -91,9 +95,16 @@ async function orgIdSupported(): Promise<boolean> {
       _orgIdSupported = true;
     }
   } catch {
+    // Si falla el chequeo, asumimos que no existe para no filtrar incorrectamente
     _orgIdSupported = false;
   }
   return _orgIdSupported!;
+}
+
+/** Helper: detecta si falta una RPC para degradar sin romper la UX */
+function isMissingRpc(err: unknown, rpcName: string): boolean {
+  const s = String((err as any)?.message || (err as any)?.details || "").toLowerCase();
+  return s.includes("function") && s.includes(rpcName.toLowerCase()) && s.includes("does not exist");
 }
 
 /** Obtiene el user_id actual (compatibilidad) */
@@ -106,11 +117,11 @@ export async function getCurrentUserId(): Promise<string> {
   return data.user.id;
 }
 
-/** Lista pacientes con búsqueda, filtros, paginación y orden (respeta RLS/compartidos) */
+/** Lista pacientes con búsqueda, filtros, orden, facetas de tags y (opcional) org activa */
 export async function listPatients(params: ListPatientsParams = {}): Promise<ListResult<Patient>> {
   const supabase = getSupabaseBrowser();
 
-  // Normalizaciones seguras
+  // Normalizaciones
   const page = Math.max(1, Number(params.page ?? 1));
   const pageSize = Math.min(100, Math.max(1, Number(params.pageSize ?? 10)));
 
@@ -126,7 +137,7 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // --- NUEVO: Filtrado por tags vía RPC opcional (patients_ids_by_tags) ---
+  // --- Filtros por tags vía RPC opcional ---
   let idsByTags: string[] | null = null;
   const tagIds =
     (params.tagsAll && params.tagsAll.length > 0)
@@ -143,18 +154,17 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
         mode,
       });
       if (e1) {
-        // Si la RPC no existe, degradamos sin romper la lista
-        const msg = String((e1 as any)?.message || "").toLowerCase();
-        const missing = msg.includes("function") && msg.includes("patients_ids_by_tags") && msg.includes("does not exist");
-        if (!missing) throw e1;
+        if (!isMissingRpc(e1, "patients_ids_by_tags")) throw e1; // si la RPC falla por otro motivo, propaga
+        // si falta la RPC, degradamos: no filtramos por tags
       } else {
         idsByTags = (rows ?? []).map((r: any) => r.patient_id as string);
         if (idsByTags.length === 0) {
+          // No hay coincidencias -> retornamos vacío sin ir a la tabla
           return { items: [], total: 0, page, pageSize };
         }
       }
-    } catch {
-      // degradación silenciosa
+    } catch (e) {
+      if (!isMissingRpc(e, "patients_ids_by_tags")) throw e; // degradación silenciosa sólo si falta la RPC
     }
   }
 
@@ -163,7 +173,7 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
     .select("*", { count: "exact" })
     .order(sortBy, { ascending: direction === "asc" });
 
-  // Soft-delete: sólo aplicar filtro si la columna existe
+  // Soft-delete si existe la columna
   const hasSoft = await softDeleteSupported();
   if (hasSoft && !params.includeDeleted) {
     query = query.is("deleted_at", null);
@@ -174,12 +184,12 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
     query = query.ilike("nombre", `%${params.q.trim()}%`);
   }
 
-  // Filtro de género
+  // Género
   if (params.genero && params.genero !== "ALL") {
     query = query.eq("genero", params.genero);
   }
 
-  // Filtros de fecha de creación
+  // Rango de fechas de creación
   if (params.from) {
     const isoStart = new Date(params.from + "T00:00:00Z").toISOString();
     query = query.gte("created_at", isoStart);
@@ -189,18 +199,16 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
     query = query.lte("created_at", isoEnd);
   }
 
-  // Aplicar filtro por tags si hay IDs
+  // Aplicar filtro por tags si tenemos IDs prefiltrados
   if (idsByTags && idsByTags.length > 0) {
     query = query.in("id", idsByTags);
   }
 
-  // --- NUEVO: Limitar a la organización activa (si existe org_id y se solicita) ---
-  if (params.onlyActiveOrg) {
-    if (await orgIdSupported()) {
-      const activeOrgId = await getCurrentOrgId().catch(() => null);
-      if (activeOrgId) {
-        query = query.eq("org_id", activeOrgId);
-      }
+  // Limitar a la organización activa (si existe org_id y se solicita)
+  if (params.onlyActiveOrg && (await orgIdSupported())) {
+    const activeOrgId = await getCurrentOrgId().catch(() => null);
+    if (activeOrgId) {
+      query = query.eq("org_id", activeOrgId);
     }
   }
 
@@ -223,7 +231,7 @@ export async function getPatient(id: string): Promise<Patient | null> {
   return (data as Patient) ?? null;
 }
 
-/** Crea un paciente para el usuario actual (asigna org_id si existe y hay org activa) */
+/** Crea un paciente (asigna org_id si la columna existe y hay org activa) */
 export async function createPatient(input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
   const userId = await getCurrentUserId();
@@ -235,7 +243,6 @@ export async function createPatient(input: PatientInput): Promise<Patient> {
     genero: (input.genero ?? "O") as Gender,
   };
 
-  // Si la columna org_id existe, la incluimos con la org activa si la hay
   if (await orgIdSupported()) {
     const activeOrgId = await getCurrentOrgId().catch(() => null);
     payload.org_id = activeOrgId ?? null;
