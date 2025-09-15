@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { metricsPatientsByTag, metricsNewPatientsByMonth, metricsNotesByMonth, type TagMetric, type MonthMetric } from "@/lib/metrics";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getActiveOrg } from "@/lib/org-local";
 
 function Bar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
@@ -20,6 +21,14 @@ export default function MetricsPage() {
   const [notesByMonth, setNotesByMonth] = useState<MonthMetric[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const org = getActiveOrg();
+
+  function qs(obj: Record<string, any>) {
+    const p = new URLSearchParams();
+    Object.entries(obj).forEach(([k,v]) => { if (v !== undefined && v !== null && v !== "") p.set(k, String(v)); });
+    return p.toString();
+  }
+
   async function load() {
     setLoading(true);
     try {
@@ -35,6 +44,9 @@ export default function MetricsPage() {
   useEffect(() => { void load(); }, []);
 
   const maxTag = useMemo(() => Math.max(0, ...byTag.map(x => Number(x.total))), [byTag]);
+  const exportByTagUrl = `/api/export/metrics/by-tag?${qs({ from, to, onlyOrg, org: onlyOrg ? org.id : null })}`;
+  const exportPatientsMonthlyUrl = `/api/export/metrics/monthly?${qs({ type: "patients", months: 12, onlyOrg, org: onlyOrg ? org.id : null })}`;
+  const exportNotesMonthlyUrl = `/api/export/metrics/monthly?${qs({ type: "notes", months: 12, onlyOrg, org: onlyOrg ? org.id : null })}`;
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -53,11 +65,16 @@ export default function MetricsPage() {
           <input type="checkbox" checked={onlyOrg} onChange={(e)=>setOnlyOrg(e.target.checked)} />
           Sólo org activa
         </label>
-        <Button onClick={()=>void load()} disabled={loading}>Actualizar</Button>
+        <div className="flex gap-2 items-end">
+          <Button onClick={()=>void load()} disabled={loading}>Actualizar</Button>
+        </div>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Pacientes por etiqueta</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Pacientes por etiqueta</h2>
+          <a href={exportByTagUrl}><Button variant="secondary">Exportar CSV</Button></a>
+        </div>
         <div className="border rounded-xl divide-y bg-white">
           {byTag.length === 0 && <div className="p-4 text-sm text-gray-600">{loading ? "Cargando…" : "Sin datos."}</div>}
           {byTag.map(row => (
@@ -73,7 +90,10 @@ export default function MetricsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Pacientes nuevos por mes (12m)</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Pacientes nuevos por mes (12m)</h2>
+          <a href={exportPatientsMonthlyUrl}><Button variant="secondary">Exportar CSV</Button></a>
+        </div>
         <div className="border rounded-xl p-4 bg-white grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {ptByMonth.map(m => (
             <div key={m.month_start} className="text-center">
@@ -85,7 +105,10 @@ export default function MetricsPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Notas creadas por mes (12m)</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Notas creadas por mes (12m)</h2>
+        <a href={exportNotesMonthlyUrl}><Button variant="secondary">Exportar CSV</Button></a>
+        </div>
         <div className="border rounded-xl p-4 bg-white grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {notesByMonth.map(m => (
             <div key={m.month_start} className="text-center">
