@@ -13,6 +13,9 @@ import {
 } from "@/lib/patients";
 import Modal from "@/components/Modal";
 import { showToast } from "@/components/Toaster";
+import { listMyTags, type Tag } from "@/lib/tags";
+import { getActiveOrg } from "@/lib/org-local";
+import clsx from "clsx";
 
 /** Traducción/normalización de errores frecuentes en listados */
 function toSpanishListError(e: unknown): string {
@@ -39,6 +42,12 @@ export default function PacientesPage() {
     orderBy: "created_at" as "created_at" | "nombre",
     orderDir: "desc" as "asc" | "desc",
     includeDeleted: false,
+    // nuevas capacidades
+    onlyActiveOrg: true,
+    useAllMode: false, // false = tagsAny; true = tagsAll
+    tagsAny: [] as string[],
+    tagsAll: [] as string[],
+    // paginación
     page: 1,
     pageSize: 10,
   });
@@ -94,6 +103,8 @@ export default function PacientesPage() {
         from: merged.createdFrom || undefined,
         to: merged.createdTo || undefined,
         includeDeleted: merged.includeDeleted,
+        ...(merged.useAllMode ? { tagsAll: merged.tagsAll } : { tagsAny: merged.tagsAny }),
+        onlyActiveOrg: merged.onlyActiveOrg,
       });
 
       setItems(res.items);
@@ -106,9 +117,18 @@ export default function PacientesPage() {
     }
   }
 
-  // primera carga
+  // primera carga + carga de etiquetas
+  const [myTags, setMyTags] = useState<Tag[]>([]);
   useEffect(() => {
     void doSearch(1);
+    (async () => {
+      try {
+        const tags = await listMyTags();
+        setMyTags(tags);
+      } catch (e) {
+        // no es crítico para la vista inicial
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -137,8 +157,12 @@ export default function PacientesPage() {
       orderBy: "created_at" as const,
       orderDir: "desc" as const,
       includeDeleted: false,
+      onlyActiveOrg: true,
+      useAllMode: false,
+      tagsAny: [] as string[],
+      tagsAll: [] as string[],
       page: 1,
-      pageSize: 10,
+      pageSize: filters.pageSize,
     };
     setFilters(reset);
     setTimeout(() => void doSearch(1, reset), 0);
@@ -214,6 +238,41 @@ export default function PacientesPage() {
     }
   }
 
+  // ===== Facetas (tags) =====
+  function toggleTag(id: string) {
+    setFilters((f) => {
+      if (f.useAllMode) {
+        const exists = f.tagsAll.includes(id);
+        const nextAll = exists ? f.tagsAll.filter((x) => x !== id) : [...f.tagsAll, id];
+        const next = { ...f, tagsAll: nextAll, page: 1 };
+        void doSearch(1, next);
+        return next;
+      } else {
+        const exists = f.tagsAny.includes(id);
+        const nextAny = exists ? f.tagsAny.filter((x) => x !== id) : [...f.tagsAny, id];
+        const next = { ...f, tagsAny: nextAny, page: 1 };
+        void doSearch(1, next);
+        return next;
+      }
+    });
+  }
+
+  // ===== Export CSV =====
+  function exportURL(): string {
+    const sp = new URLSearchParams();
+    if (qDebounced) sp.set("q", qDebounced);
+    if (filters.genero !== "ALL") sp.set("genero", filters.genero);
+    if (filters.createdFrom) sp.set("from", filters.createdFrom);
+    if (filters.createdTo) sp.set("to", filters.createdTo);
+    if (filters.includeDeleted) sp.set("includeDeleted", "1");
+    if (filters.useAllMode && filters.tagsAll.length) sp.set("tagsAll", filters.tagsAll.join(","));
+    if (!filters.useAllMode && filters.tagsAny.length) sp.set("tagsAny", filters.tagsAny.join(","));
+    // Nota: export no fuerza org activa; se exporta todo lo permitido por RLS.
+    return `/api/export/pacientes?${sp.toString()}`;
+  }
+
+  const activeOrg = getActiveOrg();
+
   return (
     <main className="page-bg min-h-[100dvh] p-6 md:p-10 space-y-6">
       <header className="space-y-2">
@@ -222,14 +281,20 @@ export default function PacientesPage() {
           Pacientes
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
-          Filtra por nombre, género, edad y fechas. Los resultados respetan tus permisos
-          (propios o compartidos).
+          Filtra por nombre, etiquetas, género, edad y fechas. Los resultados respetan tus permisos
+          (propios o compartidos). Puedes exportar a CSV.
         </p>
       </header>
 
-      {/* Barra de acciones (Nuevo paciente) */}
+      {/* Barra de acciones (Export CSV + Nuevo paciente) */}
       <div className="flex items-center justify-between">
-        <div />
+        <a
+          href={exportURL()}
+          className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+          title="Exportar resultados a CSV"
+        >
+          Exportar CSV
+        </a>
         <button
           type="button"
           onClick={() => setOpenCreate(true)}
@@ -240,7 +305,29 @@ export default function PacientesPage() {
         </button>
       </div>
 
-      {/* Filtros */}
+      {/* Org activa */}
+      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-4 flex items-center justify-between">
+          <div className="text-sm text-[var(--color-brand-text)]">
+            Org activa: <strong>{activeOrg.name ?? "—"}</strong>{" "}
+            <span className="text-[var(--color-brand-bluegray)]">({activeOrg.id?.slice(0, 8) ?? "sin org"})</span>
+          </div>
+          <label className="text-sm flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={filters.onlyActiveOrg}
+              onChange={(e) => {
+                const onlyActiveOrg = e.target.checked;
+                setFilters((f) => ({ ...f, onlyActiveOrg, page: 1 }));
+                void doSearch(1, { onlyActiveOrg });
+              }}
+            />
+            Sólo org activa
+          </label>
+        </div>
+      </section>
+
+      {/* Filtros principales */}
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <form onSubmit={onSubmit} className="p-6 grid grid-cols-1 md:grid-cols-12 gap-3">
           <label className="md:col-span-4">
@@ -372,6 +459,51 @@ export default function PacientesPage() {
             </div>
           </div>
         </form>
+      </section>
+
+      {/* Facetas por Etiquetas */}
+      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium text-[var(--color-brand-text)]">Filtrar por etiquetas</div>
+            <label className="text-xs flex items-center gap-2 text-[var(--color-brand-bluegray)]">
+              <input
+                type="checkbox"
+                checked={filters.useAllMode}
+                onChange={(e) => {
+                  const useAllMode = e.target.checked;
+                  const next = { ...filters, useAllMode, tagsAny: [], tagsAll: [], page: 1 };
+                  setFilters(next);
+                  void doSearch(1, next);
+                }}
+              />
+              Requerir TODAS
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {myTags.map((t) => {
+              const active = filters.useAllMode ? filters.tagsAll.includes(t.id) : filters.tagsAny.includes(t.id);
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => toggleTag(t.id)}
+                  className={clsx(
+                    "px-3 py-1 rounded-full text-sm border",
+                    active
+                      ? "bg-[var(--color-brand-primary)] text-white border-[var(--color-brand-primary)]"
+                      : "bg-white text-[var(--color-brand-bluegray)] border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]"
+                  )}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
+            {myTags.length === 0 && (
+              <div className="text-sm text-[var(--color-brand-bluegray)]">No tienes etiquetas aún.</div>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* Resultados */}
