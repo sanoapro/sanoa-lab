@@ -766,6 +766,15 @@ export default function PacienteDetailPage() {
             >
               <ColorEmoji token="descargar" size={16} /> CSV
             </a>
+
+            {/* NUEVO: enlace a V2 */}
+            <Link
+              href={`/pacientes/${id}/v2`}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+            >
+              <ColorEmoji token="cohete" size={16} /> Abrir versión v2
+            </Link>
+
             <ExportPDFButton targetRef={printRef} fileName={pdfName} />
             {canEdit && !isDeleted && (
               <button
@@ -1343,174 +1352,177 @@ export default function PacienteDetailPage() {
                       disabled={isDeleted}
                       data-html2canvas-ignore="true"
                     >
-                      <ColorEmoji token="borrar" size={14} /> Revocar
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Actividad */}
-      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
-              <ColorEmoji token="actividad" size={18} /> Actividad
-            </h2>
-            <button
-              type="button"
-              onClick={refreshAudits}
-              className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
-            >
-              <ColorEmoji token="refrescar" size={16} /> Actualizar
-            </button>
-          </div>
-
-          {loadingAudits ? (
-            <p className="text-[var(--color-brand-bluegray)]">Cargando actividad…</p>
-          ) : audits.length === 0 ? (
-            <p className="text-[var(--color-brand-bluegray)]">Sin eventos aún.</p>
-          ) : (
-            <ul className="space-y-2">
-              {audits.map((a) => (
-                <li
-                  key={a.id}
-                  className="rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2 text-sm text-[var(--color-brand-text)]"
-                >
-                  {fmtAuditRow(a)}
-                </li>
-              ))}
-            </ul>
+                      <<ColorEmoji token="borrar" size={14})
+                          /> Revocar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
           )}
-        </div>
-      </section>
 
-      {/* Modal Editar paciente */}
-      <Modal open={openEdit} onClose={() => setOpenEdit(false)} title="Editar paciente" widthClass="max-w-xl">
-        <form onSubmit={onSaveEdit} className="space-y-3">
-          <label className="block">
-            <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
-            <input
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              placeholder="Nombre completo"
-              disabled={!canEdit || isDeleted}
-            />
-          </label>
+          {/* Actividad */}
+          <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
+                  <ColorEmoji token="actividad" size={18} /> Actividad
+                </h2>
+                <button
+                  type="button"
+                  onClick={refreshAudits}
+                  className="rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+                >
+                  <ColorEmoji token="refrescar" size={16} /> Actualizar
+                </button>
+              </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">Edad</span>
-              <input
-                value={edad}
-                onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
-                type="number"
-                min={0}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-                disabled={!canEdit || isDeleted}
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
-              <select
-                value={genero}
-                onChange={(e) => setGenero(e.target.value as any)}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-                disabled={!canEdit || isDeleted}
+              {loadingAudits ? (
+                <p className="text-[var(--color-brand-bluegray)]">Cargando actividad…</p>
+              ) : audits.length === 0 ? (
+                <p className="text-[var(--color-brand-bluegray)]">Sin eventos aún.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {audits.map((a) => (
+                    <li
+                      key={a.id}
+                      className="rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-2 text-sm text-[var(--color-brand-text)]"
+                    >
+                      {fmtAuditRow(a)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+
+          {/* Modal Editar paciente */}
+          <Modal open={openEdit} onClose={() => setOpenEdit(false)} title="Editar paciente" widthClass="max-w-xl">
+            <form onSubmit={onSaveEdit} className="space-y-3">
+              <label className="block">
+                <span className="text-sm text-[var(--color-brand-text)]/80">Nombre</span>
+                <input
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                  placeholder="Nombre completo"
+                  disabled={!canEdit || isDeleted}
+                />
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-sm text-[var(--color-brand-text)]/80">Edad</span>
+                  <input
+                    value={edad}
+                    onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
+                    type="number"
+                    min={0}
+                    className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                    disabled={!canEdit || isDeleted}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm text-[var(--color-brand-text)]/80">Género</span>
+                  <select
+                    value={genero}
+                    onChange={(e) => setGenero(e.target.value as any)}
+                    className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                    disabled={!canEdit || isDeleted}
+                  >
+                    <option value="F">Femenino</option>
+                    <option value="M">Masculino</option>
+                    <option value="O">Otro</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOpenEdit(false)}
+                  className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  disabled={savingEdit || !canEdit || isDeleted}
+                  className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+                >
+                  <ColorEmoji token="guardar" size={16} /> {savingEdit ? "Guardando…" : "Guardar cambios"}
+                </button>
+              </div>
+            </form>
+          </Modal>
+
+          {/* Modal Confirmación: eliminar nota */}
+          <Modal open={!!confirmNoteId} onClose={() => setConfirmNoteId(null)} title="Eliminar nota" widthClass="max-w-md">
+            <div className="space-y-4">
+              <p className="text-sm text-[var(--color-brand-text)]">
+                ¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmNoteId(null)}
+                className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
               >
-                <option value="F">Femenino</option>
-                <option value="M">Masculino</option>
-                <option value="O">Otro</option>
-              </select>
-            </label>
-          </div>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void doDeleteNote()}
+                className="rounded-md bg-red-600 px-4 py-2 text-white hover:opacity-90"
+              >
+                Eliminar
+              </button>
+            </div>
+          </Modal>
 
-          <div className="pt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setOpenEdit(false)}
-              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
-            >
-              Cancelar
-            </button>
-            <button
-              disabled={savingEdit || !canEdit || isDeleted}
-              className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
-            >
-              <ColorEmoji token="guardar" size={16} /> {savingEdit ? "Guardando…" : "Guardar cambios"}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal Confirmación: eliminar nota */}
-      <Modal open={!!confirmNoteId} onClose={() => setConfirmNoteId(null)} title="Eliminar nota" widthClass="max-w-md">
-        <div className="space-y-4">
-          <p className="text-sm text-[var(--color-brand-text)]">
-            ¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.
-          </p>
-        </div>
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setConfirmNoteId(null)}
-            className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={() => void doDeleteNote()}
-            className="rounded-md bg-red-600 px-4 py-2 text-white hover:opacity-90"
-          >
-            Eliminar
-          </button>
-        </div>
-      </Modal>
-
-      {/* Modal Editar nota */}
-      <Modal open={editNoteOpen} onClose={() => setEditNoteOpen(false)} title="Editar nota" widthClass="max-w-md">
-        <form onSubmit={onSaveEditNote} className="space-y-3">
-          <label className="block">
-            <span className="text-sm text-[var(--color-brand-text)]/80">Título</span>
-            <input
-              value={editTitulo}
-              onChange={(e) => setEditTitulo(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              disabled={!canEdit || isDeleted}
-            />
-          </label>
-          <label className="block">
-            <span className="text-sm text-[var(--color-brand-text)]/80">Contenido</span>
-            <textarea
-              rows={6}
-              value={editContenido}
-              onChange={(e) => setEditContenido(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
-              disabled={!canEdit || isDeleted}
-            />
-          </label>
-          <div className="pt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setEditNoteOpen(false)}
-              className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
-            >
-              Cancelar
-            </button>
-            <button
-              disabled={savingNoteEdit || !canEdit || isDeleted}
-              className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
-            >
-              <ColorEmoji token="guardar" size={16} /> {savingNoteEdit ? "Guardando…" : "Guardar"}
-            </button>
-          </div>
-        </form>
-      </Modal>
-    </main>
-  );
+          {/* Modal Editar nota */}
+          <Modal open={editNoteOpen} onClose={() => setEditNoteOpen(false)} title="Editar nota" widthClass="max-w-md">
+            <form onSubmit={onSaveEditNote} className="space-y-3">
+              <label className="block">
+                <span className="text-sm text-[var(--color-brand-text)]/80">Título</span>
+                <input
+                  value={editTitulo}
+                  onChange={(e) => setEditTitulo(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                  disabled={!canEdit || isDeleted}
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm text-[var(--color-brand-text)]/80">Contenido</span>
+                <textarea
+                  rows={6}
+                  value={editContenido}
+                  onChange={(e) => setEditContenido(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                  disabled={!canEdit || isDeleted}
+                />
+              </label>
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditNoteOpen(false)}
+                  className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  disabled={savingNoteEdit || !canEdit || isDeleted}
+                  className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+                >
+                  <ColorEmoji token="guardar" size={16} /> {savingNoteEdit ? "Guardando…" : "Guardar"}
+                </button>
+              </div>
+            </form>
+          </Modal>
+        </main>
+      );
 }
+
+

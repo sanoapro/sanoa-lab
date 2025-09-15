@@ -63,8 +63,13 @@ export const emojiTheme = {
   ayuda: "🆘",
   chat: "💬",
   notificaciones: "🔔",
-  mensajes: "✉️",
-  
+  ArrowLeft: "⬅️",
+  Loader2: "🔄",
+  Trash2: "🗑️",
+  Download: "📥",
+  Copy: "📋",
+  History: "🕒",
+
   
 
   // Aliases / varios

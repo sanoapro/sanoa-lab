@@ -17,6 +17,11 @@ import { listMyTags, type Tag } from "@/lib/tags";
 import { getActiveOrg } from "@/lib/org-local";
 import clsx from "clsx";
 
+// NUEVO: shadcn/ui + lucide para botones/inputs modernos
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Download, Plus } from "lucide-react";
+
 /** Traducción/normalización de errores frecuentes en listados */
 function toSpanishListError(e: unknown): string {
   const msg =
@@ -125,8 +130,8 @@ export default function PacientesPage() {
       try {
         const tags = await listMyTags();
         setMyTags(tags);
-      } catch (e) {
-        // no es crítico para la vista inicial
+      } catch {
+        // no crítico
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -288,21 +293,21 @@ export default function PacientesPage() {
 
       {/* Barra de acciones (Export CSV + Nuevo paciente) */}
       <div className="flex items-center justify-between">
-        <a
-          href={exportURL()}
-          className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
-          title="Exportar resultados a CSV"
-        >
-          Exportar CSV
+        <a href={exportURL()} title="Exportar resultados a CSV">
+          <Button variant="secondary" className="inline-flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            CSV
+          </Button>
         </a>
-        <button
+        <Button
           type="button"
           onClick={() => setOpenCreate(true)}
           disabled={loading}
-          className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+          className="inline-flex items-center gap-2"
         >
-          <ColorEmoji token="nuevo" size={16} /> Nuevo paciente
-        </button>
+          <Plus className="w-4 h-4" />
+          Nuevo paciente
+        </Button>
       </div>
 
       {/* Org activa */}
@@ -332,11 +337,11 @@ export default function PacientesPage() {
         <form onSubmit={onSubmit} className="p-6 grid grid-cols-1 md:grid-cols-12 gap-3">
           <label className="md:col-span-4">
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Nombre</span>
-            <input
+            <Input
               value={qInput}
               onChange={(e) => setQInput(e.target.value)}
               placeholder="Buscar por nombre…"
-              className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+              className="mt-1 w-full"
             />
           </label>
 
@@ -357,7 +362,7 @@ export default function PacientesPage() {
           <div className="md:col-span-2 grid grid-cols-2 gap-3">
             <label>
               <span className="text-sm font-medium text-[var(--color-brand-text)]">Edad mín.</span>
-              <input
+              <Input
                 type="number"
                 min={0}
                 value={filters.edadMin ?? ""}
@@ -368,12 +373,12 @@ export default function PacientesPage() {
                     page: 1,
                   }))
                 }
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                className="mt-1 w-full"
               />
             </label>
             <label>
               <span className="text-sm font-medium text-[var(--color-brand-text)]">Edad máx.</span>
-              <input
+              <Input
                 type="number"
                 min={0}
                 value={filters.edadMax ?? ""}
@@ -384,7 +389,7 @@ export default function PacientesPage() {
                     page: 1,
                   }))
                 }
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                className="mt-1 w-full"
               />
             </label>
           </div>
@@ -392,20 +397,20 @@ export default function PacientesPage() {
           <div className="md:col-span-3 grid grid-cols-2 gap-3">
             <label>
               <span className="text-sm font-medium text-[var(--color-brand-text)]">Desde</span>
-              <input
+              <Input
                 type="date"
                 value={filters.createdFrom ?? ""}
                 onChange={(e) => setFilters((f) => ({ ...f, createdFrom: e.target.value || null, page: 1 }))}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                className="mt-1 w-full"
               />
             </label>
             <label>
               <span className="text-sm font-medium text-[var(--color-brand-text)]">Hasta</span>
-              <input
+              <Input
                 type="date"
                 value={filters.createdTo ?? ""}
                 onChange={(e) => setFilters((f) => ({ ...f, createdTo: e.target.value || null, page: 1 }))}
-                className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+                className="mt-1 w-full"
               />
             </label>
           </div>
@@ -439,20 +444,21 @@ export default function PacientesPage() {
           </label>
 
           <div className="md:col-span-12 flex flex-wrap gap-3 pt-1">
-            <button
-              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+            <Button
+              className="inline-flex items-center gap-2"
               disabled={loading}
               type="submit"
             >
               <ColorEmoji token="buscar" size={16} /> {loading ? "Buscando…" : "Buscar"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClear}
-              className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2"
             >
               <ColorEmoji token="limpiar" size={16} /> Limpiar
-            </button>
+            </Button>
             <div className="text-sm text-[var(--color-brand-bluegray)] self-center ml-auto">
               {/* Mostramos cuántos se ven en esta página tras filtro de edad, y total del servidor */}
               {rows.length} mostrados · Total {serverTotal} · Página {filters.page} de {totalPages}
@@ -639,21 +645,21 @@ export default function PacientesPage() {
       <Modal open={openCreate} onOpenChange={setOpenCreate} title="Nuevo paciente">
         <div className="space-y-3">
           <label className="block text-sm text-[var(--color-brand-text)]">Nombre *</label>
-          <input
+          <Input
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Nombre completo"
-            className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+            className="w-full"
           />
 
           <label className="block text-sm text-[var(--color-brand-text)]">Edad</label>
-          <input
+          <Input
             type="number"
             inputMode="numeric"
             value={edad}
             onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
             placeholder="Ej. 32"
-            className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+            className="w-full"
           />
 
           <label className="block text-sm text-[var(--color-brand-text)]">Género</label>
@@ -676,14 +682,14 @@ export default function PacientesPage() {
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
-              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
+              className="px-4"
               onClick={() => void handleCreate()}
               disabled={loading}
             >
               Crear
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
