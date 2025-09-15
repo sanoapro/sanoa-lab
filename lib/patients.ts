@@ -1,11 +1,14 @@
 // /workspaces/sanoa-lab/lib/patients.ts
 import { getSupabaseBrowser } from "./supabase-browser";
+import { getCurrentOrgId } from "./org"; // usamos tu API existente para obtener la org activa
 
 export type Gender = "F" | "M" | "O";
 
 export interface Patient {
   id: string;
   user_id: string;
+  /** Puede no existir si tu DB aún no tiene esta columna */
+  org_id?: string | null;
   nombre: string;
   edad: number | null;
   genero: Gender;
@@ -37,6 +40,13 @@ export interface ListPatientsParams {
   to?: string;
   /** Incluir registros con deleted_at != null (si la columna existe) */
   includeDeleted?: boolean;
+
+  /** --- NUEVO: filtros por tags (RPC opcional) --- */
+  tagsAny?: string[];
+  tagsAll?: string[];
+
+  /** --- NUEVO: limitar a la org activa (si existe org_id) --- */
+  onlyActiveOrg?: boolean;
 }
 
 export interface ListResult<T> {
@@ -46,12 +56,15 @@ export interface ListResult<T> {
   pageSize: number;
 }
 
+/** Caches de detección de esquema */
 let _softDeleteSupported: boolean | null = null;
+let _orgIdSupported: boolean | null = null;
+
+/** Detecta si existe la columna deleted_at en patients */
 async function softDeleteSupported(): Promise<boolean> {
   if (_softDeleteSupported !== null) return _softDeleteSupported;
   const supabase = getSupabaseBrowser();
   try {
-    // Si la columna no existe, PostgREST suele responder con error "column ... does not exist"
     const { error } = await supabase.from("patients").select("deleted_at").limit(1);
     if (error) {
       const msg = String((error as any)?.message || "").toLowerCase();
@@ -60,12 +73,30 @@ async function softDeleteSupported(): Promise<boolean> {
       _softDeleteSupported = true;
     }
   } catch {
-    // Si hay otro error inesperado, no bloqueamos la UI
     _softDeleteSupported = true;
   }
   return _softDeleteSupported!;
 }
 
+/** Detecta si existe la columna org_id en patients */
+async function orgIdSupported(): Promise<boolean> {
+  if (_orgIdSupported !== null) return _orgIdSupported;
+  const supabase = getSupabaseBrowser();
+  try {
+    const { error } = await supabase.from("patients").select("org_id").limit(1);
+    if (error) {
+      const msg = String((error as any)?.message || "").toLowerCase();
+      _orgIdSupported = !(msg.includes("org_id") && msg.includes("does not exist"));
+    } else {
+      _orgIdSupported = true;
+    }
+  } catch {
+    _orgIdSupported = false;
+  }
+  return _orgIdSupported!;
+}
+
+/** Obtiene el user_id actual (compatibilidad) */
 export async function getCurrentUserId(): Promise<string> {
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase.auth.getUser();
@@ -75,7 +106,7 @@ export async function getCurrentUserId(): Promise<string> {
   return data.user.id;
 }
 
-/** Lista pacientes con búsqueda, filtros, paginación y orden (respetando RLS/compartidos) */
+/** Lista pacientes con búsqueda, filtros, paginación y orden (respeta RLS/compartidos) */
 export async function listPatients(params: ListPatientsParams = {}): Promise<ListResult<Patient>> {
   const supabase = getSupabaseBrowser();
 
@@ -94,6 +125,38 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
 
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+
+  // --- NUEVO: Filtrado por tags vía RPC opcional (patients_ids_by_tags) ---
+  let idsByTags: string[] | null = null;
+  const tagIds =
+    (params.tagsAll && params.tagsAll.length > 0)
+      ? params.tagsAll
+      : (params.tagsAny && params.tagsAny.length > 0)
+        ? params.tagsAny
+        : [];
+
+  if (tagIds.length > 0) {
+    const mode = params.tagsAll && params.tagsAll.length > 0 ? "all" : "any";
+    try {
+      const { data: rows, error: e1 } = await supabase.rpc("patients_ids_by_tags", {
+        tag_ids: tagIds,
+        mode,
+      });
+      if (e1) {
+        // Si la RPC no existe, degradamos sin romper la lista
+        const msg = String((e1 as any)?.message || "").toLowerCase();
+        const missing = msg.includes("function") && msg.includes("patients_ids_by_tags") && msg.includes("does not exist");
+        if (!missing) throw e1;
+      } else {
+        idsByTags = (rows ?? []).map((r: any) => r.patient_id as string);
+        if (idsByTags.length === 0) {
+          return { items: [], total: 0, page, pageSize };
+        }
+      }
+    } catch {
+      // degradación silenciosa
+    }
+  }
 
   let query = supabase
     .from("patients")
@@ -126,6 +189,21 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
     query = query.lte("created_at", isoEnd);
   }
 
+  // Aplicar filtro por tags si hay IDs
+  if (idsByTags && idsByTags.length > 0) {
+    query = query.in("id", idsByTags);
+  }
+
+  // --- NUEVO: Limitar a la organización activa (si existe org_id y se solicita) ---
+  if (params.onlyActiveOrg) {
+    if (await orgIdSupported()) {
+      const activeOrgId = await getCurrentOrgId().catch(() => null);
+      if (activeOrgId) {
+        query = query.eq("org_id", activeOrgId);
+      }
+    }
+  }
+
   const { data, error, count } = await query.range(from, to);
   if (error) throw error;
 
@@ -145,16 +223,24 @@ export async function getPatient(id: string): Promise<Patient | null> {
   return (data as Patient) ?? null;
 }
 
-/** Crea un paciente para el usuario actual */
+/** Crea un paciente para el usuario actual (asigna org_id si existe y hay org activa) */
 export async function createPatient(input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
   const userId = await getCurrentUserId();
-  const payload = {
+
+  const payload: Record<string, unknown> = {
     user_id: userId,
     nombre: input.nombre,
     edad: input.edad ?? null,
     genero: (input.genero ?? "O") as Gender,
   };
+
+  // Si la columna org_id existe, la incluimos con la org activa si la hay
+  if (await orgIdSupported()) {
+    const activeOrgId = await getCurrentOrgId().catch(() => null);
+    payload.org_id = activeOrgId ?? null;
+  }
+
   const { data, error } = await supabase.from("patients").insert(payload).select("*").single();
   if (error) throw error;
   return data as Patient;
