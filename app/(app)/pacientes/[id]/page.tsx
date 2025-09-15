@@ -12,7 +12,7 @@ import {
   createNote,
   deleteNote,
   updateNote,
-  duplicateNote, // NUEVO
+  duplicateNote,
   type PatientNote,
 } from "@/lib/patient-notes";
 import {
@@ -29,16 +29,16 @@ import Modal from "@/components/Modal";
 import { useNotesRealtime } from "@/hooks/useNotesRealtime";
 import ExportPDFButton from "@/components/ExportPDFButton";
 import {
-  getTemplate, // (SOAP/DARE rápidas del original)
-  listTemplates, // NUEVO (plantillas persistentes)
-  createTemplate, // NUEVO
-  deleteTemplate, // NUEVO
+  getTemplate, // (SOAP/DARE rápidas)
+  listTemplates, // plantillas persistentes
+  createTemplate,
+  deleteTemplate,
   type NoteTemplate,
 } from "@/lib/note-templates";
 import { listAppointmentsByPatient, unlinkAppointment, type AppointmentLink } from "@/lib/appointments";
 import { getCalRawByUid } from "@/lib/cal-raw";
 
-// Etiquetas (NUEVO)
+// Etiquetas
 import {
   listMyTags,
   listTagsOfPatient,
@@ -47,6 +47,10 @@ import {
   createTag,
   type Tag,
 } from "@/lib/tags";
+
+// === NUEVO (de V2): historial de notas ===
+import { listNoteVersions, type NoteVersion } from "@/lib/note-versions";
+import NoteDiff from "@/components/NoteDiff";
 
 type PendingNote = PatientNote & { pending?: boolean };
 type PendingFile = PatientFile & { pending?: boolean };
@@ -59,7 +63,7 @@ function tsNow() {
   )}`;
 }
 
-// Utilidad robusta para normalizar errores (se mantiene del original)
+// Normaliza errores
 function toErrorMessage(e: unknown, fallback = "Ocurrió un error"): string {
   if (e instanceof Error && e.message) return e.message;
   if (typeof e === "string" && e.trim()) return e;
@@ -72,6 +76,20 @@ function toErrorMessage(e: unknown, fallback = "Ocurrió un error"): string {
     if (s && s !== "{}") return s;
   } catch {}
   return fallback;
+}
+
+// === helpers para APIs con "motivo" (compatibles con tu lib de V2) ===
+async function updateNoteWithReason(
+  noteId: string,
+  data: { titulo: string | null; contenido: string | null },
+  reason: string | null,
+) {
+  // TS-friendly aunque la firma original no declare el 3er parámetro
+  return await (updateNote as any)(noteId, data, reason);
+}
+
+async function deleteNoteWithReason(noteId: string, reason: string | null) {
+  return await (deleteNote as any)(noteId, reason);
 }
 
 export default function PacienteDetailPage() {
@@ -104,12 +122,23 @@ export default function PacienteDetailPage() {
   const [savingNote, setSavingNote] = useState(false);
   const [loadingNotes, setLoadingNotes] = useState(true);
 
-  // Edición de nota (original)
+  // Edición de nota
   const [editNoteOpen, setEditNoteOpen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editTitulo, setEditTitulo] = useState("");
   const [editContenido, setEditContenido] = useState("");
   const [savingNoteEdit, setSavingNoteEdit] = useState(false);
+
+  // === NUEVO (de V2): Motivo de cambio / eliminación ===
+  const [openReason, setOpenReason] = useState<{ noteId: string; action: "save" | "delete" } | null>(
+    null,
+  );
+  const [reasonText, setReasonText] = useState("");
+
+  // === NUEVO (de V2): Historial de nota ===
+  const [openHistory, setOpenHistory] = useState<string | null>(null);
+  const [versions, setVersions] = useState<NoteVersion[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Archivos
   const [files, setFiles] = useState<PendingFile[]>([]);
@@ -129,26 +158,25 @@ export default function PacienteDetailPage() {
   const [appointments, setAppointments] = useState<AppointmentLink[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
 
-  // Confirmar borrado de nota
+  // Confirmar borrado de nota (paso 1)
   const [confirmNoteId, setConfirmNoteId] = useState<string | null>(null);
 
   // Exportable
   const printRef = useRef<HTMLDivElement>(null);
 
-  // === NUEVO: Plantillas persistentes ===
+  // Plantillas persistentes
   const [templates, setTemplates] = useState<NoteTemplate[]>([]);
   const [tplName, setTplName] = useState("");
   const [tplScope, setTplScope] = useState<"personal" | "org">("personal");
   const [loadingTemplates, setLoadingTemplates] = useState(false);
 
-  // === NUEVO: Etiquetas ===
+  // Etiquetas
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [ptTags, setPtTags] = useState<Tag[]>([]);
   const [newTagName, setNewTagName] = useState("");
   const [loadingTags, setLoadingTags] = useState(false);
 
-  // *** CAMBIO REALIZADO AQUÍ ***
-  // Se movió este hook antes de los "return" tempranos para cumplir las Reglas de los Hooks.
+  // helper etiquetas
   const hasTag = useCallback((tid: string) => ptTags.some((t) => t.id === tid), [ptTags]);
 
   // === Autenticación ===
@@ -196,7 +224,7 @@ export default function PacienteDetailPage() {
     refreshNotes();
   }, [refreshNotes]);
 
-  // Realtime (se conserva del original)
+  // realtime
   useNotesRealtime(
     id,
     () => {
@@ -230,7 +258,6 @@ export default function PacienteDetailPage() {
       setShares(data);
     } catch (e: unknown) {
       console.error("[listShares]", e);
-      // sin toast, menor prioridad
     }
   }, [id]);
 
@@ -275,14 +302,13 @@ export default function PacienteDetailPage() {
     refreshAppointments();
   }, [refreshAppointments]);
 
-  // === NUEVO: Plantillas persistentes ===
+  // === Plantillas persistentes ===
   const refreshTemplates = useCallback(async () => {
     setLoadingTemplates(true);
     try {
-      const list = await listTemplates?.(true); // si tu lib acepta includeOrg
+      const list = await listTemplates?.(true);
       setTemplates(Array.isArray(list) ? list : []);
     } catch (e: unknown) {
-      // Silencioso: la app sigue funcionando aunque aún no exista esta feature
       console.warn("[listTemplates]", e);
     } finally {
       setLoadingTemplates(false);
@@ -293,7 +319,7 @@ export default function PacienteDetailPage() {
     refreshTemplates();
   }, [refreshTemplates]);
 
-  // === NUEVO: Etiquetas ===
+  // === Etiquetas ===
   const refreshTags = useCallback(async () => {
     setLoadingTags(true);
     try {
@@ -324,7 +350,7 @@ export default function PacienteDetailPage() {
     return () => navigator.serviceWorker?.removeEventListener?.("message", onMsg);
   }, [refreshNotes, refreshFiles]);
 
-  // === Plantillas rápidas (original) ===
+  // === Plantillas rápidas ===
   function insertTemplate(key: "SOAP" | "DARE") {
     const t = getTemplate(key);
     setNoteTitulo(t.titulo || "");
@@ -354,7 +380,6 @@ export default function PacienteDetailPage() {
       refreshAudits();
     } catch (e: unknown) {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        // Optimista: offline → agrega placeholder pendiente
         const temp: PendingNote = {
           id: `local-${Date.now()}`,
           patient_id: id,
@@ -379,7 +404,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Notas: editar (original) ===
+  // === Notas: editar (abre modal edición) ===
   function openEditNote(n: PatientNote) {
     if (!canEdit || isDeleted) {
       showToast("No tienes permisos para editar notas.", "error");
@@ -391,29 +416,14 @@ export default function PacienteDetailPage() {
     setEditNoteOpen(true);
   }
 
-  async function onSaveEditNote(e: React.FormEvent) {
+  // === NUEVO: al guardar desde el modal de edición → pedimos motivo ===
+  function onSaveEditNote(e: React.FormEvent) {
     e.preventDefault();
     if (!editingNoteId) return;
-    setSavingNoteEdit(true);
-    try {
-      const nn = await updateNote(editingNoteId, {
-        titulo: (editTitulo || "").trim() || null,
-        contenido: (editContenido || "").trim() || null,
-      });
-      setNotes((prev) => prev.map((x) => (x.id === editingNoteId ? (nn as PendingNote) : x)));
-      setEditNoteOpen(false);
-      setEditingNoteId(null);
-      showToast("Nota actualizada.", "success");
-      refreshAudits();
-    } catch (e: unknown) {
-      console.error("[updateNote]", e);
-      showToast(toErrorMessage(e, "No se pudo actualizar la nota."), "error");
-    } finally {
-      setSavingNoteEdit(false);
-    }
+    setOpenReason({ noteId: editingNoteId, action: "save" });
   }
 
-  // === Notas: duplicar (NUEVO) ===
+  // === Notas: duplicar ===
   async function onDuplicateNote(nid: string) {
     try {
       const dup = await duplicateNote(nid);
@@ -425,7 +435,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Notas: borrar (original) ===
+  // === Notas: borrar (paso 1: confirmar) ===
   function askDeleteNote(nid: string) {
     if (!canEdit || isDeleted) {
       showToast("No tienes permisos para borrar notas.", "error");
@@ -433,28 +443,77 @@ export default function PacienteDetailPage() {
     }
     setConfirmNoteId(nid);
   }
-  async function doDeleteNote() {
+
+  // === Notas: borrar (paso 2: tras confirmar, pedimos motivo) ===
+  function doDeleteNote() {
     const nid = confirmNoteId;
     if (!nid) return;
-    const local = nid.startsWith("local-");
+    setConfirmNoteId(null);
+    setOpenReason({ noteId: nid, action: "delete" });
+  }
+
+  // === Guardar con motivo (desde modal "Motivo") ===
+  async function doSaveWithReason() {
+    if (!openReason || openReason.action !== "save" || !editingNoteId) return;
+    setSavingNoteEdit(true);
     try {
-      if (local) {
-        setNotes((prev) => prev.filter((n) => n.id !== nid));
-      } else {
-        await deleteNote(nid);
-        setNotes((prev) => prev.filter((n) => n.id !== nid));
-      }
-      showToast("Nota eliminada.", "success");
+      const nn = await updateNoteWithReason(
+        editingNoteId,
+        {
+          titulo: (editTitulo || "").trim() || null,
+          contenido: (editContenido || "").trim() || null,
+        },
+        reasonText.trim() || null,
+      );
+      setNotes((prev) => prev.map((x) => (x.id === editingNoteId ? (nn as PendingNote) : x)));
+      setEditNoteOpen(false);
+      setEditingNoteId(null);
+      showToast("Nota actualizada.", "success");
       refreshAudits();
     } catch (e: unknown) {
-      console.error("[deleteNote]", e);
-      showToast(toErrorMessage(e, "No se pudo eliminar la nota."), "error");
+      console.error("[updateNoteWithReason]", e);
+      showToast(toErrorMessage(e, "No se pudo actualizar la nota."), "error");
     } finally {
-      setConfirmNoteId(null);
+      setSavingNoteEdit(false);
+      setOpenReason(null);
+      setReasonText("");
     }
   }
 
-  // === Editar paciente (original) ===
+  // === Eliminar con motivo (desde modal "Motivo") ===
+  async function doDeleteWithReason() {
+    if (!openReason || openReason.action !== "delete") return;
+    const nid = openReason.noteId;
+    try {
+      await deleteNoteWithReason(nid, reasonText.trim() || null);
+      setNotes((prev) => prev.filter((n) => n.id !== nid));
+      showToast("Nota eliminada.", "success");
+      refreshAudits();
+    } catch (e: unknown) {
+      console.error("[deleteNoteWithReason]", e);
+      showToast(toErrorMessage(e, "No se pudo eliminar la nota."), "error");
+    } finally {
+      setOpenReason(null);
+      setReasonText("");
+    }
+  }
+
+  // === Historial de una nota (V2) ===
+  async function openHistoryFor(nid: string) {
+    setOpenHistory(nid);
+    setLoadingHistory(true);
+    try {
+      const v = await listNoteVersions(nid);
+      setVersions(Array.isArray(v) ? v : []);
+    } catch (e: unknown) {
+      console.error("[listNoteVersions]", e);
+      showToast(toErrorMessage(e, "No se pudo cargar el historial."), "error");
+    } finally {
+      setLoadingHistory(false);
+    }
+  }
+
+  // === Editar paciente ===
   function openEditModal() {
     if (!patient) return;
     setNombre(patient.nombre);
@@ -498,7 +557,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Archivos (original, con optimismo offline) ===
+  // === Archivos ===
   async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -514,7 +573,6 @@ export default function PacienteDetailPage() {
       showToast("Archivo subido.", "success");
     } catch (err: unknown) {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        // Optimista: archivo pendiente
         const temp: PendingFile = {
           id: `local-${Date.now()}`,
           patient_id: id,
@@ -579,7 +637,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Compartir (original) ===
+  // === Compartir ===
   async function onShare(e: React.FormEvent) {
     e.preventDefault();
     if (!isOwner || isDeleted) {
@@ -705,7 +763,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Export CSV (NUEVO) ===
+  // === Export CSV ===
   function csvURL() {
     return `/api/export/paciente/${id}/csv`;
   }
@@ -761,7 +819,7 @@ export default function PacienteDetailPage() {
             <ColorEmoji token="usuario" size={24} /> {patient.nombre}
           </h1>
           <div className="flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
-            {/* NUEVO: CSV */}
+            {/* CSV */}
             <a
               href={csvURL()}
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
@@ -769,13 +827,7 @@ export default function PacienteDetailPage() {
               <ColorEmoji token="descargar" size={16} /> CSV
             </a>
 
-            {/* NUEVO: enlace a V2 */}
-            <Link
-              href={`/pacientes/${id}/v2`}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
-            >
-              <ColorEmoji token="cohete" size={16} /> Abrir versión v2
-            </Link>
+            {/* SIN botón a V2 */}
 
             <ExportPDFButton targetRef={printRef} fileName={pdfName} />
             {canEdit && !isDeleted && (
@@ -813,7 +865,7 @@ export default function PacienteDetailPage() {
           </div>
         </section>
 
-        {/* NUEVO: Etiquetas */}
+        {/* Etiquetas */}
         <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="p-6 space-y-3">
             <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
@@ -901,7 +953,7 @@ export default function PacienteDetailPage() {
               <ColorEmoji token="puzzle" size={18} /> Notas clínicas
             </h2>
 
-            {/* Acciones / plantillas rápidas (original) */}
+            {/* Plantillas rápidas */}
             <div className="flex flex-wrap gap-2" data-html2canvas-ignore="true">
               <button
                 type="button"
@@ -921,7 +973,7 @@ export default function PacienteDetailPage() {
               </button>
             </div>
 
-            {/* NUEVO: Plantillas persistentes */}
+            {/* Plantillas persistentes */}
             <div className="rounded-xl border border-[var(--color-brand-border)] bg-white/80 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="font-medium text-[var(--color-brand-text)]">Plantillas guardadas</div>
@@ -1083,7 +1135,16 @@ export default function PacienteDetailPage() {
 
                       {canEdit && !isDeleted && (
                         <div className="flex flex-wrap gap-2" data-html2canvas-ignore="true">
-                          {/* NUEVO: duplicar */}
+                          {/* Historial (NUEVO) */}
+                          <button
+                            onClick={() => void openHistoryFor(n.id)}
+                            className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1"
+                            title="Historial de cambios"
+                          >
+                            <ColorEmoji token="actividad" size={14} /> Historial
+                          </button>
+
+                          {/* Duplicar */}
                           <button
                             onClick={() => void onDuplicateNote(n.id)}
                             className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1"
@@ -1124,7 +1185,7 @@ export default function PacienteDetailPage() {
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
-                <ColorEmoji token="calendario" size={18} /> Citas (Cal.com)
+                <ColorEmoji token="calendario" size={18} /> Citas
               </h2>
               <button
                 type="button"
@@ -1458,11 +1519,11 @@ export default function PacienteDetailPage() {
         </form>
       </Modal>
 
-      {/* Modal Confirmación: eliminar nota */}
+      {/* Modal Confirmación: eliminar nota (paso 1) */}
       <Modal open={!!confirmNoteId} onClose={() => setConfirmNoteId(null)} title="Eliminar nota" widthClass="max-w-md">
         <div className="space-y-4">
           <p className="text-sm text-[var(--color-brand-text)]">
-            ¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.
+            ¿Seguro que deseas eliminar esta nota? Después te pediremos un motivo breve para la auditoría.
           </p>
         </div>
         <div className="flex justify-end gap-2">
@@ -1483,7 +1544,7 @@ export default function PacienteDetailPage() {
         </div>
       </Modal>
 
-      {/* Modal Editar nota */}
+      {/* Modal Editar nota (paso de edición) */}
       <Modal open={editNoteOpen} onClose={() => setEditNoteOpen(false)} title="Editar nota" widthClass="max-w-md">
         <form onSubmit={onSaveEditNote} className="space-y-3">
           <label className="block">
@@ -1516,11 +1577,90 @@ export default function PacienteDetailPage() {
             <button
               disabled={savingNoteEdit || !canEdit || isDeleted}
               className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 inline-flex items-center gap-2"
+              title="Se solicitará un motivo"
             >
               <ColorEmoji token="guardar" size={16} /> {savingNoteEdit ? "Guardando…" : "Guardar"}
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal Motivo (paso final: guardar/eliminar con razón) */}
+      <Modal open={!!openReason} onClose={() => setOpenReason(null)} title="Motivo" widthClass="max-w-md">
+        <div className="space-y-3">
+          <p className="text-sm text-[var(--color-brand-bluegray)]">
+            Ingresa un motivo breve para la auditoría (ej. “Corrección de typo”).
+          </p>
+          <input
+            value={reasonText}
+            onChange={(e) => setReasonText(e.target.value)}
+            className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+            placeholder="Motivo (opcional)"
+          />
+        </div>
+        <div className="pt-3 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setOpenReason(null)}
+            className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            Cancelar
+          </button>
+          {openReason?.action === "save" ? (
+            <button
+              type="button"
+              onClick={() => void doSaveWithReason()}
+              className="rounded-md bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90"
+            >
+              Guardar
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void doDeleteWithReason()}
+              className="rounded-md bg-red-600 px-4 py-2 text-white hover:opacity-90"
+            >
+              Eliminar
+            </button>
+          )}
+        </div>
+      </Modal>
+
+      {/* Modal Historial/diffs (NUEVO) */}
+      <Modal open={!!openHistory} onClose={() => setOpenHistory(null)} title="Historial de la nota" widthClass="max-w-2xl">
+        <div className="max-h-[60vh] overflow-auto space-y-4">
+          {loadingHistory && <div className="text-sm">Cargando…</div>}
+          {!loadingHistory && versions.length === 0 && (
+            <div className="text-sm text-[var(--color-brand-bluegray)]">Sin versiones.</div>
+          )}
+          {!loadingHistory &&
+            versions.map((v) => (
+              <div key={v.id} className="border rounded-lg p-3 bg-white">
+                <div className="text-xs text-[var(--color-brand-bluegray)] mb-2">
+                  {new Date(v.created_at).toLocaleString()} · acción: <strong>{v.action}</strong>
+                  {v.reason ? (
+                    <>
+                      {" "}
+                      · motivo: <em>{v.reason}</em>
+                    </>
+                  ) : null}
+                </div>
+                <div className="text-sm font-medium mb-1">Título</div>
+                <NoteDiff before={v.before_titulo || ""} after={v.after_titulo || ""} />
+                <div className="text-sm font-medium mt-3 mb-1">Contenido</div>
+                <NoteDiff before={v.before_contenido || ""} after={v.after_contenido || ""} />
+              </div>
+            ))}
+        </div>
+        <div className="pt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setOpenHistory(null)}
+            className="rounded-md border border-[var(--color-brand-border)] px-4 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            Cerrar
+          </button>
+        </div>
       </Modal>
     </main>
   );
