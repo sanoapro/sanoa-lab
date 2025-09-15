@@ -1,71 +1,13 @@
-unction toHex(buf: ArrayBuffer): string {
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function toBase64(buf: ArrayBuffer): string {
-  let s = '';
-  const a = new Uint8Array(buf);
-  for (let i = 0; i < a.length; i++) s += String.fromCharCode(a[i]);
-  // btoa espera Latin-1; está bien para bytes crudos del HMAC
-  return btoa(s);
-}
-
-function toBase64Url(b64: string): string {
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-Deno.serve(async (req) => {
-  if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+{
+  "triggerEvent": "BOOKING_CREATED",
+  "payload": {
+    "uid": "demoUID123",
+    "title": "Sesión de 60min",
+    "startTime": "2025-09-13T16:00:00Z",
+    "endTime": "2025-09-13T17:00:00Z",
+    "status": "ACCEPTED",
+    "attendees": [{"name": "John Doe", "email": "john@example.com"}],
+    "organizer": {"name":"Therapist","email":"pro@example.com"},
+    "meetingUrl": "https://meet.example.com/abc"
   }
-
-  const secret = Deno.env.get('CAL_WEBHOOK_SECRET') ?? '';
-  if (!secret) return new Response('Missing CAL_WEBHOOK_SECRET', { status: 500 });
-
-  // Cuerpo crudo
-  const raw = await req.arrayBuffer();
-
-  // Firmas posibles en header
-  const headerRaw =
-    req.headers.get('x-cal-signature-256')
-    ?? req.headers.get('x-cal-signature')
-    ?? '';
-
-  const header = headerRaw.trim();
-  if (!header) return new Response('Invalid signature', { status: 401 });
-
-  // Calcula HMAC del cuerpo crudo
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const mac = await crypto.subtle.sign('HMAC', key, raw);
-  const hex = toHex(mac);                 // ej: ab12...
-  const b64 = toBase64(mac);              // ej: qxI...
-  const b64url = toBase64Url(b64);        // ej: qxI... (URL-safe)
-
-  // Soporta "sha256=<hex>", "<hex>" y base64/base64url
-  const candidates = [
-    hex,
-    `sha256=${hex}`,
-    b64,
-    `sha256=${b64}`,
-    b64url,
-    `sha256=${b64url}`,
-  ];
-
-  const ok = candidates.some(c => c.toLowerCase() === header.toLowerCase());
-  if (!ok) return new Response('Invalid signature', { status: 401 });
-
-  // (Opcional) parseo
-  let payload: unknown = null;
-  try { payload = JSON.parse(new TextDecoder().decode(raw)); } catch {}
-
-  return new Response(JSON.stringify({ ok: true, received: payload }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
-});
+}
