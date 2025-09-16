@@ -48,7 +48,7 @@ import {
   type Tag,
 } from "@/lib/tags";
 
-// === NUEVO (de V2): historial de notas ===
+// === Historial de notas (tomado de V2) ===
 import { listNoteVersions, type NoteVersion } from "@/lib/note-versions";
 import NoteDiff from "@/components/NoteDiff";
 
@@ -129,13 +129,13 @@ export default function PacienteDetailPage() {
   const [editContenido, setEditContenido] = useState("");
   const [savingNoteEdit, setSavingNoteEdit] = useState(false);
 
-  // === NUEVO (de V2): Motivo de cambio / eliminación ===
+  // Motivo de cambio / eliminación
   const [openReason, setOpenReason] = useState<{ noteId: string; action: "save" | "delete" } | null>(
     null,
   );
   const [reasonText, setReasonText] = useState("");
 
-  // === NUEVO (de V2): Historial de nota ===
+  // Historial de nota
   const [openHistory, setOpenHistory] = useState<string | null>(null);
   const [versions, setVersions] = useState<NoteVersion[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -154,7 +154,7 @@ export default function PacienteDetailPage() {
   const [audits, setAudits] = useState<AuditEntry[]>([]);
   const [loadingAudits, setLoadingAudits] = useState(true);
 
-  // Citas (Cal.com)
+  // Citas (agenda)
   const [appointments, setAppointments] = useState<AppointmentLink[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
 
@@ -283,14 +283,14 @@ export default function PacienteDetailPage() {
     refreshAudits();
   }, [refreshAudits]);
 
-  // === Citas (Cal.com) ===
+  // === Agenda ===
   const refreshAppointments = useCallback(async () => {
     setLoadingAppointments(true);
     try {
       const ap = await listAppointmentsByPatient(id);
       setAppointments(ap || []);
     } catch (e: unknown) {
-      const msg = toErrorMessage(e, "No se pudieron cargar las citas.");
+      const msg = toErrorMessage(e, "No se pudieron cargar la agenda.");
       console.error("[listAppointmentsByPatient]", e);
       showToast(msg, "error");
     } finally {
@@ -416,7 +416,7 @@ export default function PacienteDetailPage() {
     setEditNoteOpen(true);
   }
 
-  // === NUEVO: al guardar desde el modal de edición → pedimos motivo ===
+  // Al guardar desde el modal de edición → pedimos motivo
   function onSaveEditNote(e: React.FormEvent) {
     e.preventDefault();
     if (!editingNoteId) return;
@@ -498,7 +498,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Historial de una nota (V2) ===
+  // === Historial de una nota ===
   async function openHistoryFor(nid: string) {
     setOpenHistory(nid);
     setLoadingHistory(true);
@@ -689,7 +689,7 @@ export default function PacienteDetailPage() {
     }
   }
 
-  // === Citas ===
+  // === Agenda ===
   async function onUnlinkAppointment(appId: string) {
     if (!confirm("¿Desvincular esta cita del paciente?")) return;
     try {
@@ -737,7 +737,7 @@ export default function PacienteDetailPage() {
 
       const noteTitle = `Cita: ${title} — ${isNaN(start.getTime()) ? "" : start.toLocaleString()}`.trim();
       const noteBody = [
-        "Resumen de cita (Cal.com)",
+        "Resumen de cita",
         `- Estado: ${status}`,
         `- Inicio: ${isNaN(start.getTime()) ? "—" : start.toLocaleString()}`,
         `- Fin: ${isNaN(end.getTime()) ? "—" : end.toLocaleString()}`,
@@ -818,33 +818,34 @@ export default function PacienteDetailPage() {
           <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
             <ColorEmoji token="usuario" size={24} /> {patient.nombre}
           </h1>
-          <div className="flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
-            {/* CSV */}
-            <a
-              href={csvURL()}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2" data-html2canvas-ignore="true">
+          {/* CSV */}
+          <a
+            href={csvURL()}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            <ColorEmoji token="descargar" size={16} /> CSV
+          </a>
+
+          {/* SIN botón a V2 */}
+
+          <ExportPDFButton targetRef={printRef} fileName={pdfName} />
+          {canEdit && !isDeleted && (
+            <button
+              onClick={openEditModal}
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
             >
-              <ColorEmoji token="descargar" size={16} /> CSV
-            </a>
-
-            {/* SIN botón a V2 */}
-
-            <ExportPDFButton targetRef={printRef} fileName={pdfName} />
-            {canEdit && !isDeleted && (
-              <button
-                onClick={openEditModal}
-                className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
-              >
-                <ColorEmoji token="puzzle" size={16} /> Editar
-              </button>
-            )}
-            <Link
-              href="/pacientes"
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
-            >
-              <ColorEmoji token="atras" size={16} /> Volver
-            </Link>
-          </div>
+              <ColorEmoji token="puzzle" size={16} /> Editar
+            </button>
+          )}
+          <Link
+            href="/pacientes"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 hover:bg-[var(--color-brand-background)]"
+          >
+            <ColorEmoji token="atras" size={16} /> Volver
+          </Link>
         </div>
 
         {/* Datos básicos */}
@@ -1135,7 +1136,7 @@ export default function PacienteDetailPage() {
 
                       {canEdit && !isDeleted && (
                         <div className="flex flex-wrap gap-2" data-html2canvas-ignore="true">
-                          {/* Historial (NUEVO) */}
+                          {/* Historial */}
                           <button
                             onClick={() => void openHistoryFor(n.id)}
                             className="rounded-md border border-[var(--color-brand-border)] px-2 py-1 text-xs hover:bg-[var(--color-brand-background)] inline-flex items-center gap-1"
@@ -1180,12 +1181,12 @@ export default function PacienteDetailPage() {
           </div>
         </section>
 
-        {/* Citas (Cal.com) vinculadas */}
+        {/* Agenda */}
         <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-[var(--color-brand-text)] flex items-center gap-2">
-                <ColorEmoji token="calendario" size={18} /> Citas
+                <ColorEmoji token="calendario" size={18} /> Agenda
               </h2>
               <button
                 type="button"
@@ -1197,7 +1198,7 @@ export default function PacienteDetailPage() {
             </div>
 
             {loadingAppointments ? (
-              <p className="text-[var(--color-brand-bluegray)]">Cargando citas…</p>
+              <p className="text-[var(--color-brand-bluegray)]">Cargando agenda…</p>
             ) : appointments.length === 0 ? (
               <p className="text-[var(--color-brand-bluegray)]">Este paciente aún no tiene citas vinculadas.</p>
             ) : (
@@ -1356,6 +1357,16 @@ export default function PacienteDetailPage() {
             </ul>
           )}
         </div>
+      </section>
+
+      {/* Permisos por paciente (simple) */}
+      <section className="space-y-3 mt-8">
+        <h2 className="text-xl font-semibold">Permisos del paciente (simple)</h2>
+        <p className="text-sm text-gray-600">
+          Para uso rápido: requiere conocer el <code>user_id</code> del usuario (puedes listar usuarios en Supabase Auth).
+          En próximas etapas lo haremos por email con invitación.
+        </p>
+        {/* Aquí podrías insertar una UI más completa si lo deseas */}
       </section>
 
       {/* Compartir (solo dueño) */}
@@ -1626,7 +1637,7 @@ export default function PacienteDetailPage() {
         </div>
       </Modal>
 
-      {/* Modal Historial/diffs (NUEVO) */}
+      {/* Modal Historial/diffs */}
       <Modal open={!!openHistory} onClose={() => setOpenHistory(null)} title="Historial de la nota" widthClass="max-w-2xl">
         <div className="max-h-[60vh] overflow-auto space-y-4">
           {loadingHistory && <div className="text-sm">Cargando…</div>}
