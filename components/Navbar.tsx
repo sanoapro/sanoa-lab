@@ -7,17 +7,16 @@ import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useToast } from "@/components/Toast";
 
-type NavItem = {
-  href: string;
-  label: string;
-  token: string; // ColorEmoji token
-};
+type NavItem = { href: string; label: string; token: string };
 
+// Merge: conserva tus entradas, añade Agenda y Laboratorio, y renombra "Cargas" → "Importar".
 const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Tablero", token: "tablero" },
-  { href: "/test-ui/upload", label: "Cargas", token: "cargas" },
-  { href: "/pacientes", label: "Pacientes", token: "pacientes" }, // integrado
-  { href: "/perfil", label: "Perfil", token: "perfil" },
+  { href: "/dashboard",      label: "Tablero",     token: "tablero" },
+  { href: "/agenda",         label: "Agenda",      token: "agenda" },
+  { href: "/test-ui/upload", label: "Importar",    token: "cargas" },
+  { href: "/pacientes",      label: "Pacientes",   token: "pacientes" },
+  { href: "/laboratorio",    label: "Laboratorio", token: "laboratorio" }, // opcional si aún no existe
+  { href: "/perfil",         label: "Perfil",      token: "perfil" },
 ];
 
 export default function Navbar() {
@@ -33,42 +32,27 @@ export default function Navbar() {
     setSigningOut(false);
 
     if (error) {
-      toast({
-        variant: "error",
-        title: "No pudimos cerrar sesión",
-        description: error.message,
-        emoji: "🛑",
-      });
+      toast({ variant: "error", title: "No pudimos cerrar sesión", description: error.message, emoji: "🛑" });
       return;
     }
 
-    toast({
-      variant: "success",
-      title: "Sesión cerrada",
-      description: "Hasta pronto 👋",
-      emoji: "✅",
-    });
+    toast({ variant: "success", title: "Sesión cerrada", description: "Hasta pronto 👋", emoji: "✅" });
     router.replace("/login");
   }
 
   return (
-    <header
-      className="
-        sticky top-0 z-40 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70
-        border-b border-[var(--color-brand-border)]
-      "
-    >
+    <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
         <Link href="/dashboard" className="inline-flex items-center gap-2" aria-label="Ir al tablero">
-          <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+          <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <ColorEmoji token="logo" />
           </span>
-          <span className="font-semibold text-[var(--color-brand-text)]">Sanoa</span>
+          <span className="font-semibold text-slate-900 dark:text-white">Sanoa</span>
         </Link>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-1">
           {NAV.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -76,16 +60,13 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className="
-                  inline-flex items-center gap-2 px-3 py-2 rounded-lg
-                  text-[color-mix(in_oklab,var(--color-brand-text),#000_0%)]/90
-                  hover:bg-gray-50
-                  border border-transparent
-                  aria-[current=page]:bg-gray-100
-                  aria-[current=page]:text-[var(--color-brand-text)]
-                  aria-[current=page]:border-[var(--color-brand-border)]
-                  transition
-                "
+                className={[
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition",
+                  "text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-white/10",
+                  isActive
+                    ? "bg-white dark:bg-white/10 border-slate-200 dark:border-slate-700"
+                    : "border-transparent",
+                ].join(" ")}
               >
                 <ColorEmoji token={item.token} />
                 <span className="font-medium">{item.label}</span>
@@ -99,13 +80,7 @@ export default function Navbar() {
           <button
             onClick={handleSignOut}
             disabled={signingOut}
-            className="
-              inline-flex items-center gap-2 px-3 py-2 rounded-xl
-              bg-[var(--color-brand-primary)] text-white
-              hover:brightness-95 active:brightness-90
-              disabled:opacity-60 disabled:cursor-not-allowed
-              transition
-            "
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500 text-white hover:brightness-95 active:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed transition"
             title="Cerrar sesión"
           >
             <ColorEmoji token="desbloquear" />
