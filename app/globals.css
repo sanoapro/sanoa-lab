@@ -6,14 +6,14 @@
    MARCA / TIPOGRAFÍAS
    ======================= */
 @theme {
-  /* Paleta Sanoa */
+  /* Paleta Sanoa (base claro) */
   --color-brand-primary: #d97a66; /* Terracota */
-  --color-brand-text: #0f172a;     /* slate-900 */
+  --color-brand-text: #0f172a;     /* slate-900 (texto por defecto) */
   --color-brand-bluegray: #334155; /* slate-700 */
   --color-brand-border: #cbd5e1;   /* slate-300 */
   --color-danger: #8c3d1e;
 
-  /* Superficies neutrales */
+  /* Superficies */
   --color-surface: #ffffff;
   --color-surface-2: #f8fafc;
 
@@ -27,9 +27,8 @@
 }
 
 /* =======================
-   FONDO GLOBAL ÚNICO
+   FONDO GLOBAL
    ======================= */
-/* Gradiente crema → azul con un radial suave en esquina superior izquierda */
 :root {
   --app-bg:
     radial-gradient(60rem 60rem at -10% -10%, rgba(217,122,102,0.25) 0%, rgba(217,122,102,0.10) 40%, rgba(217,122,102,0.00) 70%),
@@ -37,12 +36,24 @@
     linear-gradient(180deg, #fff7f0 0%, #fefcf9 55%, #f1f6ff 100%);
 }
 
+/* Dark: cambiamos solo lo necesario y usamos SCOPE para no perder contraste en cajas blancas */
 @media (prefers-color-scheme: dark) {
   :root {
     --app-bg:
       radial-gradient(60rem 60rem at -10% -10%, rgba(217,122,102,0.22) 0%, rgba(217,122,102,0.06) 40%, rgba(217,122,102,0.00) 70%),
       radial-gradient(90rem 80rem at 120% -20%, rgba(96,165,250,0.20) 0%, rgba(96,165,250,0.06) 45%, rgba(96,165,250,0.00) 70%),
       linear-gradient(180deg, #0b1220 0%, #0c1322 60%, #0b1426 100%);
+
+    /* OJO: Hacemos el texto global claro… */
+    --color-brand-text: #e5e7eb;     /* slate-200 */
+
+    /* …pero dejamos superficies blancas para tarjetas/inputs (legibles con texto oscuro scoped) */
+    --color-surface: #ffffff;
+    --color-surface-2: rgba(255,255,255,0.9);
+
+    /* Bordes más oscuros para glass */
+    --color-brand-border: #475569;   /* slate-600 */
+    --color-brand-bluegray: #cbd5e1; /* slate-300 */
   }
 }
 
@@ -62,6 +73,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Headings toman el color global (claro en dark). Dentro de .card los forzamos a oscuro abajo. */
 h1, h2, h3, h4, h5, h6 {
   color: var(--color-brand-text);
   font-weight: 600;
@@ -78,9 +90,14 @@ button { font-weight: 600; }
 .container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
 
 /* =======================
-   CARDS
+   CARDS (SCOPE DE TEXTO OSCURO)
    ======================= */
 .card {
+  /* Re-definimos la variable SOLO dentro de las tarjetas:
+     así cualquier .text-[var(--color-brand-text)] queda oscuro en cajas blancas. */
+  --color-brand-text: #0f172a;
+  color: var(--color-brand-text);
+
   background: var(--color-surface);
   border: 1px solid var(--color-brand-border);
   border-radius: 20px;
@@ -93,6 +110,8 @@ button { font-weight: 600; }
   background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
   border-top-left-radius: 20px; border-top-right-radius: 20px;
 }
+/* Headings dentro de card: siempre oscuros */
+.card :is(h1,h2,h3,h4,h5,h6) { color: #0f172a; }
 .card-title { font-family: var(--font-heading); font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem); font-weight: 600; }
 .card-body { padding: 1.5rem; }
 
@@ -101,7 +120,7 @@ button { font-weight: 600; }
    ======================= */
 .input {
   width: 100%; border-radius: 12px; border: 1px solid var(--color-brand-border);
-  background: var(--color-surface); color: var(--color-brand-text);
+  background: var(--color-surface); color: #0f172a;  /* texto oscuro dentro de input */
   padding: .75rem 1rem;
 }
 .input:disabled { opacity: .5; cursor: not-allowed; }
@@ -134,14 +153,14 @@ button { font-weight: 600; }
 .text-danger { color: var(--color-danger); }
 
 /* =======================
-   CARGAS: acciones como “Ver / Descargar…”
+   "Importar": acciones (Ver/Descargar/…)
    ======================= */
 .tiles { display: flex; flex-wrap: wrap; gap: 12px; }
 .tile-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   min-height: 48px; min-width: 148px; padding: 12px 16px;
   border: 1px solid var(--color-brand-border); border-radius: 14px;
-  background: #fff; color: var(--color-brand-text); font-weight: 700;
+  background: #fff; color: #0f172a; font-weight: 700;
   box-shadow: var(--shadow-soft); text-align: center; white-space: nowrap;
 }
 .tile-btn:hover { background: #fff8f4; }
