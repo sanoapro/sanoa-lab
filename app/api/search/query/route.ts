@@ -4,7 +4,7 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 /** === Embeddings providers & helpers === */
 const OAI_MODEL = "text-embedding-3-small";      // 1536 dims
-const GEM_MODEL = "models/text-embedding-004";   // 768 dims (se normaliza a 1536)
+const GEM_MODEL = "models/text-embedding-004";   // 768 dims
 const DIM = 1536;
 
 const useGemini = () => !!process.env.GEMINI_API_KEY;
@@ -47,8 +47,7 @@ async function embedOneOpenAI(text: string): Promise<number[]> {
 async function embedOne(text: string): Promise<number[]> {
   if (useGemini()) return embedOneGemini(text);
   if (useOpenAI()) return embedOneOpenAI(text);
-  // Sin claves → devolvemos vector cero (hará fallback a keyword)
-  return Array(DIM).fill(0);
+  return Array(DIM).fill(0); // no keys → cae a keyword
 }
 
 /** === Handler === */
@@ -62,22 +61,21 @@ export async function GET(req: Request) {
   if (!org) return NextResponse.json({ error: "org requerida" }, { status: 400 });
   if (!q.trim()) return NextResponse.json({ results: [] });
 
-  // ===== SEMÁNTICO si hay alguna key =====
+  // SEMÁNTICO si hay alguna key
   if (useGemini() || useOpenAI()) {
-    try {
-      const vec = await embedOne(q);
-      const { data, error } = await supabase.rpc("search_notes_files", {
-        p_org: org,
-        p_query: vec as any,
-        p_limit: limit,
-      });
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      const provider = useGemini() ? "gemini" : "openai";
-      const model = useGemini() ? GEM_MODEL : OAI_MODEL;
-      return NextResponse.json({ results: data, mode: "semantic", provider, model, dim: DIM });
-    } catch {
-      // si falla el proveedor, continuamos con keyword
-    }
+    const vec = await embedOne(q);
+    const { data, error } = await supabase.rpc("search_notes_files", {
+      p_org: org,
+      p_query: vec as any,
+      p_limit: limit,
+    });
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({
+      results: data,
+      mode: "semantic",
+      provider: useGemini() ? "gemini" : "openai",
+      dim: DIM,
+    });
   }
 
   // ===== Fallback KEYWORD =====
@@ -88,14 +86,15 @@ export async function GET(req: Request) {
     .ilike("contenido", `%${q}%`)
     .limit(limit);
 
-  const notes = (rn.data || []).map((n: any) => ({
-    kind: "note",
-    id: n.id,
-    patient_id: n.patient_id,
-    ref: n.id,
-    snippet: `${n.titulo || ""} ${n.contenido || ""}`.trim().slice(0, 240),
-    score: 0.3,
-  }));
+  const notes =
+    (rn.data || []).map((n: any) => ({
+      kind: "note",
+      id: n.id,
+      patient_id: n.patient_id,
+      ref: n.id,
+      snippet: `${n.titulo || ""} ${n.contenido || ""}`.trim().slice(0, 240),
+      score: 0.3,
+    })) || [];
 
   const rf = await supabase
     .from("patient_file_versions")
@@ -104,14 +103,18 @@ export async function GET(req: Request) {
     .ilike("name", `%${q}%`)
     .limit(limit);
 
-  const files = (rf.data || []).map((f: any) => ({
-    kind: "file",
-    id: null,
-    patient_id: f.patient_id,
-    ref: null,
-    snippet: f.name as string,
-    score: 0.2,
-  }));
+  const files =
+    (rf.data || []).map((f: any) => ({
+      kind: "file",
+      id: null,
+      patient_id: f.patient_id,
+      ref: null,
+      snippet: f.name as string,
+      score: 0.2,
+    })) || [];
 
-  return NextResponse.json({ results: [...notes, ...files].slice(0, limit), mode: "keyword" });
+  return NextResponse.json({
+    results: [...notes, ...files].slice(0, limit),
+    mode: "keyword",
+  });
 }
