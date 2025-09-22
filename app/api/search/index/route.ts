@@ -4,7 +4,7 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 /** === Embeddings providers & helpers === */
 const OAI_MODEL = "text-embedding-3-small";      // 1536 dims
-const GEM_MODEL = "models/text-embedding-004";   // 768 dims
+const GEM_MODEL = "models/text-embedding-004";   // 768 dims (lo normalizamos a 1536 con padding)
 const DIM = 1536;
 
 const useGemini = () => !!process.env.GEMINI_API_KEY;
@@ -21,25 +21,22 @@ function isAllZeros(v: number[]) {
   return s === 0;
 }
 
-async function embedBatchGemini(texts: string[]): Promise<{vec:number[]; provider:string; model:string; dim:number}[]> {
+async function embedBatchGemini(texts: string[]): Promise<{vec:number[]; provider:"gemini"; model:string; dim:number}[]> {
   const base = process.env.GEMINI_API_BASE || "https://generativelanguage.googleapis.com/v1beta";
   const url = `${base}/models/text-embedding-004:batchEmbedContents?key=${process.env.GEMINI_API_KEY}`;
 
   const body = {
-    requests: texts.map((t) => ({
-      model: GEM_MODEL,
-      content: { parts: [{ text: t }] },
-    })),
+    requests: texts.map((t) => ({ model: GEM_MODEL, content: { parts: [{ text: t }] } })),
   };
 
   const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!r.ok) throw new Error(await r.text());
   const j = await r.json();
-  const arr = (j.embeddings || []) as Array<{ values:number[] }>;
-  return arr.map(e => ({ vec: toDim(e.values || []), provider: "gemini", model: GEM_MODEL, dim: 768 }));
+  const arr = (j.embeddings || []) as Array<{ values:number[] }>; // API devuelve {embeddings:[{values:[]},...]}
+  return arr.map(e => ({ vec: toDim(e.values || []), provider: "gemini" as const, model: GEM_MODEL, dim: 768 }));
 }
 
-async function embedBatchOpenAI(texts: string[]): Promise<{vec:number[]; provider:string; model:string; dim:number}[]> {
+async function embedBatchOpenAI(texts: string[]): Promise<{vec:number[]; provider:"openai"; model:string; dim:number}[]> {
   const base = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
   const r = await fetch(`${base}/embeddings`, {
     method: "POST",
@@ -48,13 +45,13 @@ async function embedBatchOpenAI(texts: string[]): Promise<{vec:number[]; provide
   });
   if (!r.ok) throw new Error(await r.text());
   const j = await r.json();
-  return j.data.map((d: any) => ({ vec: toDim(d.embedding as number[]), provider: "openai", model: OAI_MODEL, dim: DIM }));
+  return j.data.map((d: any) => ({ vec: toDim(d.embedding as number[]), provider: "openai" as const, model: OAI_MODEL, dim: DIM }));
 }
 
 async function embedBatch(texts: string[]) {
   if (useGemini()) return embedBatchGemini(texts);
   if (useOpenAI()) return embedBatchOpenAI(texts);
-  // Sin claves: devolvemos vectores vacíos (serán NULL en BD)
+  // Sin claves: devolvemos vectores vacíos (guardaremos NULL en BD)
   return texts.map(() => ({ vec: Array(DIM).fill(0), provider: null as any, model: null as any, dim: null as any }));
 }
 
@@ -110,12 +107,10 @@ export async function POST(req: Request) {
       total += slice.length;
     }
 
-    return NextResponse.json({
-      ok: true,
-      indexed: total,
-      provider: useGemini() ? "gemini" : (useOpenAI() ? "openai" : "none"),
-      dim: DIM,
-    });
+    const provider = useGemini() ? "gemini" : (useOpenAI() ? "openai" : "none");
+    const model = useGemini() ? GEM_MODEL : (useOpenAI() ? OAI_MODEL : "fallback");
+
+    return NextResponse.json({ ok: true, indexed: total, provider, model, dim: DIM });
   }
 
   // FILES
@@ -166,12 +161,10 @@ export async function POST(req: Request) {
       total += slice.length;
     }
 
-    return NextResponse.json({
-      ok: true,
-      indexed: total,
-      provider: useGemini() ? "gemini" : (useOpenAI() ? "openai" : "none"),
-      dim: DIM,
-    });
+    const provider = useGemini() ? "gemini" : (useOpenAI() ? "openai" : "none");
+    const model = useGemini() ? GEM_MODEL : (useOpenAI() ? OAI_MODEL : "fallback");
+
+    return NextResponse.json({ ok: true, indexed: total, provider, model, dim: DIM });
   }
 
   return NextResponse.json({ error: "scope desconocido (usa 'notes' o 'files')" }, { status: 400 });
