@@ -1,34 +1,34 @@
 export const emojiTheme = {
   // Marca / generales
-  logo: "svg:icons/logo", // asegura public/icons/logo.svg (placeholder abajo)
+  logo: "svg:icons/logo",
   info: "ℹ️",
   ok: "✅",
   error: "⚠️",
 
   // Navegación principal
   tablero: "📊",
-  cargas: "📤",
-  perfil: "👤",
   pacientes: "🙋🏻‍♀️",
-
-  // Autenticación
-  email: "✉️",
-  llave: "🔑",
-  candado: "lucide:Lock",
-  atras: "◀️",
-  siguiente: "➡️",
+  perfil: "🆔",
+  cargas: "📤",        // usado como "Importar"
+  agenda: "🗓️",       // NUEVO
+  calendario: "🗓️",   // alias por compatibilidad
   laboratorio: "🧪",
+
+  // Archivos / acciones
   archivo: "📄",
-  ver: "👁️‍🗨️",
-  link: "🔗",
-  borrar: "🗑️",
   carpeta: "📁",
-  subir: "📤",
-  actividad: "🧭",
   documentos: "📚",
+  subir: "📤",
   subirBandeja: "🗂️",
   descargar: "⬇️",
   enlace: "🔗",
+  ver: "👁️‍🗨️",
+  borrar: "🗑️",
+  copiar: "📋",
+  refrescar: "🔄",     // NUEVO
+  desbloquear: "🔓",
+
+  // UI / sistema
   usuario: "👤",
   imagen: "📸",
   limpiar: "🧹",
@@ -41,10 +41,8 @@ export const emojiTheme = {
   guardar: "💾",
   hoja: "📄",
   alerta: "⚠️",
-  copiar: "📋",
   home: "🏠",
   instalar: "⬇️",
-  ok: "✅",
   ios: "",
   android: "🤖",
   escritorio: "🖥️",
@@ -53,16 +51,16 @@ export const emojiTheme = {
   puzzle: "🧩",
   reloj: "⏳",
   exportar: "📄",
-  desbloquear: "🔓",
   eliminar: "❎",
-  nuevo: "💆🏻‍♀️",
-  perfil: "🆔",
+  nuevo: "✨",
   compartir: "🫱🏻‍🫲🏼",
   ajustes: "⚙️",
   ajustes2: "🛠️",
   ayuda: "🆘",
   chat: "💬",
   notificaciones: "🔔",
+
+  // “Iconos” nominales (por si tu UI los usa como tokens)
   ArrowLeft: "⬅️",
   Loader2: "🔄",
   Trash2: "🗑️",
@@ -70,12 +68,10 @@ export const emojiTheme = {
   Copy: "📋",
   History: "🕒",
 
-  
-
   // Aliases / varios
   web: "🌐",
   leaf: "🍃",
-  google: "G", // si no quieres SVG, esta letra funciona de mientras
+  google: "G",
 } as const;
 
 export const EMOJI_FALLBACK_TOKEN: keyof typeof emojiTheme = "info";

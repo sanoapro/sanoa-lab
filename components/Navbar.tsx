@@ -9,13 +9,12 @@ import { useToast } from "@/components/Toast";
 
 type NavItem = { href: string; label: string; token: string };
 
-// Merge: conserva tus entradas, añade Agenda y Laboratorio, y renombra "Cargas" → "Importar".
 const NAV: NavItem[] = [
   { href: "/dashboard",      label: "Tablero",     token: "tablero" },
   { href: "/agenda",         label: "Agenda",      token: "agenda" },
   { href: "/test-ui/upload", label: "Importar",    token: "cargas" },
   { href: "/pacientes",      label: "Pacientes",   token: "pacientes" },
-  { href: "/laboratorio",    label: "Laboratorio", token: "laboratorio" }, // opcional si aún no existe
+  { href: "/laboratorio",    label: "Laboratorio", token: "laboratorio" },
   { href: "/perfil",         label: "Perfil",      token: "perfil" },
 ];
 
@@ -30,18 +29,16 @@ export default function Navbar() {
     setSigningOut(true);
     const { error } = await supabase.auth.signOut();
     setSigningOut(false);
-
     if (error) {
       toast({ variant: "error", title: "No pudimos cerrar sesión", description: error.message, emoji: "🛑" });
       return;
     }
-
     toast({ variant: "success", title: "Sesión cerrada", description: "Hasta pronto 👋", emoji: "✅" });
     router.replace("/login");
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
         <Link href="/dashboard" className="inline-flex items-center gap-2" aria-label="Ir al tablero">

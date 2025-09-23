@@ -3,94 +3,191 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchBookings, type CalBooking } from "@/lib/cal";
 import { listPatients, type Patient } from "@/lib/patients";
-import { linkAppointmentToPatient } from "@/lib/appointments";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/Modal";
 import { showToast } from "@/components/Toaster";
-import { sendEmail } from "@/lib/notify";
+import ColorEmoji from "@/components/ColorEmoji";
+import { getActiveOrg } from "@/lib/org-local";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 type Status = "upcoming" | "past" | "accepted" | "all";
 
+type LocalAppt = {
+  id: string;
+  patient_id: string;
+  start_at: string; // ISO
+  end_at: string | null;
+  cal_event_id: string | null;
+};
+
+type UniItem =
+  | { kind: "cal"; uid: string; title: string; start: string; end: string; meetingUrl?: string; attendee?: string }
+  | { kind: "local"; id: string; title: string; start: string; end: string; patient_id: string; cal_event_id?: string | null };
+
 export default function AgendaPage() {
+  const supabase = getSupabaseBrowser();
+  const org = getActiveOrg();
+
   const [status, setStatus] = useState<Status>("upcoming");
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [loading, setLoading] = useState(false);
-  const [items, setItems] = useState<CalBooking[]>([]);
-  const [openLink, setOpenLink] = useState<CalBooking | null>(null);
 
-  // Búsqueda de pacientes al vincular
-  const [patientQ, setPatientQ] = useState("");
-  const [patientList, setPatientList] = useState<Patient[]>([]);
-  const [patientPage, setPatientPage] = useState(1);
+  // datos
+  const [calItems, setCalItems] = useState<CalBooking[]>([]);
+  const [localItems, setLocalItems] = useState<LocalAppt[]>([]);
+
+  // modal NUEVA CITA
+  const [openNew, setOpenNew] = useState(false);
+
+  // búsqueda paciente para nueva cita
+  const [pQ, setPQ] = useState("");
+  const [pList, setPList] = useState<Patient[]>([]);
+  const [pSel, setPSel] = useState<Patient | null>(null);
+
+  // formulario nueva cita
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [duration, setDuration] = useState(50);
+  const [title, setTitle] = useState("Consulta");
+  const [notes, setNotes] = useState("");
+  const [busyCreate, setBusyCreate] = useState(false);
 
   const range = useMemo(() => {
-    const afterStart = from ? new Date(from + "T00:00:00Z").toISOString() : undefined;
-    const beforeEnd = to ? new Date(to + "T23:59:59Z").toISOString() : undefined;
+    const afterStart = from ? new Date(from + "T00:00:00").toISOString() : undefined;
+    const beforeEnd = to ? new Date(to + "T23:59:59").toISOString() : undefined;
     return { afterStart, beforeEnd };
   }, [from, to]);
 
   async function load() {
     setLoading(true);
     try {
+      // Cal.com
       const bk = await fetchBookings({
         status: status === "all" ? undefined : status,
         q: q || undefined,
         ...range,
         take: 50,
       });
-      setItems(bk);
-    } catch (e: any) { showToast({ title: "Error", description: e.message, variant: "destructive" }); }
-    finally { setLoading(false); }
-  }
+      setCalItems(bk);
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [status, q, from, to]);
-
-  async function searchPatients() {
-    const res = await listPatients({ q: patientQ, page: patientPage, pageSize: 10, sortBy: "nombre", direction: "asc" });
-    setPatientList(res.items);
-  }
-
-  useEffect(() => { if (openLink) void searchPatients(); /* eslint-disable-next-line */ }, [openLink, patientQ, patientPage]);
-
-  async function doLink(patientId: string) {
-    if (!openLink) return;
-    try {
-      const ap = openLink;
-      await linkAppointmentToPatient({
-        patientId,
-        calUid: ap.uid,
-        title: ap.title,
-        start: ap.start,
-        end: ap.end,
-        meetingUrl: ap.meetingUrl,
-        metadata: { hosts: ap.hosts, attendees: ap.attendees, eventTypeSlug: ap.eventTypeSlug },
-      });
-      setOpenLink(null);
-      showToast({ title: "Vinculado", description: "Cita vinculada al paciente." });
-
-      // Email (al usuario actual)
-      const supabase = getSupabaseBrowser();
-      const { data } = await supabase.auth.getUser();
-      const to = data?.user?.email;
-      if (to) {
-        await sendEmail(to, "Sanoa Lab: Cita vinculada", `Se vinculó la cita ${ap.uid} al paciente seleccionado.`).catch(() => {});
+      // Local (appointments)
+      if (org.id) {
+        let sel = supabase
+          .from("appointments")
+          .select("id, patient_id, start_at, end_at, cal_event_id")
+          .eq("org_id", org.id)
+          .order("start_at", { ascending: true })
+          .limit(100);
+        if (range.afterStart) sel = sel.gte("start_at", range.afterStart);
+        if (range.beforeEnd) sel = sel.lte("start_at", range.beforeEnd);
+        const { data, error } = await sel;
+        if (!error) setLocalItems((data || []) as any);
       }
     } catch (e: any) {
-      showToast({ title: "Error al vincular", description: e.message, variant: "destructive" });
+      showToast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   }
 
+  useEffect(() => { void load(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [status, q, from, to, org.id]);
+
+  // Autocomplete paciente (nueva cita)
+  useEffect(() => {
+    let cancel = false;
+    async function run() {
+      const term = pQ.trim();
+      if (!term) { setPList([]); return; }
+      const res = await listPatients({ q: term, page: 1, pageSize: 10, sortBy: "nombre", direction: "asc" });
+      if (!cancel) setPList(res.items);
+    }
+    run();
+    return () => { cancel = true; };
+  }, [pQ]);
+
+  function pickPatient(p: Patient) {
+    setPSel(p);
+    setPQ((p as any).nombre || (p as any).full_name || (p as any).email || "");
+    setPList([]);
+  }
+
+  // Crear cita (el endpoint decidirá Cal.com vs Local)
+  async function createAppt() {
+    if (!org.id || !pSel?.id || !date || !time) {
+      showToast({ title: "Faltan datos" });
+      return;
+    }
+    setBusyCreate(true);
+    try {
+      const localStart = new Date(`${date}T${time}:00`);
+      const body = {
+        org_id: org.id,
+        patient_id: pSel.id,
+        title,
+        notes: notes || undefined,
+        start: localStart.toISOString(),
+        duration_min: duration,
+        attendee_email: (pSel as any).email || null,
+      };
+      const res = await fetch("/api/cal/bookings", {   // <— usa tu route.ts existente
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || "No se pudo crear");
+      setOpenNew(false);
+      showToast({
+        title: "Cita creada",
+        description: j.mode === "cal" ? "Se creó en Cal y en Sanoa." : "Se creó localmente en Sanoa.",
+      });
+      await load();
+    } catch (e: any) {
+      showToast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setBusyCreate(false);
+    }
+  }
+
+  // Mezcla Cal + Local
+  const unified: UniItem[] = [
+    ...calItems.map((b) => ({
+      kind: "cal" as const,
+      uid: b.uid,
+      title: b.title || "Cita",
+      start: b.start,
+      end: b.end,
+      meetingUrl: b.meetingUrl,
+      attendee: b.attendees?.[0]?.email,
+    })),
+    ...localItems.map((a) => ({
+      kind: "local" as const,
+      id: a.id,
+      title: "Cita (local)",
+      start: a.start_at,
+      end: a.end_at || a.start_at,
+      patient_id: a.patient_id,
+      cal_event_id: a.cal_event_id || null,
+    })),
+  ].sort((x, y) => +new Date(x.start) - +new Date(y.start));
+
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-semibold">Agenda (Cal.com)</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl md:text-3xl font-semibold flex items-center gap-2">
+          <ColorEmoji token="agenda" />
+          <span>Agenda</span>
+        </h1>
+        <Button onClick={() => setOpenNew(true)}>Nueva cita</Button>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
         <select className="border rounded-md px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value as Status)}>
-          <option value="upcoming">Próximas</option><option value="past">Pasadas</option><option value="accepted">Aceptadas</option><option value="all">Todas</option>
+          <option value="upcoming">Próximas</option><option value="past">Pasadas</option>
+          <option value="accepted">Aceptadas</option><option value="all">Todas</option>
         </select>
         <Input placeholder="Buscar por nombre o email…" value={q} onChange={(e) => setQ(e.target.value)} />
         <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -99,41 +196,83 @@ export default function AgendaPage() {
         <Button onClick={() => void load()} disabled={loading}>Actualizar</Button>
       </div>
 
-      <div className="border rounded-xl divide-y bg-white">
-        {items.length === 0 && <div className="p-4 text-sm text-gray-600">{loading ? "Cargando…" : "Sin resultados."}</div>}
-        {items.map((b) => (
-          <div key={b.uid} className="p-4 flex items-center justify-between gap-4">
+      <div className="surface-light border rounded-xl divide-y bg-white/90 dark:bg-white/[0.06] backdrop-blur">
+        {unified.length === 0 && (
+          <div className="p-4 text-sm text-slate-700"> {loading ? "Cargando…" : "Sin resultados."}</div>
+        )}
+        {unified.map((it) => (
+          <div key={it.kind === "cal" ? it.uid : it.id} className="p-4 flex items-center justify-between gap-4">
             <div className="flex-1">
-              <div className="font-medium">{b.title || "Cita"}</div>
-              <div className="text-sm text-gray-600">
-                {new Date(b.start).toLocaleString()} – {new Date(b.end).toLocaleTimeString()}
-                {b.eventTypeSlug ? ` · tipo: ${b.eventTypeSlug}` : ""}{b.attendees?.[0]?.email ? ` · email: ${b.attendees[0].email}` : ""}
+              <div className="font-medium">
+                {it.title} {it.kind === "local" && !it.cal_event_id ? <span className="text-xs text-amber-600">(local)</span> : null}
               </div>
-              {b.meetingUrl && <div className="text-xs text-gray-500 break-all">{b.meetingUrl}</div>}
+              <div className="text-sm text-slate-600">
+                {new Date(it.start).toLocaleString()} – {new Date(it.end).toLocaleTimeString()}
+                {it.kind === "cal" && it.attendee ? ` · email: ${it.attendee}` : ""}
+              </div>
+              {"meetingUrl" in it && it.meetingUrl && (
+                <div className="text-xs text-slate-500 break-all">{it.meetingUrl}</div>
+              )}
             </div>
             <div className="flex gap-2">
-              {b.meetingUrl && (<Button variant="secondary" onClick={() => window.open(b.meetingUrl!, "_blank")}>Abrir</Button>)}
-              <Button onClick={() => setOpenLink(b)}>Vincular a paciente</Button>
+              {"meetingUrl" in it && it.meetingUrl && (
+                <Button variant="secondary" onClick={() => window.open(it.meetingUrl!, "_blank")}>Abrir</Button>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      <Modal open={!!openLink} onOpenChange={() => setOpenLink(null)} title="Vincular a paciente">
-        <div className="space-y-3">
-          <Input placeholder="Buscar paciente por nombre…" value={patientQ} onChange={(e) => { setPatientQ(e.target.value); setPatientPage(1); }} />
-          <div className="max-h-64 overflow-auto border rounded-md">
-            {patientList.map((p) => (
-              <button key={p.id} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b" onClick={() => void doLink(p.id)}>
-                <div className="font-medium">{p.nombre}</div>
-                <div className="text-xs text-gray-600">Género: {p.genero} {p.edad ? `· ${p.edad} años` : ""}</div>
-              </button>
-            ))}
-            {patientList.length === 0 && <div className="p-3 text-sm text-gray-600">Sin resultados…</div>}
+      {/* Modal NUEVA CITA */}
+      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Nueva cita">
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm block mb-1">Paciente</label>
+            <Input placeholder="Buscar por nombre o email…" value={pQ} onChange={(e) => { setPQ(e.target.value); setPSel(null); }} />
+            {pList.length > 0 && (
+              <div className="mt-1 border rounded-md max-h-60 overflow-auto">
+                {pList.map((p) => (
+                  <button key={p.id} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b" onClick={() => pickPatient(p)}>
+                    <div className="font-medium">{(p as any).nombre || (p as any).full_name || "(sin nombre)"}</div>
+                    <div className="text-xs text-gray-600">{(p as any).email || "—"}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {pSel && <div className="mt-1 text-xs text-green-700">Seleccionado: {(pSel as any).nombre || (pSel as any).full_name || pSel.id}</div>}
           </div>
-          <div className="flex justify-between">
-            <Button variant="secondary" onClick={() => setPatientPage((x) => Math.max(1, x - 1))}>Anterior</Button>
-            <Button variant="secondary" onClick={() => setPatientPage((x) => x + 1)}>Siguiente</Button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-sm block mb-1">Fecha</label>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm block mb-1">Hora</label>
+              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-sm block mb-1">Duración (min)</label>
+              <Input type="number" min={5} max={480} value={duration} onChange={(e) => setDuration(Number(e.target.value || 50))} />
+            </div>
+            <div>
+              <label className="text-sm block mb-1">Título</label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm block mb-1">Notas (opcional)</label>
+            <textarea className="w-full border rounded-md p-2" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={() => void createAppt()} disabled={busyCreate || !pSel || !date || !time}>
+              {busyCreate ? "Creando…" : "Crear cita"}
+            </Button>
           </div>
         </div>
       </Modal>

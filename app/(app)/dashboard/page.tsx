@@ -7,7 +7,6 @@ export default function TableroPage() {
     <main className="p-6 md:p-10 space-y-8">
       <InstallPrompt />
 
-      {/* Encabezado */}
       <header className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
           <ColorEmoji token="tablero" size={32} />
@@ -18,139 +17,91 @@ export default function TableroPage() {
         </p>
       </header>
 
-      {/* Grid de tarjetas */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* Pacientes */}
-        <Link
-          href="/pacientes"
-          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                     shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
-                     transition overflow-hidden"
-        >
+        <Link href="/pacientes" className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden">
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
               <ColorEmoji token="pacientes" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Pacientes</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Busca, registra y gestiona expedientes.
-              </p>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">Busca, registra y gestiona expedientes.</p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2">
-              Entrar <ColorEmoji token="siguiente" size={18} />
-            </span>
+            <span className="inline-flex items-center gap-2">Entrar <ColorEmoji token="siguiente" size={18} /></span>
           </div>
         </Link>
 
-        {/* Agenda (Cal.com) */}
-        <Link
-          href="/agenda"
-          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                     shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
-                     transition overflow-hidden"
-        >
+        {/* Agenda */}
+        <Link href="/agenda" className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden">
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji token="calendario" size={28} />
+              <ColorEmoji token="agenda" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Agenda</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Vincula citas de Cal.com a pacientes y crea notas desde las citas.
-              </p>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">Crea y vincula citas fácilmente.</p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2">
-              Abrir agenda <ColorEmoji token="siguiente" size={18} />
-            </span>
+            <span className="inline-flex items-center gap-2">Abrir agenda <ColorEmoji token="siguiente" size={18} /></span>
           </div>
         </Link>
 
-        {/* Subir archivos */}
-        <Link
-          href="/test-ui/upload"
-          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                     shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
-                     transition overflow-hidden"
-        >
+        {/* Importar */}
+        <Link href="/test-ui/upload" className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden">
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji token="subir" size={28} />
+              <ColorEmoji token="cargas" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">
-                Subir archivos
-              </h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Carga documentos y gestiona tus contenidos.
-              </p>
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Importar archivos</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">Carga documentos y gestiona tus contenidos.</p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2">
-              Ir ahora <ColorEmoji token="siguiente" size={18} />
-            </span>
+            <span className="inline-flex items-center gap-2">Ir ahora <ColorEmoji token="siguiente" size={18} /></span>
           </div>
         </Link>
 
         {/* Mis archivos */}
-        <Link
-          href="/test-ui"
-          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-                     shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)]
-                     transition overflow-hidden"
-        >
+        <Link href="/test-ui" className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden">
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
               <ColorEmoji token="carpeta" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Mis archivos</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Revisa, descarga o comparte tus documentos.
-              </p>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">Revisa, descarga o comparte tus documentos.</p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2">
-              Ver listado <ColorEmoji token="ver" size={18} />
-            </span>
+            <span className="inline-flex items-center gap-2">Ver listado <ColorEmoji token="ver" size={18} /></span>
           </div>
         </Link>
 
-        {/* Próximamente (ejemplo de tarjeta “deshabilitada”) */}
-        <div
-          className="rounded-3xl bg-white/60 border border-[var(--color-brand-border)]
-                        shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden opacity-70"
-        >
+        {/* Laboratorio ACTIVO */}
+        <Link href="/laboratorio" className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden">
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
               <ColorEmoji token="laboratorio" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">
-                Laboratorio (próximamente)
-              </h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Resultados y órdenes en un solo lugar.
-              </p>
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Laboratorio</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">Solicitudes y resultados en un solo lugar.</p>
             </div>
           </div>
           <div className="h-px bg-[var(--color-brand-border)] mx-6" />
           <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2 font-medium">
-              En desarrollo <ColorEmoji token="info" size={16} />
-            </span>
+            <span className="inline-flex items-center gap-2">Abrir <ColorEmoji token="siguiente" size={18} /></span>
           </div>
-        </div>
+        </Link>
       </section>
     </main>
   );
