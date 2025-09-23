@@ -47,12 +47,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  // Solo en cliente: habilitamos portal y resolvemos el contenedor
   useEffect(() => {
     setMounted(true);
     setContainer(document.getElementById("toast-root") ?? document.body);
     return () => {
-      // limpiar timers al desmontar
       Object.values(timers.current).forEach(clearTimeout);
     };
   }, []);
@@ -86,17 +84,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => ({ toast }), [toast]);
 
-  // Render del portal solo cuando hay DOM disponible
   const portal =
     mounted && container
       ? createPortal(
-          <div
-            className="
-              pointer-events-none fixed inset-0 z-[9999] flex flex-col items-end gap-2
-              p-4 sm:p-6
-            "
-          >
-            {/* anclamos arriba a la derecha */}
+          <div className="pointer-events-none fixed inset-0 z-[9999] flex flex-col items-end gap-2 p-4 sm:p-6">
             <div className="ml-auto w-full max-w-sm space-y-2">
               {toasts.map(({ id, opts }) => (
                 <div
@@ -117,11 +108,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 >
                   <div className="flex items-start gap-3">
                     <div className="h-9 w-9 grid place-content-center rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                      {/* Mantén flexible: puedes forzar nativo si quieres colores originales */}
-                      <ColorEmoji
-                        emoji={opts.emoji}
-                        mode={opts.variant === "error" ? "native" : "duotone"}
-                      />
+                      <ColorEmoji emoji={opts.emoji} />
                     </div>
                     <div className="min-w-0 flex-1">
                       {opts.title && (
@@ -137,11 +124,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     </div>
                     <button
                       onClick={() => remove(id)}
-                      className="
-                        ml-1 inline-flex h-8 w-8 items-center justify-center rounded-xl
-                        hover:bg-[var(--color-brand-background)]
-                        text-[var(--color-brand-text)]
-                      "
+                      className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-xl hover:bg-[var(--color-brand-background)] text-[var(--color-brand-text)]"
                       title="Cerrar"
                     >
                       <span className="sr-only">Cerrar</span>✖️

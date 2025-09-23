@@ -1,4 +1,3 @@
-// /lib/cal.ts
 export type CalBooking = {
   uid: string;
   title?: string;
@@ -18,7 +17,6 @@ export type FetchBookingsParams = {
   take?: number;
 };
 
-// Usa el fetch seguro
 import { fetchJSON } from "@/lib/utils";
 
 /** Proxy a nuestro endpoint interno: /api/cal/bookings */
@@ -30,9 +28,8 @@ export async function fetchBookings(params: FetchBookingsParams = {}): Promise<C
   if (params.beforeEnd) usp.set("beforeEnd", params.beforeEnd);
   if (params.take) usp.set("take", String(params.take));
 
-  // Este endpoint debe devolver { items: CalBooking[] } o { error }
-  const data = await fetchJSON<{ items: CalBooking[]; error?: string }>(
-    `/api/cal/bookings?${usp.toString()}`
+  const data = await fetchJSON<{ items?: CalBooking[]; data?: CalBooking[]; error?: string }>(
+    `/api/cal/bookings?${usp.toString()}`,
   );
-  return data.items || [];
+  return (data.items ?? data.data ?? []) as CalBooking[];
 }

@@ -5,9 +5,27 @@ type ToastKind = "success" | "error" | "info";
 type Toast = { id: number; message: string; kind: ToastKind };
 
 let _id = 0;
-export function showToast(message: string, kind: ToastKind = "info") {
+
+/** showToast("msg","success")  o  showToast({ title, description, variant }) */
+export function showToast(
+  a: string | { title?: string; description?: string; variant?: "success" | "error" | "info" | "destructive" },
+  kind?: ToastKind
+) {
   try {
-    window.dispatchEvent(new CustomEvent("sanoa:toast", { detail: { message, kind } }));
+    let message = "";
+    let k: ToastKind = kind ?? "info";
+
+    if (typeof a === "string") {
+      message = a;
+    } else {
+      const title = a.title ?? "";
+      const desc = a.description ?? "";
+      message = [title, desc].filter(Boolean).join(" — ");
+      const v = a.variant ?? "info";
+      k = v === "destructive" ? "error" : (v as ToastKind);
+    }
+
+    window.dispatchEvent(new CustomEvent("sanoa:toast", { detail: { message, kind: k } }));
   } catch {}
 }
 
@@ -19,7 +37,6 @@ export default function Toaster() {
       const ce = e as CustomEvent<{ message: string; kind: ToastKind }>;
       const t: Toast = { id: ++_id, message: ce.detail.message, kind: ce.detail.kind || "info" };
       setToasts((prev) => [...prev, t]);
-      // autodestruir en 4s
       setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== t.id)), 4000);
     }
     window.addEventListener("sanoa:toast", onToast as EventListener);
@@ -36,14 +53,14 @@ export default function Toaster() {
           t.kind === "success"
             ? "border-emerald-300"
             : t.kind === "error"
-              ? "border-red-300"
-              : "border-[var(--color-brand-border)]";
+            ? "border-red-300"
+            : "border-[var(--color-brand-border)]";
         const dot =
           t.kind === "success"
             ? "bg-emerald-500"
             : t.kind === "error"
-              ? "bg-red-500"
-              : "bg-[var(--color-brand-coral)]";
+            ? "bg-red-500"
+            : "bg-[var(--color-brand-coral)]";
         return (
           <div key={t.id} className={`${base} ${border}`}>
             <div className="flex items-start gap-3">

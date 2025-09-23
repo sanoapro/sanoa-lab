@@ -64,7 +64,6 @@ export default function AgendaPage() {
   async function load() {
     setLoading(true);
     try {
-      // Cal.com
       const bk = await fetchBookings({
         status: status === "all" ? undefined : status,
         q: q || undefined,
@@ -73,7 +72,6 @@ export default function AgendaPage() {
       });
       setCalItems(bk);
 
-      // Local (appointments)
       if (org.id) {
         let sel = supabase
           .from("appointments")
@@ -87,7 +85,7 @@ export default function AgendaPage() {
         if (!error) setLocalItems((data || []) as any);
       }
     } catch (e: any) {
-      showToast({ title: "Error", description: e.message, variant: "destructive" });
+      showToast({ title: "Error al cargar agenda", description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -114,10 +112,10 @@ export default function AgendaPage() {
     setPList([]);
   }
 
-  // Crear cita (el endpoint decidirá Cal.com vs Local)
+  // Crear cita
   async function createAppt() {
     if (!org.id || !pSel?.id || !date || !time) {
-      showToast({ title: "Faltan datos" });
+      showToast("Faltan datos obligatorios para crear la cita", "error");
       return;
     }
     setBusyCreate(true);
@@ -132,7 +130,7 @@ export default function AgendaPage() {
         duration_min: duration,
         attendee_email: (pSel as any).email || null,
       };
-      const res = await fetch("/api/cal/bookings", {   // <— usa tu route.ts existente
+      const res = await fetch("/api/cal/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -143,16 +141,16 @@ export default function AgendaPage() {
       showToast({
         title: "Cita creada",
         description: j.mode === "cal" ? "Se creó en Cal y en Sanoa." : "Se creó localmente en Sanoa.",
+        variant: "success",
       });
       await load();
     } catch (e: any) {
-      showToast({ title: "Error", description: e.message, variant: "destructive" });
+      showToast({ title: "Error al crear cita", description: e.message, variant: "destructive" });
     } finally {
       setBusyCreate(false);
     }
   }
 
-  // Mezcla Cal + Local
   const unified: UniItem[] = [
     ...calItems.map((b) => ({
       kind: "cal" as const,
@@ -198,7 +196,7 @@ export default function AgendaPage() {
 
       <div className="surface-light border rounded-xl divide-y bg-white/90 dark:bg-white/[0.06] backdrop-blur">
         {unified.length === 0 && (
-          <div className="p-4 text-sm text-slate-700"> {loading ? "Cargando…" : "Sin resultados."}</div>
+          <div className="p-4 text-sm text-slate-700">{loading ? "Cargando…" : "Sin resultados."}</div>
         )}
         {unified.map((it) => (
           <div key={it.kind === "cal" ? it.uid : it.id} className="p-4 flex items-center justify-between gap-4">
@@ -224,7 +222,7 @@ export default function AgendaPage() {
       </div>
 
       {/* Modal NUEVA CITA */}
-      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Nueva cita">
+      <Modal open={openNew} onOpenChange={setOpenNew} title="Nueva cita">
         <div className="space-y-4">
           <div>
             <label className="text-sm block mb-1">Paciente</label>
