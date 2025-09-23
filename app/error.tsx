@@ -1,9 +1,10 @@
-// /app/error.tsx
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
+import ColorEmoji from "@/components/ColorEmoji";
 
-export default function GlobalError({
+export default function Error({
   error,
   reset,
 }: {
@@ -11,38 +12,43 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Puedes loguear a Sentry aquí si lo deseas
-    // Sentry.captureException(error);
-    console.error("GlobalError:", error);
+    // Útil en dev
+    // eslint-disable-next-line no-console
+    console.error(error);
   }, [error]);
 
   return (
-    <html>
-      <body className="min-h-screen grid place-items-center bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-6">
-        <div className="max-w-lg w-full space-y-4">
-          <h2 className="text-2xl font-semibold">Algo no salió bien</h2>
-          <p className="text-sm opacity-80">
-            {error?.message || "Ocurrió un error inesperado."}
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => reset()}
-              className="px-4 py-2 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-            >
-              Reintentar
-            </button>
-            <button
-              onClick={() => location.reload()}
-              className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700"
-            >
-              Recargar
-            </button>
-          </div>
-          {error?.digest && (
-            <p className="text-xs opacity-60">Ref: {error.digest}</p>
-          )}
+    <div className="min-h-[60vh] grid place-items-center p-6">
+      <section className="surface-light w-full max-w-lg rounded-2xl border border-[var(--color-brand-border)] bg-white/95 backdrop-blur shadow-lg p-6 space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <ColorEmoji emoji="🛟" /> Algo no salió bien
+        </h2>
+        <p className="text-sm text-[var(--color-brand-bluegray)]">
+          Intenta reintentar o vuelve al tablero.
+        </p>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => reset()}
+            className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white font-semibold hover:brightness-95"
+          >
+            Reintentar
+          </button>
+          <Link
+            href="/dashboard"
+            className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 bg-white hover:bg-white/80"
+          >
+            Ir al tablero
+          </Link>
         </div>
-      </body>
-    </html>
+
+        {process.env.NODE_ENV !== "production" && (
+          <pre className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 overflow-auto whitespace-pre-wrap">
+            {error?.message}
+            {error?.digest ? `\n\nDigest: ${error.digest}` : ""}
+          </pre>
+        )}
+      </section>
+    </div>
   );
 }

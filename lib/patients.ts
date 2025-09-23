@@ -1,6 +1,6 @@
 // /workspaces/sanoa-lab/lib/patients.ts
-// Fusión: conserva tu API original y añade filtros por tags (con degradación si falta la RPC)
-// y soporte opcional para limitar por organización activa (org_id).
+// Endurecido: siempre lanzamos `Error` nativo (no objetos de Supabase)
+// y protegemos los efectos colaterales de RPC opcional.
 
 import { getSupabaseBrowser } from "./supabase-browser";
 import { getCurrentOrgId } from "./org"; // usamos tu API existente
@@ -31,24 +31,16 @@ export interface ListPatientsParams {
   q?: string;
   page?: number;
   pageSize?: number;
-  /** Campo por el que ordenar (por defecto: created_at) */
   sortBy?: "created_at" | "nombre";
-  /** Dirección del orden (por defecto: desc si sortBy=created_at; asc en otros casos) */
   direction?: "asc" | "desc";
-  /** Filtro de género (ALL = sin filtro) */
   genero?: Gender | "ALL";
-  /** Filtro desde fecha de creación (YYYY-MM-DD) */
   from?: string;
-  /** Filtro hasta fecha de creación (YYYY-MM-DD) */
   to?: string;
-  /** Incluir registros con deleted_at != null (si la columna existe) */
   includeDeleted?: boolean;
 
-  /** Facetas (ids de tag). Usa cualquiera/todas — con degradación si la RPC no existe */
   tagsAny?: string[];
   tagsAll?: string[];
 
-  /** Limitar a la org activa si existe la columna org_id */
   onlyActiveOrg?: boolean;
 }
 
@@ -57,6 +49,20 @@ export interface ListResult<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+/** Helper: normaliza cualquier cosa a Error nativo */
+function toError(e: unknown, ctx?: string): Error {
+  if (e instanceof Error) return e;
+  if (e && typeof e === "object" && "message" in e) {
+    const msg = String((e as any).message ?? "");
+    return new Error(msg || ctx || "Error");
+  }
+  try {
+    return new Error(ctx ? `${ctx}: ${JSON.stringify(e)}` : String(e));
+  } catch {
+    return new Error(ctx ? `${ctx}: ${String(e)}` : String(e));
+  }
 }
 
 /** Caches de detección de esquema */
@@ -76,7 +82,6 @@ async function softDeleteSupported(): Promise<boolean> {
       _softDeleteSupported = true;
     }
   } catch {
-    // Por compatibilidad, asumimos true si falla el chequeo
     _softDeleteSupported = true;
   }
   return _softDeleteSupported!;
@@ -95,7 +100,6 @@ async function orgIdSupported(): Promise<boolean> {
       _orgIdSupported = true;
     }
   } catch {
-    // Si falla el chequeo, asumimos que no existe para no filtrar incorrectamente
     _orgIdSupported = false;
   }
   return _orgIdSupported!;
@@ -154,17 +158,16 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
         mode,
       });
       if (e1) {
-        if (!isMissingRpc(e1, "patients_ids_by_tags")) throw e1; // si la RPC falla por otro motivo, propaga
+        if (!isMissingRpc(e1, "patients_ids_by_tags")) throw toError(e1, "patients_ids_by_tags");
         // si falta la RPC, degradamos: no filtramos por tags
       } else {
         idsByTags = (rows ?? []).map((r: any) => r.patient_id as string);
         if (idsByTags.length === 0) {
-          // No hay coincidencias -> retornamos vacío sin ir a la tabla
           return { items: [], total: 0, page, pageSize };
         }
       }
     } catch (e) {
-      if (!isMissingRpc(e, "patients_ids_by_tags")) throw e; // degradación silenciosa sólo si falta la RPC
+      if (!isMissingRpc(e, "patients_ids_by_tags")) throw toError(e, "patients_ids_by_tags");
     }
   }
 
@@ -213,7 +216,7 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
   }
 
   const { data, error, count } = await query.range(from, to);
-  if (error) throw error;
+  if (error) throw toError(error, "listPatients");
 
   return {
     items: (data ?? []) as Patient[],
@@ -227,11 +230,11 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
 export async function getPatient(id: string): Promise<Patient | null> {
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase.from("patients").select("*").eq("id", id).maybeSingle();
-  if (error) throw error;
+  if (error) throw toError(error, "getPatient");
   return (data as Patient) ?? null;
 }
 
-/** Crea un paciente (asigna org_id si la columna existe y hay org activa) */
+/** Crea un paciente */
 export async function createPatient(input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
   const userId = await getCurrentUserId();
@@ -249,11 +252,11 @@ export async function createPatient(input: PatientInput): Promise<Patient> {
   }
 
   const { data, error } = await supabase.from("patients").insert(payload).select("*").single();
-  if (error) throw error;
+  if (error) throw toError(error, "createPatient");
   return data as Patient;
 }
 
-/** Actualiza un paciente (sólo dueño o con permisos vía RLS) */
+/** Actualiza un paciente */
 export async function updatePatient(id: string, input: PatientInput): Promise<Patient> {
   const supabase = getSupabaseBrowser();
   const patch: Record<string, unknown> = {};
@@ -267,11 +270,11 @@ export async function updatePatient(id: string, input: PatientInput): Promise<Pa
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) throw toError(error, "updatePatient");
   return data as Patient;
 }
 
-/** Soft delete (marca deleted_at si la columna existe) */
+/** Soft delete */
 export async function softDeletePatient(id: string): Promise<Patient> {
   const hasSoft = await softDeleteSupported();
   if (!hasSoft) {
@@ -286,11 +289,11 @@ export async function softDeletePatient(id: string): Promise<Patient> {
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) throw toError(error, "softDeletePatient");
   return data as Patient;
 }
 
-/** Restaura (borra deleted_at si la columna existe) */
+/** Restaura */
 export async function restorePatient(id: string): Promise<Patient> {
   const hasSoft = await softDeleteSupported();
   if (!hasSoft) {
@@ -303,13 +306,13 @@ export async function restorePatient(id: string): Promise<Patient> {
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) throw toError(error, "restorePatient");
   return data as Patient;
 }
 
-/** Hard delete (permanente) */
+/** Hard delete */
 export async function deletePatient(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase.from("patients").delete().eq("id", id);
-  if (error) throw error;
+  if (error) throw toError(error, "deletePatient");
 }

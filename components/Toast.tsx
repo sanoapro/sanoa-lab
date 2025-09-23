@@ -13,7 +13,6 @@ import { createPortal } from "react-dom";
 import ColorEmoji from "@/components/ColorEmoji";
 
 type ToastVariant = "success" | "error" | "info" | "warning";
-
 type ToastOptions = {
   variant?: ToastVariant;
   title?: string;
@@ -21,15 +20,8 @@ type ToastOptions = {
   emoji?: string;
   duration?: number; // ms (default 3500)
 };
-
-type ToastItem = {
-  id: string;
-  opts: Required<ToastOptions>;
-};
-
-type ToastContextValue = {
-  toast: (opts: ToastOptions) => void;
-};
+type ToastItem = { id: string; opts: Required<ToastOptions> };
+type ToastContextValue = { toast: (opts: ToastOptions) => void };
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
@@ -39,6 +31,18 @@ export function useToast() {
     throw new Error("useToast debe usarse dentro de <ToastProvider />");
   }
   return ctx;
+}
+
+/** Hook seguro: si el provider no existe, no rompe. */
+export function useToastSafe(): ToastContextValue {
+  const ctx = useContext(ToastContext);
+  return (
+    ctx ?? {
+      toast: () => {
+        // noop en fallback; útil si el árbol montó sin provider por un error fatal
+      },
+    }
+  );
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -63,24 +67,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const toast = useCallback(
-    (opts: ToastOptions) => {
-      const id = Math.random().toString(36).slice(2);
-      const item: ToastItem = {
-        id,
-        opts: {
-          variant: opts.variant ?? "info",
-          title: opts.title ?? "",
-          description: opts.description ?? "",
-          emoji: opts.emoji ?? "ℹ️",
-          duration: opts.duration ?? 3500,
-        },
-      };
-      setToasts((prev) => [item, ...prev]);
-      timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
-    },
-    [remove],
-  );
+  const toast = useCallback((opts: ToastOptions) => {
+    const id = Math.random().toString(36).slice(2);
+    const item: ToastItem = {
+      id,
+      opts: {
+        variant: opts.variant ?? "info",
+        title: opts.title ?? "",
+        description: opts.description ?? "",
+        emoji: opts.emoji ?? "ℹ️",
+        duration: opts.duration ?? 3500,
+      },
+    };
+    setToasts((prev) => [item, ...prev]);
+    timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
+  }, [remove]);
 
   const value = useMemo(() => ({ toast }), [toast]);
 

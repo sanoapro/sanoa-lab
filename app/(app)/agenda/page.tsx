@@ -64,6 +64,7 @@ export default function AgendaPage() {
   async function load() {
     setLoading(true);
     try {
+      // Cal.com
       const bk = await fetchBookings({
         status: status === "all" ? undefined : status,
         q: q || undefined,
@@ -72,6 +73,7 @@ export default function AgendaPage() {
       });
       setCalItems(bk);
 
+      // Local (appointments)
       if (org.id) {
         let sel = supabase
           .from("appointments")
@@ -85,25 +87,48 @@ export default function AgendaPage() {
         if (!error) setLocalItems((data || []) as any);
       }
     } catch (e: any) {
-      showToast({ title: "Error al cargar agenda", description: e.message, variant: "destructive" });
+      showToast({ title: "Error", description: e?.message || String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { void load(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [status, q, from, to, org.id]);
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, q, from, to, org.id]);
 
-  // Autocomplete paciente (nueva cita)
+  // Autocomplete paciente (nueva cita) — ahora con try/catch
   useEffect(() => {
     let cancel = false;
     async function run() {
       const term = pQ.trim();
-      if (!term) { setPList([]); return; }
-      const res = await listPatients({ q: term, page: 1, pageSize: 10, sortBy: "nombre", direction: "asc" });
-      if (!cancel) setPList(res.items);
+      if (!term) {
+        setPList([]);
+        return;
+      }
+      try {
+        const res = await listPatients({
+          q: term,
+          page: 1,
+          pageSize: 10,
+          sortBy: "nombre",
+          direction: "asc",
+        });
+        if (!cancel) setPList(res.items);
+      } catch (e) {
+        // Evita “unhandledrejection” en dev overlay
+        // Puedes mostrar toast si quieres ruido controlado:
+        // showToast({ title: "No se pudo buscar pacientes", description: (e as any)?.message, variant: "destructive" });
+        if (!cancel) setPList([]);
+        // eslint-disable-next-line no-console
+        console.warn("[agenda] listPatients failed", e);
+      }
     }
     run();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+    };
   }, [pQ]);
 
   function pickPatient(p: Patient) {
@@ -115,7 +140,7 @@ export default function AgendaPage() {
   // Crear cita
   async function createAppt() {
     if (!org.id || !pSel?.id || !date || !time) {
-      showToast("Faltan datos obligatorios para crear la cita", "error");
+      showToast({ title: "Faltan datos" });
       return;
     }
     setBusyCreate(true);
@@ -141,11 +166,10 @@ export default function AgendaPage() {
       showToast({
         title: "Cita creada",
         description: j.mode === "cal" ? "Se creó en Cal y en Sanoa." : "Se creó localmente en Sanoa.",
-        variant: "success",
       });
       await load();
     } catch (e: any) {
-      showToast({ title: "Error al crear cita", description: e.message, variant: "destructive" });
+      showToast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
       setBusyCreate(false);
     }
@@ -196,7 +220,7 @@ export default function AgendaPage() {
 
       <div className="surface-light border rounded-xl divide-y bg-white/90 dark:bg-white/[0.06] backdrop-blur">
         {unified.length === 0 && (
-          <div className="p-4 text-sm text-slate-700">{loading ? "Cargando…" : "Sin resultados."}</div>
+          <div className="p-4 text-sm text-slate-700"> {loading ? "Cargando…" : "Sin resultados."}</div>
         )}
         {unified.map((it) => (
           <div key={it.kind === "cal" ? it.uid : it.id} className="p-4 flex items-center justify-between gap-4">
@@ -222,7 +246,7 @@ export default function AgendaPage() {
       </div>
 
       {/* Modal NUEVA CITA */}
-      <Modal open={openNew} onOpenChange={setOpenNew} title="Nueva cita">
+      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Nueva cita">
         <div className="space-y-4">
           <div>
             <label className="text-sm block mb-1">Paciente</label>
