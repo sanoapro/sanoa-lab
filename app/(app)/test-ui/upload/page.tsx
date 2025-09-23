@@ -139,7 +139,7 @@ export default function UploadDemoPage() {
       <header className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
           <ColorEmoji token="documentos" size={28} />
-          Subir & Gestionar archivos
+          Importar archivos
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
           Bucket privado{" "}
@@ -151,7 +151,7 @@ export default function UploadDemoPage() {
       </header>
 
       {/* Uploader */}
-      <section className="rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+      <section className="surface-light rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-end">
           <label className="flex-1 space-y-2">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function UploadDemoPage() {
       {/* Lista */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {!hasFiles && !loading && (
-          <div className="col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur p-6 text-[var(--color-brand-bluegray)]">
+          <div className="surface-light col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur p-6 text-[var(--color-brand-bluegray)]">
             No hay archivos aún.
           </div>
         )}
@@ -196,7 +196,7 @@ export default function UploadDemoPage() {
         {files.map((obj) => (
           <article
             key={obj.name}
-            className="group rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
+            className="surface-light group rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
           >
             <div className="p-6 flex items-start gap-4">
               <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-white/60 dark:bg-white/[0.06] backdrop-blur">
@@ -215,7 +215,7 @@ export default function UploadDemoPage() {
 
             <div className="h-px bg-[var(--color-brand-border)] mx-6" />
 
-            {/* Acciones: misma altura, sin cortes raros */}
+            {/* Acciones: misma altura, layout uniforme */}
             <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 onClick={() => onView(obj)}

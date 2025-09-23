@@ -36,7 +36,7 @@
     linear-gradient(180deg, #fff7f0 0%, #fefcf9 55%, #f1f6ff 100%);
 }
 
-/* Dark: cambiamos solo lo necesario y usamos SCOPE para no perder contraste en cajas blancas */
+/* Dark: texto claro global, pero con “scope” para cajas blancas */
 @media (prefers-color-scheme: dark) {
   :root {
     --app-bg:
@@ -44,10 +44,10 @@
       radial-gradient(90rem 80rem at 120% -20%, rgba(96,165,250,0.20) 0%, rgba(96,165,250,0.06) 45%, rgba(96,165,250,0.00) 70%),
       linear-gradient(180deg, #0b1220 0%, #0c1322 60%, #0b1426 100%);
 
-    /* OJO: Hacemos el texto global claro… */
+    /* Texto general claro para que se lea sobre el fondo oscuro */
     --color-brand-text: #e5e7eb;     /* slate-200 */
 
-    /* …pero dejamos superficies blancas para tarjetas/inputs (legibles con texto oscuro scoped) */
+    /* Superficies siguen siendo claras (glass) */
     --color-surface: #ffffff;
     --color-surface-2: rgba(255,255,255,0.9);
 
@@ -73,7 +73,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings toman el color global (claro en dark). Dentro de .card los forzamos a oscuro abajo. */
 h1, h2, h3, h4, h5, h6 {
   color: var(--color-brand-text);
   font-weight: 600;
@@ -90,12 +89,19 @@ button { font-weight: 600; }
 .container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
 
 /* =======================
-   CARDS (SCOPE DE TEXTO OSCURO)
+   UTILIDAD: “surface-light”
+   Forzar texto oscuro cuando uses fondo claro (p. ej. .bg-white, .bg-white/80, tarjetas personalizadas)
+   ======================= */
+.surface-light {
+  --color-brand-text: #0f172a;
+  color: var(--color-brand-text);
+}
+
+/* =======================
+   CARDS (SCOPE TEXTO OSCURO)
    ======================= */
 .card {
-  /* Re-definimos la variable SOLO dentro de las tarjetas:
-     así cualquier .text-[var(--color-brand-text)] queda oscuro en cajas blancas. */
-  --color-brand-text: #0f172a;
+  --color-brand-text: #0f172a; /* texto oscuro dentro de tarjetas blancas */
   color: var(--color-brand-text);
 
   background: var(--color-surface);
@@ -110,8 +116,7 @@ button { font-weight: 600; }
   background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
   border-top-left-radius: 20px; border-top-right-radius: 20px;
 }
-/* Headings dentro de card: siempre oscuros */
-.card :is(h1,h2,h3,h4,h5,h6) { color: #0f172a; }
+.card :is(h1,h2,h3,h4,h5,h6) { color: #0f172a; } /* headings dentro de card */
 .card-title { font-family: var(--font-heading); font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem); font-weight: 600; }
 .card-body { padding: 1.5rem; }
 
@@ -153,7 +158,7 @@ button { font-weight: 600; }
 .text-danger { color: var(--color-danger); }
 
 /* =======================
-   "Importar": acciones (Ver/Descargar/…)
+   Importar: acciones (Ver/Descargar/…)
    ======================= */
 .tiles { display: flex; flex-wrap: wrap; gap: 12px; }
 .tile-btn {
