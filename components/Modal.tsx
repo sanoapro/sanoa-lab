@@ -3,7 +3,9 @@ import { ReactNode, useEffect } from "react";
 
 type Props = {
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
+  /** Alias compatible con Radix/shadcn. */
+  onOpenChange?: (open: boolean) => void;
   title?: string;
   children: ReactNode;
   footer?: ReactNode;
@@ -13,37 +15,33 @@ type Props = {
 export default function Modal({
   open,
   onClose,
+  onOpenChange,
   title,
   children,
   footer,
   widthClass = "max-w-lg",
 }: Props) {
+  const close = () => {
+    onClose?.();
+    onOpenChange?.(false);
+  };
+
   useEffect(() => {
     if (!open) return;
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     window.addEventListener("keydown", onEsc);
+    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onEsc);
-      document.body.style.overflow = "";
-    };
-  }, [open, onClose]);
+    return () => { window.removeEventListener("keydown", onEsc); document.body.style.overflow = prev; };
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
+    <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-label={title || "Diálogo"}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} aria-hidden />
       <div className="absolute inset-0 grid place-items-center p-4">
-        <div
-          className={`w-full ${widthClass} rounded-2xl border border-[var(--color-brand-border)] bg-white shadow-xl`}
-        >
+        <div className={`surface-light w-full ${widthClass} rounded-2xl border border-[var(--color-brand-border)] bg-white shadow-xl`}>
           {title && (
             <div className="px-5 py-4 border-b border-[var(--color-brand-border)]">
               <h3 className="text-[var(--color-brand-text)] font-semibold">{title}</h3>

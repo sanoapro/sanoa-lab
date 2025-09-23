@@ -15,13 +15,10 @@ function LazyLucideIcon({ name, size, className }: { name: string; size: number;
       const C = mod?.[name];
       setComp(() => (typeof C === "function" ? C : null));
       if (!C && process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
         console.warn(`[ColorEmoji] Icono lucide "${name}" no encontrado. Revisa config/emojiTheme.ts`);
       }
     });
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [name]);
 
   if (!Comp) {
@@ -40,7 +37,6 @@ function resolveToken(token?: string): { kind: "svg" | "lucide" | "text"; value:
   const v = token && (emojiTheme as Record<string, string>)[token];
 
   if (!v && token && process.env.NODE_ENV !== "production") {
-    // eslint-disable-next-line no-console
     console.warn(`[ColorEmoji] Token no encontrado: "${token}". Usando fallback "${EMOJI_FALLBACK_TOKEN}".`);
   }
 
@@ -53,10 +49,11 @@ function resolveToken(token?: string): { kind: "svg" | "lucide" | "text"; value:
 
 export type ColorEmojiProps = {
   token?: EmojiToken | string;
-  emoji?: string; // override puntual
+  emoji?: string;             // override puntual
   size?: number;
   title?: string;
   className?: string;
+  mode?: "native" | "mono" | "duotone"; // NUEVO (opcional)
   role?: React.AriaRole;
   "aria-hidden"?: boolean;
   "aria-label"?: string;
@@ -68,10 +65,14 @@ export default function ColorEmoji({
   size = 18,
   title,
   className,
+  mode, // opcional: puedes usarlo para estilos en CSS si lo necesitas
   role = "img",
   ...a11y
 }: ColorEmojiProps) {
   const resolved = emoji ? { kind: "text" as const, value: emoji } : resolveToken(token);
+  const extra =
+    mode === "mono" ? "grayscale" :
+    mode === "duotone" ? "" : ""; // reservado para estilos futuros
 
   if (resolved.kind === "svg") {
     return (
@@ -81,7 +82,7 @@ export default function ColorEmoji({
         height={size}
         alt={a11y["aria-label"] ?? title ?? (typeof token === "string" ? token : "icono")}
         title={title}
-        className={clsx("inline-block select-none align-[-0.125em]", className)}
+        className={clsx("inline-block select-none align-[-0.125em]", extra, className)}
         aria-hidden={a11y["aria-hidden"]}
         role={role}
       />
@@ -95,7 +96,7 @@ export default function ColorEmoji({
         title={title}
         aria-hidden={a11y["aria-hidden"]}
         aria-label={a11y["aria-label"]}
-        className={clsx("inline-flex items-center justify-center", className)}
+        className={clsx("inline-flex items-center justify-center", extra, className)}
         style={{ width: size, height: size, lineHeight: 0 }}
       >
         <LazyLucideIcon name={resolved.value} size={size} />
@@ -109,7 +110,7 @@ export default function ColorEmoji({
       title={title}
       aria-hidden={a11y["aria-hidden"]}
       aria-label={a11y["aria-label"]}
-      className={clsx("inline-block select-none leading-none align-[-0.125em]", className)}
+      className={clsx("inline-block select-none leading-none align-[-0.125em]", extra, className)}
       style={{ fontSize: size, width: size, height: size }}
     >
       {resolved.value}

@@ -24,6 +24,29 @@
   /* Fuentes (inyectadas por next/font en layout.tsx) */
   --font-heading: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-body:    var(--font-lato),     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  /* ===== Tokens que requieren componentes shadcn (Tailwind v4) ===== */
+  --color-background: var(--color-surface);
+  --color-foreground: var(--color-brand-text);
+
+  --color-primary: var(--color-brand-primary);
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #eef2ff;             /* slate-100/indigo-50 vibe */
+  --color-secondary-foreground: #0f172a;
+
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: #ffffff;
+
+  --color-accent: #f1f5f9; /* slate-100 */
+  --color-accent-foreground: #0f172a;
+
+  --color-input: var(--color-brand-border);
+  --color-ring: var(--color-brand-primary);
+
+  /* Variables que usas en componentes */
+  --color-brand-background: #fff7f0; /* fondo suave de iconitos/tiles */
+  --color-brand-coral: #d97a66;      /* para puntitos del toaster */
 }
 
 /* =======================
@@ -54,6 +77,16 @@
     /* Bordes más oscuros para glass */
     --color-brand-border: #475569;   /* slate-600 */
     --color-brand-bluegray: #cbd5e1; /* slate-300 */
+
+    /* Ajustes de tokens shadcn en dark */
+    --color-background: var(--color-surface);
+    --color-foreground: var(--color-brand-text);
+    --color-secondary: rgba(255,255,255,0.07);
+    --color-secondary-foreground: #e5e7eb;
+    --color-accent: rgba(255,255,255,0.06);
+    --color-accent-foreground: #e5e7eb;
+    --color-input: #475569;
+    --color-ring: var(--color-brand-primary);
   }
 }
 
