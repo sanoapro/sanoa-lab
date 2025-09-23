@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
+/** Icono oficial de Google “G” (inline, sin archivos extra) */
 function GoogleGIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" className={className} aria-hidden="true" focusable="false">
@@ -16,17 +17,19 @@ function GoogleGIcon({ className }: { className?: string }) {
   );
 }
 
+/** Traducción de errores comunes de Supabase */
 function toSpanishError(e: unknown): string {
   const msg = typeof e === "object" && e && "message" in e ? String((e as any).message) : String(e);
   if (/Invalid login credentials/i.test(msg)) return "Credenciales inválidas.";
   if (/provider is not enabled/i.test(msg)) return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
   if (/Email not confirmed/i.test(msg)) return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
   if (/Unable to exchange external code/i.test(msg) || /PKCE/i.test(msg))
-    return "No se pudo canjear el código (PKCE). Asegúrate de que login y callback usen el mismo dominio/puerto y que el Redirect URL esté permitido en Supabase.";
+    return "No se pudo canjear el código de inicio de sesión (PKCE). Asegúrate de que login y callback usen el mismo dominio/puerto y que el Redirect URL esté permitido en Supabase.";
   if (/Invalid Refresh Token/i.test(msg)) return "La sesión previa caducó. Intenta iniciar sesión de nuevo.";
   return msg;
 }
 
+/** Limpieza de sesión local */
 function getProjectRef(): string {
   try {
     const u = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -47,8 +50,8 @@ function Inner() {
   const params = useSearchParams();
 
   const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [pass,  setPass]  = useState("");
+  const [err,   setErr]   = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const safeRedirect = useMemo(() => {
@@ -56,12 +59,13 @@ function Inner() {
     return r.startsWith("/") && !r.startsWith("//") ? r : "/dashboard";
   }, [params]);
 
-  // Captura error traído desde /callback
+  // Mostrar error que venga desde /callback?error=...
   useEffect(() => {
-    const e = params.get("error");
-    if (e) setErr(e);
+    const fromCallbackErr = params.get("error");
+    if (fromCallbackErr) setErr(toSpanishError(fromCallbackErr));
   }, [params]);
 
+  // Verificar sesión + escuchar cambios
   useEffect(() => {
     let cancelled = false;
     const supabase = getSupabaseBrowser();
@@ -118,9 +122,15 @@ function Inner() {
           : typeof window !== "undefined"
           ? window.location.origin
           : "";
+
       const url = new URL("/callback", site);
       url.searchParams.set("next", safeRedirect);
-      const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: url.toString() } });
+      const redirectTo = url.toString();
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
       if (error) throw error;
     } catch (e) {
       setErr(toSpanishError(e));
@@ -138,14 +148,23 @@ function Inner() {
             <ColorEmoji token="logo" size={22} />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-[var(--color-brand-text)] leading-tight">Bienvenido/a a Sanoa</h1>
-            <p className="text-sm text-[var(--color-brand-bluegray)]">Tu entorno está listo. Inicia sesión para continuar.</p>
+            <h1 className="text-lg font-semibold text-[var(--color-brand-text)] leading-tight">
+              Bienvenido/a a Sanoa
+            </h1>
+            <p className="text-sm text-[var(--color-brand-bluegray)]">
+              Tu entorno está listo. Inicia sesión para continuar.
+            </p>
           </div>
         </div>
 
         <div className="px-6 py-5">
           {err && (
-            <div id={errId} className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert" aria-live="polite">
+            <div
+              id={errId}
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              role="alert"
+              aria-live="polite"
+            >
               {err}
             </div>
           )}
@@ -158,11 +177,17 @@ function Inner() {
                 </span>
               </span>
               <input
-                id="email" name="email" type="email" inputMode="email" autoComplete="email" required
+                id="email"
+                name="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                required
                 aria-required="true"
                 aria-invalid={/credenciales/i.test(err || "") ? true : undefined}
                 aria-describedby={err ? errId : undefined}
-                value={email} onChange={(e) => setEmail(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
                 placeholder="tucorreo@ejemplo.com"
               />
@@ -175,15 +200,23 @@ function Inner() {
                 </span>
               </span>
               <input
-                id="password" name="password" type="password" autoComplete="current-password" required aria-required="true"
-                value={pass} onChange={(e) => setPass(e.target.value)}
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                aria-required="true"
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
                 className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
                 placeholder="••••••••"
               />
             </label>
 
             <button
-              type="submit" disabled={loading} aria-busy={loading}
+              type="submit"
+              disabled={loading}
+              aria-busy={loading}
               className="w-full rounded-xl bg-[var(--color-brand-bluegray)] px-4 py-3 text-white font-semibold transition-opacity disabled:opacity-60"
             >
               {loading ? "Entrando…" : "Entrar"}
@@ -197,7 +230,9 @@ function Inner() {
           </div>
 
           <button
-            type="button" onClick={onGoogle} disabled={loading}
+            type="button"
+            onClick={onGoogle}
+            disabled={loading}
             className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-4 py-3 font-medium transition-opacity disabled:opacity-60 inline-flex items-center justify-center gap-3"
             aria-label="Continuar con Google"
           >
@@ -206,7 +241,9 @@ function Inner() {
           </button>
 
           <div className="mt-4 text-center">
-            <a href="/reset-password" className="text-sm underline">¿Olvidaste tu contraseña?</a>
+            <a href="/reset-password" className="text-sm underline">
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
         </div>
       </section>

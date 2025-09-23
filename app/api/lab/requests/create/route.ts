@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { renderTransactionalEmail, toTextFallback } from "@/lib/mail/templates";
 
 function addHours(h:number){ return new Date(Date.now()+h*3600*1000).toISOString(); }
 
@@ -35,23 +36,43 @@ export async function POST(req: Request) {
   const { error: e3 } = await supa.from("lab_upload_tokens").insert({ request_id: reqRow!.id, token, expires_at });
   if (e3) return NextResponse.json({ error: e3.message }, { status: 400 });
 
-  // 4) Email
+  // 4) Email (Resend principal, SendGrid fallback vía /api/mail/send)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const link = `${appUrl}/portal/lab/upload?token=${encodeURIComponent(token)}`;
-  const subj = "Solicitud de estudio de laboratorio — Sanoa";
-  const html = `
-  <div style="font-family:system-ui,sans-serif">
-    <h2>Solicitud de laboratorio</h2>
-    <p>Se te solicitó: <strong>${title}</strong></p>
-    ${instructions ? `<p>${instructions}</p>` : ""}
-    <p>Sube el resultado aquí:</p>
-    <p><a href="${link}" style="background:#D97A66;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none">Subir estudio</a></p>
-    <p>Este enlace expira el <strong>${new Date(expires_at).toLocaleString()}</strong>.</p>
-  </div>`;
 
-  const r = await fetch(`${appUrl}/api/mail/send`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ to: email, subject: subj, html }) });
-  if (!r.ok) {
-    const j = await r.json().catch(()=> ({}));
+  const titleMail = "Solicitud de estudio de laboratorio";
+  const html = renderTransactionalEmail({
+    title: titleMail,
+    intro: "Te compartimos el enlace para subir tu resultado:",
+    highlight: title + (instructions ? ` — ${instructions}` : ""),
+    actionLabel: "Subir estudio",
+    actionUrl: link,
+    footerNote: `Este enlace expira el ${new Date(expires_at).toLocaleString()}.`,
+    previewText: `${title} · Sube tu estudio`,
+  });
+
+  const text = toTextFallback({
+    title: titleMail,
+    intro: "Enlace para subir tu resultado",
+    highlight: title + (instructions ? ` — ${instructions}` : ""),
+    actionLabel: "Subir estudio",
+    actionUrl: link,
+    footerNote: `Expira: ${new Date(expires_at).toLocaleString()}`,
+  });
+
+  const res = await fetch(`${appUrl}/api/mail/send`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      to: email,
+      subject: "Solicitud de laboratorio — Sanoa",
+      html,
+      text,
+    }),
+  });
+
+  if (!res.ok) {
+    const j = await res.json().catch(()=> ({}));
     return NextResponse.json({ error: j.error || "No se pudo enviar el correo" }, { status: 400 });
   }
 
