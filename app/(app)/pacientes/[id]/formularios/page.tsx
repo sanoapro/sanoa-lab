@@ -16,15 +16,21 @@ export default function PatientFormsPage() {
     })();
   }, []);
 
-  const items = useMemo(() => templates.map((t) => ({
-    id: t.id,
-    name: t.name,
-  })), [templates]);
+  const items = useMemo(
+    () =>
+      templates.map((t) => ({
+        id: t.id,
+        name: t.name,
+      })),
+    [templates],
+  );
 
   return (
     <div className="p-4 max-w-3xl space-y-6">
       <h1 className="text-2xl font-semibold">Formularios del paciente</h1>
-      <p className="text-sm text-gray-600">Selecciona una plantilla para crear una nueva respuesta.</p>
+      <p className="text-sm text-gray-600">
+        Selecciona una plantilla para crear una nueva respuesta.
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {items.map((it) => (

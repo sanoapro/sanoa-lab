@@ -74,17 +74,10 @@ serve(async (req) => {
       const b64url = toBase64Url(mac);
 
       // Variantes aceptadas
-      const candidates = [
-        hex,
-        `sha256=${hex}`,
-        b64,
-        `sha256=${b64}`,
-        b64url,
-        `sha256=${b64url}`,
-      ];
+      const candidates = [hex, `sha256=${hex}`, b64, `sha256=${b64}`, b64url, `sha256=${b64url}`];
 
       const headerLc = header.toLowerCase();
-      const match = candidates.some(c => safeEqual(headerLc, c.toLowerCase()));
+      const match = candidates.some((c) => safeEqual(headerLc, c.toLowerCase()));
       if (!match) {
         if (debug) {
           return json({ ok: false, reason: "mismatch", header, candidates });
@@ -95,7 +88,11 @@ serve(async (req) => {
 
     // Parse del JSON
     let body: any = {};
-    try { body = JSON.parse(raw || "{}"); } catch { body = {}; }
+    try {
+      body = JSON.parse(raw || "{}");
+    } catch {
+      body = {};
+    }
 
     // Normalización
     const triggerEvent: string = body?.triggerEvent ?? "";
@@ -107,23 +104,20 @@ serve(async (req) => {
     const endIso: string | null = payload?.endTime ?? payload?.end ?? null;
     const status: string | null = payload?.status ?? null;
 
-    const attendee = (payload?.attendees?.[0]) || {};
+    const attendee = payload?.attendees?.[0] || {};
     const attendee_email: string | null = attendee?.email ?? null;
     const attendee_name: string | null = attendee?.name ?? null;
 
     const meetingUrl: string | null =
-      payload?.videoCallUrl ??
-      payload?.meetingUrl ??
-      payload?.location ??
-      null;
+      payload?.videoCallUrl ?? payload?.meetingUrl ?? payload?.location ?? null;
 
-    const title: string | null = payload?.title ?? payload?.eventTitle ?? payload?.eventType?.slug ?? null;
+    const title: string | null =
+      payload?.title ?? payload?.eventTitle ?? payload?.eventType?.slug ?? null;
 
     // 1) Upsert cal_bookings_raw
     {
-      const { error } = await supabase
-        .from("cal_bookings_raw")
-        .upsert({
+      const { error } = await supabase.from("cal_bookings_raw").upsert(
+        {
           cal_uid: uid,
           trigger_event: triggerEvent,
           status,
@@ -133,7 +127,9 @@ serve(async (req) => {
           attendee_name,
           payload,
           updated_at: new Date().toISOString(),
-        }, { onConflict: "cal_uid" });
+        },
+        { onConflict: "cal_uid" },
+      );
       if (error) throw error;
     }
 

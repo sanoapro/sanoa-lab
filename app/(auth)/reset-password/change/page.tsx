@@ -20,19 +20,24 @@ export default function ChangePasswordPage() {
       setReady(!!data.session);
       if (!data.session) setErr("El enlace de recuperación no es válido o expiró.");
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true); setErr(null);
+    setBusy(true);
+    setErr(null);
     try {
       const { error } = await getSupabaseBrowser().auth.updateUser({ password: pass });
       if (error) throw error;
       router.replace("/dashboard");
     } catch (e: any) {
       setErr(e?.message || "No se pudo actualizar la contraseña.");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -45,21 +50,33 @@ export default function ChangePasswordPage() {
           Ingresa tu nueva contraseña para continuar.
         </p>
 
-        {err && <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>}
+        {err && (
+          <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {err}
+          </div>
+        )}
 
         <form onSubmit={onSubmit} className="mt-5 space-y-4">
           <label className="block" htmlFor="password">
-            <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">Nueva contraseña</span>
+            <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
+              Nueva contraseña
+            </span>
             <input
-              id="password" name="password" type="password" required minLength={8}
-              value={pass} onChange={e=>setPass(e.target.value)}
+              id="password"
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
               placeholder="••••••••"
             />
           </label>
 
           <button
-            type="submit" disabled={!ready || busy || pass.length<8}
+            type="submit"
+            disabled={!ready || busy || pass.length < 8}
             className="w-full rounded-xl bg-[var(--color-brand-bluegray)] px-4 py-3 text-white font-semibold disabled:opacity-60"
           >
             {busy ? "Guardando…" : "Guardar y entrar"}

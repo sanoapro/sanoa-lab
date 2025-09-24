@@ -6,10 +6,11 @@ const BUCKET = "patient-files";
 
 export async function POST(req: Request) {
   const supabase = createRouteHandlerClient({ cookies });
-  const body = await req.json().catch(()=> ({}));
+  const body = await req.json().catch(() => ({}));
   const path = String(body.path || "");
   const patient = String(body.patient || "");
-  if (!path || !patient) return NextResponse.json({ error: "path y patient requeridos" }, { status: 400 });
+  if (!path || !patient)
+    return NextResponse.json({ error: "path y patient requeridos" }, { status: 400 });
 
   // Eliminamos en Storage
   const { error: eDel } = await supabase.storage.from(BUCKET).remove([path]);
@@ -21,7 +22,13 @@ export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") || "";
     const ua = req.headers.get("user-agent") || "";
-    await supabase.rpc("log_file_access", { p_patient_id: patient, p_path: path, p_action: "delete", p_ip: ip, p_ua: ua });
+    await supabase.rpc("log_file_access", {
+      p_patient_id: patient,
+      p_path: path,
+      p_action: "delete",
+      p_ip: ip,
+      p_ua: ua,
+    });
   } catch {}
 
   return NextResponse.json({ ok: true });

@@ -1,18 +1,18 @@
 import fs from "fs/promises";
 import sharp from "sharp";
 
-const brandBg = "#D97A66";   // terracota
+const brandBg = "#D97A66"; // terracota
 const brandText = "#FFFFFF"; // texto claro
 
 function svgIcon(size, { maskable = false } = {}) {
-  const r = Math.round(size * 0.18);               // radio de borde redondeado
-  const fontSize = Math.round(size * 0.52);        // tamaño letra "S"
+  const r = Math.round(size * 0.18); // radio de borde redondeado
+  const fontSize = Math.round(size * 0.52); // tamaño letra "S"
   // Para maskable, el arte debe ser "full-bleed". Centramos el contenido igual.
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
   <rect width="${size}" height="${size}" rx="${r}" ry="${r}" fill="${brandBg}"/>
-  <g transform="translate(${size/2},${size/2})">
-    <text x="0" y="${fontSize/3}" text-anchor="middle"
+  <g transform="translate(${size / 2},${size / 2})">
+    <text x="0" y="${fontSize / 3}" text-anchor="middle"
       font-family="Poppins, Lato, system-ui, sans-serif"
       font-size="${fontSize}" font-weight="700" fill="${brandText}">
       S

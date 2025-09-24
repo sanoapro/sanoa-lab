@@ -18,7 +18,10 @@ export async function listMyTags(kind?: "tag" | "dx"): Promise<Tag[]> {
   return (data ?? []) as Tag[];
 }
 
-export async function createTag(name: string, opts?: { color?: string | null; kind?: "tag" | "dx" }): Promise<Tag> {
+export async function createTag(
+  name: string,
+  opts?: { color?: string | null; kind?: "tag" | "dx" },
+): Promise<Tag> {
   const supabase = getSupabaseBrowser();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("No hay sesión.");
@@ -35,13 +38,19 @@ export async function createTag(name: string, opts?: { color?: string | null; ki
 
 export async function assignTag(patientId: string, tagId: string): Promise<void> {
   const supabase = getSupabaseBrowser();
-  const { error } = await supabase.from("patient_tags").insert({ patient_id: patientId, tag_id: tagId });
+  const { error } = await supabase
+    .from("patient_tags")
+    .insert({ patient_id: patientId, tag_id: tagId });
   if (error) throw error;
 }
 
 export async function unassignTag(patientId: string, tagId: string): Promise<void> {
   const supabase = getSupabaseBrowser();
-  const { error } = await supabase.from("patient_tags").delete().eq("patient_id", patientId).eq("tag_id", tagId);
+  const { error } = await supabase
+    .from("patient_tags")
+    .delete()
+    .eq("patient_id", patientId)
+    .eq("tag_id", tagId);
   if (error) throw error;
 }
 

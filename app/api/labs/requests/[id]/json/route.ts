@@ -6,11 +6,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   const supabase = createRouteHandlerClient({ cookies });
   const id = params.id;
 
-  const { data: req } = await supabase
-    .from("lab_requests")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const { data: req } = await supabase.from("lab_requests").select("*").eq("id", id).maybeSingle();
   if (!req) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
 
   const { data: items } = await supabase

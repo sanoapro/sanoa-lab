@@ -108,7 +108,9 @@ async function orgIdSupported(): Promise<boolean> {
 /** Helper: detecta si falta una RPC para degradar sin romper la UX */
 function isMissingRpc(err: unknown, rpcName: string): boolean {
   const s = String((err as any)?.message || (err as any)?.details || "").toLowerCase();
-  return s.includes("function") && s.includes(rpcName.toLowerCase()) && s.includes("does not exist");
+  return (
+    s.includes("function") && s.includes(rpcName.toLowerCase()) && s.includes("does not exist")
+  );
 }
 
 /** Obtiene el user_id actual (compatibilidad) */
@@ -130,9 +132,9 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
   const pageSize = Math.min(100, Math.max(1, Number(params.pageSize ?? 10)));
 
   const allowedSort: Array<NonNullable<ListPatientsParams["sortBy"]>> = ["created_at", "nombre"];
-  const sortBy = (params.sortBy && allowedSort.includes(params.sortBy)
-    ? params.sortBy
-    : "created_at") as NonNullable<ListPatientsParams["sortBy"]>;
+  const sortBy = (
+    params.sortBy && allowedSort.includes(params.sortBy) ? params.sortBy : "created_at"
+  ) as NonNullable<ListPatientsParams["sortBy"]>;
 
   const direction = (params.direction ?? (sortBy === "created_at" ? "desc" : "asc")) as NonNullable<
     ListPatientsParams["direction"]
@@ -144,9 +146,9 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
   // --- Filtros por tags vía RPC opcional ---
   let idsByTags: string[] | null = null;
   const tagIds =
-    (params.tagsAll && params.tagsAll.length > 0)
+    params.tagsAll && params.tagsAll.length > 0
       ? params.tagsAll
-      : (params.tagsAny && params.tagsAny.length > 0)
+      : params.tagsAny && params.tagsAny.length > 0
         ? params.tagsAny
         : [];
 
@@ -279,7 +281,7 @@ export async function softDeletePatient(id: string): Promise<Patient> {
   const hasSoft = await softDeleteSupported();
   if (!hasSoft) {
     throw new Error(
-      "Soft-delete no soportado: la columna 'deleted_at' no existe en 'patients'. Añádela o usa borrado definitivo."
+      "Soft-delete no soportado: la columna 'deleted_at' no existe en 'patients'. Añádela o usa borrado definitivo.",
     );
   }
   const supabase = getSupabaseBrowser();

@@ -8,9 +8,9 @@ export interface AppointmentLink {
   start: string;
   end: string;
   meeting_url: string | null;
-  status?: string | null;            // <- nuevo
+  status?: string | null; // <- nuevo
   metadata: any | null;
-  last_webhook_at?: string | null;   // <- nuevo
+  last_webhook_at?: string | null; // <- nuevo
   created_at: string;
 }
 
@@ -37,7 +37,7 @@ export async function linkAppointmentToPatient(input: {
   start: string;
   end: string;
   meetingUrl?: string | null;
-  status?: string | null;           // opcional: si ya lo conoces
+  status?: string | null; // opcional: si ya lo conoces
   metadata?: any | null;
 }): Promise<AppointmentLink> {
   try {
@@ -55,7 +55,7 @@ export async function linkAppointmentToPatient(input: {
           status: input.status ?? null,
           metadata: input.metadata ?? null,
         },
-        { onConflict: "cal_uid" }
+        { onConflict: "cal_uid" },
       )
       .select("*")
       .single();

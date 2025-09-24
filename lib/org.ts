@@ -19,9 +19,7 @@ const LS_KEY = "sanoa.currentOrg";
  */
 export async function listMyOrgs(): Promise<MyOrg[]> {
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase
-    .from("v_my_orgs")
-    .select("id,name,slug,is_personal,role");
+  const { data, error } = await supabase.from("v_my_orgs").select("id,name,slug,is_personal,role");
   if (error) throw error;
   return (data || []) as MyOrg[];
 }
@@ -101,22 +99,18 @@ export async function setCurrentOrgId(orgId: string): Promise<void> {
   if (!user) throw new Error("No hay sesión");
 
   const nowIso = new Date().toISOString();
-  const { error } = await supabase
-    .from("user_prefs")
-    .upsert({
-      user_id: user.id,
-      current_org_id: orgId,
-      updated_at: nowIso,
-    });
+  const { error } = await supabase.from("user_prefs").upsert({
+    user_id: user.id,
+    current_org_id: orgId,
+    updated_at: nowIso,
+  });
   if (error) throw error;
 
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(LS_KEY, orgId);
     } catch {}
-    window.dispatchEvent(
-      new CustomEvent("sanoa:org-changed", { detail: { orgId } })
-    );
+    window.dispatchEvent(new CustomEvent("sanoa:org-changed", { detail: { orgId } }));
   }
 }
 
@@ -183,9 +177,7 @@ export async function listMyOrganizations(): Promise<Organization[]> {
 /**
  * Crea una organización y asegura que el creador quede como owner (membership).
  */
-export async function createOrganization(
-  name: string
-): Promise<Organization> {
+export async function createOrganization(name: string): Promise<Organization> {
   const supabase = getSupabaseBrowser();
   const {
     data: { user },
@@ -225,11 +217,7 @@ export async function listMembers(orgId: string): Promise<OrgMember[]> {
 /**
  * Cambia el rol de un miembro en una organización.
  */
-export async function setMemberRole(
-  orgId: string,
-  userId: string,
-  role: OrgRole
-): Promise<void> {
+export async function setMemberRole(orgId: string, userId: string, role: OrgRole): Promise<void> {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase
     .from("organization_members")

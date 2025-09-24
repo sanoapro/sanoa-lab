@@ -81,8 +81,7 @@ export default function ReportsPage() {
     } catch (e: unknown) {
       if ((e as any)?.name === "AbortError") return; // petición cancelada: ignorar
       const msg =
-        (e as any)?.message ||
-        (typeof e === "string" ? e : "Error al cargar los reportes");
+        (e as any)?.message || (typeof e === "string" ? e : "Error al cargar los reportes");
       setErr(msg);
       // Mantén últimos datos válidos; sólo mostramos el error arriba
       // console.error(e);
@@ -155,9 +154,27 @@ export default function ReportsPage() {
         <Card title="Tareas abiertas" value={kv("work_open")} loading={loading} />
       </section>
 
-      <Series title={`Pacientes nuevos (últimos ${months}m)`} rows={series.patients} max={maxPts} fmt={fmt} loading={loading} />
-      <Series title={`Notas creadas (últimos ${months}m)`} rows={series.notes} max={maxNotes} fmt={fmt} loading={loading} />
-      <Series title={`Archivos subidos (últimos ${months}m)`} rows={series.files} max={maxFiles} fmt={fmt} loading={loading} />
+      <Series
+        title={`Pacientes nuevos (últimos ${months}m)`}
+        rows={series.patients}
+        max={maxPts}
+        fmt={fmt}
+        loading={loading}
+      />
+      <Series
+        title={`Notas creadas (últimos ${months}m)`}
+        rows={series.notes}
+        max={maxNotes}
+        fmt={fmt}
+        loading={loading}
+      />
+      <Series
+        title={`Archivos subidos (últimos ${months}m)`}
+        rows={series.files}
+        max={maxFiles}
+        fmt={fmt}
+        loading={loading}
+      />
 
       <Cohorts />
     </div>

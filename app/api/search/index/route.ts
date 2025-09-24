@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 /** === Embeddings providers & helpers === */
-const OAI_MODEL = "text-embedding-3-small";      // 1536 dims
-const GEM_MODEL = "models/text-embedding-004";   // 768 dims
+const OAI_MODEL = "text-embedding-3-small"; // 1536 dims
+const GEM_MODEL = "models/text-embedding-004"; // 768 dims
 const DIM = 1536;
 
 const useGemini = () => !!process.env.GEMINI_API_KEY;
@@ -17,11 +17,14 @@ function toDim(vec: number[], dim = DIM) {
 }
 
 function isAllZeros(v: number[]) {
-  let s = 0; for (const x of v) s += Math.abs(x);
+  let s = 0;
+  for (const x of v) s += Math.abs(x);
   return s === 0;
 }
 
-async function embedBatchGemini(texts: string[]): Promise<{vec:number[]; provider:string; model:string; dim:number}[]> {
+async function embedBatchGemini(
+  texts: string[],
+): Promise<{ vec: number[]; provider: string; model: string; dim: number }[]> {
   const base = process.env.GEMINI_API_BASE || "https://generativelanguage.googleapis.com/v1beta";
   const url = `${base}/models/text-embedding-004:batchEmbedContents?key=${process.env.GEMINI_API_KEY}`;
 
@@ -32,30 +35,54 @@ async function embedBatchGemini(texts: string[]): Promise<{vec:number[]; provide
     })),
   };
 
-  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!r.ok) throw new Error(await r.text());
   const j = await r.json();
-  const arr = (j.embeddings || []) as Array<{ values:number[] }>;
-  return arr.map(e => ({ vec: toDim(e.values || []), provider: "gemini", model: GEM_MODEL, dim: 768 }));
+  const arr = (j.embeddings || []) as Array<{ values: number[] }>;
+  return arr.map((e) => ({
+    vec: toDim(e.values || []),
+    provider: "gemini",
+    model: GEM_MODEL,
+    dim: 768,
+  }));
 }
 
-async function embedBatchOpenAI(texts: string[]): Promise<{vec:number[]; provider:string; model:string; dim:number}[]> {
+async function embedBatchOpenAI(
+  texts: string[],
+): Promise<{ vec: number[]; provider: string; model: string; dim: number }[]> {
   const base = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
   const r = await fetch(`${base}/embeddings`, {
     method: "POST",
-    headers: { "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ input: texts, model: OAI_MODEL }),
   });
   if (!r.ok) throw new Error(await r.text());
   const j = await r.json();
-  return j.data.map((d: any) => ({ vec: toDim(d.embedding as number[]), provider: "openai", model: OAI_MODEL, dim: DIM }));
+  return j.data.map((d: any) => ({
+    vec: toDim(d.embedding as number[]),
+    provider: "openai",
+    model: OAI_MODEL,
+    dim: DIM,
+  }));
 }
 
 async function embedBatch(texts: string[]) {
   if (useGemini()) return embedBatchGemini(texts);
   if (useOpenAI()) return embedBatchOpenAI(texts);
   // Sin claves: devolvemos vectores vacíos (serán NULL en BD)
-  return texts.map(() => ({ vec: Array(DIM).fill(0), provider: null as any, model: null as any, dim: null as any }));
+  return texts.map(() => ({
+    vec: Array(DIM).fill(0),
+    provider: null as any,
+    model: null as any,
+    dim: null as any,
+  }));
 }
 
 /** === Handler === */
@@ -105,7 +132,9 @@ export async function POST(req: Request) {
         };
       });
 
-      const { error: e } = await supabase.from("note_embeddings").upsert(payload, { onConflict: "note_id" });
+      const { error: e } = await supabase
+        .from("note_embeddings")
+        .upsert(payload, { onConflict: "note_id" });
       if (e) return NextResponse.json({ error: e.message }, { status: 400 });
       total += slice.length;
     }
@@ -113,7 +142,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       indexed: total,
-      provider: useGemini() ? "gemini" : (useOpenAI() ? "openai" : "none"),
+      provider: useGemini() ? "gemini" : useOpenAI() ? "openai" : "none",
       dim: DIM,
     });
   }
@@ -161,7 +190,9 @@ export async function POST(req: Request) {
         };
       });
 
-      const { error: e } = await supabase.from("file_embeddings").upsert(payload, { onConflict: "path" });
+      const { error: e } = await supabase
+        .from("file_embeddings")
+        .upsert(payload, { onConflict: "path" });
       if (e) return NextResponse.json({ error: e.message }, { status: 400 });
       total += slice.length;
     }
@@ -169,7 +200,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       indexed: total,
-      provider: useGemini() ? "gemini" : (useOpenAI() ? "openai" : "none"),
+      provider: useGemini() ? "gemini" : useOpenAI() ? "openai" : "none",
       dim: DIM,
     });
   }

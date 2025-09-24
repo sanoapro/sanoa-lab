@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 /** === Embeddings providers & helpers === */
-const OAI_MODEL = "text-embedding-3-small";      // 1536 dims
-const GEM_MODEL = "models/text-embedding-004";   // 768 dims
+const OAI_MODEL = "text-embedding-3-small"; // 1536 dims
+const GEM_MODEL = "models/text-embedding-004"; // 768 dims
 const DIM = 1536;
 
 const useGemini = () => !!process.env.GEMINI_API_KEY;

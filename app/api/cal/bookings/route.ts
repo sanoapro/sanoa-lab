@@ -15,10 +15,12 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") || "upcoming";
-    const afterStart = searchParams.get("afterStart") || new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
-    const beforeEnd  = searchParams.get("beforeEnd")  || new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString();
-    const q          = searchParams.get("q") || "";
-    const take       = searchParams.get("take") || "50";
+    const afterStart =
+      searchParams.get("afterStart") || new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const beforeEnd =
+      searchParams.get("beforeEnd") || new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString();
+    const q = searchParams.get("q") || "";
+    const take = searchParams.get("take") || "50";
 
     const qs = new URLSearchParams();
     if (status) qs.set("status", status);
@@ -53,7 +55,11 @@ export async function GET(req: NextRequest) {
       meetingUrl: b.meetingUrl || b.location || null,
       eventTypeId: b.eventTypeId,
       eventTypeSlug: b.eventType?.slug || null,
-      hosts: (b.hosts || []).map((h: any) => ({ name: h.name, email: h.email, username: h.username })),
+      hosts: (b.hosts || []).map((h: any) => ({
+        name: h.name,
+        email: h.email,
+        username: h.username,
+      })),
       attendees: (b.attendees || []).map((a: any) => ({ name: a.name, email: a.email })),
       createdAt: b.createdAt,
       updatedAt: b.updatedAt,
@@ -73,8 +79,8 @@ type Body = {
   patient_id: string;
   title?: string;
   notes?: string;
-  start: string;        // ISO
-  end?: string;         // ISO
+  start: string; // ISO
+  end?: string; // ISO
   duration_min?: number;
   location?: string;
   attendee_email?: string | null;
@@ -104,8 +110,7 @@ async function tryCreateInCal(input: Required<Pick<Body, "start">> & Body) {
     });
     if (!r.ok) throw new Error(await r.text());
     const j = await r.json();
-    const uid =
-      j?.uid || j?.id || j?.data?.uid || j?.data?.id || j?.booking?.uid;
+    const uid = j?.uid || j?.id || j?.data?.uid || j?.data?.id || j?.booking?.uid;
     const meetingUrl =
       j?.meetingUrl || j?.data?.meetingUrl || j?.booking?.meetingUrl || j?.videoCallUrl;
     return { uid, meetingUrl, raw: j };

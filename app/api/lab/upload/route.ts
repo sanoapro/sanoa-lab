@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 
 export const runtime = "nodejs"; // necesitamos Buffer en Node
-export const maxDuration = 60;   // defensa vs timeouts largos
+export const maxDuration = 60; // defensa vs timeouts largos
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -86,7 +86,10 @@ export async function GET(req: Request) {
   if (error) return cors(NextResponse.json({ ok: false, error: error.message }, { status: 400 }));
 
   const now = new Date();
-  if (data.used_at) return cors(NextResponse.json({ ok: false, error: "Este enlace ya fue usado" }, { status: 410 }));
+  if (data.used_at)
+    return cors(
+      NextResponse.json({ ok: false, error: "Este enlace ya fue usado" }, { status: 410 }),
+    );
   if (new Date(data.expires_at) < now)
     return cors(NextResponse.json({ ok: false, error: "El enlace expiró" }, { status: 410 }));
 
@@ -110,7 +113,9 @@ export async function POST(req: Request) {
     const notes = String(form.get("notes") || "").slice(0, 500);
 
     if (!token || !file) {
-      return cors(NextResponse.json({ ok: false, error: "token y file requeridos" }, { status: 400 }));
+      return cors(
+        NextResponse.json({ ok: false, error: "token y file requeridos" }, { status: 400 }),
+      );
     }
 
     const sizeMB = (file.size || 0) / (1024 * 1024);
@@ -140,7 +145,10 @@ export async function POST(req: Request) {
 
     if (eTok) return cors(NextResponse.json({ ok: false, error: eTok.message }, { status: 400 }));
     if (!t) return cors(NextResponse.json({ ok: false, error: "Token inválido" }, { status: 400 }));
-    if (t.used_at) return cors(NextResponse.json({ ok: false, error: "Este enlace ya fue usado" }, { status: 410 }));
+    if (t.used_at)
+      return cors(
+        NextResponse.json({ ok: false, error: "Este enlace ya fue usado" }, { status: 410 }),
+      );
     if (new Date(t.expires_at) < new Date())
       return cors(NextResponse.json({ ok: false, error: "El enlace expiró" }, { status: 410 }));
 
@@ -163,8 +171,15 @@ export async function POST(req: Request) {
     if (eUp) return cors(NextResponse.json({ ok: false, error: eUp.message }, { status: 400 }));
 
     // 3) Side-effects (idempotentes suaves)
-    await supa.from("lab_upload_tokens").update({ used_at: new Date().toISOString() }).eq("id", t.id);
-    await supa.from("lab_requests").update({ status: "uploaded" as any }).eq("id", t.request_id).catch(() => {});
+    await supa
+      .from("lab_upload_tokens")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", t.id);
+    await supa
+      .from("lab_requests")
+      .update({ status: "uploaded" as any })
+      .eq("id", t.request_id)
+      .catch(() => {});
     await supa
       .from("lab_results")
       .insert({ request_id: t.request_id, path: key, notes: notes || null })

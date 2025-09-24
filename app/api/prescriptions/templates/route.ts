@@ -5,7 +5,9 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 /** GET: lista plantillas del doctor + org */
 export async function GET() {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
   const { data: mem } = await supabase
@@ -28,7 +30,9 @@ export async function GET() {
 /** POST: crear plantilla (doctor_scope=true => privada del doctor) */
 export async function POST(req: Request) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
   const body = await req.json().catch(() => null);

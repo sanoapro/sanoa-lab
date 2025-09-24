@@ -22,7 +22,10 @@ export async function POST(req: Request) {
   if (r2.error) return NextResponse.json({ error: r2.error.message }, { status: 400 });
 
   // 3) (simple) Marcar solicitud como 'reviewed'
-  const r3 = await supa.from("lab_requests").update({ status: "reviewed" }).eq("id", r1.data.request_id);
+  const r3 = await supa
+    .from("lab_requests")
+    .update({ status: "reviewed" })
+    .eq("id", r1.data.request_id);
   if (r3.error) return NextResponse.json({ error: r3.error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true });

@@ -18,14 +18,17 @@ export async function GET(req: Request) {
 
   const fn = type === "notes" ? "metrics_notes_by_month" : "metrics_new_patients_by_month";
   const { data, error } = await supabase.rpc(fn, {
-    p_org: onlyOrg ? (org || null) : null,
+    p_org: onlyOrg ? org || null : null,
     months: Number.isFinite(months) ? months : 12,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   const rows = (data ?? []) as { month_start: string; total: number }[];
-  const csv = ["month_start,total", ...rows.map(r => [r.month_start, r.total].map(csvEscape).join(","))].join("\n");
+  const csv = [
+    "month_start,total",
+    ...rows.map((r) => [r.month_start, r.total].map(csvEscape).join(",")),
+  ].join("\n");
 
   return new NextResponse(csv, {
     status: 200,

@@ -39,7 +39,7 @@ export async function GET(req: Request) {
       `
       id, org_id, patient_id, title, status, due_at, created_at,
       lab_results ( path )
-    `
+    `,
     )
     .eq("org_id", org_id)
     .order("created_at", { ascending: false })

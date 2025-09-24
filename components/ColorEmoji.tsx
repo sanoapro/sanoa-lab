@@ -5,7 +5,15 @@ import clsx from "clsx";
 import { emojiTheme, EMOJI_FALLBACK_TOKEN, type EmojiToken } from "@/config/emojiTheme";
 
 /** Carga perezosa de un ícono de lucide por nombre */
-function LazyLucideIcon({ name, size, className }: { name: string; size: number; className?: string }) {
+function LazyLucideIcon({
+  name,
+  size,
+  className,
+}: {
+  name: string;
+  size: number;
+  className?: string;
+}) {
   const [Comp, setComp] = React.useState<React.ComponentType<any> | null>(null);
 
   React.useEffect(() => {
@@ -15,10 +23,14 @@ function LazyLucideIcon({ name, size, className }: { name: string; size: number;
       const C = mod?.[name];
       setComp(() => (typeof C === "function" ? C : null));
       if (!C && process.env.NODE_ENV !== "production") {
-        console.warn(`[ColorEmoji] Icono lucide "${name}" no encontrado. Revisa config/emojiTheme.ts`);
+        console.warn(
+          `[ColorEmoji] Icono lucide "${name}" no encontrado. Revisa config/emojiTheme.ts`,
+        );
       }
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [name]);
 
   if (!Comp) {
@@ -37,7 +49,9 @@ function resolveToken(token?: string): { kind: "svg" | "lucide" | "text"; value:
   const v = token && (emojiTheme as Record<string, string>)[token];
 
   if (!v && token && process.env.NODE_ENV !== "production") {
-    console.warn(`[ColorEmoji] Token no encontrado: "${token}". Usando fallback "${EMOJI_FALLBACK_TOKEN}".`);
+    console.warn(
+      `[ColorEmoji] Token no encontrado: "${token}". Usando fallback "${EMOJI_FALLBACK_TOKEN}".`,
+    );
   }
 
   const value = (v ?? emojiTheme[EMOJI_FALLBACK_TOKEN]) as string;
@@ -49,7 +63,7 @@ function resolveToken(token?: string): { kind: "svg" | "lucide" | "text"; value:
 
 export type ColorEmojiProps = {
   token?: EmojiToken | string;
-  emoji?: string;             // override puntual
+  emoji?: string; // override puntual
   size?: number;
   title?: string;
   className?: string;
@@ -70,9 +84,7 @@ export default function ColorEmoji({
   ...a11y
 }: ColorEmojiProps) {
   const resolved = emoji ? { kind: "text" as const, value: emoji } : resolveToken(token);
-  const extra =
-    mode === "mono" ? "grayscale" :
-    mode === "duotone" ? "" : ""; // reservado para estilos futuros
+  const extra = mode === "mono" ? "grayscale" : mode === "duotone" ? "" : ""; // reservado para estilos futuros
 
   if (resolved.kind === "svg") {
     return (

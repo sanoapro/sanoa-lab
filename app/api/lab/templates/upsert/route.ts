@@ -17,7 +17,10 @@ export async function POST(req: Request) {
   const { id, org_id, owner_kind, title, items, is_active = true } = b;
 
   if (!org_id || !owner_kind || !title || !Array.isArray(items)) {
-    return NextResponse.json({ error: "org_id, owner_kind, title, items requeridos" }, { status: 400 });
+    return NextResponse.json(
+      { error: "org_id, owner_kind, title, items requeridos" },
+      { status: 400 },
+    );
   }
   if (!["user", "org"].includes(owner_kind)) {
     return NextResponse.json({ error: "owner_kind inválido" }, { status: 400 });
@@ -40,10 +43,7 @@ export async function POST(req: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ ok: true, id });
   } else {
-    const { data, error } = await supa.from("lab_templates")
-      .insert(payload)
-      .select("id")
-      .single();
+    const { data, error } = await supa.from("lab_templates").insert(payload).select("id").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ ok: true, id: data.id });
   }

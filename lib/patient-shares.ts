@@ -44,7 +44,11 @@ export async function addShare(params: {
     permission: params.permission ?? "read",
   };
 
-  const { data, error } = await supabase.from("patient_shares").insert(payload).select("*").single();
+  const { data, error } = await supabase
+    .from("patient_shares")
+    .insert(payload)
+    .select("*")
+    .single();
   if (error) throw error;
   return data as PatientShare;
 }

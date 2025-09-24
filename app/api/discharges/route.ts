@@ -4,7 +4,9 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 export async function GET() {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
   const { data: mem } = await supabase
@@ -26,10 +28,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
-  const body = await req.json().catch(()=>null);
+  const body = await req.json().catch(() => null);
   const { name, body: b = {}, doctor_scope = true } = body || {};
   const { data: mem } = await supabase
     .from("organization_members")
@@ -38,8 +42,12 @@ export async function POST(req: Request) {
     .maybeSingle();
   const org_id = mem?.org_id;
 
-  const payload = { org_id, doctor_id: doctor_scope? user.id : null, name, body: b };
-  const { data, error } = await supabase.from("discharge_templates").insert(payload).select("*").single();
+  const payload = { org_id, doctor_id: doctor_scope ? user.id : null, name, body: b };
+  const { data, error } = await supabase
+    .from("discharge_templates")
+    .insert(payload)
+    .select("*")
+    .single();
   if (error) return NextResponse.json({ error: "create_failed" }, { status: 500 });
   return NextResponse.json({ item: data });
 }

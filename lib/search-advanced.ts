@@ -10,13 +10,29 @@ export type AdvancedSearchPayload = {
   tagsAll: string[];
   genero: Gender | "ALL";
   from?: string; // YYYY-MM-DD
-  to?: string;   // YYYY-MM-DD
+  to?: string; // YYYY-MM-DD
   onlyOrg: boolean;
 };
 
 export type SearchItem =
-  | { kind: "patient"; id: string; patient_id: string; title: string; snippet: string | null; rank: number; created_at: string }
-  | { kind: "note"; id: string; patient_id: string; title: string; snippet: string | null; rank: number; created_at: string };
+  | {
+      kind: "patient";
+      id: string;
+      patient_id: string;
+      title: string;
+      snippet: string | null;
+      rank: number;
+      created_at: string;
+    }
+  | {
+      kind: "note";
+      id: string;
+      patient_id: string;
+      title: string;
+      snippet: string | null;
+      rank: number;
+      created_at: string;
+    };
 
 async function getPatientIdsByTags(tagIds: string[], mode: Mode): Promise<string[] | null> {
   if (!tagIds.length) return null;
@@ -26,18 +42,22 @@ async function getPatientIdsByTags(tagIds: string[], mode: Mode): Promise<string
   return (data ?? []).map((r: any) => r.patient_id as string);
 }
 
-export async function searchAdvanced(p: AdvancedSearchPayload, limit = 40, offset = 0): Promise<SearchItem[]> {
+export async function searchAdvanced(
+  p: AdvancedSearchPayload,
+  limit = 40,
+  offset = 0,
+): Promise<SearchItem[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();
 
   // Resolvemos ids por etiquetas (según ANY/ALL seleccionado)
-  const tags = (p.tagsAll.length ? p.tagsAll : p.tagsAny);
+  const tags = p.tagsAll.length ? p.tagsAll : p.tagsAny;
   const mode: Mode = p.tagsAll.length ? "all" : "any";
   const patientIds = await getPatientIdsByTags(tags, mode);
 
   // Fechas a timestamptz
   const fromTs = p.from ? new Date(p.from + "T00:00:00Z").toISOString() : null;
-  const toTs   = p.to   ? new Date(p.to   + "T23:59:59Z").toISOString() : null;
+  const toTs = p.to ? new Date(p.to + "T23:59:59Z").toISOString() : null;
   const genero = p.genero === "ALL" ? null : p.genero;
 
   const { data, error } = await supabase.rpc("search_all_plus", {

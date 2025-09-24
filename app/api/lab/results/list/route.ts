@@ -14,7 +14,9 @@ export async function GET(req: Request) {
 
   let q = supa
     .from("lab_results")
-    .select("id, request_id, patient_id, file_path, file_name, mime_type, size_bytes, notes, created_at, reviewed_by, reviewed_at")
+    .select(
+      "id, request_id, patient_id, file_path, file_name, mime_type, size_bytes, notes, created_at, reviewed_by, reviewed_at",
+    )
     .order("created_at", { ascending: false });
 
   if (request_id) q = q.eq("request_id", request_id);

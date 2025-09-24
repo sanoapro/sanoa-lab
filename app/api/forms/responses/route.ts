@@ -16,7 +16,10 @@ export async function POST(req: Request) {
   };
 
   if (!template_id || !patient_id || !answers) {
-    return NextResponse.json({ error: "template_id, patient_id y answers son requeridos" }, { status: 400 });
+    return NextResponse.json(
+      { error: "template_id, patient_id y answers son requeridos" },
+      { status: 400 },
+    );
   }
 
   // Traer plantilla para obtener schema y org_id
@@ -56,7 +59,11 @@ export async function POST(req: Request) {
     created_by,
   };
 
-  const { data, error } = await supabase.from("form_responses").insert(insert).select("id").single();
+  const { data, error } = await supabase
+    .from("form_responses")
+    .insert(insert)
+    .select("id")
+    .single();
   if (error) {
     console.error("[responses:insert]", error);
     return NextResponse.json({ error: "No se pudo guardar la respuesta" }, { status: 500 });

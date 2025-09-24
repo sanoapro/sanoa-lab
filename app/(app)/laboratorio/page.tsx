@@ -75,7 +75,11 @@ function RequestsPanel() {
       if (!r.ok) throw new Error(j.error || "No se pudo cargar");
       setRows(j.rows || []);
     } catch (e: any) {
-      showToast({ title: "Error", description: e?.message || "No se pudo cargar", variant: "error" });
+      showToast({
+        title: "Error",
+        description: e?.message || "No se pudo cargar",
+        variant: "error",
+      });
     } finally {
       setBusy(false);
     }
@@ -96,7 +100,11 @@ function RequestsPanel() {
       if (!r.ok) throw new Error(j.error || "No se pudo firmar");
       window.open(j.url, "_blank", "noopener,noreferrer");
     } catch (e: any) {
-      showToast({ title: "Error", description: e?.message || "No se pudo descargar", variant: "error" });
+      showToast({
+        title: "Error",
+        description: e?.message || "No se pudo descargar",
+        variant: "error",
+      });
     }
   }
 
@@ -125,9 +133,12 @@ function RequestsPanel() {
           </thead>
           <tbody>
             {rows.map((r) => {
-              const hasFile = !!(r.lab_results?.[0]?.path);
+              const hasFile = !!r.lab_results?.[0]?.path;
               return (
-                <tr key={r.id} className="border-b border-[var(--color-brand-border)] last:border-0">
+                <tr
+                  key={r.id}
+                  className="border-b border-[var(--color-brand-border)] last:border-0"
+                >
                   <td className="py-2 pr-3">{r.title}</td>
                   <td className="py-2 pr-3">
                     {r.status === "uploaded" ? (
@@ -200,7 +211,11 @@ function TemplatesPanel() {
       if (!r.ok) throw new Error(j.error || "No se pudo cargar");
       setRows(j.rows || []);
     } catch (e: any) {
-      showToast({ title: "Error", description: e?.message || "No se pudo cargar", variant: "error" });
+      showToast({
+        title: "Error",
+        description: e?.message || "No se pudo cargar",
+        variant: "error",
+      });
     } finally {
       setBusy(false);
     }
@@ -232,7 +247,11 @@ function TemplatesPanel() {
       resetForm();
       void load();
     } catch (e: any) {
-      showToast({ title: "Error", description: e?.message || "No se pudo guardar", variant: "error" });
+      showToast({
+        title: "Error",
+        description: e?.message || "No se pudo guardar",
+        variant: "error",
+      });
     }
   }
 
@@ -257,7 +276,11 @@ function TemplatesPanel() {
       showToast({ title: "Plantilla eliminada", variant: "success" });
       void load();
     } catch (e: any) {
-      showToast({ title: "Error", description: e?.message || "No se pudo eliminar", variant: "error" });
+      showToast({
+        title: "Error",
+        description: e?.message || "No se pudo eliminar",
+        variant: "error",
+      });
     }
   }
 
@@ -283,9 +306,17 @@ function TemplatesPanel() {
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "No se pudo crear la solicitud");
-      showToast({ title: "Solicitud enviada", description: "Se envió el correo al paciente.", variant: "success" });
+      showToast({
+        title: "Solicitud enviada",
+        description: "Se envió el correo al paciente.",
+        variant: "success",
+      });
     } catch (e: any) {
-      showToast({ title: "Error", description: e?.message || "No se pudo crear la solicitud", variant: "error" });
+      showToast({
+        title: "Error",
+        description: e?.message || "No se pudo crear la solicitud",
+        variant: "error",
+      });
     }
   }
 
@@ -308,7 +339,9 @@ function TemplatesPanel() {
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium">Notas (encabezado del médico / indicaciones)</span>
+            <span className="text-sm font-medium">
+              Notas (encabezado del médico / indicaciones)
+            </span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -330,7 +363,11 @@ function TemplatesPanel() {
 
           <div className="flex items-center justify-between">
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={active}
+                onChange={(e) => setActive(e.target.checked)}
+              />
               Activa
             </label>
 
@@ -344,7 +381,10 @@ function TemplatesPanel() {
                   Cancelar
                 </button>
               )}
-              <button type="submit" className="px-3 py-2 rounded-xl bg-[var(--color-brand-bluegray)] text-white">
+              <button
+                type="submit"
+                className="px-3 py-2 rounded-xl bg-[var(--color-brand-bluegray)] text-white"
+              >
                 Guardar
               </button>
             </div>
@@ -374,9 +414,13 @@ function TemplatesPanel() {
               <div className="min-w-0">
                 <p className="font-medium">
                   {t.name}{" "}
-                  {!t.is_active && <span className="text-xs text-[var(--color-brand-bluegray)]">(inactiva)</span>}
+                  {!t.is_active && (
+                    <span className="text-xs text-[var(--color-brand-bluegray)]">(inactiva)</span>
+                  )}
                 </p>
-                {t.notes && <p className="text-sm text-[var(--color-brand-bluegray)] mt-0.5">{t.notes}</p>}
+                {t.notes && (
+                  <p className="text-sm text-[var(--color-brand-bluegray)] mt-0.5">{t.notes}</p>
+                )}
                 <p className="text-xs text-[var(--color-brand-bluegray)] mt-1">
                   {t.items.length} estudio(s) • {timeAgo(t.created_at)}
                 </p>
@@ -406,7 +450,9 @@ function TemplatesPanel() {
           ))}
 
           {rows.length === 0 && (
-            <div className="text-sm text-[var(--color-brand-bluegray)]">Aún no tienes plantillas.</div>
+            <div className="text-sm text-[var(--color-brand-bluegray)]">
+              Aún no tienes plantillas.
+            </div>
           )}
         </div>
       </section>

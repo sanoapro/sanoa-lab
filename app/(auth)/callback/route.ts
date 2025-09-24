@@ -18,7 +18,10 @@ export async function GET(req: NextRequest) {
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (error) {
-        const msg = typeof error === "object" && (error as any)?.message ? (error as any).message : String(error);
+        const msg =
+          typeof error === "object" && (error as any)?.message
+            ? (error as any).message
+            : String(error);
         const login = new URL("/login", url.origin);
         login.searchParams.set("error", msg);
         return NextResponse.redirect(login);

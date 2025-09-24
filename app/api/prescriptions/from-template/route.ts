@@ -7,7 +7,9 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const { patient_id, template_id, diagnosis = null, notes = null } = body || {};
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
   const { data: mem } = await supabase

@@ -8,7 +8,15 @@ type Props = {
   submitting?: boolean;
 };
 
-function Likert({ f, value, onChange }: { f: Extract<FormField, { type: "likert" }>; value?: number; onChange: (n: number) => void }) {
+function Likert({
+  f,
+  value,
+  onChange,
+}: {
+  f: Extract<FormField, { type: "likert" }>;
+  value?: number;
+  onChange: (n: number) => void;
+}) {
   return (
     <div className="space-y-2">
       <div className="font-medium">{f.label}</div>

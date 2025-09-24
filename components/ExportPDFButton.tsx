@@ -61,9 +61,7 @@ export default function ExportPDFButton({
     setBusy(true);
     try {
       // Cede dos frames para estabilizar layout antes de capturar
-      await new Promise<void>((r) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => r())),
-      );
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
       // Lazy import (mejor chunking que import estático)
       const html2canvasMod = await import("html2canvas");
@@ -85,8 +83,7 @@ export default function ExportPDFButton({
         windowHeight: el.scrollHeight || undefined,
         // Ignora elementos marcados para no renderizar, útil para botones/acciones
         ignoreElements: (node) =>
-          node instanceof HTMLElement &&
-          node.getAttribute("data-html2canvas-ignore") === "true",
+          node instanceof HTMLElement && node.getAttribute("data-html2canvas-ignore") === "true",
       });
 
       const imgData = canvas.toDataURL("image/png");

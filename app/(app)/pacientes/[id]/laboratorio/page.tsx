@@ -20,7 +20,9 @@ export default function PatientLabPage() {
     if (!org.id) return;
     setBusy(true);
     try {
-      const j = await fetch(`/api/lab/requests/list?org_id=${org.id}&patient_id=${id}`).then((r) => r.json());
+      const j = await fetch(`/api/lab/requests/list?org_id=${org.id}&patient_id=${id}`).then((r) =>
+        r.json(),
+      );
       setReqs(j.items || []);
     } finally {
       setBusy(false);

@@ -7,10 +7,13 @@ const bucket = process.env.LAB_RESULTS_BUCKET || "lab-results";
 
 export async function POST(req: Request) {
   try {
-    const { path, expires = Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300) } = await req.json();
+    const { path, expires = Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300) } =
+      await req.json();
     if (!path) return NextResponse.json({ error: "path requerido" }, { status: 400 });
     const supa = createClient(url, serviceKey, { auth: { persistSession: false } });
-    const { data, error } = await supa.storage.from(bucket).createSignedUrl(path, Math.max(5, Number(expires)));
+    const { data, error } = await supa.storage
+      .from(bucket)
+      .createSignedUrl(path, Math.max(5, Number(expires)));
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ ok: true, url: data.signedUrl });
   } catch (e: any) {
