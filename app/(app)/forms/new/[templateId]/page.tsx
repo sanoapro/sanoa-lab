@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import FormRenderer from "@/components/forms/FormRenderer";
 import type { FormTemplate } from "@/types/forms";
 
-export default function NewFormPage() {
+function Inner() {
   const params = useParams<{ templateId: string }>();
   const search = useSearchParams();
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function NewFormPage() {
       const r = await fetch(`/api/forms/templates?specialty=mente`);
       const j = await r.json();
       const t: FormTemplate | undefined = (j.templates || []).find(
-        (x: FormTemplate) => x.id === params.templateId,
+        (x: FormTemplate) => x.id === params.templateId
       );
       setTpl(t || null);
     })();
@@ -61,5 +61,13 @@ export default function NewFormPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="p-4">Cargando…</div>}>
+      <Inner />
+    </Suspense>
   );
 }

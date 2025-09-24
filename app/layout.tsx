@@ -8,7 +8,11 @@ const poppins = Poppins({
   weight: ["400", "600", "700"],
   variable: "--font-poppins",
 });
-const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-lato" });
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-lato",
+});
 
 export const metadata: Metadata = {
   title: "Sanoa Lab",
@@ -29,10 +33,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${poppins.variable} ${lato.variable} font-body text-[var(--color-brand-text)] min-h-dvh antialiased`}
       >
-        <Providers>
-          {children}
-          <div id="toast-root" />
-        </Providers>
+        {/* Nodo para portales de toasts */}
+        <div id="toast-root" />
+        {/* Providers (incluye ToastProvider) */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
