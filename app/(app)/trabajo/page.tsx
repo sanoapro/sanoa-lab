@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import RequireAuth from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,13 @@ function useQueryParam(name: string) {
   return sp.get(name);
 }
 
-export default function WorkPage() {
+export default function Page() {
   return (
-    <RequireAuth>
-      <PageInner />
-    </RequireAuth>
+    <Suspense fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}>
+      <RequireAuth>
+        <PageInner />
+      </RequireAuth>
+    </Suspense>
   );
 }
 

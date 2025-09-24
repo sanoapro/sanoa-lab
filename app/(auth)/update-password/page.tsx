@@ -1,7 +1,8 @@
+// app/(auth)/update-password/page.tsx
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
@@ -9,6 +10,20 @@ import { showToast } from "@/components/Toaster";
 import { toSpanishError } from "@/lib/i18n-errors";
 
 export default function UpdatePasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-[100dvh] grid place-items-center p-6 text-[var(--color-brand-bluegray)]">
+          Cargando…
+        </main>
+      }
+    >
+      <UpdatePasswordClient />
+    </Suspense>
+  );
+}
+
+function UpdatePasswordClient() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -33,7 +48,7 @@ export default function UpdatePasswordPage() {
         if (error) throw error;
         if (!data.session) {
           setErr(
-            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.",
+            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo."
           );
           setReady("error");
           return;

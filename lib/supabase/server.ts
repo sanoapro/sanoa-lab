@@ -1,20 +1,41 @@
 import { cookies, headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-export function supaServer() {
-  const cookieStore = cookies(); // ← ¡OJO! aquí sí es await en Server Actions, pero en helper no.
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY! /* solo si este helper es backend puro; si no, usa anon */,
-    {
-      cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
-        set: () => {},
-        remove: () => {},
+/**
+ * Cliente de Supabase para **Route Handlers** y **Server Components**
+ * - Usa ANON KEY (sesión por cookies) y cae a SERVICE_ROLE si no está (para no bloquearte).
+ * - No hace set/remove de cookies (no lo solemos necesitar en handlers).
+ */
+export function getSupabaseServer() {
+  const cookieStore = cookies();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+  return createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      get: (name: string) => {
+        try {
+          return cookieStore.get(name)?.value;
+        } catch {
+          return undefined;
+        }
       },
-      headers: {
-        get: (name: string) => headers().get(name) ?? undefined,
+      // En server handlers normalmente no seteamos cookies:
+      set: () => {},
+      remove: () => {},
+    },
+    headers: {
+      get: (name: string) => {
+        try {
+          return headers().get(name) ?? undefined;
+        } catch {
+          return undefined;
+        }
       },
-    }
-  );
+    },
+  });
 }
+
+/** Alias opcional si en algún lugar importabas `supaServer()` */
+export const supaServer = getSupabaseServer;
