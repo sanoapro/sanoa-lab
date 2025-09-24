@@ -27,6 +27,8 @@
     "jspdf": "^3.0.2",
     "lucide-react": "^0.542.0",
     "next": "15.5.3",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwind-merge": "^3.3.1",
