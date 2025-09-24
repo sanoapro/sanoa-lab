@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -14,13 +15,17 @@ type Obj = {
   metadata?: Record<string, any>;
 };
 
-const BUCKET = "uploads";
+const BUCKET = process.env.NEXT_PUBLIC_UPLOADS_BUCKET || "lab-results";
 
 export default function UploadDemoPage() {
   const supabase = getSupabaseBrowser();
+
   const [files, setFiles] = useState<Obj[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Prefijo (carpeta) para listar/subir. Ej: un request_id como "12345"
+  const [prefix, setPrefix] = useState<string>(""); // vacío = raíz del bucket
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const hasFiles = files.length > 0;
@@ -35,16 +40,24 @@ export default function UploadDemoPage() {
     }
   };
 
+  function fullKey(name: string) {
+    return prefix ? `${prefix.replace(/\/+$/, "")}/${name}` : name;
+  }
+
   async function refreshList() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.storage.from(BUCKET).list("", {
+      // Lista dentro del "prefix" (carpeta). Si está vacío, lista raíz.
+      const { data, error } = await supabase.storage.from(BUCKET).list(prefix || "", {
         limit: 1000,
         offset: 0,
         sortBy: { column: "created_at", order: "desc" as const },
       });
       if (error) throw error;
-      setFiles(data || []);
+
+      // Filtra sólo archivos (algunas versiones devuelven carpetas con metadata null)
+      const onlyFiles = (data || []).filter((x: any) => x && typeof x.name === "string");
+      setFiles(onlyFiles);
     } catch (e: any) {
       console.error(e);
       showToast(e?.message || "No se pudo obtener la lista.", "error");
@@ -54,8 +67,9 @@ export default function UploadDemoPage() {
   }
 
   useEffect(() => {
-    refreshList();
-  }, []);
+    void refreshList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefix]);
 
   async function onUpload(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,7 +80,10 @@ export default function UploadDemoPage() {
     }
     setUploading(true);
     try {
-      const path = `${Date.now()}-${file.name}`;
+      const safePrefix = prefix.replace(/^\/+|\/+$/g, ""); // quita slashes sobrantes
+      const base = `${Date.now()}-${file.name}`.replace(/[^\w.\-]+/g, "_");
+      const path = safePrefix ? `${safePrefix}/${base}` : base;
+
       const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
         cacheControl: "3600",
         contentType: file.type || "application/octet-stream",
@@ -86,7 +103,9 @@ export default function UploadDemoPage() {
 
   async function onCopyLink(obj: Obj) {
     try {
-      const url = await getSignedUrl(obj.name, 300); // 5 minutos
+      const key = fullKey(obj.name);
+      // 5 minutos
+      const url = await getSignedUrl(key, { bucket: BUCKET, expires: 300 });
       await navigator.clipboard.writeText(url);
       showToast("Enlace temporal copiado (5 min).", "success");
     } catch (e: any) {
@@ -97,7 +116,8 @@ export default function UploadDemoPage() {
 
   async function onView(obj: Obj) {
     try {
-      const url = await getSignedUrl(obj.name, 300);
+      const key = fullKey(obj.name);
+      const url = await getSignedUrl(key, { bucket: BUCKET, expires: 300 });
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (e: any) {
       console.error(e);
@@ -107,7 +127,8 @@ export default function UploadDemoPage() {
 
   async function onDownload(obj: Obj) {
     try {
-      const url = await getSignedUrl(obj.name, 300);
+      const key = fullKey(obj.name);
+      const url = await getSignedUrl(key, { bucket: BUCKET, expires: 300 });
       const a = document.createElement("a");
       a.href = url;
       a.download = obj.name;
@@ -123,7 +144,8 @@ export default function UploadDemoPage() {
   async function onDelete(obj: Obj) {
     if (!confirm(`¿Eliminar "${obj.name}"?`)) return;
     try {
-      const { error } = await supabase.storage.from(BUCKET).remove([obj.name]);
+      const key = fullKey(obj.name);
+      const { error } = await supabase.storage.from(BUCKET).remove([key]);
       if (error) throw error;
       showToast("Archivo eliminado.", "success");
       await refreshList();
@@ -144,16 +166,28 @@ export default function UploadDemoPage() {
         <p className="text-[var(--color-brand-bluegray)]">
           Bucket privado{" "}
           <code className="rounded px-1 bg-white/70 dark:bg-white/10 backdrop-blur">
-            uploads
+            {BUCKET}
           </code>{" "}
-          (RLS por dueño).
+          (usa carpeta/prefix para listar por solicitud, p. ej. <code>REQ123</code>).
         </p>
       </header>
 
-      {/* Uploader */}
+      {/* Controles */}
       <section className="surface-light rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-end">
-          <label className="flex-1 space-y-2">
+        <div className="p-6 grid gap-4 sm:grid-cols-3 sm:items-end">
+          <label className="space-y-2">
+            <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
+              <ColorEmoji token="carpeta" size={18} /> Carpeta (prefix)
+            </span>
+            <input
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value)}
+              placeholder="Ej. REQ_abc123"
+              className="block w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
+            />
+          </label>
+
+          <label className="space-y-2">
             <span className="text-sm text-[var(--color-brand-text)]/80 flex items-center gap-2">
               <ColorEmoji token="subirBandeja" size={18} /> Archivo
             </span>
@@ -164,24 +198,26 @@ export default function UploadDemoPage() {
             />
           </label>
 
-          <form onSubmit={onUpload} className="sm:self-end">
-            <button
-              disabled={uploading}
-              className="rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center gap-2 h-10"
-            >
-              <ColorEmoji token="subir" size={18} />
-              {uploading ? "Subiendo…" : "Subir"}
-            </button>
-          </form>
+          <div className="flex gap-3">
+            <form onSubmit={onUpload} className="sm:self-end">
+              <button
+                disabled={uploading}
+                className="h-10 rounded-xl bg-[var(--color-brand-primary)] px-4 py-2 text-white hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+              >
+                <ColorEmoji token="subir" size={18} />
+                {uploading ? "Subiendo…" : "Subir"}
+              </button>
+            </form>
 
-          <button
-            onClick={refreshList}
-            disabled={loading}
-            className="rounded-xl border border-[var(--color-brand-border)] px-4 py-2 bg-white/50 dark:bg-white/[0.04] hover:bg-white/70 dark:hover:bg-white/[0.08] backdrop-blur flex items-center gap-2 h-10"
-          >
-            <ColorEmoji token="refrescar" size={18} />
-            {loading ? "Actualizando…" : "Actualizar lista"}
-          </button>
+            <button
+              onClick={refreshList}
+              disabled={loading}
+              className="h-10 rounded-xl border border-[var(--color-brand-border)] px-4 py-2 bg-white/50 dark:bg-white/[0.04] hover:bg-white/70 dark:hover:bg-white/[0.08] backdrop-blur flex items-center gap-2"
+            >
+              <ColorEmoji token="refrescar" size={18} />
+              {loading ? "Actualizando…" : "Actualizar"}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -189,7 +225,7 @@ export default function UploadDemoPage() {
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {!hasFiles && !loading && (
           <div className="surface-light col-span-full rounded-2xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur p-6 text-[var(--color-brand-bluegray)]">
-            No hay archivos aún.
+            No hay archivos en esta carpeta.
           </div>
         )}
 
@@ -215,7 +251,7 @@ export default function UploadDemoPage() {
 
             <div className="h-px bg-[var(--color-brand-border)] mx-6" />
 
-            {/* Acciones: misma altura, layout uniforme */}
+            {/* Acciones */}
             <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 onClick={() => onView(obj)}
