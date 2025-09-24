@@ -87,7 +87,10 @@ export async function POST(req: Request) {
   const formId = data.formID || data.form_id;
 
   if (!submissionId || !templateKey || !patientId || !orgId) {
-    return NextResponse.json({ error: "Faltan campos (submissionId/templateKey/patientId/orgId)" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Faltan campos (submissionId/templateKey/patientId/orgId)" },
+      { status: 400 },
+    );
   }
 
   // Doble verificación con API Jotform
@@ -107,7 +110,11 @@ export async function POST(req: Request) {
   // buscar plantilla por specialty=mente + key via name o un campo fijo
   // más simple: buscar por specialty + name = PHQ-9 / GAD-7 / Consentimiento
   const templateName =
-    templateKey === "phq9" ? "PHQ-9" : templateKey === "gad7" ? "GAD-7" : "Consentimiento informado";
+    templateKey === "phq9"
+      ? "PHQ-9"
+      : templateKey === "gad7"
+        ? "GAD-7"
+        : "Consentimiento informado";
 
   const { data: tpl, error: eTpl } = await supabase
     .from("form_templates")

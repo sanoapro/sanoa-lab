@@ -13,13 +13,21 @@ export type PatientPermission = {
 
 export async function listPatientPermissions(patientId: string): Promise<PatientPermission[]> {
   const supa = getSupabaseBrowser();
-  const { data, error } = await supa.from("patient_permissions").select("*").eq("patient_id", patientId).order("created_at", { ascending: false });
+  const { data, error } = await supa
+    .from("patient_permissions")
+    .select("*")
+    .eq("patient_id", patientId)
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as PatientPermission[];
 }
 
 /** Requiere que el usuario ya exista (user_id). Si quieres invitar por email, primero crea el usuario (o maneja invitación aparte). */
-export async function upsertPatientPermission(patientId: string, userId: string, perms: Partial<Omit<PatientPermission, "id"|"patient_id"|"user_id"|"created_at">>): Promise<void> {
+export async function upsertPatientPermission(
+  patientId: string,
+  userId: string,
+  perms: Partial<Omit<PatientPermission, "id" | "patient_id" | "user_id" | "created_at">>,
+): Promise<void> {
   const supa = getSupabaseBrowser();
   const patch = {
     patient_id: patientId,
@@ -29,7 +37,9 @@ export async function upsertPatientPermission(patientId: string, userId: string,
     can_manage_files: !!perms.can_manage_files,
     can_share: !!perms.can_share,
   };
-  const { error } = await supa.from("patient_permissions").upsert(patch, { onConflict: "patient_id,user_id" });
+  const { error } = await supa
+    .from("patient_permissions")
+    .upsert(patch, { onConflict: "patient_id,user_id" });
   if (error) throw error;
 }
 

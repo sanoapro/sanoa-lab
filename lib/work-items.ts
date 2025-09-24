@@ -71,7 +71,10 @@ export async function setWorkStatus(id: string, status: WorkStatus): Promise<voi
 }
 
 /** Editar campos (título, desc, due_at) */
-export async function updateWorkItem(id: string, patch: Partial<Pick<WorkItem, "title" | "description" | "due_at">>) {
+export async function updateWorkItem(
+  id: string,
+  patch: Partial<Pick<WorkItem, "title" | "description" | "due_at">>,
+) {
   const { error } = await supa().from("work_items").update(patch).eq("id", id);
   if (error) throw error;
 }

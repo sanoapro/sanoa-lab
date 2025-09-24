@@ -98,10 +98,7 @@ export async function listTemplates(includeOrg = true): Promise<NoteTemplate[]> 
 
   const orgId = includeOrg ? await getCurrentOrgId().catch(() => null) : null;
 
-  let q = supabase
-    .from("note_templates")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let q = supabase.from("note_templates").select("*").order("created_at", { ascending: false });
 
   if (includeOrg && orgId) {
     // personales OR de la organización activa
@@ -120,9 +117,7 @@ export async function listTemplates(includeOrg = true): Promise<NoteTemplate[]> 
  * Helper: devuelve plantillas de BD + las built-in (útil para pickers)
  * - Las built-in aparecen al final para priorizar las del usuario/organización.
  */
-export async function listTemplatesWithDefaults(
-  includeOrg = true
-): Promise<NoteTemplate[]> {
+export async function listTemplatesWithDefaults(includeOrg = true): Promise<NoteTemplate[]> {
   const db = await listTemplates(includeOrg).catch(() => []);
   const builtins = builtInTemplatesDb();
   // Evitar duplicados si algún día guardas una con mismo id (poco probable):
@@ -139,7 +134,7 @@ export async function listTemplatesWithDefaults(
 export async function createTemplate(
   name: string,
   body: string,
-  scope: "personal" | "org" = "personal"
+  scope: "personal" | "org" = "personal",
 ): Promise<NoteTemplate> {
   const supabase = getSupabaseBrowser();
   const { data: auth } = await supabase.auth.getUser();

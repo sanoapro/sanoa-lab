@@ -17,13 +17,19 @@ export default function NewFormPage() {
     (async () => {
       const r = await fetch(`/api/forms/templates?specialty=mente`);
       const j = await r.json();
-      const t: FormTemplate | undefined = (j.templates || []).find((x: FormTemplate) => x.id === params.templateId);
+      const t: FormTemplate | undefined = (j.templates || []).find(
+        (x: FormTemplate) => x.id === params.templateId,
+      );
       setTpl(t || null);
     })();
   }, [params.templateId]);
 
   if (!patientId) {
-    return <div className="p-4">Falta <code>patient_id</code> en la URL.</div>;
+    return (
+      <div className="p-4">
+        Falta <code>patient_id</code> en la URL.
+      </div>
+    );
   }
   if (!tpl) return <div className="p-4">Cargando...</div>;
 

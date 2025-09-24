@@ -11,14 +11,18 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const patient = String(form.get("patient"));
   const file = form.get("file") as File | null;
-  if (!patient || !file) return NextResponse.json({ error: "patient y file son requeridos" }, { status: 400 });
+  if (!patient || !file)
+    return NextResponse.json({ error: "patient y file son requeridos" }, { status: 400 });
 
   // group_key = nombre normalizado (minúsculas)
   const name = file.name || "archivo";
   const group_key = name.toLowerCase();
 
   // Determinar versión siguiente vía RPC
-  const { data: nextv, error: eV } = await supabase.rpc("next_file_version", { p_patient_id: patient, p_group_key: group_key });
+  const { data: nextv, error: eV } = await supabase.rpc("next_file_version", {
+    p_patient_id: patient,
+    p_group_key: group_key,
+  });
   if (eV) return NextResponse.json({ error: eV.message }, { status: 400 });
   const version = Number(nextv || 1);
 
@@ -50,7 +54,13 @@ export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for") || "";
     const ua = req.headers.get("user-agent") || "";
-    await supabase.rpc("log_file_access", { p_patient_id: patient, p_path: path, p_action: "upload", p_ip: ip, p_ua: ua });
+    await supabase.rpc("log_file_access", {
+      p_patient_id: patient,
+      p_path: path,
+      p_action: "upload",
+      p_ip: ip,
+      p_ua: ua,
+    });
   } catch {}
 
   return NextResponse.json({ ok: true, version, path });

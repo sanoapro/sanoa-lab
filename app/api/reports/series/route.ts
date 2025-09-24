@@ -26,21 +26,18 @@ export async function GET(req: Request) {
       supabase.rpc("metrics_files_by_month", { p_org: org, months }),
     ]);
 
-    if (pts.error)  return NextResponse.json({ error: pts.error.message },   { status: 400 });
+    if (pts.error) return NextResponse.json({ error: pts.error.message }, { status: 400 });
     if (notes.error) return NextResponse.json({ error: notes.error.message }, { status: 400 });
     if (files.error) return NextResponse.json({ error: files.error.message }, { status: 400 });
 
     return NextResponse.json({
       org,
       months,
-      patients: pts.data  ?? [],
-      notes:    notes.data ?? [],
-      files:    files.data ?? [],
+      patients: pts.data ?? [],
+      notes: notes.data ?? [],
+      files: files.data ?? [],
     });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message || "Error inesperado" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: e?.message || "Error inesperado" }, { status: 500 });
   }
 }

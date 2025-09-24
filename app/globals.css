@@ -8,9 +8,9 @@
 @theme {
   /* Paleta Sanoa (base claro) */
   --color-brand-primary: #d97a66; /* Terracota */
-  --color-brand-text: #0f172a;     /* slate-900 (texto por defecto) */
+  --color-brand-text: #0f172a; /* slate-900 (texto por defecto) */
   --color-brand-bluegray: #334155; /* slate-700 */
-  --color-brand-border: #cbd5e1;   /* slate-300 */
+  --color-brand-border: #cbd5e1; /* slate-300 */
   --color-danger: #8c3d1e;
 
   /* Superficies */
@@ -22,8 +22,12 @@
   --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
 
   /* Fuentes (inyectadas por next/font en layout.tsx) */
-  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-body:    var(--font-lato),     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-heading:
+    var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-body:
+    var(--font-lato), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
   /* ===== Tokens que requieren componentes shadcn (Tailwind v4) ===== */
   --color-background: var(--color-surface);
@@ -32,7 +36,7 @@
   --color-primary: var(--color-brand-primary);
   --color-primary-foreground: #ffffff;
 
-  --color-secondary: #eef2ff;             /* slate-100/indigo-50 vibe */
+  --color-secondary: #eef2ff; /* slate-100/indigo-50 vibe */
   --color-secondary-foreground: #0f172a;
 
   --color-destructive: var(--color-danger);
@@ -46,7 +50,7 @@
 
   /* Variables que usas en componentes */
   --color-brand-background: #fff7f0; /* fondo suave de iconitos/tiles */
-  --color-brand-coral: #d97a66;      /* para puntitos del toaster */
+  --color-brand-coral: #d97a66; /* para puntitos del toaster */
 }
 
 /* =======================
@@ -54,8 +58,18 @@
    ======================= */
 :root {
   --app-bg:
-    radial-gradient(60rem 60rem at -10% -10%, rgba(217,122,102,0.25) 0%, rgba(217,122,102,0.10) 40%, rgba(217,122,102,0.00) 70%),
-    radial-gradient(90rem 80rem at 120% -20%, rgba(30,64,175,0.22) 0%, rgba(30,64,175,0.08) 45%, rgba(30,64,175,0.00) 70%),
+    radial-gradient(
+      60rem 60rem at -10% -10%,
+      rgba(217, 122, 102, 0.25) 0%,
+      rgba(217, 122, 102, 0.1) 40%,
+      rgba(217, 122, 102, 0) 70%
+    ),
+    radial-gradient(
+      90rem 80rem at 120% -20%,
+      rgba(30, 64, 175, 0.22) 0%,
+      rgba(30, 64, 175, 0.08) 45%,
+      rgba(30, 64, 175, 0) 70%
+    ),
     linear-gradient(180deg, #fff7f0 0%, #fefcf9 55%, #f1f6ff 100%);
 }
 
@@ -63,27 +77,37 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --app-bg:
-      radial-gradient(60rem 60rem at -10% -10%, rgba(217,122,102,0.22) 0%, rgba(217,122,102,0.06) 40%, rgba(217,122,102,0.00) 70%),
-      radial-gradient(90rem 80rem at 120% -20%, rgba(96,165,250,0.20) 0%, rgba(96,165,250,0.06) 45%, rgba(96,165,250,0.00) 70%),
+      radial-gradient(
+        60rem 60rem at -10% -10%,
+        rgba(217, 122, 102, 0.22) 0%,
+        rgba(217, 122, 102, 0.06) 40%,
+        rgba(217, 122, 102, 0) 70%
+      ),
+      radial-gradient(
+        90rem 80rem at 120% -20%,
+        rgba(96, 165, 250, 0.2) 0%,
+        rgba(96, 165, 250, 0.06) 45%,
+        rgba(96, 165, 250, 0) 70%
+      ),
       linear-gradient(180deg, #0b1220 0%, #0c1322 60%, #0b1426 100%);
 
     /* Texto general claro para que se lea sobre el fondo oscuro */
-    --color-brand-text: #e5e7eb;     /* slate-200 */
+    --color-brand-text: #e5e7eb; /* slate-200 */
 
     /* Superficies siguen siendo claras (glass) */
     --color-surface: #ffffff;
-    --color-surface-2: rgba(255,255,255,0.9);
+    --color-surface-2: rgba(255, 255, 255, 0.9);
 
     /* Bordes más oscuros para glass */
-    --color-brand-border: #475569;   /* slate-600 */
+    --color-brand-border: #475569; /* slate-600 */
     --color-brand-bluegray: #cbd5e1; /* slate-300 */
 
     /* Ajustes de tokens shadcn en dark */
     --color-background: var(--color-surface);
     --color-foreground: var(--color-brand-text);
-    --color-secondary: rgba(255,255,255,0.07);
+    --color-secondary: rgba(255, 255, 255, 0.07);
     --color-secondary-foreground: #e5e7eb;
-    --color-accent: rgba(255,255,255,0.06);
+    --color-accent: rgba(255, 255, 255, 0.06);
     --color-accent-foreground: #e5e7eb;
     --color-input: #475569;
     --color-ring: var(--color-brand-primary);
@@ -93,8 +117,14 @@
 /* =======================
    RESET / TIPOGRAFÍA
    ======================= */
-html, body { min-height: 100%; }
-:focus-visible { outline: 2px solid var(--color-brand-primary); outline-offset: 2px; }
+html,
+body {
+  min-height: 100%;
+}
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
 
 body {
   background: var(--app-bg);
@@ -106,20 +136,38 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-brand-text);
   font-weight: 600;
   font-family: var(--font-heading);
 }
 
-a { color: var(--color-brand-text); text-underline-offset: 3px; }
-button { font-weight: 600; }
+a {
+  color: var(--color-brand-text);
+  text-underline-offset: 3px;
+}
+button {
+  font-weight: 600;
+}
 
 /* =======================
    LAYOUT HELPERS
    ======================= */
-.page { min-height: 100svh; padding: 2.5rem 0; background: transparent; }
-.container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+.page {
+  min-height: 100svh;
+  padding: 2.5rem 0;
+  background: transparent;
+}
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 
 /* =======================
    UTILIDAD: “surface-light”
@@ -142,67 +190,165 @@ button { font-weight: 600; }
   border-radius: 20px;
   box-shadow: var(--shadow-soft);
 }
-.card-elevated { box-shadow: var(--shadow-card); }
+.card-elevated {
+  box-shadow: var(--shadow-card);
+}
 .card-header {
-  padding: 1.25rem 1.5rem .5rem;
+  padding: 1.25rem 1.5rem 0.5rem;
   border-bottom: 1px solid var(--color-brand-border);
   background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
-  border-top-left-radius: 20px; border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
-.card :is(h1,h2,h3,h4,h5,h6) { color: #0f172a; } /* headings dentro de card */
-.card-title { font-family: var(--font-heading); font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem); font-weight: 600; }
-.card-body { padding: 1.5rem; }
+.card :is(h1, h2, h3, h4, h5, h6) {
+  color: #0f172a;
+} /* headings dentro de card */
+.card-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  font-weight: 600;
+}
+.card-body {
+  padding: 1.5rem;
+}
 
 /* =======================
    FORM / INPUTS
    ======================= */
 .input {
-  width: 100%; border-radius: 12px; border: 1px solid var(--color-brand-border);
-  background: var(--color-surface); color: #0f172a;  /* texto oscuro dentro de input */
-  padding: .75rem 1rem;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--color-brand-border);
+  background: var(--color-surface);
+  color: #0f172a; /* texto oscuro dentro de input */
+  padding: 0.75rem 1rem;
 }
-.input:disabled { opacity: .5; cursor: not-allowed; }
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* =======================
    BOTONES
    ======================= */
-.btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 12px; padding: .75rem 1rem; font-weight: 600; border: 1px solid transparent; }
-.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-.btn-primary { color: #fff; background: var(--color-brand-primary); border-color: #c9705c; }
-.btn-primary:hover { filter: brightness(.96); }
+.btn-primary {
+  color: #fff;
+  background: var(--color-brand-primary);
+  border-color: #c9705c;
+}
+.btn-primary:hover {
+  filter: brightness(0.96);
+}
 
-.btn-secondary { color: #0f172a; background: #eef2ff; border-color: #c7d2fe; }
-.btn-secondary:hover { filter: brightness(.98); }
+.btn-secondary {
+  color: #0f172a;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+.btn-secondary:hover {
+  filter: brightness(0.98);
+}
 
-.btn-ghost { color: var(--color-brand-primary); background: transparent; border-color: var(--color-brand-border); }
-.btn-ghost:hover { background: #fff3ec; }
+.btn-ghost {
+  color: var(--color-brand-primary);
+  background: transparent;
+  border-color: var(--color-brand-border);
+}
+.btn-ghost:hover {
+  background: #fff3ec;
+}
 
-.btn-soft { color: #0f172a; background: #fff4e8; border-color: #ffe3c9; }
-.btn-soft:hover { filter: brightness(.98); }
+.btn-soft {
+  color: #0f172a;
+  background: #fff4e8;
+  border-color: #ffe3c9;
+}
+.btn-soft:hover {
+  filter: brightness(0.98);
+}
 
-.btn-danger { color: #fff; background: var(--color-danger); border-color: #6e2f17; }
-.btn-danger:hover { filter: brightness(.95); }
+.btn-danger {
+  color: #fff;
+  background: var(--color-danger);
+  border-color: #6e2f17;
+}
+.btn-danger:hover {
+  filter: brightness(0.95);
+}
 
 /* =======================
    LISTAS / BADGES / UTILS
    ======================= */
-.badge { font-size: .75rem; padding: .25rem .5rem; border-radius: .5rem; background: var(--color-surface-2); border: 1px solid var(--color-brand-border); color: var(--color-brand-bluegray); }
-.text-danger { color: var(--color-danger); }
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-brand-border);
+  color: var(--color-brand-bluegray);
+}
+.text-danger {
+  color: var(--color-danger);
+}
 
 /* =======================
    Importar: acciones (Ver/Descargar/…)
    ======================= */
-.tiles { display: flex; flex-wrap: wrap; gap: 12px; }
-.tile-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 48px; min-width: 148px; padding: 12px 16px;
-  border: 1px solid var(--color-brand-border); border-radius: 14px;
-  background: #fff; color: #0f172a; font-weight: 700;
-  box-shadow: var(--shadow-soft); text-align: center; white-space: nowrap;
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
-.tile-btn:hover { background: #fff8f4; }
-.tile-btn:disabled { opacity: .6; cursor: not-allowed; }
-.tile-btn .emoji, .tile-btn svg, .tile-btn img { flex: 0 0 auto; width: 20px; height: 20px; }
-.tile-btn--danger { border-color: #fecaca; background: #fff1f2; color: #dc2626; }
-.tile-btn--danger:hover { background: #ffe4e6; }
+.tile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  min-width: 148px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-brand-border);
+  border-radius: 14px;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+  white-space: nowrap;
+}
+.tile-btn:hover {
+  background: #fff8f4;
+}
+.tile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.tile-btn .emoji,
+.tile-btn svg,
+.tile-btn img {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+.tile-btn--danger {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #dc2626;
+}
+.tile-btn--danger:hover {
+  background: #ffe4e6;
+}

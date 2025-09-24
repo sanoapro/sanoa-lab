@@ -18,5 +18,10 @@
     "baseUrl": "."
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".next", "logs/**"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "logs/**",
+    "supabase/functions/**"   // ⬅️ evita errores de Deno en build de Next
+  ]
 }

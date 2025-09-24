@@ -13,7 +13,7 @@ export type FetchBookingsParams = {
   status?: "upcoming" | "past" | "accepted";
   q?: string;
   afterStart?: string; // ISO
-  beforeEnd?: string;  // ISO
+  beforeEnd?: string; // ISO
   take?: number;
 };
 

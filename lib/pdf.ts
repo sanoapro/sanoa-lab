@@ -22,7 +22,14 @@ export async function makeQrDataUrl(text: string) {
 }
 
 // texto envuelto simple
-export function drawWrappedText(page: any, text: string, x: number, y: number, width: number, size = 10) {
+export function drawWrappedText(
+  page: any,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  size = 10,
+) {
   const words = String(text).split(/\s+/);
   let line = "";
   let yy = y;

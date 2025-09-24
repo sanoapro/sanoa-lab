@@ -315,7 +315,9 @@ export default function PacientesPage() {
         <div className="p-4 flex items-center justify-between">
           <div className="text-sm text-[var(--color-brand-text)]">
             Org activa: <strong>{activeOrg.name ?? "—"}</strong>{" "}
-            <span className="text-[var(--color-brand-bluegray)]">({activeOrg.id?.slice(0, 8) ?? "sin org"})</span>
+            <span className="text-[var(--color-brand-bluegray)]">
+              ({activeOrg.id?.slice(0, 8) ?? "sin org"})
+            </span>
           </div>
           <label className="text-sm flex items-center gap-2">
             <input
@@ -349,7 +351,9 @@ export default function PacientesPage() {
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Género</span>
             <select
               value={filters.genero}
-              onChange={(e) => setFilters((f) => ({ ...f, genero: e.target.value as GenderOpt, page: 1 }))}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, genero: e.target.value as GenderOpt, page: 1 }))
+              }
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             >
               <option value="ALL">Todos</option>
@@ -400,7 +404,9 @@ export default function PacientesPage() {
               <Input
                 type="date"
                 value={filters.createdFrom ?? ""}
-                onChange={(e) => setFilters((f) => ({ ...f, createdFrom: e.target.value || null, page: 1 }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, createdFrom: e.target.value || null, page: 1 }))
+                }
                 className="mt-1 w-full"
               />
             </label>
@@ -409,7 +415,9 @@ export default function PacientesPage() {
               <Input
                 type="date"
                 value={filters.createdTo ?? ""}
-                onChange={(e) => setFilters((f) => ({ ...f, createdTo: e.target.value || null, page: 1 }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, createdTo: e.target.value || null, page: 1 }))
+                }
                 className="mt-1 w-full"
               />
             </label>
@@ -444,11 +452,7 @@ export default function PacientesPage() {
           </label>
 
           <div className="md:col-span-12 flex flex-wrap gap-3 pt-1">
-            <Button
-              className="inline-flex items-center gap-2"
-              disabled={loading}
-              type="submit"
-            >
+            <Button className="inline-flex items-center gap-2" disabled={loading} type="submit">
               <ColorEmoji token="buscar" size={16} /> {loading ? "Buscando…" : "Buscar"}
             </Button>
             <Button
@@ -471,7 +475,9 @@ export default function PacientesPage() {
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-[var(--color-brand-text)]">Filtrar por etiquetas</div>
+            <div className="text-sm font-medium text-[var(--color-brand-text)]">
+              Filtrar por etiquetas
+            </div>
             <label className="text-xs flex items-center gap-2 text-[var(--color-brand-bluegray)]">
               <input
                 type="checkbox"
@@ -488,7 +494,9 @@ export default function PacientesPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {myTags.map((t) => {
-              const active = filters.useAllMode ? filters.tagsAll.includes(t.id) : filters.tagsAny.includes(t.id);
+              const active = filters.useAllMode
+                ? filters.tagsAll.includes(t.id)
+                : filters.tagsAny.includes(t.id);
               return (
                 <button
                   key={t.id}
@@ -498,7 +506,7 @@ export default function PacientesPage() {
                     "px-3 py-1 rounded-full text-sm border",
                     active
                       ? "bg-[var(--color-brand-primary)] text-white border-[var(--color-brand-primary)]"
-                      : "bg-white text-[var(--color-brand-bluegray)] border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]"
+                      : "bg-white text-[var(--color-brand-bluegray)] border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]",
                   )}
                 >
                   {t.name}
@@ -506,7 +514,9 @@ export default function PacientesPage() {
               );
             })}
             {myTags.length === 0 && (
-              <div className="text-sm text-[var(--color-brand-bluegray)]">No tienes etiquetas aún.</div>
+              <div className="text-sm text-[var(--color-brand-bluegray)]">
+                No tienes etiquetas aún.
+              </div>
             )}
           </div>
         </div>
@@ -611,12 +621,9 @@ export default function PacientesPage() {
           {/* Paginación (usa total del servidor) */}
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-[var(--color-brand-bluegray)]">
-              Mostrando{" "}
-              {rows.length > 0 ? (filters.page - 1) * filters.pageSize + 1 : 0}
+              Mostrando {rows.length > 0 ? (filters.page - 1) * filters.pageSize + 1 : 0}
               {" – "}
-              {rows.length > 0
-                ? (filters.page - 1) * filters.pageSize + rows.length
-                : 0}
+              {rows.length > 0 ? (filters.page - 1) * filters.pageSize + rows.length : 0}
               {" de "}
               {serverTotal}
             </div>

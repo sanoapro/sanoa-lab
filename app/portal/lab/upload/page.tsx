@@ -29,7 +29,9 @@ export default function LabUploadPortal() {
         setError("Falta el token en la URL.");
         return;
       }
-      const r = await fetch(`/api/lab/upload?token=${encodeURIComponent(token)}`, { cache: "no-store" });
+      const r = await fetch(`/api/lab/upload?token=${encodeURIComponent(token)}`, {
+        cache: "no-store",
+      });
       const j = (await r.json()) as ValidateResp;
       if (!alive) return;
       if (!j.ok) {
@@ -141,7 +143,9 @@ export default function LabUploadPortal() {
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
-            <p className="mt-1 text-xs text-[var(--color-brand-bluegray)]">Máximo {maxMB} MB. PDF/JPG/PNG.</p>
+            <p className="mt-1 text-xs text-[var(--color-brand-bluegray)]">
+              Máximo {maxMB} MB. PDF/JPG/PNG.
+            </p>
           </label>
 
           <label className="block">

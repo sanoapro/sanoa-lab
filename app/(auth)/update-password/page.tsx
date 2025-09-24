@@ -32,7 +32,9 @@ export default function UpdatePasswordPage() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (!data.session) {
-          setErr("No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.");
+          setErr(
+            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.",
+          );
           setReady("error");
           return;
         }
@@ -63,7 +65,11 @@ export default function UpdatePasswordPage() {
       const supabase = getSupabaseBrowser();
       const { error } = await supabase.auth.updateUser({ password: p1 });
       if (error) throw error;
-      showToast({ title: "Contraseña actualizada", description: "¡Bienvenido/a!", variant: "success" });
+      showToast({
+        title: "Contraseña actualizada",
+        description: "¡Bienvenido/a!",
+        variant: "success",
+      });
       router.replace(safeRedirect);
     } catch (e) {
       setErr(toSpanishError(e));
@@ -83,8 +89,13 @@ export default function UpdatePasswordPage() {
     return (
       <main className="min-h-[100dvh] grid place-items-center p-6">
         <section className="w-full max-w-md rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 shadow">
-          <div className="mb-3 text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 text-sm">{err}</div>
-          <Link href="/login" className="inline-flex items-center gap-2 text-[var(--color-brand-text)] underline">
+          <div className="mb-3 text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 text-sm">
+            {err}
+          </div>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 text-[var(--color-brand-text)] underline"
+          >
             <ColorEmoji token="atras" size={16} /> Volver a login
           </Link>
         </section>
@@ -97,11 +108,15 @@ export default function UpdatePasswordPage() {
       <section className="w-full max-w-md rounded-2xl border border-[var(--color-brand-border)] bg-white p-6 shadow">
         <header className="mb-4 flex items-center gap-3">
           <ColorEmoji token="llave" size={20} />
-          <h1 className="text-lg font-semibold text-[var(--color-brand-text)]">Definir nueva contraseña</h1>
+          <h1 className="text-lg font-semibold text-[var(--color-brand-text)]">
+            Definir nueva contraseña
+          </h1>
         </header>
 
         {err && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>
+          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {err}
+          </div>
         )}
 
         <form onSubmit={onSubmit} className="space-y-4" noValidate>

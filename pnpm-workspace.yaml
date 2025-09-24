@@ -3,4 +3,5 @@ ignoredBuiltDependencies:
   - '@tailwindcss/oxide'
   - core-js
   - sharp
+  - tesseract.js
   - unrs-resolver

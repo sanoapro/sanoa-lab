@@ -22,9 +22,7 @@ export default function GlobalError({
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <ColorEmoji emoji="🧯" /> Ocurrió un error
           </h2>
-          <p className="text-sm opacity-80">
-            Puedes reintentar o volver al tablero.
-          </p>
+          <p className="text-sm opacity-80">Puedes reintentar o volver al tablero.</p>
           <div className="flex gap-2">
             <button
               onClick={() => reset()}

@@ -8,8 +8,14 @@ let _id = 0;
 
 /** showToast("msg","success")  o  showToast({ title, description, variant }) */
 export function showToast(
-  a: string | { title?: string; description?: string; variant?: "success" | "error" | "info" | "destructive" },
-  kind?: ToastKind
+  a:
+    | string
+    | {
+        title?: string;
+        description?: string;
+        variant?: "success" | "error" | "info" | "destructive";
+      },
+  kind?: ToastKind,
 ) {
   try {
     let message = "";
@@ -53,14 +59,14 @@ export default function Toaster() {
           t.kind === "success"
             ? "border-emerald-300"
             : t.kind === "error"
-            ? "border-red-300"
-            : "border-[var(--color-brand-border)]";
+              ? "border-red-300"
+              : "border-[var(--color-brand-border)]";
         const dot =
           t.kind === "success"
             ? "bg-emerald-500"
             : t.kind === "error"
-            ? "bg-red-500"
-            : "bg-[var(--color-brand-coral)]";
+              ? "bg-red-500"
+              : "bg-[var(--color-brand-coral)]";
         return (
           <div key={t.id} className={`${base} ${border}`}>
             <div className="flex items-start gap-3">

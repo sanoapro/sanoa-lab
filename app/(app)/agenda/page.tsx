@@ -22,8 +22,24 @@ type LocalAppt = {
 };
 
 type UniItem =
-  | { kind: "cal"; uid: string; title: string; start: string; end: string; meetingUrl?: string; attendee?: string }
-  | { kind: "local"; id: string; title: string; start: string; end: string; patient_id: string; cal_event_id?: string | null };
+  | {
+      kind: "cal";
+      uid: string;
+      title: string;
+      start: string;
+      end: string;
+      meetingUrl?: string;
+      attendee?: string;
+    }
+  | {
+      kind: "local";
+      id: string;
+      title: string;
+      start: string;
+      end: string;
+      patient_id: string;
+      cal_event_id?: string | null;
+    };
 
 export default function AgendaPage() {
   const supabase = getSupabaseBrowser();
@@ -165,7 +181,8 @@ export default function AgendaPage() {
       setOpenNew(false);
       showToast({
         title: "Cita creada",
-        description: j.mode === "cal" ? "Se creó en Cal y en Sanoa." : "Se creó localmente en Sanoa.",
+        description:
+          j.mode === "cal" ? "Se creó en Cal y en Sanoa." : "Se creó localmente en Sanoa.",
       });
       await load();
     } catch (e: any) {
@@ -207,26 +224,57 @@ export default function AgendaPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
-        <select className="border rounded-md px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value as Status)}>
-          <option value="upcoming">Próximas</option><option value="past">Pasadas</option>
-          <option value="accepted">Aceptadas</option><option value="all">Todas</option>
+        <select
+          className="border rounded-md px-3 py-2"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as Status)}
+        >
+          <option value="upcoming">Próximas</option>
+          <option value="past">Pasadas</option>
+          <option value="accepted">Aceptadas</option>
+          <option value="all">Todas</option>
         </select>
-        <Input placeholder="Buscar por nombre o email…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input
+          placeholder="Buscar por nombre o email…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
         <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        <Button variant="secondary" onClick={() => { setQ(""); setFrom(""); setTo(""); setStatus("upcoming"); }}>Limpiar</Button>
-        <Button onClick={() => void load()} disabled={loading}>Actualizar</Button>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setQ("");
+            setFrom("");
+            setTo("");
+            setStatus("upcoming");
+          }}
+        >
+          Limpiar
+        </Button>
+        <Button onClick={() => void load()} disabled={loading}>
+          Actualizar
+        </Button>
       </div>
 
       <div className="surface-light border rounded-xl divide-y bg-white/90 dark:bg-white/[0.06] backdrop-blur">
         {unified.length === 0 && (
-          <div className="p-4 text-sm text-slate-700"> {loading ? "Cargando…" : "Sin resultados."}</div>
+          <div className="p-4 text-sm text-slate-700">
+            {" "}
+            {loading ? "Cargando…" : "Sin resultados."}
+          </div>
         )}
         {unified.map((it) => (
-          <div key={it.kind === "cal" ? it.uid : it.id} className="p-4 flex items-center justify-between gap-4">
+          <div
+            key={it.kind === "cal" ? it.uid : it.id}
+            className="p-4 flex items-center justify-between gap-4"
+          >
             <div className="flex-1">
               <div className="font-medium">
-                {it.title} {it.kind === "local" && !it.cal_event_id ? <span className="text-xs text-amber-600">(local)</span> : null}
+                {it.title}{" "}
+                {it.kind === "local" && !it.cal_event_id ? (
+                  <span className="text-xs text-amber-600">(local)</span>
+                ) : null}
               </div>
               <div className="text-sm text-slate-600">
                 {new Date(it.start).toLocaleString()} – {new Date(it.end).toLocaleTimeString()}
@@ -238,7 +286,9 @@ export default function AgendaPage() {
             </div>
             <div className="flex gap-2">
               {"meetingUrl" in it && it.meetingUrl && (
-                <Button variant="secondary" onClick={() => window.open(it.meetingUrl!, "_blank")}>Abrir</Button>
+                <Button variant="secondary" onClick={() => window.open(it.meetingUrl!, "_blank")}>
+                  Abrir
+                </Button>
               )}
             </div>
           </div>
@@ -250,18 +300,35 @@ export default function AgendaPage() {
         <div className="space-y-4">
           <div>
             <label className="text-sm block mb-1">Paciente</label>
-            <Input placeholder="Buscar por nombre o email…" value={pQ} onChange={(e) => { setPQ(e.target.value); setPSel(null); }} />
+            <Input
+              placeholder="Buscar por nombre o email…"
+              value={pQ}
+              onChange={(e) => {
+                setPQ(e.target.value);
+                setPSel(null);
+              }}
+            />
             {pList.length > 0 && (
               <div className="mt-1 border rounded-md max-h-60 overflow-auto">
                 {pList.map((p) => (
-                  <button key={p.id} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b" onClick={() => pickPatient(p)}>
-                    <div className="font-medium">{(p as any).nombre || (p as any).full_name || "(sin nombre)"}</div>
+                  <button
+                    key={p.id}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b"
+                    onClick={() => pickPatient(p)}
+                  >
+                    <div className="font-medium">
+                      {(p as any).nombre || (p as any).full_name || "(sin nombre)"}
+                    </div>
                     <div className="text-xs text-gray-600">{(p as any).email || "—"}</div>
                   </button>
                 ))}
               </div>
             )}
-            {pSel && <div className="mt-1 text-xs text-green-700">Seleccionado: {(pSel as any).nombre || (pSel as any).full_name || pSel.id}</div>}
+            {pSel && (
+              <div className="mt-1 text-xs text-green-700">
+                Seleccionado: {(pSel as any).nombre || (pSel as any).full_name || pSel.id}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -278,7 +345,13 @@ export default function AgendaPage() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-sm block mb-1">Duración (min)</label>
-              <Input type="number" min={5} max={480} value={duration} onChange={(e) => setDuration(Number(e.target.value || 50))} />
+              <Input
+                type="number"
+                min={5}
+                max={480}
+                value={duration}
+                onChange={(e) => setDuration(Number(e.target.value || 50))}
+              />
             </div>
             <div>
               <label className="text-sm block mb-1">Título</label>
@@ -288,11 +361,18 @@ export default function AgendaPage() {
 
           <div>
             <label className="text-sm block mb-1">Notas (opcional)</label>
-            <textarea className="w-full border rounded-md p-2" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <textarea
+              className="w-full border rounded-md p-2"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={() => void createAppt()} disabled={busyCreate || !pSel || !date || !time}>
+            <Button
+              onClick={() => void createAppt()}
+              disabled={busyCreate || !pSel || !date || !time}
+            >
               {busyCreate ? "Creando…" : "Crear cita"}
             </Button>
           </div>

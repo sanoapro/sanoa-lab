@@ -67,21 +67,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const toast = useCallback((opts: ToastOptions) => {
-    const id = Math.random().toString(36).slice(2);
-    const item: ToastItem = {
-      id,
-      opts: {
-        variant: opts.variant ?? "info",
-        title: opts.title ?? "",
-        description: opts.description ?? "",
-        emoji: opts.emoji ?? "ℹ️",
-        duration: opts.duration ?? 3500,
-      },
-    };
-    setToasts((prev) => [item, ...prev]);
-    timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
-  }, [remove]);
+  const toast = useCallback(
+    (opts: ToastOptions) => {
+      const id = Math.random().toString(36).slice(2);
+      const item: ToastItem = {
+        id,
+        opts: {
+          variant: opts.variant ?? "info",
+          title: opts.title ?? "",
+          description: opts.description ?? "",
+          emoji: opts.emoji ?? "ℹ️",
+          duration: opts.duration ?? 3500,
+        },
+      };
+      setToasts((prev) => [item, ...prev]);
+      timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
+    },
+    [remove],
+  );
 
   const value = useMemo(() => ({ toast }), [toast]);
 

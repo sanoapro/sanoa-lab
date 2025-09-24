@@ -59,10 +59,15 @@ function PageInner() {
     }
   }
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [org.id, status]);
+  useEffect(() => {
+    void load(); /* eslint-disable-next-line */
+  }, [org.id, status]);
 
   async function create() {
-    if (!org.id) { showToast({ title: "Selecciona organización activa" }); return; }
+    if (!org.id) {
+      showToast({ title: "Selecciona organización activa" });
+      return;
+    }
     if (!patientId.trim() || !title.trim()) {
       showToast({ title: "Faltan datos", description: "Indica patient_id y título." });
       return;
@@ -76,7 +81,8 @@ function PageInner() {
         description: description.trim() || undefined,
         dueAt: iso,
       });
-      setTitle(""); setDescription(""); // no reseteo patient para crear varias seguidas
+      setTitle("");
+      setDescription(""); // no reseteo patient para crear varias seguidas
       showToast({ title: "Creada", description: "La tarea se agregó correctamente." });
       await load();
     } catch (e: any) {
@@ -89,7 +95,11 @@ function PageInner() {
       await setWorkStatus(id, done ? "done" : "open");
       await load();
     } catch (e: any) {
-      showToast({ title: "No se pudo cambiar estado", description: e.message, variant: "destructive" });
+      showToast({
+        title: "No se pudo cambiar estado",
+        description: e.message,
+        variant: "destructive",
+      });
     }
   }
 
@@ -136,7 +146,11 @@ function PageInner() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm text-gray-600 mb-1">patient_id (UUID)</label>
-            <Input value={patientId} onChange={(e) => setPatientId(e.target.value)} placeholder="uuid del paciente" />
+            <Input
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              placeholder="uuid del paciente"
+            />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Fecha límite</label>
@@ -144,11 +158,19 @@ function PageInner() {
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm text-gray-600 mb-1">Título</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="p. ej., Completar nota SOAP" />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="p. ej., Completar nota SOAP"
+            />
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm text-gray-600 mb-1">Descripción (opcional)</label>
-            <textarea className="w-full border rounded-md p-2 min-h-[80px]" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <textarea
+              className="w-full border rounded-md p-2 min-h-[80px]"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
         </div>
         <div className="flex justify-end">
@@ -161,7 +183,9 @@ function PageInner() {
         <div className="text-lg font-semibold">{header}</div>
         <div className="border rounded-xl divide-y bg-white">
           {items.length === 0 && (
-            <div className="p-4 text-sm text-gray-600">No hay tareas para los filtros seleccionados.</div>
+            <div className="p-4 text-sm text-gray-600">
+              No hay tareas para los filtros seleccionados.
+            </div>
           )}
 
           {items.map((w) => (
@@ -178,9 +202,13 @@ function PageInner() {
                 {w.status === "open" ? (
                   <Button onClick={() => void mark(w.id, true)}>Marcar como hecha</Button>
                 ) : (
-                  <Button variant="secondary" onClick={() => void mark(w.id, false)}>Reabrir</Button>
+                  <Button variant="secondary" onClick={() => void mark(w.id, false)}>
+                    Reabrir
+                  </Button>
                 )}
-                <Button variant="secondary" onClick={() => void remove(w.id)}>Borrar</Button>
+                <Button variant="secondary" onClick={() => void remove(w.id)}>
+                  Borrar
+                </Button>
               </div>
             </div>
           ))}

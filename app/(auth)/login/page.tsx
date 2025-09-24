@@ -9,10 +9,22 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 function GoogleGIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" className={className} aria-hidden="true" focusable="false">
-      <path fill="#EA4335" d="M24 9.5c3.22 0 6.13 1.11 8.42 3.29l6.3-6.3C34.82 3.16 29.86 1.5 24 1.5 14.62 1.5 6.53 7.06 3.03 15.02l7.8 6.06C12.4 15.57 17.76 9.5 24 9.5z"/>
-      <path fill="#34A853" d="M46.5 24c0-1.61-.15-3.16-.43-4.65H24v9.3h12.7c-.55 2.97-2.17 5.48-4.63 7.17l7.1 5.53C43.9 37.4 46.5 31.2 46.5 24z"/>
-      <path fill="#FBBC05" d="M10.83 21.08l-7.8-6.06C1.66 17.5 1.5 20.7 1.5 24c0 3.28.16 6.48 1.53 8.98l7.8-6.05C10.2 25.41 10.05 24.72 10.05 24s.15-1.41.78-2.92z"/>
-      <path fill="#4285F4" d="M24 46.5c5.86 0 10.82-1.93 14.17-5.15l-7.1-5.53c-1.98 1.36-4.53 2.18-7.07 2.18-6.24 0-11.6-6.07-13.17-13.56l-7.8 6.05C6.53 40.94 14.62 46.5 24 46.5z"/>
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.22 0 6.13 1.11 8.42 3.29l6.3-6.3C34.82 3.16 29.86 1.5 24 1.5 14.62 1.5 6.53 7.06 3.03 15.02l7.8 6.06C12.4 15.57 17.76 9.5 24 9.5z"
+      />
+      <path
+        fill="#34A853"
+        d="M46.5 24c0-1.61-.15-3.16-.43-4.65H24v9.3h12.7c-.55 2.97-2.17 5.48-4.63 7.17l7.1 5.53C43.9 37.4 46.5 31.2 46.5 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.83 21.08l-7.8-6.06C1.66 17.5 1.5 20.7 1.5 24c0 3.28.16 6.48 1.53 8.98l7.8-6.05C10.2 25.41 10.05 24.72 10.05 24s.15-1.41.78-2.92z"
+      />
+      <path
+        fill="#4285F4"
+        d="M24 46.5c5.86 0 10.82-1.93 14.17-5.15l-7.1-5.53c-1.98 1.36-4.53 2.18-7.07 2.18-6.24 0-11.6-6.07-13.17-13.56l-7.8 6.05C6.53 40.94 14.62 46.5 24 46.5z"
+      />
     </svg>
   );
 }
@@ -21,11 +33,14 @@ function GoogleGIcon({ className }: { className?: string }) {
 function toSpanishError(e: unknown): string {
   const msg = typeof e === "object" && e && "message" in e ? String((e as any).message) : String(e);
   if (/Invalid login credentials/i.test(msg)) return "Credenciales inválidas.";
-  if (/provider is not enabled/i.test(msg)) return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
-  if (/Email not confirmed/i.test(msg)) return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
+  if (/provider is not enabled/i.test(msg))
+    return "El proveedor (Google) no está habilitado en Supabase. Actívalo en Authentication → Providers → Google.";
+  if (/Email not confirmed/i.test(msg))
+    return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
   if (/Unable to exchange external code/i.test(msg) || /PKCE/i.test(msg))
     return "No se pudo canjear el código de inicio de sesión (PKCE). Asegúrate de que login y callback usen el mismo dominio/puerto y que el Redirect URL esté permitido en Supabase.";
-  if (/Invalid Refresh Token/i.test(msg)) return "La sesión previa caducó. Intenta iniciar sesión de nuevo.";
+  if (/Invalid Refresh Token/i.test(msg))
+    return "La sesión previa caducó. Intenta iniciar sesión de nuevo.";
   return msg;
 }
 
@@ -41,8 +56,12 @@ function getProjectRef(): string {
 const AUTH_KEY = `sb-${getProjectRef()}-auth-token`;
 
 async function clearLocalAuth() {
-  try { localStorage.removeItem(AUTH_KEY); } catch {}
-  try { await getSupabaseBrowser().auth.signOut({ scope: "local" }); } catch {}
+  try {
+    localStorage.removeItem(AUTH_KEY);
+  } catch {}
+  try {
+    await getSupabaseBrowser().auth.signOut({ scope: "local" });
+  } catch {}
 }
 
 function Inner() {
@@ -50,8 +69,8 @@ function Inner() {
   const params = useSearchParams();
 
   const [email, setEmail] = useState("");
-  const [pass,  setPass]  = useState("");
-  const [err,   setErr]   = useState<string | null>(null);
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const safeRedirect = useMemo(() => {
@@ -120,8 +139,8 @@ function Inner() {
         process.env.NEXT_PUBLIC_SITE_URL && /^https?:\/\//.test(process.env.NEXT_PUBLIC_SITE_URL)
           ? process.env.NEXT_PUBLIC_SITE_URL
           : typeof window !== "undefined"
-          ? window.location.origin
-          : "";
+            ? window.location.origin
+            : "";
 
       const url = new URL("/callback", site);
       url.searchParams.set("next", safeRedirect);
@@ -253,7 +272,9 @@ function Inner() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}>
+    <Suspense
+      fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}
+    >
       <Inner />
     </Suspense>
   );

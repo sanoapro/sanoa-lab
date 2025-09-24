@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
-function esc(v: any) { const s = String(v ?? ""); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
+function esc(v: any) {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
 
 export async function GET(req: Request) {
   const supabase = createRouteHandlerClient({ cookies });
@@ -12,7 +15,10 @@ export async function GET(req: Request) {
   const from = searchParams.get("from");
   const to = searchParams.get("to");
 
-  let q = supabase.from("patient_file_access_log").select("*").order("created_at", { ascending: false });
+  let q = supabase
+    .from("patient_file_access_log")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (patient) q = q.eq("patient_id", patient);
   if (action) q = q.eq("action", action);
@@ -25,7 +31,11 @@ export async function GET(req: Request) {
   const rows = (data || []) as any[];
   const csv = [
     "created_at,action,path,patient_id,by_user,ip,user_agent",
-    ...rows.map(r => [r.created_at, r.action, r.path, r.patient_id, r.by_user, r.ip, r.user_agent].map(esc).join(",")),
+    ...rows.map((r) =>
+      [r.created_at, r.action, r.path, r.patient_id, r.by_user, r.ip, r.user_agent]
+        .map(esc)
+        .join(","),
+    ),
   ].join("\n");
 
   return new NextResponse(csv, {

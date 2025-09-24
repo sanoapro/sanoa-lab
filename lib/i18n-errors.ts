@@ -23,13 +23,16 @@ export function toSpanishError(e: unknown): string {
 
   // Casos comunes de Supabase/Auth o de red
   if (/Invalid login credentials/i.test(msg)) return "Credenciales inválidas.";
-  if (/Email not confirmed/i.test(msg)) return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
+  if (/Email not confirmed/i.test(msg))
+    return "Tu correo aún no está verificado. Revisa tu bandeja de entrada.";
   if (/provider is not enabled/i.test(msg))
     return "El proveedor (Google) no está habilitado. Actívalo en Supabase → Authentication → Providers → Google.";
   if (/No active session|No se encontró sesión activa|session.*not.*found/i.test(msg))
     return "No se encontró una sesión activa. Vuelve a iniciar sesión.";
-  if (/Password should be at least/i.test(msg)) return "La contraseña es demasiado corta. Prueba con 8 o más caracteres.";
-  if (/New password should be different/i.test(msg)) return "La nueva contraseña debe ser diferente a la anterior.";
+  if (/Password should be at least/i.test(msg))
+    return "La contraseña es demasiado corta. Prueba con 8 o más caracteres.";
+  if (/New password should be different/i.test(msg))
+    return "La nueva contraseña debe ser diferente a la anterior.";
 
   // Caso reportado por ti
   if (/stack depth limit exceeded/i.test(msg)) {

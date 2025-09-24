@@ -9,9 +9,9 @@ export const emojiTheme = {
   tablero: "📊",
   pacientes: "🙋🏻‍♀️",
   perfil: "🆔",
-  cargas: "📤",        // usado como "Importar"
-  agenda: "🗓️",       // NUEVO
-  calendario: "🗓️",   // alias por compatibilidad
+  cargas: "📤", // usado como "Importar"
+  agenda: "🗓️", // NUEVO
+  calendario: "🗓️", // alias por compatibilidad
   laboratorio: "🧪",
 
   // Archivos / acciones
@@ -25,7 +25,7 @@ export const emojiTheme = {
   ver: "👁️‍🗨️",
   borrar: "🗑️",
   copiar: "📋",
-  refrescar: "🔄",     // NUEVO
+  refrescar: "🔄", // NUEVO
   desbloquear: "🔓",
 
   // UI / sistema

@@ -165,9 +165,7 @@ export default function UploadDemoPage() {
         </h1>
         <p className="text-[var(--color-brand-bluegray)]">
           Bucket privado{" "}
-          <code className="rounded px-1 bg-white/70 dark:bg-white/10 backdrop-blur">
-            {BUCKET}
-          </code>{" "}
+          <code className="rounded px-1 bg-white/70 dark:bg-white/10 backdrop-blur">{BUCKET}</code>{" "}
           (usa carpeta/prefix para listar por solicitud, p. ej. <code>REQ123</code>).
         </p>
       </header>
@@ -240,9 +238,7 @@ export default function UploadDemoPage() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-[var(--color-brand-text)] truncate">
-                  {obj.name}
-                </h3>
+                <h3 className="font-medium text-[var(--color-brand-text)] truncate">{obj.name}</h3>
                 <p className="text-sm text-[var(--color-brand-bluegray)]">
                   Actualizado: {prettyDate(obj.updated_at || obj.created_at)}
                 </p>

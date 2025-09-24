@@ -74,7 +74,7 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: fromHeader,      // Resend acepta string con "Nombre <email>"
+          from: fromHeader, // Resend acepta string con "Nombre <email>"
           to,
           subject,
           html,
@@ -146,10 +146,7 @@ export async function POST(req: Request) {
 
   // 3) Ambos fallaron
   const detail = errors.join(" | ");
-  return NextResponse.json(
-    { error: "No fue posible enviar el correo.", detail },
-    { status: 502 },
-  );
+  return NextResponse.json({ error: "No fue posible enviar el correo.", detail }, { status: 502 });
 }
 
 export const GET = async () =>

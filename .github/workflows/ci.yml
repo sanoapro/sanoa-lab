@@ -2,7 +2,7 @@ name: CI - Build & Sentry Sourcemaps
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       # Entorno de Sentry (puedes ajustar: staging, dev, prod,...)
       NEXT_PUBLIC_SENTRY_ENV: production
       # Evita que Next intente telemetry en CI
-      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_TELEMETRY_DISABLED: "1"
       # Tu URL pública si la usas en build (opcional)
       NEXT_PUBLIC_SITE_URL: https://example.com
 
@@ -29,8 +29,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install deps
         run: npm ci
