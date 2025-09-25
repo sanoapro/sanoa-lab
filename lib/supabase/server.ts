@@ -1,7 +1,8 @@
 // /workspaces/sanoa-lab/lib/supabase/server.ts
 import { cookies, headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
+// ⬇️ RENOMBRADO para evitar colisión con el alias exportado más abajo
+import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 
 /**
  * Cliente de Supabase para **Route Handlers** y **Server Components**
@@ -47,10 +48,18 @@ export function getSupabaseServer() {
 export function createServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(url, key, {
+  return createSupabaseAdminClient(url, key, {
     auth: { persistSession: false },
   });
 }
+
+/** Alias histórico para no romper imports existentes */
+export function createClientAlias() {
+  return getSupabaseServer();
+}
+
+/** Alias con el nombre exacto que pedían tus imports existentes */
+export const createClient = createClientAlias;
 
 /** Alias opcional si en algún lugar importabas `supaServer()` */
 export const supaServer = getSupabaseServer;
