@@ -1,3 +1,4 @@
+// /workspaces/sanoa-lab/lib/toast.ts
 import { showToast } from "@/components/Toaster";
 
 type Opts = { title: string; description?: string };
@@ -8,5 +9,5 @@ export const toast = {
   error: ({ title, description }: Opts) =>
     showToast({ title, description, variant: "error" as const }),
   info: ({ title, description }: Opts) =>
-    showToast({ title, description, variant: "default" as const }),
+    showToast({ title, description, variant: "info" as const }),
 };
