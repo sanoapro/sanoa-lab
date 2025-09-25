@@ -1,14 +1,20 @@
-'use client';
-import { PropsWithChildren } from 'react';
-
-export default function AccentHeader({ children, emoji }: PropsWithChildren<{ emoji?: string }>) {
+export default function AccentHeader({
+  children,
+  emoji,
+}: {
+  children: React.ReactNode;
+  emoji?: string;
+}) {
   return (
-    <div className="mb-4">
-      <div className="h-1 w-full bg-gradient-to-r from-[#D97A66] via-[#f2b9ac] to-transparent rounded" />
-      <h1 className="mt-3 text-2xl font-bold flex items-center gap-2">
-        {emoji && <span aria-hidden>{emoji}</span>}
-        <span>{children}</span>
-      </h1>
+    <div className="flex items-center gap-3">
+      {emoji ? (
+        <span className="inline-flex items-center justify-center h-9 w-9 rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+          <span className="text-xl">{emoji}</span>
+        </span>
+      ) : null}
+      <h2 className="text-xl md:text-2xl font-semibold text-[var(--color-brand-text)]">
+        {children}
+      </h2>
     </div>
   );
 }
