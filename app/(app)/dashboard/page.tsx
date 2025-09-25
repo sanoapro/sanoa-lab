@@ -66,57 +66,7 @@ export default function TableroPage() {
           </div>
         </Link>
 
-        {/* Importar */}
-        <Link
-          href="/test-ui/upload"
-          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
-        >
-          <div className="p-6 flex items-start gap-4">
-            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji token="cargas" size={28} />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">
-                Importar archivos
-              </h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Carga documentos y gestiona tus contenidos.
-              </p>
-            </div>
-          </div>
-          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2">
-              Ir ahora <ColorEmoji token="siguiente" size={18} />
-            </span>
-          </div>
-        </Link>
-
-        {/* Mis archivos */}
-        <Link
-          href="/test-ui"
-          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
-        >
-          <div className="p-6 flex items-start gap-4">
-            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji token="carpeta" size={28} />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Mis archivos</h3>
-              <p className="text-[var(--color-brand-bluegray)] mt-1">
-                Revisa, descarga o comparte tus documentos.
-              </p>
-            </div>
-          </div>
-          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-            <span className="inline-flex items-center gap-2">
-              Ver listado <ColorEmoji token="ver" size={18} />
-            </span>
-          </div>
-        </Link>
-
-        {/* Laboratorio ACTIVO */}
+        {/* Laboratorio */}
         <Link
           href="/laboratorio"
           className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
@@ -129,6 +79,78 @@ export default function TableroPage() {
               <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Laboratorio</h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
                 Solicitudes y resultados en un solo lugar.
+              </p>
+            </div>
+          </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Abrir <ColorEmoji token="siguiente" size={18} />
+            </span>
+          </div>
+        </Link>
+
+        {/* Módulos */}
+        <Link
+          href="/modulos"
+          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="modulos" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Módulos</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Mente, Pulso, Sonrisa y Equilibrio.
+              </p>
+            </div>
+          </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Ver módulos <ColorEmoji token="siguiente" size={18} />
+            </span>
+          </div>
+        </Link>
+
+        {/* Recordatorios */}
+        <Link
+          href="/recordatorios"
+          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="recordatorios" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Recordatorios</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Confirmaciones y no-show diarios.
+              </p>
+            </div>
+          </div>
+          <div className="h-px bg-[var(--color-brand-border)] mx-6" />
+          <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
+            <span className="inline-flex items-center gap-2">
+              Abrir <ColorEmoji token="siguiente" size={18} />
+            </span>
+          </div>
+        </Link>
+
+        {/* Banco */}
+        <Link
+          href="/banco"
+          className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
+        >
+          <div className="p-6 flex items-start gap-4">
+            <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
+              <ColorEmoji token="banco" size={28} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Sanoa Bank</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Saldo, depósitos, pagos y facturación.
               </p>
             </div>
           </div>
