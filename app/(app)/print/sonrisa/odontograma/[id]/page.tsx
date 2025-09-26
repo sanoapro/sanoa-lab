@@ -11,7 +11,7 @@ function cellClass(st?: string){
 }
 
 export default async function PrintOdonto({ params }:{ params:{ id:string } }){
-  const supa = createClient();
+  const supa = await createClient();
   const { data } = await supa.from('dental_charts').select('*').eq('id', params.id).single();
   const chart = (data?.chart || {}) as Record<string, { status: string }>;
   const top  = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];

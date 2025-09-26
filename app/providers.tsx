@@ -1,8 +1,8 @@
+// /workspaces/sanoa-lab/app/providers.tsx
 "use client";
 
-// Mantén Sentry en cliente si lo usas
 import "@/sentry.client.config";
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 // ---- Segment Loader (analytics.js) ----
@@ -19,10 +19,7 @@ function ensureSegment(writeKey: string) {
   if (typeof window !== "undefined" && !window.analytics) {
     const analytics: any = (window.analytics = window.analytics || []);
     if (!analytics.initialize) {
-      if (analytics.invoked) {
-        // ya está inicializado por otra instancia
-        return;
-      }
+      if (analytics.invoked) return;
       analytics.invoked = true;
       analytics.methods = [
         "trackSubmit",
@@ -76,10 +73,12 @@ function ensureSegment(writeKey: string) {
   }
 }
 
-function SegmentRouteTracker() {
+/** Hook bridge: usa hooks de navegación y dispara page() */
+function QueryParamsBridge() {
   const pathname = usePathname();
   const search = useSearchParams();
 
+  // Cargar Segment una vez
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY ?? "";
     ensureSegment(key);
@@ -95,16 +94,18 @@ function SegmentRouteTracker() {
   return null;
 }
 
-// ---------------------------------------
-
 /**
  * Providers de alto nivel que NO deben duplicar
  * el ToastProvider (ya está montado en app/layout.tsx).
+ * Envolvemos hooks de navegación en <Suspense/> para evitar
+ * el error de CSR bailout (especialmente en /404).
  */
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <SegmentRouteTracker />
+      <Suspense fallback={null}>
+        <QueryParamsBridge />
+      </Suspense>
       {children}
     </>
   );

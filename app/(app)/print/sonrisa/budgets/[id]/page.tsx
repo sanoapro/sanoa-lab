@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import AccentHeader from '@/components/ui/AccentHeader';
 
 export default async function PrintBudget({ params }:{ params:{ id:string } }){
-  const supa = createClient();
+  const supa = await createClient();
   const { data: budget } = await supa.from('dental_budgets').select('*').eq('id', params.id).single();
   const { data: items } = await supa.from('dental_budget_items').select('*').eq('budget_id', params.id);
 

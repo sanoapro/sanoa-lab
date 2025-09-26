@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request){
-  const supa = createClient();
+  const supa = await createClient();
   try{
     const { org_id, patient_id, template_id, channel, address, payload, appointment_at, run_at, appointment_id } = await req.json();
     if (!org_id || !channel || !address) {

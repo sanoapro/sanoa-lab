@@ -1,3 +1,4 @@
+// /workspaces/sanoa-lab/app/api/export/paciente/[id]/csv/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 

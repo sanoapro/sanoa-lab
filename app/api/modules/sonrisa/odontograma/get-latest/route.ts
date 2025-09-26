@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 export async function GET(req: Request){
-  const supa = createClient();
+  const supa = await createClient();
   const { searchParams } = new URL(req.url);
   const patient_id = searchParams.get('patient_id');
   if (!patient_id) return NextResponse.json({ error:'Falta patient_id' }, { status:400 });
