@@ -1,3 +1,4 @@
+// app/(app)/dashboard/page.tsx
 import InstallPrompt from "@/components/InstallPrompt";
 import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
@@ -97,7 +98,7 @@ export default function TableroPage() {
         >
           <div className="p-6 flex items-start gap-4">
             <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <ColorEmoji token="modulos" size={28} />
+              <ColorEmoji token="carpeta" size={28} />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Módulos</h3>

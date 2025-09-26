@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server'; // ✅ service
 import { sendTwilioSMS, sendTwilioWhatsApp } from '@/lib/notify/twilio';
 import { renderTemplate } from './templates';
 import { track } from '@/lib/segment/track';
@@ -10,7 +10,7 @@ function backoff(attempts: number) {
 }
 
 export async function runReminderBatch(orgId?: string, limit = 20) {
-  const supa = createClient();
+  const supa = createServiceClient(); // ✅ sin cookies/warnings
   const now = new Date().toISOString();
 
   let q = supa.from('reminders')

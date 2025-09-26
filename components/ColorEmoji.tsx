@@ -4,7 +4,22 @@ import * as React from "react";
 import clsx from "clsx";
 import { emojiTheme, EMOJI_FALLBACK_TOKEN, type EmojiToken } from "@/config/emojiTheme";
 
-/** Carga perezosa de un ícono de lucide por nombre */
+/** Aliases y fallbacks locales para evitar “default” cuando el tema no tenga la clave. */
+const TOKEN_ALIASES: Record<string, string> = {
+  // Navegación
+  dashboard: "tablero",
+  modulos: "carpeta",
+  reportes: "lucide:BarChart3",
+  banco: "lucide:Banknote",
+  plan: "lucide:Compass",
+
+  // Suites / especialidades
+  mente: "lucide:Brain",
+  pulso: "lucide:Activity",
+  sonrisa: "lucide:Smile",
+  equilibrio: "lucide:Scale",
+};
+
 function LazyLucideIcon({
   name,
   size,
@@ -23,9 +38,7 @@ function LazyLucideIcon({
       const C = mod?.[name];
       setComp(() => (typeof C === "function" ? C : null));
       if (!C && process.env.NODE_ENV !== "production") {
-        console.warn(
-          `[ColorEmoji] Icono lucide "${name}" no encontrado. Revisa config/emojiTheme.ts`,
-        );
+        console.warn(`[ColorEmoji] Icono lucide "${name}" no encontrado.`);
       }
     });
     return () => {
@@ -46,12 +59,25 @@ function LazyLucideIcon({
 }
 
 function resolveToken(token?: string): { kind: "svg" | "lucide" | "text"; value: string } {
-  const v = token && (emojiTheme as Record<string, string>)[token];
+  // Aplica alias (si el alias es lucide/svg, lo detectamos abajo)
+  const alias = token ? TOKEN_ALIASES[token] : undefined;
+
+  // Si el alias NO es una directiva lucide/svg, úsalo como clave de theme; si no, deja la original
+  const themeKey =
+    alias && !alias.startsWith("lucide:") && !alias.startsWith("svg:") ? alias : token;
+
+  const v = themeKey && (emojiTheme as Record<string, string>)[themeKey];
 
   if (!v && token && process.env.NODE_ENV !== "production") {
-    console.warn(
-      `[ColorEmoji] Token no encontrado: "${token}". Usando fallback "${EMOJI_FALLBACK_TOKEN}".`,
-    );
+    console.warn(`[ColorEmoji] Token no encontrado en theme: "${token}".`);
+  }
+
+  // Si no está en el theme pero el alias apunta directo a lucide/svg, úsalo.
+  if (!v && alias?.startsWith("lucide:")) {
+    return { kind: "lucide", value: alias.substring(7) };
+  }
+  if (!v && alias?.startsWith("svg:")) {
+    return { kind: "svg", value: `/${alias.substring(4)}.svg` };
   }
 
   const value = (v ?? emojiTheme[EMOJI_FALLBACK_TOKEN]) as string;
@@ -67,7 +93,7 @@ export type ColorEmojiProps = {
   size?: number;
   title?: string;
   className?: string;
-  mode?: "native" | "mono" | "duotone"; // NUEVO (opcional)
+  mode?: "native" | "mono" | "duotone"; // opcional
   role?: React.AriaRole;
   "aria-hidden"?: boolean;
   "aria-label"?: string;
@@ -79,12 +105,12 @@ export default function ColorEmoji({
   size = 18,
   title,
   className,
-  mode, // opcional: puedes usarlo para estilos en CSS si lo necesitas
+  mode,
   role = "img",
   ...a11y
 }: ColorEmojiProps) {
   const resolved = emoji ? { kind: "text" as const, value: emoji } : resolveToken(token);
-  const extra = mode === "mono" ? "grayscale" : mode === "duotone" ? "" : ""; // reservado para estilos futuros
+  const extra = mode === "mono" ? "grayscale" : mode === "duotone" ? "" : "";
 
   if (resolved.kind === "svg") {
     return (

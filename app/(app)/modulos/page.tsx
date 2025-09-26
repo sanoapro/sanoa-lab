@@ -16,9 +16,9 @@ export default function ModulosIndexPage(){
 
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         <ModuleCard href="/modulos/mente" title="Mente" desc="Evaluaciones y seguimiento" token="mente" />
-        <ModuleCard href="/modulos/pulso" title="Pulso" desc="Calculadoras, triaje, auxiliares" token="agenda" />
-        <ModuleCard href="/modulos/sonrisa" title="Sonrisa" desc="Odontograma y presupuesto" token="laboratorio" />
-        <ModuleCard href="/modulos/equilibrio" title="Equilibrio" desc="Sesiones SOAP y plan" token="perfil" />
+        <ModuleCard href="/modulos/pulso" title="Pulso" desc="Calculadoras, triaje, auxiliares" token="pulso" />
+        <ModuleCard href="/modulos/sonrisa" title="Sonrisa" desc="Odontograma y presupuesto" token="sonrisa" />
+        <ModuleCard href="/modulos/equilibrio" title="Equilibrio" desc="Sesiones SOAP y plan" token="equilibrio" />
       </section>
     </main>
   );

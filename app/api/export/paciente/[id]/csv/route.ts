@@ -8,7 +8,7 @@ function escape(v: any) {
 }
 
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = getSupabaseServer();
+  const supabase = await getSupabaseServer(); // ✅ await
   const patientId = params.id;
 
   const [
