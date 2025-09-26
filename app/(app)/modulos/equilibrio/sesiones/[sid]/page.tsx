@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import AccentHeader from '@/components/ui/AccentHeader';
 
 export default async function SessionDetail({ params }:{ params:{ sid:string } }){
-  const supa = createClient();
+  const supa = await createClient();
   const { data } = await supa.from('rehab_sessions').select('*').eq('id', params.sid).single();
   const soap = (data?.soap || {}) as Record<string,string>;
 

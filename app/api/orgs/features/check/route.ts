@@ -6,7 +6,7 @@ export async function POST(req: Request){
   if (!org_id || !feature_id) {
     return NextResponse.json({ ok:false, error:'Faltan parámetros' }, { status: 400 });
   }
-  const supa = createClient();
+  const supa = await createClient();
   const { data } = await supa
     .from('org_features')
     .select('feature_id')

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import AccentHeader from '@/components/ui/AccentHeader';
 
 export default async function PrintPlan({ params }:{ params:{ id:string } }){
-  const supa = createClient();
+  const supa = await createClient();
   const { data } = await supa.from('exercise_plans').select('*').eq('id', params.id).single();
   const plan = data?.plan || { items: [] };
 
