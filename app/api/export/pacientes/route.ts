@@ -21,7 +21,7 @@ function toCSV(rows: any[]): string {
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = getSupabaseServer();
+  const supabase = await getSupabaseServer(); // ✅ await
   const { searchParams } = new URL(req.url);
 
   // filtros básicos (paridad con UI)

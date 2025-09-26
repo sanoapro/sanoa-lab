@@ -11,17 +11,18 @@ type NavItem = { href: string; label: string; token: string };
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Tablero", token: "tablero" },
-  { href: "/modulos", label: "Módulos", token: "carpeta" }, // nuevo
   { href: "/agenda", label: "Agenda", token: "agenda" },
   { href: "/pacientes", label: "Pacientes", token: "pacientes" },
   { href: "/laboratorio", label: "Laboratorio", token: "laboratorio" },
-  { href: "/reportes/confirmaciones", label: "Reportes", token: "ver" }, // nuevo
-  { href: "/banco", label: "Banco", token: "perfil" }, // NUEVO (acceso directo Banco)
-  { href: "/ajustes/plan", label: "Plan", token: "perfil" }, // nuevo (ajustes/plan)
+  { href: "/modulos", label: "Módulos", token: "carpeta" },
+  { href: "/recordatorios", label: "Recordatorios", token: "recordatorios" },
+  { href: "/reportes", label: "Reportes", token: "reportes" },
+  { href: "/banco", label: "Banco", token: "banco" },
+  { href: "/ajustes/plan", label: "Plan", token: "plan" },
 ];
 
 export default function Navbar() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
   const router = useRouter();
   const supabase = getSupabaseBrowser();
   const { toast } = useToastSafe();
@@ -63,7 +64,9 @@ export default function Navbar() {
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-1">
           {NAV.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
             return (
               <Link
                 key={item.href}
