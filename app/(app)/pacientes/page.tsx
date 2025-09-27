@@ -281,11 +281,12 @@ export default function PacientesPage() {
   return (
     <main className="page-bg min-h-[100dvh] p-6 md:p-10 space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-brand-text)] flex items-center gap-3">
+        {/* Conservador: solo cambiamos las clases del título y descripción */}
+        <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
           <ColorEmoji token="pacientes" size={24} />
           Pacientes
         </h1>
-        <p className="text-[var(--color-brand-bluegray)]">
+        <p className="text-slate-600 dark:text-slate-200">
           Filtra por nombre, etiquetas, género, edad y fechas. Los resultados respetan tus permisos
           (propios o compartidos). Puedes exportar a CSV.
         </p>
