@@ -1,34 +1,48 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest } from "next/server";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { ok, unauthorized, badRequest, dbError, serverError } from "@/lib/api/responses";
 
-/**
- * GET /api/lab/templates/list?org_id=UUID[&owner=user|org]
- * - owner=user → solo mis plantillas
- * - owner=org  → plantillas compartidas de la organización
- */
-export async function GET(req: Request) {
-  const supa = createRouteHandlerClient({ cookies });
-  const { data: auth } = await supa.auth.getUser();
-  if (!auth.user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+type OwnerKind = "user" | "org";
 
-  const { searchParams } = new URL(req.url);
-  const org_id = searchParams.get("org_id") || "";
-  const owner = (searchParams.get("owner") || "user") as "user" | "org";
-  if (!org_id) return NextResponse.json({ error: "org_id requerido" }, { status: 400 });
+export async function GET(req: NextRequest) {
+  const supa = await getSupabaseServer();
 
-  let q = supa
-    .from("lab_templates")
-    .select("id, org_id, owner_kind, owner_id, title, items, is_active, created_at")
-    .eq("org_id", org_id)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+  try {
+    const { data: auth } = await supa.auth.getUser();
+    if (!auth?.user) {
+      return unauthorized();
+    }
 
-  if (owner === "user") q = q.eq("owner_kind", "user").eq("owner_id", auth.user.id);
-  if (owner === "org") q = q.eq("owner_kind", "org");
+    const url = new URL(req.url);
+    const orgId = url.searchParams.get("org_id");
+    const owner = ((url.searchParams.get("owner") || "user") as OwnerKind) ?? "user";
 
-  const { data, error } = await q;
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    if (!orgId) {
+      return badRequest("org_id requerido");
+    }
 
-  return NextResponse.json({ ok: true, rows: data ?? [] });
+    let query = supa
+      .from("lab_templates")
+      .select("id, org_id, owner_kind, owner_id, title, items, is_active, created_at")
+      .eq("org_id", orgId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (owner === "user") {
+      query = query.eq("owner_kind", "user").eq("owner_id", auth.user.id);
+    }
+
+    if (owner === "org") {
+      query = query.eq("owner_kind", "org");
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      return dbError(error);
+    }
+
+    return ok({ rows: data ?? [] });
+  } catch (err: any) {
+    return serverError(err?.message ?? "Error");
+  }
 }
