@@ -1,85 +1,64 @@
+// components/patients/PatientAutocomplete.tsx
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Option = { id: string; label: string };
-
-type Props = {
+export default function PatientAutocomplete({
+  orgId,
+  scope = "mine",
+  onSelect,
+  placeholder = "Buscar paciente…",
+}: {
   orgId: string;
-  scope?: "mine" | "all";
+  scope?: "mine" | "org";
+  onSelect: (item: { id: string; label: string }) => void;
   placeholder?: string;
-  onSelect?: (value: Option | null) => void;
-};
-
-export default function PatientAutocomplete({ orgId, scope, placeholder, onSelect }: Props) {
-  const [query, setQuery] = useState("");
-  const [options, setOptions] = useState<Option[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+}) {
+  const [q, setQ] = useState("");
+  const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [open, setOpen] = useState(false);
+  const timer = useRef<any>(null);
 
   useEffect(() => {
-    if (!orgId || !query.trim()) {
-      setOptions([]);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-    let alive = true;
-    setLoading(true);
-    setError(null);
-    const params = new URLSearchParams({ org_id: orgId, q: query.trim(), pageSize: "6" });
-    if (scope && scope !== "all") params.set("scope", scope);
-    fetch(`/api/patients/search?${params.toString()}`)
-      .then(res => res.json())
-      .then((j) => {
-        if (!alive) return;
-        if (j?.ok) {
-          setOptions((j.data || []).map((r: any) => ({ id: r.id, label: r.name || r.curp || r.id })));
-        } else {
-          setError(j?.error?.message || "Error al cargar pacientes");
-          setOptions([]);
-        }
-      })
-      .catch(() => alive && setError("Error al cargar pacientes"))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [orgId, query, scope]);
-
-  const hint = useMemo(() => {
-    if (!orgId) return "Selecciona una organización";
-    if (!query.trim()) return "Ingresa al menos 1 carácter";
-    if (loading) return "Buscando…";
-    if (error) return error;
-    if (!options.length) return "Sin resultados";
-    return null;
-  }, [orgId, query, loading, error, options]);
+    if (!q.trim()) { setItems([]); return; }
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      const p = new URLSearchParams({ org_id: orgId, q, scope });
+      const r = await fetch(`/api/patients/autocomplete?${p.toString()}`, { cache:"no-store" });
+      const j = await r.json();
+      setItems(j?.ok ? j.data : []);
+      setOpen(true);
+    }, 150);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [q, orgId, scope]);
 
   return (
-    <div className="space-y-2">
+    <div className="relative">
       <input
+        aria-autocomplete="list"
+        aria-expanded={open}
         className="border rounded px-3 py-2 w-full"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={placeholder || "Buscar paciente"}
-        inputMode="text"
+        value={q}
+        onChange={(e)=>setQ(e.target.value)}
+        onFocus={()=>{ if (items.length) setOpen(true); }}
+        onBlur={()=> setTimeout(()=>setOpen(false), 100)}
+        placeholder={placeholder}
       />
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
-      {!hint && (
-        <ul className="border rounded-xl divide-y max-h-60 overflow-auto">
-          {options.map((opt) => (
-            <li key={opt.id}>
-              <button
-                type="button"
-                className="w-full text-left px-3 py-2 hover:bg-slate-100"
-                onClick={() => onSelect?.(opt)}
-              >
-                <div className="text-sm font-medium">{opt.label || "Sin nombre"}</div>
-                <div className="text-xs text-slate-500">{opt.id}</div>
-              </button>
+      {open && items.length > 0 && (
+        <ul role="listbox" className="absolute z-10 bg-white border rounded mt-1 max-h-64 overflow-auto w-full shadow">
+          {items.map(it=>(
+            <li
+              role="option"
+              key={it.id}
+              className="px-3 py-2 hover:bg-gray-50 cursor-pointer"
+              onMouseDown={(e)=>{ e.preventDefault(); onSelect(it); setQ(it.label); setOpen(false); }}
+            >
+              {it.label}
             </li>
           ))}
         </ul>
+      )}
+      {open && !items.length && (
+        <div className="absolute z-10 bg-white border rounded mt-1 w-full px-3 py-2 text-sm text-slate-500">Sin resultados</div>
       )}
     </div>
   );
