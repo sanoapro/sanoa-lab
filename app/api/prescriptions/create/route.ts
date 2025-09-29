@@ -21,7 +21,7 @@ interface CreateBody {
   signature_path?: string | null;
   notes?: string | null;
   diagnosis?: string | null;
-  issued_at?: string | null;
+  issued_at?: string | null; // ISO string
   items?: LegacyItem[];
 }
 
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as CreateBody | null;
   const rawItems = Array.isArray(body?.items) ? body!.items : [];
 
+  // org_id: del body o del membership
   let orgId = body?.org_id ?? null;
   if (!orgId) {
     const { data: mem } = await supa
@@ -49,19 +50,18 @@ export async function POST(req: NextRequest) {
   }
 
   const patientId = body?.patient_id ?? null;
+
   if (!orgId || !patientId || rawItems.length === 0) {
     return NextResponse.json(
       {
         ok: false,
-        error: {
-          code: "BAD_REQUEST",
-          message: "org_id, patient_id e items requeridos",
-        },
+        error: { code: "BAD_REQUEST", message: "org_id, patient_id e items requeridos" },
       },
       { status: 400 }
     );
   }
 
+  // issued_at
   let issued = new Date();
   if (body?.issued_at) {
     const parsed = new Date(body.issued_at);
@@ -80,35 +80,35 @@ export async function POST(req: NextRequest) {
   const insertPayload: Record<string, any> = {
     org_id: orgId,
     patient_id: patientId,
-    doctor_id: body?.clinician_id ?? body?.doctor_id ?? au.user.id,
+    doctor_id: body?.clinician_id ?? body?.doctor_id ?? au.user.id, // compat doctor/clinician
+    clinician_id: body?.clinician_id ?? null,
     letterhead_path: body?.letterhead_path ?? null,
     signature_path: body?.signature_path ?? null,
     notes: notes ? String(notes).slice(0, 2000) : null,
     issued_at: issued.toISOString(),
     created_by: au.user.id,
   };
+  if (diagnosis) insertPayload.diagnosis = String(diagnosis).slice(0, 2000);
 
-  if (diagnosis) {
-    insertPayload.diagnosis = String(diagnosis).slice(0, 2000);
-  }
-
+  // Insert cabecera
   const { data: rec, error: e1 } = await supa
     .from("prescriptions")
     .insert(insertPayload)
     .select("id")
     .single();
 
-  if (e1) {
+  if (e1 || !rec) {
     return NextResponse.json(
-      { ok: false, error: { code: "DB_ERROR", message: e1.message } },
+      { ok: false, error: { code: "DB_ERROR", message: e1?.message || "Error al crear" } },
       { status: 400 }
     );
   }
 
+  // Normaliza y filtra ítems
   const items = rawItems.map((it) => {
     const freq = it.freq ?? it.frequency ?? null;
     return {
-      prescription_id: rec!.id,
+      prescription_id: rec.id,
       drug: String(it.drug ?? it.drug_name ?? "").slice(0, 200),
       dose: it.dose ? String(it.dose).slice(0, 120) : null,
       route: it.route ? String(it.route).slice(0, 80) : null,
@@ -121,9 +121,7 @@ export async function POST(req: NextRequest) {
   const filteredItems = items.filter((it) => it.drug.trim().length > 0);
 
   if (filteredItems.length > 0) {
-    const { error: e2 } = await supa
-      .from("prescription_items")
-      .insert(filteredItems);
+    const { error: e2 } = await supa.from("prescription_items").insert(filteredItems);
     if (e2) {
       return NextResponse.json(
         { ok: false, error: { code: "DB_ERROR", message: e2.message } },
@@ -132,5 +130,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, data: { id: rec!.id } });
+  return NextResponse.json({ ok: true, data: { id: rec.id } });
 }
