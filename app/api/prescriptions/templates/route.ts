@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
-type TemplateItem = {
+/* ---------- Tipos compatibles ---------- */
+type TemplateItemInput = {
   drug?: string;
   drug_name?: string;
   dose?: string | null;
@@ -12,16 +13,44 @@ type TemplateItem = {
   instructions?: string | null;
 };
 
-type TemplateBody = {
-  org_id?: string;
+type LegacyBody = {
   name?: string;
-  notes?: string | null;
-  active?: boolean;
-  items?: TemplateItem[];
-  doctor_scope?: boolean;
+  items?: TemplateItemInput[];
+  doctor_scope?: boolean;     // si false -> template “global” (sin doctor_id)
   specialty?: string | null;
 };
 
+type ModernBody = {
+  org_id?: string | null;
+  name?: string;
+  notes?: string | null;
+  items?: TemplateItemInput[];
+  active?: boolean;
+  doctor_scope?: boolean;     // compatible con moderno también
+  specialty?: string | null;
+};
+
+type TemplateBody = LegacyBody & ModernBody;
+
+/* ---------- Helpers ---------- */
+function sanitizeItems(items: TemplateItemInput[] = []) {
+  return items.map((it) => {
+    const freq = it?.freq ?? it?.frequency ?? null;
+    const drugName = String(it?.drug ?? it?.drug_name ?? "").slice(0, 200);
+    return {
+      drug: drugName,
+      drug_name: drugName,
+      dose: it?.dose ? String(it.dose).slice(0, 120) : null,
+      route: it?.route ? String(it.route).slice(0, 80) : null,
+      freq: freq ? String(freq).slice(0, 120) : null,       // alias legacy
+      frequency: freq ? String(freq).slice(0, 120) : null,  // campo normalizado
+      duration: it?.duration ? String(it.duration).slice(0, 120) : null,
+      instructions: it?.instructions ? String(it.instructions).slice(0, 500) : null,
+    };
+  });
+}
+
+/* ======================= GET: listar plantillas ======================= */
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: au } = await supa.auth.getUser();
@@ -50,19 +79,25 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const search = url.searchParams.get("q") ?? "";
+  const mine = url.searchParams.get("mine");
+
   let query = supa
     .from("prescription_templates")
     .select("id, org_id, name, notes, items, active, created_at, created_by, doctor_id")
     .eq("org_id", orgId)
-    .order("created_at", { ascending: false })
-    .limit(200);
+    .order("created_at", { ascending: false });
 
-  const search = url.searchParams.get("q");
   if (search) {
     query = query.ilike("name", `%${search}%`);
   }
 
-  const { data, error } = await query;
+  if (mine === "1") {
+    // Trae sólo las del usuario: creadas por él o asociadas a su doctor_id
+    query = query.or(`created_by.eq.${au.user.id},doctor_id.eq.${au.user.id}`);
+  }
+
+  const { data, error } = await query.limit(200);
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
@@ -70,17 +105,10 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  let rows = data ?? [];
-  const mine = url.searchParams.get("mine");
-  if (mine === "1") {
-    rows = rows.filter(
-      (tpl) => (tpl.created_by ?? tpl.doctor_id ?? null) === au.user.id
-    );
-  }
-
-  return NextResponse.json({ ok: true, data: rows, items: rows });
+  return NextResponse.json({ ok: true, data: data ?? [], items: data ?? [] });
 }
 
+/* ======================= POST: crear/actualizar plantilla ======================= */
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: au } = await supa.auth.getUser();
@@ -91,8 +119,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = (await req.json().catch(() => null)) as TemplateBody | null;
-  let orgId = body?.org_id ?? null;
+  const rawBody = (await req.json().catch(() => null)) as TemplateBody | null;
+  const isLegacy = !!rawBody && ("doctor_scope" in rawBody || !rawBody?.org_id);
+
+  // org_id: del body o por membership
+  let orgId = rawBody?.org_id ?? null;
   if (!orgId) {
     const { data: mem } = await supa
       .from("organization_members")
@@ -102,44 +133,62 @@ export async function POST(req: NextRequest) {
     orgId = mem?.org_id ?? null;
   }
 
-  if (!orgId || !body?.name || !Array.isArray(body.items) || body.items.length === 0) {
+  if (!orgId || !rawBody?.name) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: {
-          code: "BAD_REQUEST",
-          message: "org_id, name e items requeridos",
-        },
-      },
+      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, name e items requeridos" } },
       { status: 400 }
     );
   }
 
-  const safeItems = body.items.map((it) => {
-    const freq = it.freq ?? it.frequency ?? null;
-    return {
-      drug: String(it.drug ?? it.drug_name ?? "").slice(0, 200),
-      dose: it.dose ? String(it.dose).slice(0, 120) : null,
-      route: it.route ? String(it.route).slice(0, 80) : null,
-      freq: freq ? String(freq).slice(0, 120) : null,
-      frequency: freq ? String(freq).slice(0, 120) : null,
-      duration: it.duration ? String(it.duration).slice(0, 120) : null,
-      instructions: it.instructions ? String(it.instructions).slice(0, 500) : null,
-    };
-  });
+  const safeItems = sanitizeItems(rawBody.items || []);
+  if (safeItems.length === 0) {
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, name e items requeridos" } },
+      { status: 400 }
+    );
+  }
 
+  if (isLegacy) {
+    // Crea una plantilla (modo legacy), doctor_scope=false => plantilla “global”
+    const payload: Record<string, any> = {
+      org_id: orgId,
+      doctor_id: rawBody.doctor_scope === false ? null : au.user.id,
+      specialty: typeof rawBody.specialty !== "undefined" ? rawBody.specialty : null,
+      name: String(rawBody.name).slice(0, 200),
+      items: safeItems,
+      created_by: au.user.id,
+      active: true,
+    };
+
+    const { data, error } = await supa
+      .from("prescription_templates")
+      .insert(payload)
+      .select("id, org_id, name, notes, items, active, doctor_id, created_at, created_by")
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { ok: false, error: { code: "DB_ERROR", message: error.message } },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, data });
+  }
+
+  // Modo moderno: upsert por (org_id, name)
   const payload: Record<string, any> = {
     org_id: orgId,
-    name: String(body.name).slice(0, 200),
-    notes: body.notes ? String(body.notes).slice(0, 2000) : null,
+    name: String(rawBody.name).slice(0, 200),
+    notes: rawBody.notes ? String(rawBody.notes).slice(0, 2000) : null,
     items: safeItems,
-    active: body.active ?? true,
+    active: rawBody.active ?? true,
     created_by: au.user.id,
-    doctor_id: body.doctor_scope === false ? null : au.user.id,
+    doctor_id: rawBody.doctor_scope === false ? null : au.user.id,
   };
 
-  if (typeof body.specialty !== "undefined") {
-    payload.specialty = body.specialty;
+  if (typeof rawBody.specialty !== "undefined") {
+    payload.specialty = rawBody.specialty;
   }
 
   const { data, error } = await supa
