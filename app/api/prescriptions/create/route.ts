@@ -1,58 +1,124 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseServer } from "@/lib/supabase/server";
 
-type RxItem = {
-  drug: string;
+type ItemInput = {
+  drug?: string;
   dose?: string | null;
   route?: string | null;
+  freq?: string | null;
   frequency?: string | null;
   duration?: string | null;
   instructions?: string | null;
 };
 
-export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const body = await req.json().catch(() => null);
-  const { patient_id, diagnosis = null, notes = null, items = [] as RxItem[] } = body || {};
+type BodyInput = {
+  org_id?: string | null;
+  patient_id?: string | null;
+  clinician_id?: string | null;
+  letterhead_path?: string | null;
+  signature_path?: string | null;
+  notes?: string | null;
+  diagnosis?: string | null;
+  issued_at?: string | null;
+  items?: ItemInput[] | null;
+};
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const supa = await getSupabaseServer();
+  const { data: au } = await supa.auth.getUser();
+  if (!au?.user) {
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+      { status: 401 }
+    );
+  }
 
-  const { data: mem } = await supabase
-    .from("organization_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const body = (await req.json().catch(() => null)) as BodyInput | null;
+  const rawItems = body?.items ?? [];
 
-  const org_id = mem?.org_id;
-  if (!org_id) return NextResponse.json({ error: "Sin organización" }, { status: 400 });
-  if (!patient_id) return NextResponse.json({ error: "Falta patient_id" }, { status: 400 });
+  let orgId = body?.org_id ?? null;
+  if (!orgId) {
+    const { data: mem } = await supa
+      .from("organization_members")
+      .select("org_id")
+      .eq("user_id", au.user.id)
+      .maybeSingle();
+    orgId = mem?.org_id ?? null;
+  }
 
-  const { data: rx, error: e1 } = await supabase
+  if (!orgId || !body?.patient_id || !Array.isArray(rawItems) || rawItems.length === 0) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, patient_id e items requeridos" },
+      },
+      { status: 400 }
+    );
+  }
+
+  const issued = body?.issued_at ? new Date(body.issued_at) : new Date();
+  if (Number.isNaN(issued.getTime())) {
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "issued_at inválido" } },
+      { status: 400 }
+    );
+  }
+
+  const payload: Record<string, any> = {
+    org_id: orgId,
+    patient_id: body.patient_id,
+    doctor_id: au.user.id,
+    notes: body?.notes ? String(body.notes).slice(0, 2000) : null,
+    issued_at: issued.toISOString(),
+    created_by: au.user.id,
+  };
+
+  if (typeof body?.clinician_id !== "undefined" && body.clinician_id !== null) {
+    payload.clinician_id = body.clinician_id;
+  }
+  if (typeof body?.letterhead_path !== "undefined") {
+    payload.letterhead_path = body.letterhead_path ?? null;
+  }
+  if (typeof body?.signature_path !== "undefined") {
+    payload.signature_path = body.signature_path ?? null;
+  }
+  if (typeof body?.diagnosis !== "undefined") {
+    payload.diagnosis = body.diagnosis ? String(body.diagnosis).slice(0, 2000) : null;
+  }
+
+  const { data: rec, error: e1 } = await supa
     .from("prescriptions")
-    .insert({ org_id, patient_id, doctor_id: user.id, diagnosis, notes })
+    .insert(payload)
     .select("id")
     .single();
 
-  if (e1) return NextResponse.json({ error: "create_failed" }, { status: 500 });
-
-  const rows = (items || []).map((it: RxItem) => ({
-    prescription_id: rx.id,
-    drug: it.drug,
-    dose: it.dose || null,
-    route: it.route || null,
-    frequency: it.frequency || null,
-    duration: it.duration || null,
-    instructions: it.instructions || null,
-  }));
-
-  if (rows.length) {
-    const { error: e2 } = await supabase.from("prescription_items").insert(rows);
-    if (e2) return NextResponse.json({ error: "items_failed" }, { status: 500 });
+  if (e1 || !rec) {
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: e1?.message || "Error al crear" } },
+      { status: 400 }
+    );
   }
 
-  return NextResponse.json({ id: rx.id });
+  const items = rawItems.map((it) => {
+    const frequency = it?.freq ?? it?.frequency ?? null;
+    return {
+      prescription_id: rec.id,
+      drug: String(it?.drug ?? "").slice(0, 200),
+      dose: it?.dose ? String(it.dose).slice(0, 120) : null,
+      route: it?.route ? String(it.route).slice(0, 80) : null,
+      frequency: frequency ? String(frequency).slice(0, 120) : null,
+      duration: it?.duration ? String(it.duration).slice(0, 120) : null,
+      instructions: it?.instructions ? String(it.instructions).slice(0, 500) : null,
+    };
+  });
+
+  const { error: e2 } = await supa.from("prescription_items").insert(items);
+  if (e2) {
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: e2.message } },
+      { status: 400 }
+    );
+  }
+
+  return NextResponse.json({ ok: true, data: { id: rec.id }, id: rec.id });
 }
