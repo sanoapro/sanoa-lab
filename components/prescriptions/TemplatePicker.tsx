@@ -12,24 +12,35 @@ type Props = {
 export default function TemplatePicker({ orgId, mine = false, onChoose }: Props) {
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<Template[]>([]);
+  const [loading, setLoading] = useState(false);
 
   async function load() {
     if (!orgId) {
       setRows([]);
       return;
     }
-    const params = new URLSearchParams({ org_id: orgId, mine: mine ? "1" : "0" });
-    if (q) params.set("q", q);
-    const r = await fetch(`/api/prescriptions/templates?${params.toString()}`, {
-      cache: "no-store",
-    });
-    const j = await r.json().catch(() => null);
-    if (j?.ok && Array.isArray(j.data)) {
-      setRows(j.data);
-    } else if (Array.isArray(j?.items)) {
-      setRows(j.items);
-    } else {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ org_id: orgId, mine: mine ? "1" : "0" });
+      if (q) params.set("q", q);
+
+      const r = await fetch(`/api/prescriptions/templates?${params.toString()}`, {
+        cache: "no-store",
+      });
+      const j = await r.json().catch(() => null);
+
+      if (j?.ok && Array.isArray(j.data)) {
+        setRows(j.data);
+      } else if (Array.isArray(j?.items)) {
+        setRows(j.items);
+      } else {
+        setRows([]);
+      }
+    } catch (err) {
+      console.error(err);
       setRows([]);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -47,8 +58,8 @@ export default function TemplatePicker({ orgId, mine = false, onChoose }: Props)
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <button className="border rounded px-3 py-2" onClick={load}>
-          Buscar
+        <button className="border rounded px-3 py-2" onClick={load} disabled={loading}>
+          {loading ? "Cargando..." : "Buscar"}
         </button>
       </div>
       <div className="rounded border overflow-auto max-h-72">
@@ -66,7 +77,9 @@ export default function TemplatePicker({ orgId, mine = false, onChoose }: Props)
             ))}
             {!rows.length && (
               <tr>
-                <td className="px-3 py-6 text-center text-slate-500">Sin plantillas</td>
+                <td className="px-3 py-6 text-center text-slate-500">
+                  {loading ? "Cargando..." : "Sin plantillas"}
+                </td>
               </tr>
             )}
           </tbody>
