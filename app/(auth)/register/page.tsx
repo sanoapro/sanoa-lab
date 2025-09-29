@@ -28,9 +28,17 @@ export default function RegisterPage() {
       if (error) {
         setMsg(error.message);
       } else {
-        // Si "Confirm email" está desactivado, tendrás sesión inmediata.
-        setMsg("Cuenta creada. Redirigiendo al dashboard...");
-        router.replace("/dashboard");
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = data.session ?? sessionData.session ?? null;
+
+        if (session) {
+          setMsg("Cuenta creada. Preparando tu tablero…");
+          router.replace("/dashboard");
+        } else {
+          setMsg(
+            "Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de acceder."
+          );
+        }
       }
     } catch (err: any) {
       setMsg(err?.message ?? "Error de configuración de Supabase.");

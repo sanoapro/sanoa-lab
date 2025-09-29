@@ -12,7 +12,8 @@
     "lint:fix": "eslint . --fix",
     "build:clean": "rm -rf .next && next build",
     "emoji:check": "node scripts/check-emojis.mjs",
-    "emoji:migrate": "node scripts/emoji-migrate.mjs && pnpm run emoji:check"
+    "emoji:migrate": "node scripts/emoji-migrate.mjs && pnpm run emoji:check",
+    "test": "tsc --project tsconfig.tests.json && node --test tmp/test-dist/__tests__/agenda.test.js && rm -rf tmp/test-dist"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
