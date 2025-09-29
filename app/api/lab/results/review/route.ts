@@ -1,32 +1,70 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { ok, unauthorized, badRequest, dbError, notFound, serverError } from "@/lib/api/responses";
 
-export async function POST(req: Request) {
-  const supa = createRouteHandlerClient({ cookies });
-  const { result_id } = await req.json().catch(() => ({}));
-  if (!result_id) return NextResponse.json({ error: "result_id requerido" }, { status: 400 });
+const schema = z.object({
+  org_id: z.string().min(1, "org_id requerido"),
+  result_id: z.string().min(1, "result_id requerido"),
+});
 
-  const { data: auth } = await supa.auth.getUser();
-  if (!auth.user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const supa = await getSupabaseServer();
 
-  // 1) Traer el resultado para obtener request_id
-  const r1 = await supa.from("lab_results").select("id, request_id").eq("id", result_id).single();
-  if (r1.error) return NextResponse.json({ error: r1.error.message }, { status: 400 });
+  try {
+    const { data: auth } = await supa.auth.getUser();
+    if (!auth?.user) {
+      return unauthorized();
+    }
 
-  // 2) Marcar revisado
-  const r2 = await supa
-    .from("lab_results")
-    .update({ reviewed_by: auth.user.id, reviewed_at: new Date().toISOString() })
-    .eq("id", result_id);
-  if (r2.error) return NextResponse.json({ error: r2.error.message }, { status: 400 });
+    const json = await req.json().catch(() => null);
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return badRequest("Payload inválido", { details: parsed.error.flatten() });
+    }
 
-  // 3) (simple) Marcar solicitud como 'reviewed'
-  const r3 = await supa
-    .from("lab_requests")
-    .update({ status: "reviewed" })
-    .eq("id", r1.data.request_id);
-  if (r3.error) return NextResponse.json({ error: r3.error.message }, { status: 400 });
+    const { org_id, result_id } = parsed.data;
 
-  return NextResponse.json({ ok: true });
+    const { data: result, error: fetchError } = await supa
+      .from("lab_results")
+      .select("id, request_id")
+      .eq("id", result_id)
+      .eq("org_id", org_id)
+      .maybeSingle();
+
+    if (fetchError) {
+      return dbError(fetchError);
+    }
+
+    if (!result) {
+      return notFound("Resultado no encontrado");
+    }
+
+    const nowIso = new Date().toISOString();
+
+    const [{ error: updateResultError }, { error: updateRequestError }] = await Promise.all([
+      supa
+        .from("lab_results")
+        .update({ reviewed_by: auth.user.id, reviewed_at: nowIso })
+        .eq("id", result_id)
+        .eq("org_id", org_id),
+      supa
+        .from("lab_requests")
+        .update({ status: "reviewed" })
+        .eq("id", result.request_id)
+        .eq("org_id", org_id),
+    ]);
+
+    if (updateResultError) {
+      return dbError(updateResultError);
+    }
+
+    if (updateRequestError) {
+      return dbError(updateRequestError);
+    }
+
+    return ok();
+  } catch (err: any) {
+    return serverError(err?.message ?? "Error");
+  }
 }

@@ -1,15 +1,13 @@
 // app/api/lab/upload/route.ts
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
+import { createServiceClient } from "@/lib/supabase/server";
+import { ok, badRequest, error as jsonError, serverError } from "@/lib/api/responses";
 
-export const runtime = "nodejs"; // necesitamos Buffer en Node
-export const maxDuration = 60; // defensa vs timeouts largos
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const bucket = process.env.LAB_RESULTS_BUCKET || "lab-results";
-
 const MAX_MB = Number(process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || 10);
 const ALLOWED = String(process.env.NEXT_PUBLIC_UPLOAD_ALLOWED || "pdf,jpg,png")
   .split(",")
@@ -17,14 +15,13 @@ const ALLOWED = String(process.env.NEXT_PUBLIC_UPLOAD_ALLOWED || "pdf,jpg,png")
   .filter(Boolean);
 
 function supaAdmin() {
-  return createClient(url, serviceKey, { auth: { persistSession: false } });
+  return createServiceClient();
 }
 
 async function ensureBucket() {
   const supa = supaAdmin();
   const { data: list } = await supa.storage.listBuckets();
   if (!list?.some((b) => b.name === bucket)) {
-    // bucket privado + límite de tamaño por archivo
     await supa.storage
       .createBucket(bucket, {
         public: false,
@@ -53,27 +50,25 @@ function mimeAllowed(mime: string, filename: string) {
 
 function cors(res: NextResponse) {
   res.headers.set("Access-Control-Allow-Origin", "*");
-  res.headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS,HEAD");
   res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   return res;
 }
 
-// -------- Health/CORS --------
 export async function OPTIONS() {
-  return cors(NextResponse.json({ ok: true }));
+  return cors(ok());
 }
+
 export async function HEAD() {
   return cors(new NextResponse(null, { status: 200 }));
 }
 
-// -------- Validación del token (para el portal) --------
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const urlObj = new URL(req.url);
   const token = urlObj.searchParams.get("token")?.trim();
 
-  // Health quick-check si no mandan token
   if (!token) {
-    return cors(NextResponse.json({ ok: true, hint: "Usa ?token=..." }));
+    return cors(ok({ hint: "Usa ?token=..." }));
   }
 
   const supa = supaAdmin();
@@ -83,27 +78,32 @@ export async function GET(req: Request) {
     .eq("token", token)
     .single();
 
-  if (error) return cors(NextResponse.json({ ok: false, error: error.message }, { status: 400 }));
+  if (error) {
+    return cors(jsonError("TOKEN_ERROR", error.message));
+  }
 
   const now = new Date();
-  if (data.used_at)
-    return cors(
-      NextResponse.json({ ok: false, error: "Este enlace ya fue usado" }, { status: 410 }),
-    );
-  if (new Date(data.expires_at) < now)
-    return cors(NextResponse.json({ ok: false, error: "El enlace expiró" }, { status: 410 }));
+  if (!data) {
+    return cors(jsonError("TOKEN_INVALID", "Token inválido", 400));
+  }
+
+  if (data.used_at) {
+    return cors(jsonError("TOKEN_USED", "Este enlace ya fue usado", 410));
+  }
+
+  if (new Date(data.expires_at) < now) {
+    return cors(jsonError("TOKEN_EXPIRED", "El enlace expiró", 410));
+  }
 
   return cors(
-    NextResponse.json({
-      ok: true,
+    ok({
       request: { id: data.request_id, title: (data as any)?.lab_requests?.title ?? "Estudio" },
       expires_at: data.expires_at,
     }),
   );
 }
 
-// -------- Carga del archivo (FormData: token, file, notes) --------
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     await ensureBucket();
 
@@ -113,85 +113,78 @@ export async function POST(req: Request) {
     const notes = String(form.get("notes") || "").slice(0, 500);
 
     if (!token || !file) {
-      return cors(
-        NextResponse.json({ ok: false, error: "token y file requeridos" }, { status: 400 }),
-      );
+      return cors(badRequest("token y file requeridos"));
     }
 
     const sizeMB = (file.size || 0) / (1024 * 1024);
     if (sizeMB > MAX_MB) {
-      return cors(NextResponse.json({ ok: false, error: `Máximo ${MAX_MB}MB` }, { status: 413 }));
+      return cors(jsonError("FILE_TOO_LARGE", `Máximo ${MAX_MB}MB`, 413));
     }
 
     const originalName = (file as any).name || "archivo";
     const incomingMime = file.type || inferMimeFromName(originalName);
     if (!mimeAllowed(incomingMime, originalName)) {
-      return cors(
-        NextResponse.json(
-          { ok: false, error: `Formato no permitido (${ALLOWED.join(", ")})` },
-          { status: 415 },
-        ),
-      );
+      return cors(jsonError("UNSUPPORTED_FORMAT", `Formato no permitido (${ALLOWED.join(", ")})`, 415));
     }
 
     const supa = supaAdmin();
 
-    // 1) Valida token
-    const { data: t, error: eTok } = await supa
+    const { data: tokenRow, error: tokenError } = await supa
       .from("lab_upload_tokens")
       .select("id, request_id, expires_at, used_at")
       .eq("token", token)
       .single();
 
-    if (eTok) return cors(NextResponse.json({ ok: false, error: eTok.message }, { status: 400 }));
-    if (!t) return cors(NextResponse.json({ ok: false, error: "Token inválido" }, { status: 400 }));
-    if (t.used_at)
-      return cors(
-        NextResponse.json({ ok: false, error: "Este enlace ya fue usado" }, { status: 410 }),
-      );
-    if (new Date(t.expires_at) < new Date())
-      return cors(NextResponse.json({ ok: false, error: "El enlace expiró" }, { status: 410 }));
+    if (tokenError) {
+      return cors(jsonError("TOKEN_ERROR", tokenError.message));
+    }
+    if (!tokenRow) {
+      return cors(jsonError("TOKEN_INVALID", "Token inválido", 400));
+    }
+    if (tokenRow.used_at) {
+      return cors(jsonError("TOKEN_USED", "Este enlace ya fue usado", 410));
+    }
+    if (new Date(tokenRow.expires_at) < new Date()) {
+      return cors(jsonError("TOKEN_EXPIRED", "El enlace expiró", 410));
+    }
 
-    // 2) Subir a Storage
     const arrayBuf = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuf);
 
     const safeName = originalName.replace(/[^\w.\-]+/g, "_");
-    const key = `${t.request_id}/${Date.now()}_${randomUUID().slice(0, 8)}_${safeName}`;
+    const key = `${tokenRow.request_id}/${Date.now()}_${randomUUID().slice(0, 8)}_${safeName}`;
 
-    const { error: eUp } = await supa.storage.from(bucket).upload(key, buffer, {
+    const { error: uploadError } = await supa.storage.from(bucket).upload(key, buffer, {
       contentType: incomingMime,
       upsert: false,
-      // Puedes adjuntar metadata útil que luego mostrarás en UI/listados:
       metadata: {
         original_name: originalName,
         uploaded_at: new Date().toISOString(),
-      } as any,
+        notes: notes || undefined,
+      } as Record<string, string | undefined>,
     });
-    if (eUp) return cors(NextResponse.json({ ok: false, error: eUp.message }, { status: 400 }));
 
-    // 3) Side-effects (idempotentes suaves)
+    if (uploadError) {
+      return cors(jsonError("UPLOAD_ERROR", uploadError.message));
+    }
+
     await supa
       .from("lab_upload_tokens")
       .update({ used_at: new Date().toISOString() })
-      .eq("id", t.id);
+      .eq("id", tokenRow.id)
+      .catch(() => {});
     await supa
       .from("lab_requests")
-      .update({ status: "uploaded" as any })
-      .eq("id", t.request_id)
+      .update({ status: "uploaded" })
+      .eq("id", tokenRow.request_id)
       .catch(() => {});
     await supa
       .from("lab_results")
-      .insert({ request_id: t.request_id, path: key, notes: notes || null })
-      .catch(() => {}); // ignora si la tabla aún no existe
+      .insert({ request_id: tokenRow.request_id, path: key, notes: notes || null })
+      .catch(() => {});
 
-    return cors(NextResponse.json({ ok: true, request_id: t.request_id, path: key }));
-  } catch (e: any) {
-    return cors(
-      NextResponse.json(
-        { ok: false, error: "No se pudo subir el archivo", detail: e?.message || String(e) },
-        { status: 500 },
-      ),
-    );
+    return cors(ok({ request_id: tokenRow.request_id, path: key }));
+  } catch (err: any) {
+    return cors(serverError("No se pudo subir el archivo", { details: { message: err?.message || String(err) } }));
   }
 }
