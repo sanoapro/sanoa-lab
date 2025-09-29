@@ -3,24 +3,37 @@ import { getSupabaseServer } from "@/lib/supabase/server";
 
 export default async function PrintRecetaPage({ params }: { params: { id: string } }) {
   const supa = await getSupabaseServer();
+
+  // Verifica sesión
+  const { data: au } = await supa.auth.getUser();
+  if (!au?.user) {
+    return <div className="p-6 text-rose-700">Necesitas iniciar sesión.</div>;
+  }
+
   const id = params.id;
+
+  // Trae cabecera de la receta (campos garantizados)
   const { data: rec } = await supa
     .from("prescriptions")
-    .select(
-      "id, org_id, patient_id, doctor_id, clinician_id, letterhead_path, signature_path, notes, issued_at"
-    )
+    .select("id, org_id, patient_id, clinician_id, letterhead_path, signature_path, notes, issued_at")
     .eq("id", id)
     .single();
+
+  // Trae items de la receta
   const { data: items } = await supa
     .from("prescription_items")
     .select("drug, dose, route, frequency, duration, instructions")
     .eq("prescription_id", id)
     .order("created_at", { ascending: true });
 
+  if (!rec) {
+    return <div className="p-6 text-rose-700">No se encontró la receta.</div>;
+  }
+
   return (
     <main className="p-6 print:p-0 text-slate-900">
       <section className="max-w-[800px] mx-auto space-y-4">
-        {rec?.letterhead_path ? (
+        {rec.letterhead_path ? (
           <img
             src={`/api/storage/letterheads/${encodeURIComponent(rec.letterhead_path)}`}
             alt="Membrete"
@@ -32,12 +45,12 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
           <div>
             <h1 className="text-xl font-semibold">Receta</h1>
             <p className="text-sm text-slate-500">
-              Emitida: {rec?.issued_at ? new Date(rec.issued_at).toLocaleString() : "—"}
+              Emitida: {rec.issued_at ? new Date(rec.issued_at).toLocaleString() : "—"}
             </p>
-            {rec?.notes ? <p className="text-sm text-slate-600 mt-1">Notas: {rec.notes}</p> : null}
+            {rec.notes ? <p className="text-sm text-slate-600 mt-1">Notas: {rec.notes}</p> : null}
           </div>
           <div className="text-right">
-            {rec?.signature_path ? (
+            {rec.signature_path ? (
               <>
                 <img
                   src={`/api/storage/signatures/${encodeURIComponent(rec.signature_path)}`}
@@ -72,7 +85,7 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
                   <td className="px-3 py-2">
                     {[it.frequency, it.duration].filter(Boolean).join(" / ")}
                   </td>
-                  <td className="px-3 py-2">{it.instructions}</td>
+                  <td className="px-3 py-2">{it.instructions || ""}</td>
                 </tr>
               ))}
             </tbody>

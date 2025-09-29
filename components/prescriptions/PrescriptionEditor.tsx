@@ -23,7 +23,10 @@ export default function PrescriptionEditor() {
   const [notes, setNotes] = useState("");
   const [letterheadPath, setLetterheadPath] = useState<string>("");
   const [signaturePath, setSignaturePath] = useState<string>("");
-  const [issuedAt, setIssuedAt] = useState<string>(() => new Date().toISOString().slice(0, 16));
+  const [issuedAt, setIssuedAt] = useState<string>(() =>
+    new Date().toISOString().slice(0, 16)
+  );
+  const [saving, setSaving] = useState(false);
 
   function addEmpty() {
     setItems((xs) => [
@@ -59,29 +62,36 @@ export default function PrescriptionEditor() {
       alert("Faltan datos");
       return;
     }
-    const payload = {
-      org_id: orgId,
-      patient_id: patient.id,
-      letterhead_path: letterheadPath || null,
-      signature_path: signaturePath || null,
-      notes: notes || null,
-      issued_at: issuedAt ? new Date(issuedAt).toISOString() : null,
-      items: items.map((it) => ({
-        ...it,
-        frequency: it.freq,
-      })),
-    };
-    const r = await fetch("/api/prescriptions/create", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const j = await r.json().catch(() => null);
-    if (!j?.ok) {
-      alert(j?.error?.message ?? "Error");
-      return;
+    setSaving(true);
+    try {
+      const payload = {
+        org_id: orgId,
+        patient_id: patient.id,
+        letterhead_path: letterheadPath || null,
+        signature_path: signaturePath || null,
+        notes: notes || null,
+        issued_at: issuedAt ? new Date(issuedAt).toISOString() : null,
+        items: items.map((it) => ({
+          ...it,
+          frequency: it.freq,
+        })),
+      };
+      const r = await fetch("/api/prescriptions/create", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json().catch(() => null);
+      const newId: string | undefined = j?.data?.id ?? j?.id;
+      if (!j?.ok || !newId) {
+        alert(j?.error?.message ?? "Error al guardar");
+        return;
+      }
+      window.open(`/print/recetas/${newId}`, "_blank");
+      setItems([]);
+    } finally {
+      setSaving(false);
     }
-    window.open(`/app/(app)/print/recetas/${j.data.id}`.replace("/app/(app)", ""), "_blank");
   }
 
   async function useTemplate(tpl: TemplateLite) {
@@ -89,24 +99,30 @@ export default function PrescriptionEditor() {
       alert("Elige paciente");
       return;
     }
-    const r = await fetch("/api/prescriptions/from-template", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        org_id: orgId,
-        patient_id: patient.id,
-        template_id: tpl.id,
-        letterhead_path: letterheadPath || null,
-        signature_path: signaturePath || null,
-        issued_at: new Date().toISOString(),
-      }),
-    });
-    const j = await r.json().catch(() => null);
-    if (!j?.ok) {
-      alert(j?.error?.message ?? "Error");
-      return;
+    setSaving(true);
+    try {
+      const r = await fetch("/api/prescriptions/from-template", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          org_id: orgId,
+          patient_id: patient.id,
+          template_id: tpl.id,
+          letterhead_path: letterheadPath || null,
+          signature_path: signaturePath || null,
+          issued_at: new Date().toISOString(),
+        }),
+      });
+      const j = await r.json().catch(() => null);
+      const newId: string | undefined = j?.data?.id ?? j?.id;
+      if (!j?.ok || !newId) {
+        alert(j?.error?.message ?? "Error al usar plantilla");
+        return;
+      }
+      window.open(`/print/recetas/${newId}`, "_blank");
+    } finally {
+      setSaving(false);
     }
-    window.open(`/app/(app)/print/recetas/${j.data.id}`.replace("/app/(app)", ""), "_blank");
   }
 
   return (
@@ -263,7 +279,7 @@ export default function PrescriptionEditor() {
           <button
             className="border rounded px-3 py-2"
             onClick={save}
-            disabled={!patient || items.length === 0}
+            disabled={!patient || items.length === 0 || saving}
           >
             Guardar y abrir impresión
           </button>
