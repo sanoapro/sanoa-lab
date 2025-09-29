@@ -1,47 +1,109 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseServer } from "@/lib/supabase/server";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const supabase = createRouteHandlerClient({ cookies });
+function mapItem(it: any) {
+  return {
+    id: it.id,
+    drug: it.drug,
+    dose: it.dose,
+    route: it.route,
+    freq: it.frequency ?? it.freq ?? null,
+    frequency: it.frequency ?? null,
+    duration: it.duration,
+    instructions: it.instructions,
+  };
+}
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const supa = await getSupabaseServer();
+  const { data: au } = await supa.auth.getUser();
+  if (!au?.user) {
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+      { status: 401 }
+    );
+  }
+
   const id = params.id;
+  const { data: rx, error: e1 } = await supa
+    .from("prescriptions")
+    .select(
+      "id, org_id, patient_id, doctor_id, clinician_id, letterhead_path, signature_path, notes, diagnosis, issued_at, created_at, created_by"
+    )
+    .eq("id", id)
+    .maybeSingle();
 
-  const { data: rx } = await supabase.from("prescriptions").select("*").eq("id", id).maybeSingle();
-  if (!rx) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+  if (e1 || !rx) {
+    return NextResponse.json(
+      { ok: false, error: { code: "NOT_FOUND", message: "No encontrada" } },
+      { status: 404 }
+    );
+  }
 
-  const { data: items } = await supabase
+  const { data: itemsRaw, error: e2 } = await supa
     .from("prescription_items")
-    .select("*")
+    .select("id, drug, dose, route, frequency, duration, instructions, created_at")
     .eq("prescription_id", id)
-    .order("id");
-  const { data: patient } = await supabase
+    .order("created_at", { ascending: true });
+
+  if (e2) {
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: e2.message } },
+      { status: 400 }
+    );
+  }
+
+  const items = (itemsRaw || []).map(mapItem);
+
+  const { data: patient } = await supa
     .from("patients")
     .select("full_name, external_id")
     .eq("id", rx.patient_id)
     .maybeSingle();
-  const { data: letterhead } = await supabase
+
+  const { data: letterhead } = await supa
     .from("doctor_letterheads")
     .select("*")
     .eq("org_id", rx.org_id)
     .eq("doctor_id", rx.doctor_id)
     .maybeSingle();
-  const { data: d } = await supabase
-    .from("org_disclaimers")
-    .select("text")
-    .eq("org_id", rx.org_id)
-    .eq("kind", "prescription")
-    .maybeSingle();
-  const { data: ledger } = await supabase.rpc("ensure_document_folio", {
+
+  let footer = letterhead?.footer_disclaimer || "";
+  if (!footer) {
+    const { data: d } = await supa
+      .from("org_disclaimers")
+      .select("text")
+      .eq("org_id", rx.org_id)
+      .eq("kind", "prescription")
+      .maybeSingle();
+    footer = d?.text || footer;
+  }
+
+  const { data: ledger } = await supa.rpc("ensure_document_folio", {
     p_doc_type: "prescription",
     p_doc_id: id,
   });
 
-  return NextResponse.json({
+  const response = {
+    ok: true,
+    data: {
+      ...rx,
+      items: items.map((it) => ({
+        drug: it.drug,
+        dose: it.dose,
+        route: it.route,
+        freq: it.freq,
+        duration: it.duration,
+        instructions: it.instructions,
+      })),
+    },
     prescription: rx,
     items,
     patient,
     letterhead,
-    footer: letterhead?.footer_disclaimer || d?.text || "",
+    footer,
     ledger,
-  });
+  };
+
+  return NextResponse.json(response);
 }
