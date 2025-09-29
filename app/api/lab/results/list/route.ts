@@ -1,29 +1,51 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest } from "next/server";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { ok, unauthorized, badRequest, dbError, serverError } from "@/lib/api/responses";
 
-export async function GET(req: Request) {
-  const supa = createRouteHandlerClient({ cookies });
-  const { searchParams } = new URL(req.url);
-  const request_id = searchParams.get("request_id");
-  const patient_id = searchParams.get("patient_id");
+export async function GET(req: NextRequest) {
+  const supa = await getSupabaseServer();
 
-  if (!request_id && !patient_id) {
-    return NextResponse.json({ error: "request_id o patient_id requerido" }, { status: 400 });
+  try {
+    const { data: auth } = await supa.auth.getUser();
+    if (!auth?.user) {
+      return unauthorized();
+    }
+
+    const url = new URL(req.url);
+    const orgId = url.searchParams.get("org_id");
+    if (!orgId) {
+      return badRequest("org_id requerido");
+    }
+
+    const requestId = url.searchParams.get("request_id");
+    const patientId = url.searchParams.get("patient_id");
+
+    if (!requestId && !patientId) {
+      return badRequest("request_id o patient_id requerido");
+    }
+
+    let query = supa
+      .from("lab_results")
+      .select(
+        "id, request_id, patient_id, file_path, file_name, mime_type, size_bytes, notes, created_at, reviewed_by, reviewed_at",
+      )
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false });
+
+    if (requestId) {
+      query = query.eq("request_id", requestId);
+    }
+    if (patientId) {
+      query = query.eq("patient_id", patientId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      return dbError(error);
+    }
+
+    return ok({ results: data ?? [] });
+  } catch (err: any) {
+    return serverError(err?.message ?? "Error");
   }
-
-  let q = supa
-    .from("lab_results")
-    .select(
-      "id, request_id, patient_id, file_path, file_name, mime_type, size_bytes, notes, created_at, reviewed_by, reviewed_at",
-    )
-    .order("created_at", { ascending: false });
-
-  if (request_id) q = q.eq("request_id", request_id);
-  if (patient_id) q = q.eq("patient_id", patient_id);
-
-  const { data, error } = await q;
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-  return NextResponse.json({ results: data || [] });
 }
