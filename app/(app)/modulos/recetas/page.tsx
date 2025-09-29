@@ -1,3 +1,4 @@
+// app/(app)/modulos/recetas/page.tsx
 "use client";
 
 import AccentHeader from "@/components/ui/AccentHeader";

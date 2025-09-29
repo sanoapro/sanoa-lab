@@ -1,18 +1,25 @@
+// app/(app)/print/recetas/[id]/page.tsx
 import { getSupabaseServer } from "@/lib/supabase/server";
 
 export default async function PrintRecetaPage({ params }: { params: { id: string } }) {
   const supa = await getSupabaseServer();
+
+  // Verifica sesión
   const { data: au } = await supa.auth.getUser();
   if (!au?.user) {
     return <div className="p-6 text-rose-700">Necesitas iniciar sesión.</div>;
   }
 
   const id = params.id;
+
+  // Trae cabecera de la receta (campos garantizados)
   const { data: rec } = await supa
     .from("prescriptions")
     .select("id, org_id, patient_id, clinician_id, letterhead_path, signature_path, notes, issued_at")
     .eq("id", id)
     .single();
+
+  // Trae items de la receta
   const { data: items } = await supa
     .from("prescription_items")
     .select("drug, dose, route, frequency, duration, instructions")
@@ -73,10 +80,10 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
                     <strong>{it.drug}</strong>
                   </td>
                   <td className="px-3 py-2">
-                    {it.dose || ""} {it.route ? `/ ${it.route}` : ""}
+                    {[it.dose, it.route].filter(Boolean).join(" / ")}
                   </td>
                   <td className="px-3 py-2">
-                    {it.frequency || ""} {it.duration ? `/ ${it.duration}` : ""}
+                    {[it.frequency, it.duration].filter(Boolean).join(" / ")}
                   </td>
                   <td className="px-3 py-2">{it.instructions || ""}</td>
                 </tr>
