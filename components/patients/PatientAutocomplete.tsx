@@ -3,29 +3,33 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type Option = {
+type OptionRaw = {
   id: string;
-  name: string | null;
+  name?: string | null;
+  title?: string | null;
+  label?: string | null;
+  text?: string | null;
   dob?: string | null;
   gender?: string | null;
+  patient_id?: string | null;
+  value?: string | null;
 };
 
-type Props = {
-  orgId: string;
-  /** Opcional: ámbito de búsqueda. Si tu endpoint de autocomplete lo usa, acepta "mine" | "org". */
-  scope?: string;
-  placeholder?: string;
-  onSelect: (value: { id: string; label: string }) => void;
-};
+type Option = { id: string; label: string };
 
 export default function PatientAutocomplete({
   orgId,
-  scope,
+  scope = "mine",
   placeholder = "Buscar paciente…",
   onSelect,
-}: Props) {
+}: {
+  orgId: string;
+  scope?: "mine" | "org";
+  placeholder?: string;
+  onSelect?: (opt: Option | null) => void;
+}) {
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [items, setItems] = useState<Option[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -33,7 +37,7 @@ export default function PatientAutocomplete({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ctrlRef = useRef<AbortController | null>(null);
 
-  // Cierra al hacer click fuera
+  // Cerrar al hacer click fuera
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
@@ -42,9 +46,8 @@ export default function PatientAutocomplete({
     return () => document.removeEventListener("click", onClick);
   }, []);
 
-  // Búsqueda con debounce (min 2 chars)
+  // Debounce de búsqueda (mínimo 2 caracteres)
   useEffect(() => {
-    // limpiar timers y aborts anteriores
     if (timer.current) clearTimeout(timer.current);
     ctrlRef.current?.abort();
 
@@ -64,39 +67,82 @@ export default function PatientAutocomplete({
     timer.current = setTimeout(async () => {
       setLoading(true);
       try {
-        // 1) Intentar endpoint liviano de autocomplete
-        const p = new URLSearchParams({ org_id: orgId, q });
-        if (scope) p.set("scope", scope);
-        const r1 = await fetch(`/api/patients/autocomplete?${p.toString()}`, {
+        // 1) Endpoint autocomplete (rápido)
+        const p1 = new URLSearchParams({ org_id: orgId, q });
+        if (scope) p1.set("scope", scope);
+        const r1 = await fetch(`/api/patients/autocomplete?${p1.toString()}`, {
           cache: "no-store",
           signal: ctrl.signal,
         });
 
         if (r1.ok) {
-          const j = await r1.json();
-          const arr: { id: string; label: string }[] = j?.ok ? j.data ?? [] : [];
+          const j1 = await r1.json();
+          const arr: Option[] = j1?.ok
+            ? (j1.data ?? []).map((x: any) => ({
+                id: String(x.id),
+                label: String(x.label ?? x.name ?? x.title ?? x.text ?? "Paciente"),
+              }))
+            : [];
           setItems(arr);
           setOpen(true);
           return;
         }
 
-        // 2) Fallback a /search (mapea a {id,label})
+        // 2) Fallback a /patients/search
         const p2 = new URLSearchParams({ org_id: orgId, q, pageSize: "10" });
         if (scope) p2.set("scope", scope);
-        const r2 = await fetch(`/api/patients/search?${p2.toString()}`, {
+        const r2 = await fetch(`/api/patients/search?${p2.toString()}`, { signal: ctrl.signal });
+        if (r2.ok) {
+          const j2 = await r2.json();
+          const rows: OptionRaw[] = j2?.ok ? j2.data ?? [] : [];
+          const mapped: Option[] = rows.map((r) => {
+            const base =
+              r.label ??
+              r.name ??
+              r.title ??
+              r.text ??
+              "Paciente sin nombre";
+            const extra = [r.gender, r.dob ? new Date(r.dob).toLocaleDateString() : null]
+              .filter(Boolean)
+              .join(" · ");
+            return {
+              id: String(r.id ?? r.patient_id ?? r.value ?? base),
+              label: extra ? `${base} — ${extra}` : String(base),
+            };
+          });
+          setItems(mapped);
+          setOpen(true);
+          return;
+        }
+
+        // 3) Fallback al buscador genérico /api/search/query (rama alternativa)
+        const p3 = new URLSearchParams({
+          scope: "patients",
+          org_id: orgId,
+          q,
+          mine: scope === "mine" ? "1" : "0",
+          limit: "10",
+        });
+        const r3 = await fetch(`/api/search/query?${p3.toString()}`, {
+          cache: "no-store",
           signal: ctrl.signal,
         });
-        const j2 = await r2.json();
-        const rows: Option[] = j2?.ok ? j2.data ?? [] : [];
-        const mapped = rows.map((r) => {
-          const base = r.name ? String(r.name) : "Paciente sin nombre";
-          const extra = [r.gender, r.dob ? new Date(r.dob).toLocaleDateString() : null]
-            .filter(Boolean)
-            .join(" · ");
-          return { id: r.id, label: extra ? `${base} — ${extra}` : base };
-        });
-        setItems(mapped);
-        setOpen(true);
+        if (r3.ok) {
+          const j3 = await r3.json();
+          const arr: Option[] = Array.isArray(j3?.data)
+            ? j3.data.map((x: any) => ({
+                id: String(x.id || x.patient_id || x.value || x.uid || q),
+                label: String(x.label || x.name || x.title || x.text || "Paciente"),
+              }))
+            : [];
+          setItems(arr.slice(0, 10));
+          setOpen(true);
+          return;
+        }
+
+        // si todo falla:
+        setItems([]);
+        setOpen(false);
       } catch (err: any) {
         if (err?.name !== "AbortError") {
           console.error("PatientAutocomplete", err);
@@ -130,11 +176,14 @@ export default function PatientAutocomplete({
         aria-expanded={open}
         className="border rounded px-3 py-2 w-full"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          if (e.target.value.trim().length >= 2) setOpen(true);
+        }}
         placeholder={placeholder}
         disabled={!orgId}
         onFocus={() => query.trim().length >= 2 && hasResults && setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 100)}
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
         autoComplete="off"
       />
 
@@ -151,8 +200,8 @@ export default function PatientAutocomplete({
                 type="button"
                 className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
                 onMouseDown={(e) => {
-                  e.preventDefault(); // evita blur antes del click
-                  onSelect(it);
+                  e.preventDefault(); // evita blur antes de click
+                  onSelect?.(it);
                   setQuery(it.label);
                   setOpen(false);
                 }}
