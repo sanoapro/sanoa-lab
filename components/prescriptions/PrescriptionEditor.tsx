@@ -13,7 +13,7 @@ type Item = {
   instructions?: string;
 };
 
-type TemplateRef = { id: string };
+type TemplateLite = { id: string };
 
 export default function PrescriptionEditor() {
   const org = useMemo(() => getActiveOrg(), []);
@@ -23,29 +23,37 @@ export default function PrescriptionEditor() {
   const [notes, setNotes] = useState("");
   const [letterheadPath, setLetterheadPath] = useState<string>("");
   const [signaturePath, setSignaturePath] = useState<string>("");
-  const [issuedAt, setIssuedAt] = useState<string>(() => new Date().toISOString().slice(0, 16));
+  const [issuedAt, setIssuedAt] = useState<string>(() =>
+    new Date().toISOString().slice(0, 16)
+  );
   const [saving, setSaving] = useState(false);
 
   function addEmpty() {
-    setItems((xs) => [...xs, { drug: "", dose: "", route: "", freq: "", duration: "", instructions: "" }]);
+    setItems((xs) => [
+      ...xs,
+      { drug: "", dose: "", route: "", freq: "", duration: "", instructions: "" },
+    ]);
   }
 
-  function removeAt(i: number) {
-    setItems((xs) => xs.filter((_, idx) => idx !== i));
+  function removeAt(index: number) {
+    setItems((xs) => xs.filter((_, idx) => idx !== index));
   }
 
-  function setAt<T extends keyof Item>(i: number, k: T, v: Item[T]) {
-    setItems((xs) => xs.map((x, idx) => (idx === i ? { ...x, [k]: v } : x)));
+  function setAt<T extends keyof Item>(index: number, key: T, value: Item[T]) {
+    setItems((xs) => xs.map((x, idx) => (idx === index ? { ...x, [key]: value } : x)));
   }
 
-  async function searchDrug(i: number, q: string) {
-    if (q.trim().length < 2) return;
-    const params = new URLSearchParams({ q });
-    const r = await fetch(`/api/catalog/drugs/search?${params.toString()}`, { cache: "no-store" });
-    const j = await r.json();
-    const rows = Array.isArray(j?.data) ? j.data : Array.isArray(j?.items) ? j.items : [];
-    if (rows[0]?.name) {
-      setAt(i, "drug", rows[0].name);
+  async function searchDrug(index: number, query: string) {
+    if (query.trim().length < 2) return;
+    const params = new URLSearchParams({ q: query });
+    const r = await fetch(`/api/catalog/drugs/search?${params.toString()}`, {
+      cache: "no-store",
+    });
+    const j = await r.json().catch(() => null);
+    if (j?.ok && Array.isArray(j.data) && j.data[0]?.name) {
+      setAt(index, "drug", j.data[0].name);
+    } else if (Array.isArray(j?.items) && j.items[0]?.name) {
+      setAt(index, "drug", j.items[0].name);
     }
   }
 
@@ -63,16 +71,19 @@ export default function PrescriptionEditor() {
         signature_path: signaturePath || null,
         notes: notes || null,
         issued_at: issuedAt ? new Date(issuedAt).toISOString() : null,
-        items,
+        items: items.map((it) => ({
+          ...it,
+          frequency: it.freq,
+        })),
       };
       const r = await fetch("/api/prescriptions/create", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       const newId: string | undefined = j?.data?.id ?? j?.id;
-      if (!newId) {
+      if (!j?.ok || !newId) {
         alert(j?.error?.message ?? "Error al guardar");
         return;
       }
@@ -83,29 +94,28 @@ export default function PrescriptionEditor() {
     }
   }
 
-  async function useTemplate(tpl: TemplateRef) {
+  async function useTemplate(tpl: TemplateLite) {
     if (!orgId || !patient?.id) {
       alert("Elige paciente");
       return;
     }
     setSaving(true);
     try {
-      const payload = {
-        org_id: orgId,
-        patient_id: patient.id,
-        template_id: tpl.id,
-        letterhead_path: letterheadPath || null,
-        signature_path: signaturePath || null,
-        issued_at: new Date().toISOString(),
-      };
       const r = await fetch("/api/prescriptions/from-template", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          org_id: orgId,
+          patient_id: patient.id,
+          template_id: tpl.id,
+          letterhead_path: letterheadPath || null,
+          signature_path: signaturePath || null,
+          issued_at: new Date().toISOString(),
+        }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => null);
       const newId: string | undefined = j?.data?.id ?? j?.id;
-      if (!newId) {
+      if (!j?.ok || !newId) {
         alert(j?.error?.message ?? "Error al usar plantilla");
         return;
       }
@@ -124,7 +134,12 @@ export default function PrescriptionEditor() {
             Selecciona una organización activa.
           </p>
         ) : (
-          <PatientAutocomplete orgId={orgId} scope="mine" onSelect={setPatient} placeholder="Buscar paciente…" />
+          <PatientAutocomplete
+            orgId={orgId}
+            scope="mine"
+            onSelect={setPatient}
+            placeholder="Buscar paciente…"
+          />
         )}
         {patient && (
           <div className="text-sm text-slate-600">
@@ -138,13 +153,13 @@ export default function PrescriptionEditor() {
           <h3 className="font-semibold">Membrete/Firma (opcional)</h3>
           <input
             className="border rounded px-3 py-2 w-full"
-            placeholder="letterheads/<org>/<file>.png"
+            placeholder="letterheads/&lt;org&gt;/&lt;file&gt;.png"
             value={letterheadPath}
             onChange={(e) => setLetterheadPath(e.target.value)}
           />
           <input
             className="border rounded px-3 py-2 w-full"
-            placeholder="signatures/<org>/<file>.png"
+            placeholder="signatures/&lt;org&gt;/&lt;file&gt;.png"
             value={signaturePath}
             onChange={(e) => setSignaturePath(e.target.value)}
           />
@@ -261,7 +276,11 @@ export default function PrescriptionEditor() {
         </div>
 
         <div className="flex gap-2">
-          <button className="border rounded px-3 py-2" onClick={save} disabled={!patient || items.length === 0 || saving}>
+          <button
+            className="border rounded px-3 py-2"
+            onClick={save}
+            disabled={!patient || items.length === 0 || saving}
+          >
             Guardar y abrir impresión
           </button>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type Template = { id: string; name: string; active: boolean };
+type Template = { id: string; name: string; active?: boolean | null };
 
 type Props = {
   orgId: string;
@@ -23,12 +23,19 @@ export default function TemplatePicker({ orgId, mine = false, onChoose }: Props)
     try {
       const params = new URLSearchParams({ org_id: orgId, mine: mine ? "1" : "0" });
       if (q) params.set("q", q);
+
       const r = await fetch(`/api/prescriptions/templates?${params.toString()}`, {
         cache: "no-store",
       });
-      const j = await r.json();
-      const data = Array.isArray(j?.data) ? j.data : Array.isArray(j?.items) ? j.items : [];
-      setRows(data);
+      const j = await r.json().catch(() => null);
+
+      if (j?.ok && Array.isArray(j.data)) {
+        setRows(j.data);
+      } else if (Array.isArray(j?.items)) {
+        setRows(j.items);
+      } else {
+        setRows([]);
+      }
     } catch (err) {
       console.error(err);
       setRows([]);
