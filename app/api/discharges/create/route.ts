@@ -1,47 +1,64 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { ok, unauthorized, badRequest, forbidden, dbError, serverError } from "@/lib/api/responses";
+import { userBelongsToOrg } from "@/lib/api/orgs";
 
-export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const body = await req.json().catch(() => null);
-  const {
-    patient_id,
-    admission_at = null,
-    discharge_at = null,
-    diagnosis,
-    summary,
-    recommendations,
-    follow_up_at = null,
-  } = body || {};
+const schema = z.object({
+  org_id: z.string().min(1, "org_id requerido"),
+  patient_id: z.string().min(1, "patient_id requerido"),
+  admission_at: z.string().optional().nullable(),
+  discharge_at: z.string().optional().nullable(),
+  diagnosis: z.string().min(1, "diagnosis requerido"),
+  summary: z.string().min(1, "summary requerido"),
+  recommendations: z.string().optional().nullable(),
+  follow_up_at: z.string().optional().nullable(),
+});
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const supa = await getSupabaseServer();
 
-  const { data: mem } = await supabase
-    .from("organization_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const org_id = mem?.org_id;
-  if (!org_id) return NextResponse.json({ error: "Sin organización" }, { status: 400 });
-  if (!patient_id) return NextResponse.json({ error: "Falta patient_id" }, { status: 400 });
-  if (!diagnosis || !summary) return NextResponse.json({ error: "Faltan campos" }, { status: 400 });
+  try {
+    const { data: auth } = await supa.auth.getUser();
+    if (!auth?.user) {
+      return unauthorized();
+    }
 
-  const payload = {
-    org_id,
-    patient_id,
-    doctor_id: user.id,
-    admission_at,
-    discharge_at,
-    diagnosis,
-    summary,
-    recommendations,
-    follow_up_at,
-  };
-  const { data, error } = await supabase.from("discharges").insert(payload).select("id").single();
-  if (error) return NextResponse.json({ error: "create_failed" }, { status: 500 });
-  return NextResponse.json({ id: data?.id });
+    const json = await req.json().catch(() => null);
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return badRequest("Payload inválido", { details: parsed.error.flatten() });
+    }
+
+    const body = parsed.data;
+
+    const allowed = await userBelongsToOrg(supa, body.org_id, auth.user.id);
+    if (!allowed) {
+      return forbidden("Sin acceso a la organización");
+    }
+
+    const { data, error } = await supa
+      .from("discharges")
+      .insert({
+        org_id: body.org_id,
+        patient_id: body.patient_id,
+        doctor_id: auth.user.id,
+        admission_at: body.admission_at ?? null,
+        discharge_at: body.discharge_at ?? null,
+        diagnosis: body.diagnosis,
+        summary: body.summary,
+        recommendations: body.recommendations ?? null,
+        follow_up_at: body.follow_up_at ?? null,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      return dbError(error);
+    }
+
+    return ok({ id: data.id });
+  } catch (err: any) {
+    return serverError(err?.message ?? "Error");
+  }
 }

@@ -1,17 +1,48 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { ok, unauthorized, badRequest, dbError, notFound, serverError } from "@/lib/api/responses";
 
-export async function POST(req: Request) {
-  const supa = createRouteHandlerClient({ cookies });
-  const { request_id } = await req.json().catch(() => ({}));
-  if (!request_id) return NextResponse.json({ error: "request_id requerido" }, { status: 400 });
+const schema = z.object({
+  org_id: z.string().min(1, "org_id requerido"),
+  request_id: z.string().min(1, "request_id requerido"),
+});
 
-  const { error } = await supa
-    .from("lab_requests")
-    .update({ status: "cancelled" })
-    .eq("id", request_id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+export async function POST(req: NextRequest) {
+  const supa = await getSupabaseServer();
 
-  return NextResponse.json({ ok: true });
+  try {
+    const { data: auth } = await supa.auth.getUser();
+    if (!auth?.user) {
+      return unauthorized();
+    }
+
+    const json = await req.json().catch(() => null);
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return badRequest("Payload inválido", { details: parsed.error.flatten() });
+    }
+
+    const { org_id, request_id } = parsed.data;
+
+    const { data, error } = await supa
+      .from("lab_requests")
+      .update({ status: "cancelled" })
+      .eq("id", request_id)
+      .eq("org_id", org_id)
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      return dbError(error);
+    }
+
+    if (!data) {
+      return notFound("Solicitud no encontrada");
+    }
+
+    return ok();
+  } catch (err: any) {
+    return serverError(err?.message ?? "Error");
+  }
 }
