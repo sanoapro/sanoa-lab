@@ -1,22 +1,40 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { createServiceClient } from "@/lib/supabase/server";
+import { ok, badRequest, serverError, error as jsonError } from "@/lib/api/responses";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const bucket = process.env.LAB_RESULTS_BUCKET || "lab-results";
+const schema = z.object({
+  path: z.string().min(1, "path requerido"),
+  expires: z.coerce.number().int().min(5).max(60 * 60 * 24).optional(),
+});
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const supa = createServiceClient();
+
   try {
-    const { path, expires = Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300) } =
-      await req.json();
-    if (!path) return NextResponse.json({ error: "path requerido" }, { status: 400 });
-    const supa = createClient(url, serviceKey, { auth: { persistSession: false } });
+    const json = await req.json().catch(() => null);
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      return badRequest("Payload inválido", { details: parsed.error.flatten() });
+    }
+
+    const { path, expires } = parsed.data;
+    const ttl = expires ?? Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300);
     const { data, error } = await supa.storage
       .from(bucket)
-      .createSignedUrl(path, Math.max(5, Number(expires)));
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json({ ok: true, url: data.signedUrl });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "No se pudo firmar" }, { status: 500 });
+      .createSignedUrl(path, Math.max(5, Number(ttl)));
+
+    if (error) {
+      return jsonError("STORAGE_ERROR", error.message);
+    }
+
+    if (!data?.signedUrl) {
+      return serverError("No se pudo generar URL firmada");
+    }
+
+    return ok({ url: data.signedUrl });
+  } catch (err: any) {
+    return serverError(err?.message ?? "Error");
   }
 }
