@@ -20,7 +20,6 @@ import clsx from "clsx";
 // NUEVO: shadcn/ui + lucide para botones/inputs modernos
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Plus } from "lucide-react";
 
 /** Traducción/normalización de errores frecuentes en listados */
 function toSpanishListError(e: unknown): string {
@@ -296,8 +295,8 @@ export default function PacientesPage() {
       <div className="flex items-center justify-between">
         <a href={exportURL()} title="Exportar resultados a CSV">
           <Button variant="secondary" className="inline-flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            CSV
+            <span aria-hidden>📤</span>
+            <span>Exportar CSV</span>
           </Button>
         </a>
         <Button
@@ -306,8 +305,8 @@ export default function PacientesPage() {
           disabled={loading}
           className="inline-flex items-center gap-2"
         >
-          <Plus className="w-4 h-4" />
-          Nuevo paciente
+          <span aria-hidden>➕</span>
+          <span>Nuevo paciente</span>
         </Button>
       </div>
 
