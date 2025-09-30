@@ -40,6 +40,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   let base = supa.from("prescriptions").select("*").eq("id", id).limit(1);
   const org = readOrgIdFromQuery(req);
   if (org.ok) base = base.eq("org_id", org.org_id);
+
   const { data: rx, error } = await base.single<Rx>();
   if (error || !rx) return jsonError("NOT_FOUND", "Receta no encontrada", 404);
 
@@ -51,7 +52,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       p_prefix: "RX",
     });
     if (!e1 && ensured) {
-      // recargar folio
       const { data: rx2 } = await supa
         .from("prescriptions")
         .select("folio")
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   // (Opcional) Paciente
   let patientName = "Paciente";
-  let patientId = rx.patient_id ?? "";
+  const patientId = rx.patient_id ?? "";
   {
     const { data: p } = await supa
       .from("patients")
@@ -85,7 +85,9 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   }
 
   const origin = new URL(req.url).origin;
-  const verifyUrl = `${origin}/api/prescriptions/${rx.id}/json${org.ok ? `?org_id=${rx.org_id}` : ""}`;
+  const verifyUrl = `${origin}/api/prescriptions/${rx.id}/json${
+    org.ok ? `?org_id=${rx.org_id}` : ""
+  }`;
 
   // Construir PDF (A4)
   const pdf = await PDFDocument.create();
@@ -93,7 +95,14 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const fontB = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const draw = (text: string, x: number, y: number, size = 11, bold = false, color = rgb(0, 0, 0)) => {
+  const draw = (
+    text: string,
+    x: number,
+    y: number,
+    size = 11,
+    bold = false,
+    color = rgb(0, 0, 0)
+  ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
   const marginX = 50;
@@ -105,7 +114,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     if (data) {
       try {
         const img = await pdf.embedPng(data).catch(async () => await pdf.embedJpg(data));
-        const maxW = 495; // ancho util
+        const maxW = 495; // ancho útil
         const ratio = img.width / img.height;
         const w = Math.min(maxW, img.width);
         const h = w / ratio;
@@ -125,7 +134,12 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   // Datos de cabecera
   draw(`Folio: ${rx.folio ?? rx.id}`, marginX, cursorY, 10);
-  draw(`Fecha: ${new Date(rx.created_at ?? Date.now()).toLocaleString()}`, marginX + 250, cursorY, 10);
+  draw(
+    `Fecha: ${new Date(rx.created_at ?? Date.now()).toLocaleString()}`,
+    marginX + 250,
+    cursorY,
+    10
+  );
   cursorY -= 16;
   draw(`Paciente: ${patientName}`, marginX, cursorY, 12, true);
   cursorY -= 20;
@@ -159,7 +173,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   } else if (typeof rx.content === "string") {
     writeLines(rx.content);
   } else {
-    // JSON arbitrario
     writeLines(JSON.stringify(rx.content ?? {}, null, 2));
   }
 
@@ -176,7 +189,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
         const h = w / ratio;
         page.drawImage(img, { x: marginX + 48, y: 120, width: w, height: h });
       } catch {
-        // fallo al incrustar imagen: continuamos con nombre
         if (rx.signature_name) draw(rx.signature_name, marginX + 48, 140, 11);
       }
     } else if (rx.signature_name) {
@@ -206,6 +218,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   const bytes = await pdf.save();
   const filename = `receta_${rx.folio ?? rx.id}.pdf`;
+
   return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
