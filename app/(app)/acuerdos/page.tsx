@@ -1,5 +1,5 @@
 // app/(app)/acuerdos/page.tsx
-'use client';
+"use client";
 
 import * as React from "react";
 import AccentHeader from "@/components/ui/AccentHeader";
@@ -16,14 +16,18 @@ export default function AcuerdosPage() {
     try {
       const id = localStorage.getItem("activeOrgId");
       setOrgId(id);
-    } catch {}
+    } catch {
+      setOrgId(null);
+    }
   }, []);
 
   React.useEffect(() => {
     if (!orgId) return;
     (async () => {
       try {
-        const r = await fetch(`/api/agreements/status?org_id=${encodeURIComponent(orgId)}`, { cache: "no-store" });
+        const r = await fetch(`/api/agreements/status?org_id=${encodeURIComponent(orgId)}`, {
+          cache: "no-store",
+        });
         const j = await r.json();
         setStatus(j?.ok ? j.data : null);
       } catch {
@@ -41,7 +45,7 @@ export default function AcuerdosPage() {
     });
     const j = await r.json();
     if (j?.ok) {
-      setStatus((prev) => ({ ...(prev || {}), specialist_platform: true }));
+      setStatus((prev) => ({ ...(prev || { specialist_platform: false }), specialist_platform: true }));
       alert("Contrato Especialista ↔ Plataforma aceptado.");
     } else {
       alert(j?.error?.message || "No se pudo aceptar");
@@ -95,8 +99,8 @@ export default function AcuerdosPage() {
       <section className="rounded-3xl border bg-white/95 p-6">
         <h3 className="font-semibold">2) Especialista ↔ Paciente</h3>
         <p className="text-sm text-slate-600">
-          Genera un enlace de aceptación para el paciente. La primera sesión puede realizarse sin aceptar; a partir de la segunda,
-          se requiere aceptación.
+          Genera un enlace de aceptación para el paciente. La primera sesión puede realizarse sin aceptar; a partir de la
+          segunda, se requiere aceptación.
         </p>
 
         <div className="mt-3 max-w-xl">
