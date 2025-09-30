@@ -1,8 +1,9 @@
 // /workspaces/sanoa-lab/app/api/reports/daily-summary/send/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { sendTwilioWhatsApp } from '@/lib/notify/twilio';
 import { track } from '@/lib/segment/track';
+import { jsonOk, jsonError, requireHeader } from '@/lib/http/validate';
 
 export const runtime = 'nodejs';
 
@@ -18,19 +19,26 @@ function startOfDayISO(tz: string) {
   return new Date(Date.UTC(y, m - 1, d, 0, 0, 0)).toISOString();
 }
 
-export async function POST(req: Request) {
-  // Seguridad para crons: header x-cron-key debe coincidir con CRON_SECRET
-  const cronKey = req.headers.get('x-cron-key') || '';
-  const expected = process.env.CRON_SECRET || '';
-  if (!expected || cronKey !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const key = requireHeader(req, 'x-cron-key', process.env.CRON_SECRET);
+  if (!key.ok) {
+    return jsonError(key.error.code, key.error.message, 401);
   }
 
   const supa = createServiceClient();
+  const { error: rpcError } = await supa.rpc('reports_daily_summary_send', {});
+  if (!rpcError) {
+    return jsonOk({ queued: true, rpc: 'reports_daily_summary_send' });
+  }
+  if (rpcError.code && rpcError.code !== 'PGRST204') {
+    return jsonError('DB_ERROR', rpcError.message, 400);
+  }
+
   try {
     const { org_id, to, tz = 'America/Mexico_City' } = await req.json();
-    if (!org_id || !to)
-      return NextResponse.json({ error: 'Faltan org_id y/o to' }, { status: 400 });
+    if (!org_id || !to) {
+      return jsonError('BAD_REQUEST', 'Faltan org_id y/o to', 400);
+    }
 
     const start = startOfDayISO(tz);
 
@@ -43,7 +51,7 @@ export async function POST(req: Request) {
       .gte('created_at', start)
       .eq('reminders.org_id', org_id);
 
-    if (eLogs) return NextResponse.json({ error: eLogs.message }, { status: 400 });
+    if (eLogs) return jsonError('DB_ERROR', eLogs.message, 400);
 
     const sent = (logs || []).filter((l) => l.status === 'sent').length;
     const failed = (logs || []).filter((l) => l.status === 'failed').length;
@@ -99,8 +107,7 @@ Configura el cron diario a /api/reports/daily-summary/send para automatizar este
       byChannel,
     });
 
-    return NextResponse.json({
-      ok: true,
+    return jsonOk({
       sid: res.sid,
       sent,
       failed,
@@ -108,6 +115,6 @@ Configura el cron diario a /api/reports/daily-summary/send para automatizar este
       possibleNoShow,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message || e) }, { status: 400 });
+    return jsonError('SERVER_ERROR', String(e?.message || e), 400);
   }
 }

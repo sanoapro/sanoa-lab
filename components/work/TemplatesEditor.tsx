@@ -1,0 +1,168 @@
+// components/work/TemplatesEditor.tsx
+"use client";
+
+import * as React from "react";
+import { getActiveOrg } from "@/lib/org-local";
+
+type Template = {
+  id: string;
+  org_id: string;
+  module: "mente"|"equilibrio"|"sonrisa"|"pulso"|"general";
+  title: string;
+  slug: string;
+  description: string | null;
+  content: any;
+  is_active: boolean;
+  updated_at?: string;
+};
+
+const MODULES = ["mente","equilibrio","sonrisa","pulso","general"] as const;
+
+export default function TemplatesEditor() {
+  const org = getActiveOrg();
+  const [list, setList] = React.useState<Template[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [form, setForm] = React.useState<Partial<Template>>({ module: "general", title: "", description: "", content: {} as any, is_active: true });
+  const [q, setQ] = React.useState("");
+  const [module, setModule] = React.useState<Template["module"] | "">("");
+
+  async function load() {
+    if (!org.id) return;
+    setLoading(true);
+    const url = new URL("/api/work/templates", window.location.origin);
+    url.searchParams.set("org_id", org.id);
+    if (module) url.searchParams.set("module", module);
+    if (q.trim()) url.searchParams.set("q", q.trim());
+    const r = await fetch(url.toString(), { cache: "no-store" });
+    const j = await r.json();
+    setLoading(false);
+    if (j?.ok) setList(j.data as Template[]);
+    else setList([]);
+  }
+
+  React.useEffect(() => { load(); /* eslint-disable-next-line */ }, [org.id, q, module]);
+
+  async function save() {
+    if (!org.id || !form.title || !form.module) return alert("Completa título y módulo");
+    const r = await fetch("/api/work/templates", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        org_id: org.id,
+        id: form.id,
+        module: form.module,
+        title: form.title,
+        slug: form.slug,
+        description: form.description ?? "",
+        content: safeJson(form.content),
+        is_active: form.is_active ?? true,
+      }),
+    });
+    const j = await r.json();
+    if (!j?.ok) return alert(j?.error?.message || "Error al guardar");
+    setForm({ module: form.module, title: "", description: "", content: {} as any, is_active: true });
+    load();
+  }
+
+  function edit(t: Template) {
+    setForm({ ...t });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function remove(id: string) {
+    if (!org.id) return;
+    if (!confirm("¿Desactivar esta plantilla?")) return;
+    const r = await fetch(`/api/work/templates/${id}`, {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ org_id: org.id }),
+    });
+    const j = await r.json();
+    if (!j?.ok) return alert(j?.error?.message || "Error al desactivar");
+    load();
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border bg-white/95 dark:bg-slate-900/60 p-4 space-y-4">
+        <h3 className="font-semibold">Nueva / Editar plantilla</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-sm text-slate-500">Módulo</span>
+            <select
+              value={form.module ?? "general"}
+              onChange={(e) => setForm((f) => ({ ...f, module: e.target.value as any }))}
+              className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+            >
+              {MODULES.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 md:col-span-2">
+            <span className="text-sm text-slate-500">Título</span>
+            <input className="rounded-xl border px-3 py-2" value={form.title ?? ""} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="p.ej., Respiración diafragmática 4-7-8" />
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-sm text-slate-500">Descripción (opcional)</span>
+          <textarea className="rounded-xl border px-3 py-2" rows={3} value={form.description ?? ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-sm text-slate-500">Contenido JSON (parámetros, pasos, links, etc.)</span>
+          <textarea className="font-mono text-xs rounded-xl border px-3 py-2" rows={8} value={jsonString(form.content)} onChange={e => setForm(f => ({ ...f, content: tryParse(e.target.value) }))} />
+        </label>
+
+        <div className="flex items-center gap-3">
+          <button onClick={save} className="px-4 py-2 rounded-xl bg-blue-600 text-white">Guardar</button>
+          {form.id && <span className="text-xs text-slate-500">Editando: {form.id}</span>}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border bg-white/95 dark:bg-slate-900/60">
+        <div className="p-4 flex items-center gap-3">
+          <input className="rounded-xl border px-3 py-2" placeholder="Buscar…" value={q} onChange={e => setQ(e.target.value)} />
+          <select className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900" value={module} onChange={e => setModule(e.target.value as any)}>
+            <option value="">Todos</option>
+            {MODULES.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+          {loading && <span className="text-sm text-slate-500">Cargando…</span>}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-t border-b bg-slate-50/60 dark:bg-slate-800/40">
+                <th className="p-2 text-left">Título</th>
+                <th className="p-2 text-left">Módulo</th>
+                <th className="p-2 text-left">Activa</th>
+                <th className="p-2 text-left">Actualizada</th>
+                <th className="p-2 text-left">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map(t => (
+                <tr key={t.id} className="border-b">
+                  <td className="p-2">{t.title}</td>
+                  <td className="p-2">{t.module}</td>
+                  <td className="p-2">{t.is_active ? "Sí" : "No"}</td>
+                  <td className="p-2">{t.updated_at ? new Date(t.updated_at).toLocaleString() : "—"}</td>
+                  <td className="p-2 flex gap-2">
+                    <button className="px-3 py-1 rounded-lg border" onClick={() => edit(t)}>Editar</button>
+                    <button className="px-3 py-1 rounded-lg border" onClick={() => remove(t.id)}>Desactivar</button>
+                  </td>
+                </tr>
+              ))}
+              {list.length === 0 && !loading && (
+                <tr><td className="p-4 text-slate-500" colSpan={5}>Sin plantillas.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function jsonString(v: any) { try { return JSON.stringify(v ?? {}, null, 2); } catch { return "{}"; } }
+function tryParse(s: string) { try { return JSON.parse(s); } catch { return {}; } }
+function safeJson(v: any){ return v && typeof v === "object" ? v : {}; }
