@@ -499,6 +499,24 @@ button {
 html { font-size: clamp(17px, calc(16px * var(--scale)), 19px); }
 * { -webkit-tap-highlight-color: transparent; }
 
+.glass-card,
+.text-contrast {
+  --surface-text-color: #0f172a;
+  --color-brand-text: var(--surface-text-color);
+  color: var(--surface-text-color);
+}
+
+.glass-card :is(a, h1, h2, h3, h4, h5, h6, p, span, strong, em),
+.text-contrast :is(a, h1, h2, h3, h4, h5, h6, p, span, strong, em) {
+  color: inherit;
+}
+
+.dark .glass-card,
+.dark .text-contrast {
+  --surface-text-color: rgba(248, 250, 252, 0.94);
+  color: var(--surface-text-color);
+}
+
 .glass {
   position: relative;
   background: var(--glass-bg);
@@ -570,4 +588,39 @@ html { font-size: clamp(17px, calc(16px * var(--scale)), 19px); }
 
 .emoji-lg {
   font-size: calc(var(--emoji-size) * 1.2);
+}
+
+/* Variantes visuales */
+.bubble {
+  border-radius: 1.5rem;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 26px 54px rgba(15, 23, 42, 0.18);
+  border: 1px solid var(--glass-border-strong);
+}
+
+.dark .bubble {
+  box-shadow: 0 28px 60px rgba(2, 6, 23, 0.55);
+  border-color: var(--glass-border-strong);
+}
+
+.neon {
+  position: relative;
+}
+
+.neon::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.1rem;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+  opacity: 0;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.neon:hover::after,
+.neon:focus-visible::after {
+  opacity: 1;
+  box-shadow: 0 0 26px rgba(56, 189, 248, 0.45);
 }
