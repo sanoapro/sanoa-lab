@@ -11,6 +11,7 @@ const BodySchema = z.object({
   content: z.any(), // JSON de indicaciones
   letterhead_url: z.string().url().optional(),
   signature_name: z.string().optional(),
+  signature_url: z.string().url().optional(),
   notes: z.string().max(10_000).optional(),
   status: z.enum(["draft", "signed"]).default("signed"),
 });
