@@ -1,3 +1,4 @@
+// components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -58,6 +59,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 px-3 py-3 sm:px-4">
       <div className="mx-auto max-w-6xl">
         <div className="glass relative flex items-center gap-3 rounded-2xl border border-white/20 px-4 py-3 shadow-lg backdrop-blur">
+          {/* Brand */}
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-slate-900 transition hover:opacity-90 dark:text-white"
@@ -67,6 +69,7 @@ export default function Navbar() {
             <span>Sanoa</span>
           </Link>
 
+          {/* Main nav */}
           <nav className="ml-3 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto whitespace-nowrap">
             {NAV.map((item) => {
               const isActive =
@@ -94,7 +97,8 @@ export default function Navbar() {
             })}
           </nav>
 
-          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          {/* Quick links */}
+          <div className="ml-auto hidden flex-wrap items-center justify-end gap-2 sm:flex">
             {QUICK_LINKS.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -120,6 +124,7 @@ export default function Navbar() {
             })}
           </div>
 
+          {/* Sign out */}
           <button
             onClick={handleSignOut}
             disabled={signingOut}
