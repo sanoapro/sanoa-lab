@@ -1,54 +1,50 @@
-<<<<<<< HEAD
-// lib/integrations/cal.ts
-/**
- * Genera un deep-link a Cal.com con prefill de name/email/notes.
- * Usa NEXT_PUBLIC_CAL_EVENT_URL (link de evento) o NEXT_PUBLIC_CAL_BASE (usuario/equipo).
- * Docs oficiales: se aceptan parámetros "name" y "email" en el query. (ver Help/Docs Cal.com)
- */
-export function buildCalLink({
-  name,
-  email,
-  notes,
-  fallback = "/agenda",
-}: {
-  name?: string;
-  email?: string;
-  notes?: string;
-  fallback?: string;
-}) {
-  const base =
-    process.env.NEXT_PUBLIC_CAL_EVENT_URL ||
-    process.env.NEXT_PUBLIC_CAL_BASE ||
-    "";
-  if (!base) return fallback;
-  const url = new URL(base);
-  if (name) url.searchParams.set("name", name);
-  if (email) url.searchParams.set("email", email);
-  if (notes) url.searchParams.set("notes", notes);
-  return url.toString();
-=======
 export type BuildCalLinkOptions = {
   name?: string;
   email?: string;
   phone?: string;
   notes?: string;
+  fallback?: string;
 };
 
-const DEFAULT_URL = process.env.NEXT_PUBLIC_CAL_SCHEDULING_URL || "/agenda";
+const EVENT_URL = process.env.NEXT_PUBLIC_CAL_EVENT_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_CAL_BASE;
+const SCHEDULING_URL = process.env.NEXT_PUBLIC_CAL_SCHEDULING_URL;
+
+function isAbsolute(url: string) {
+  return /^https?:\/\//i.test(url);
+}
 
 /**
  * Construye un link a Cal.com (o fallback) con prefill básico.
- * Acepta URLs absolutas o relativas; agrega query params tipo prefill[name].
+ * Acepta URLs absolutas o relativas; agrega query params compatibles.
  */
-export function buildCalLink(opts: BuildCalLinkOptions = {}) {
-  const base = DEFAULT_URL;
+export function buildCalLink(options: BuildCalLinkOptions = {}) {
+  const { name, email, phone, notes } = options;
+  const fallback = options.fallback ?? "/agenda";
+  const base = EVENT_URL || BASE_URL || SCHEDULING_URL || fallback;
+
+  if (!base) return fallback;
+
+  if (isAbsolute(base)) {
+    try {
+      const url = new URL(base);
+      if (name) url.searchParams.set("name", name);
+      if (email) url.searchParams.set("email", email);
+      if (notes) url.searchParams.set("notes", notes);
+      if (phone) url.searchParams.set("phone", phone);
+      return url.toString();
+    } catch (error) {
+      // Si base es inválida, usamos el fallback.
+      return fallback;
+    }
+  }
+
   const usp = new URLSearchParams();
-  if (opts.name) usp.set("prefill[name]", opts.name);
-  if (opts.email) usp.set("prefill[email]", opts.email);
-  if (opts.phone) usp.set("prefill[phone]", opts.phone);
-  if (opts.notes) usp.set("prefill[notes]", opts.notes);
+  if (name) usp.set("prefill[name]", name);
+  if (email) usp.set("prefill[email]", email);
+  if (phone) usp.set("prefill[phone]", phone);
+  if (notes) usp.set("prefill[notes]", notes);
   const qs = usp.toString();
   if (!qs) return base;
   return `${base}${base.includes("?") ? "&" : "?"}${qs}`;
->>>>>>> df93bf6ae291c2e0088aa2717e0cc181720354ac
 }
