@@ -1,9 +1,12 @@
-// /workspaces/sanoa-lab/app/providers.tsx
 "use client";
 
 import "@/sentry.client.config";
-import React, { Suspense, useEffect } from "react";
+import type { ReactNode } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { ThemeProvider } from "next-themes";
+import { ToastProvider } from "@/components/Toast";
+import Toaster from "@/components/Toaster";
 
 // ---- Segment Loader (analytics.js) ----
 declare global {
@@ -94,19 +97,16 @@ function QueryParamsBridge() {
   return null;
 }
 
-/**
- * Providers de alto nivel que NO deben duplicar
- * el ToastProvider (ya está montado en app/layout.tsx).
- * Envolvemos hooks de navegación en <Suspense/> para evitar
- * el error de CSR bailout (especialmente en /404).
- */
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <>
-      <Suspense fallback={null}>
-        <QueryParamsBridge />
-      </Suspense>
-      {children}
-    </>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ToastProvider>
+        <Suspense fallback={null}>
+          <QueryParamsBridge />
+        </Suspense>
+        {children}
+        <Toaster />
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

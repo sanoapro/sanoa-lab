@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient, User } from "@supabase/supabase-js";
 import ColorEmoji from "@/components/ColorEmoji";
-import { useToast } from "@/components/Toast";
+import { useToastSafe } from "@/components/Toast";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +13,7 @@ const supabase = createClient(
 
 export default function PerfilPage() {
   const router = useRouter();
-  const { toast } = useToast();
+  const { toast } = useToastSafe();
 
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
