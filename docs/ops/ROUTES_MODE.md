@@ -1,3 +1,38 @@
+codex/integrate-new-files-and-update-safely-dafqxw
+# Estándar de rutas — Next 15, MODE y respuestas
+
+## Cookies/headers async
+- **Siempre** `await` en `getSupabaseServer()` (usa `await cookies()`, `await headers()`).
+- Rutas sin sesión: `createServiceClient()` → **no toca cookies** (sin warnings).
+
+## MODE
+- Añadir comentario sobre el modo arriba del handler:
+  - `// MODE: session (user-scoped, cookies)`
+  - `// MODE: service (no session, no cookies)`
+
+## Handlers
+- `export async function GET/POST/...` **siempre**.
+
+## Validación mínima
+- `org_id` obligatorio donde aplique.
+- Jobs/webhooks: header `x-cron-key` válido.
+
+## Respuestas
+- Éxito: `{ ok: true, data?, meta? }`
+- Error: `{ ok: false, error: { code, message } }` con `status` adecuado.
+
+## CSV/Exports headers
+
+
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="archivo.csv"
+
+
+## 404 y not-found
+- Eliminar `app/404.*`; usar `app/not-found.tsx` sin hooks de navegación.
+
+## Checks útiles
+=======
 # ROUTES_MODE — Matriz de endpoints → MODE (session/service)
 
 > Estándar: Next 15 (cookies async), handlers `export async`, helpers:
@@ -70,3 +105,4 @@
   - Error: `{ ok: false, error: { code, message } }` + `status`.
 - En **service**: nunca leer cookies; validar `x-cron-key` o firma del proveedor.
 - CSV/PDF: `Content-Type` y `Content-Disposition` correctos (filename).
+
