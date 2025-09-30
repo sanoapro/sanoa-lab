@@ -26,13 +26,17 @@ const UpsertBody = z.object({
 });
 
 function slugify(s: string) {
-  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+  return s
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
 }
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
   const qp = new URL(req.url).searchParams;
+
   const parsed = ListQuery.safeParse({
     org_id: qp.get("org_id"),
     module: qp.get("module") || undefined,
