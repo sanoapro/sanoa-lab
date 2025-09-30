@@ -1,34 +1,32 @@
+// lib/http/validate.ts
 import { NextRequest, NextResponse } from "next/server";
-import { ZodSchema } from "zod";
-import { safeEquals } from "./signatures";
+import { z } from "zod";
 
-type JsonObject = Record<string, any>;
-
-type ErrorPayload = {
-  code: string;
-  message: string;
-};
-
-type ParseSuccess<T> = { ok: true; value: T };
-type ParseFailure = { ok: false; error: ErrorPayload };
-export type ParseResult<T> = ParseSuccess<T> | ParseFailure;
-
-export function jsonOk(payload?: JsonObject, init?: ResponseInit) {
-  return NextResponse.json({ ok: true, ...(payload ?? {}) }, init);
+/** -----------------------------
+ * Respuestas estándar JSON
+ * ------------------------------ */
+export function jsonOk<T>(data?: T, meta?: Record<string, unknown>) {
+  return NextResponse.json({ ok: true, data, ...(meta ? { meta } : {}) });
 }
 
-export function jsonError(code: string, message: string, status = 400, extras?: JsonObject) {
-  return NextResponse.json(
-    {
-      ok: false,
-      error: {
-        code,
-        message,
-      },
-      ...(extras ?? {}),
-    },
-    { status },
-  );
+export function jsonError(
+  code: string,
+  message: string,
+  status = 400,
+  extra?: Record<string, unknown>
+) {
+  return NextResponse.json({ ok: false, error: { code, message, ...(extra || {}) } }, { status });
+}
+
+/** -----------------------------
+ * Utilidades de parseo
+ * ------------------------------ */
+export function getUrl(req: NextRequest) {
+  return new URL(req.url);
+}
+
+export function getQuery(req: NextRequest) {
+  return getUrl(req).searchParams;
 }
 
 export async function parseJson<T = unknown>(req: NextRequest): Promise<T | null> {
@@ -39,41 +37,86 @@ export async function parseJson<T = unknown>(req: NextRequest): Promise<T | null
   }
 }
 
-export function parseOrError<T>(schema: ZodSchema<T>, data: unknown): ParseResult<T> {
-  const result = schema.safeParse(data);
-  if (result.success) {
-    return { ok: true, value: result.data };
+/** -----------------------------
+ * Zod helpers
+ * ------------------------------ */
+export function parseOrError<T>(schema: z.ZodType<T>, data: unknown) {
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+      .join("; ");
+    return { ok: false as const, error: { code: "VALIDATION_ERROR", message: issues } };
   }
-
-  const message = result.error.errors
-    .map((err) => {
-      const path = err.path.join(".");
-      return path ? `${path}: ${err.message}` : err.message;
-    })
-    .join("; ") || "Invalid request body";
-
-  return { ok: false, error: { code: "INVALID_BODY", message } };
+  return { ok: true as const, data: parsed.data as T };
 }
 
-export function requireHeader(
-  req: NextRequest,
-  header: string,
-  expected?: string | null,
-): ParseSuccess<string> | ParseFailure {
-  const value = req.headers.get(header);
-  if (!value) {
-    return { ok: false, error: { code: "UNAUTHORIZED", message: `Missing ${header}` } };
-  }
-  if (expected != null) {
-    if (!expected) {
-      return {
-        ok: false,
-        error: { code: "CONFIG_ERROR", message: `Missing expected value for ${header}` },
-      };
-    }
-    if (!safeEquals(value, expected)) {
-      return { ok: false, error: { code: "UNAUTHORIZED", message: `Invalid ${header}` } };
-    }
-  }
-  return { ok: true, value };
+/** -----------------------------
+ * Coerciones frecuentes
+ * ------------------------------ */
+export function asInt(
+  v: string | null,
+  fallback: number,
+  opts?: { min?: number; max?: number }
+) {
+  const n = v != null ? Number.parseInt(v, 10) : Number.NaN;
+  if (Number.isNaN(n)) return fallback;
+  if (opts?.min != null && n < opts.min) return opts.min;
+  if (opts?.max != null && n > opts.max) return opts.max;
+  return n;
+}
+
+export function asBool(v: string | null, fallback = false) {
+  if (v == null) return fallback;
+  if (v === "1" || v.toLowerCase() === "true") return true;
+  if (v === "0" || v.toLowerCase() === "false") return false;
+  return fallback;
+}
+
+/** -----------------------------
+ * Headers y auth simple
+ * ------------------------------ */
+export function requireHeader(req: NextRequest, name: string, expected?: string) {
+  const val = req.headers.get(name);
+  if (!val)
+    return { ok: false as const, error: { code: "UNAUTHORIZED", message: `Falta header ${name}` } };
+  if (expected && val !== expected)
+    return {
+      ok: false as const,
+      error: { code: "UNAUTHORIZED", message: `Header ${name} inválido` },
+    };
+  return { ok: true as const, value: val };
+}
+
+/** -----------------------------
+ * org_id helpers (query/body)
+ * ------------------------------ */
+export function readOrgIdFromQuery(req: NextRequest) {
+  const q = getQuery(req);
+  const org_id = q.get("org_id");
+  if (!org_id)
+    return { ok: false as const, error: { code: "BAD_REQUEST", message: "org_id requerido" } };
+  return { ok: true as const, org_id };
+}
+
+export function ensureOrgId(org_id?: string | null) {
+  if (!org_id)
+    return { ok: false as const, error: { code: "BAD_REQUEST", message: "org_id requerido" } };
+  return { ok: true as const, org_id };
+}
+
+/** -----------------------------
+ * Paginación simple
+ * ------------------------------ */
+export const PageQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(200).default(50),
+});
+export type PageQuery = z.infer<typeof PageQuerySchema>;
+
+export function parsePageQuery(req: NextRequest): PageQuery {
+  const sp = getQuery(req);
+  const obj = { page: sp.get("page"), pageSize: sp.get("pageSize") };
+  const res = parseOrError(PageQuerySchema, obj);
+  return res.ok ? res.data : { page: 1, pageSize: 50 };
 }
