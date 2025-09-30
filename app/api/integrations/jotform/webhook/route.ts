@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { jsonError } from "@/lib/http/validate";
+import { rawBody, verifyJotformSignature } from "@/lib/http/signatures";
 
 const JF_API = "https://api.jotform.com";
 
@@ -59,7 +61,7 @@ function normalizeAnswers(templateKey: string, payload: Record<string, any>) {
   return out;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const url = new URL(req.url);
   const key = url.searchParams.get("key");
   if (!key || key !== process.env.JOTFORM_WEBHOOK_SECRET) {
@@ -67,7 +69,14 @@ export async function POST(req: Request) {
   }
 
   const supabase = createRouteHandlerClient({ cookies });
-  const bodyText = await req.text(); // Jotform puede enviar x-www-form-urlencoded o JSON
+  const bodyText = await rawBody(req); // Jotform puede enviar x-www-form-urlencoded o JSON
+
+  if (process.env.JOTFORM_SIGNING_SECRET) {
+    if (!verifyJotformSignature(req, bodyText)) {
+      return jsonError("UNAUTHORIZED", "Firma Jotform inválida", 401);
+    }
+  }
+
   let data: JotformWebhook | null = null;
   try {
     // intenta JSON
