@@ -74,9 +74,11 @@ export default function BankTxPage() {
       <div className="mt-3">
         <SavedViewsBar orgId={orgId} scope="bank_tx" />
       </div>
+
       <div className="mt-4">
         <TxFilters />
       </div>
+
       <TxTable orgId={orgId} />
     </div>
   );
