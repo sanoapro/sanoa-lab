@@ -49,19 +49,37 @@ type SubscriptionStatus = {
 export default function EspecialidadesPage() {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [orgId] = useState<string>(() =>
+    typeof window !== "undefined" ? window.localStorage.getItem("org_id") || "" : "",
+  );
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         setLoading(true);
-        const r = await fetch("/api/billing/subscription/status", { cache: "no-store" });
-        const j = await r.json();
+        if (!orgId) {
+          if (!alive) return;
+          setStatus({ ok: false, data: { active: false, modules: {} } });
+          return;
+        }
+
+        const params = new URLSearchParams({ org_id: orgId });
+        const r = await fetch(`/api/billing/subscription/status?${params.toString()}`, {
+          cache: "no-store",
+        });
+        if (!r.ok) {
+          if (!alive) return;
+          setStatus({ ok: false, data: { active: false, modules: {} } });
+          return;
+        }
+
+        const j = (await r.json()) as SubscriptionStatus;
         if (!alive) return;
-        setStatus(j);
+        setStatus({ ok: j?.ok ?? true, data: j?.data });
       } catch (err) {
         if (!alive) return;
-        setStatus({ ok: true, data: { active: false, modules: {} } });
+        setStatus({ ok: false, data: { active: false, modules: {} } });
       } finally {
         if (alive) setLoading(false);
       }
@@ -69,10 +87,11 @@ export default function EspecialidadesPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [orgId]);
 
-  const modules = status?.data?.modules || {};
-  const subActive = Boolean(status?.data?.active);
+  const bankReady = status ? status.ok !== false : false;
+  const modules = bankReady ? status?.data?.modules || {} : {};
+  const subActive = bankReady && Boolean(status?.data?.active);
 
   return (
     <main className="space-y-8">
@@ -83,6 +102,27 @@ export default function EspecialidadesPage() {
           emojiToken="carpeta"
         />
       </AnimateIn>
+
+      {!loading && status?.ok === false && (
+        <AnimateIn>
+          <div className="glass rounded-3xl border border-[var(--color-brand-border)] bg-white/95 p-6 text-[var(--color-brand-text)] shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:bg-slate-900/70 dark:text-slate-100">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Configura Sanoa Bank para desbloquear especialidades</h3>
+                <p className="text-sm text-[var(--color-brand-text)]/70 dark:text-slate-100/80">
+                  Necesitas completar la configuración de Sanoa Bank antes de activar los módulos Pro en tu organización.
+                </p>
+              </div>
+              <Link
+                href="/banco"
+                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-400 bg-emerald-300 px-5 py-2 font-semibold text-emerald-950 shadow-[0_0_18px_rgba(52,211,153,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_0_26px_rgba(52,211,153,0.75)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+              >
+                Desbloquear con Sanoa Bank
+              </Link>
+            </div>
+          </div>
+        </AnimateIn>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
         {SPECIALTIES.map((spec, idx) => {
