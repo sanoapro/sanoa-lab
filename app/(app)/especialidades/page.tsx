@@ -14,10 +14,10 @@ async function getActiveOrgId(): Promise<string | null> {
 
 async function fetchOrgFeatures(orgId: string) {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/orgs/features/check?org_id=${orgId}`, {
-      cache: "no-store",
-      headers: { "x-requested-from": "especialidades-page" },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/orgs/features/check?org_id=${orgId}`,
+      { cache: "no-store", headers: { "x-requested-from": "especialidades-page" } }
+    );
     if (!res.ok) throw new Error("fetch features failed");
     const json = await res.json();
     const features = (json?.features ?? {}) as Partial<Record<FeatureKey, boolean>>;
@@ -127,8 +127,11 @@ export default async function Page() {
         {!bank_ready && (
           <div className="mt-2 text-sm">
             <span className="emoji mr-1">ℹ️</span>
-            Primero configura tu cuenta en <Link className="underline" href="/banco">Sanoa Bank</Link> para poder
-            desbloquear.
+            Primero configura tu cuenta en{" "}
+            <Link className="underline" href="/banco">
+              Sanoa Bank
+            </Link>{" "}
+            para poder desbloquear.
           </div>
         )}
       </div>
