@@ -10,7 +10,7 @@ const MAP: Record<string, { char: string; label: string }> = {
   agenda: { char: "📅", label: "Agenda" },
   pacientes: { char: "🧑‍⚕️", label: "Pacientes" },
   laboratorio: { char: "🧪", label: "Laboratorio" },
-  carpeta: { char: "🗂️", label: "Áreas Pro" },
+  carpeta: { char: "🗂️", label: "Especialidades" },
   recordatorios: { char: "⏰", label: "Recordatorios" },
   reportes: { char: "📈", label: "Reportes" },
   banco: { char: "🏦", label: "Banco" },
