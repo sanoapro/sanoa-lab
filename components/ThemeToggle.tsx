@@ -1,45 +1,83 @@
+// components/ThemeToggle.tsx
 "use client";
-import { useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+import * as React from "react";
 
-function getInitialTheme(): Theme {
-  try {
-    const saved = localStorage.getItem("theme") as Theme | null;
-    if (saved === "light" || saved === "dark") return saved;
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
-  } catch {}
-  return "light";
+type Theme = "light" | "dark" | "system";
+
+const STORAGE_KEY = "sanoa.theme";
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const useDark = theme === "dark" || (theme === "system" && systemDark);
+  root.classList.toggle("dark", useDark);
+  root.setAttribute("data-theme", useDark ? "dark" : "light");
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = React.useState<Theme>("system");
 
-  useEffect(() => {
-    const t = getInitialTheme();
-    setTheme(t);
-    document.documentElement.setAttribute("data-theme", t);
+  // Cargar preferencia
+  React.useEffect(() => {
+    const saved = (localStorage.getItem(STORAGE_KEY) as Theme) || "system";
+    setTheme(saved);
+    applyTheme(saved);
   }, []);
 
-  function toggle() {
-    const next: Theme = theme === "dark" ? "light" : "dark";
+  // Escuchar cambios del sistema si está en "system"
+  React.useEffect(() => {
+    if (theme !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => applyTheme("system");
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, [theme]);
+
+  function change(next: Theme) {
     setTheme(next);
-    try {
-      localStorage.setItem("theme", next);
-    } catch {}
-    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem(STORAGE_KEY, next);
+    applyTheme(next);
   }
 
   return (
-    <button
-      onClick={toggle}
-      aria-label="Cambiar tema"
-      className="fixed bottom-4 right-4 z-40 rounded-full border border-[var(--color-brand-border)] bg-white/90 px-3 py-2 shadow hover:bg-[var(--color-brand-background)]"
-      title={theme === "dark" ? "Cambiar a claro" : "Cambiar a oscuro"}
-    >
-      <span className="text-lg">{theme === "dark" ? "🌞" : "🌙"}</span>
-    </button>
+    <div className="inline-flex items-center gap-2" role="group" aria-label="Tema de la interfaz">
+      <button
+        type="button"
+        onClick={() => change("light")}
+        aria-pressed={theme === "light"}
+        className={btn(theme === "light")}
+        title="Modo claro"
+      >
+        ☀️ <span className="sr-only">Claro</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => change("system")}
+        aria-pressed={theme === "system"}
+        className={btn(theme === "system")}
+        title="Según el sistema"
+      >
+        🖥️ <span className="sr-only">Sistema</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => change("dark")}
+        aria-pressed={theme === "dark"}
+        className={btn(theme === "dark")}
+        title="Modo oscuro"
+      >
+        🌙 <span className="sr-only">Oscuro</span>
+      </button>
+    </div>
   );
+}
+
+function btn(active: boolean) {
+  return [
+    "inline-flex items-center gap-2 px-3 py-2 rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+    active
+      ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white"
+      : "bg-white text-slate-900 dark:bg-slate-800 dark:text-white border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-white/10",
+  ].join(" ");
 }

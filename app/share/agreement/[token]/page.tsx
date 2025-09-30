@@ -1,26 +1,37 @@
 // app/share/agreement/[token]/page.tsx
-'use client';
+"use client";
 
 import * as React from "react";
 import { useParams } from "next/navigation";
 
-export default function ShareAgreementPage() {
+export default function AgreementSharePage() {
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = React.useState(true);
-  const [doc, setDoc] = React.useState<{ title: string; body: string } | null>(null);
-  const [done, setDone] = React.useState(false);
-  const [err, setErr] = React.useState<string | null>(null);
-  const [patientName, setPatientName] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
+  const [tpl, setTpl] = React.useState<{ title: string; description?: string | null; content: any } | null>(null);
+  const [fullName, setFullName] = React.useState("");
+  const [checks, setChecks] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     (async () => {
+      setLoading(true);
       try {
-        const r = await fetch(`/api/agreements/share/get?token=${encodeURIComponent(token)}`, { cache: "no-store" });
+        const r = await fetch(`/api/agreements/share/${token}`, { cache: "no-store" });
         const j = await r.json();
-        if (j?.ok) setDoc(j.data);
-        else setErr(j?.error?.message || "No disponible");
+        if (!j?.ok) {
+          setError(j?.error?.message || "No disponible");
+          setTpl(null);
+        } else {
+          setTpl(j.data.template);
+          const def: Record<string, boolean> = {};
+          (j.data.template?.content?.clauses ?? []).forEach((c: any) => {
+            def[c.key] = !!c.defaultChecked;
+          });
+          setChecks(def);
+        }
       } catch {
-        setErr("No disponible");
+        setError("No disponible");
+        setTpl(null);
       } finally {
         setLoading(false);
       }
@@ -28,47 +39,81 @@ export default function ShareAgreementPage() {
   }, [token]);
 
   async function accept() {
+    if (!tpl) return;
+    // Validar cláusulas requeridas
+    const clauses = tpl.content?.clauses ?? [];
+    for (const c of clauses) {
+      if (c.required && !checks[c.key]) {
+        alert("Debes aceptar: " + c.label);
+        return;
+      }
+    }
+    if (!fullName.trim()) {
+      alert("Escribe tu nombre completo");
+      return;
+    }
+
     try {
-      const r = await fetch(`/api/agreements/share/accept`, {
+      const r = await fetch(`/api/agreements/share/${token}/accept`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, patient_name: patientName || undefined }),
+        body: JSON.stringify({ full_name: fullName.trim(), accept: true, extra: { checks } }),
       });
       const j = await r.json();
-      if (j?.ok) setDone(true);
-      else setErr(j?.error?.message || "No se pudo aceptar");
+      if (!j?.ok) {
+        alert(j?.error?.message || "Error");
+        return;
+      }
+      alert("Acuerdo aceptado ✅");
+      window.location.replace("/");
     } catch {
-      setErr("No se pudo aceptar");
+      alert("No se pudo registrar tu aceptación");
     }
   }
 
   if (loading) return <main className="p-6"><p>Cargando…</p></main>;
-  if (err) return <main className="p-6"><p className="text-rose-600">{err}</p></main>;
-  if (done) return <main className="p-6"><h1 className="text-xl font-semibold">¡Listo!</h1><p>Tu aceptación ha sido registrada.</p></main>;
+  if (error) return <main className="p-6"><p className="text-rose-600">{error}</p></main>;
+  if (!tpl) return <main className="p-6"><p>No disponible</p></main>;
 
   return (
     <main className="p-6 max-w-3xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">{doc?.title || "Acuerdo"}</h1>
-      </header>
-      <article className="prose prose-slate dark:prose-invert">
-        {doc?.body.split("\n").map((l, i) => <p key={i}>{l}</p>)}
-      </article>
+      <h1 className="text-2xl font-semibold">{tpl.title}</h1>
+      {tpl.description && <p className="text-slate-600">{tpl.description}</p>}
 
-      <section className="rounded-3xl border bg-white/95 p-4">
-        <label className="text-sm font-medium">Tu nombre (opcional, para el registro)</label>
-        <input
-          value={patientName}
-          onChange={(e) => setPatientName(e.target.value)}
-          placeholder="Nombre y apellidos"
-          className="mt-1 w-full px-3 py-2 rounded-xl border"
-        />
-        <div className="mt-3">
-          <button onClick={accept} className="px-4 py-2 rounded-xl bg-blue-600 text-white">
-            Aceptar acuerdo
-          </button>
-        </div>
+      <section className="rounded-2xl border bg-white p-4 space-y-3">
+        {(tpl.content?.clauses ?? []).map((c: any) => (
+          <label key={c.key} className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={!!checks[c.key]}
+              onChange={e => setChecks(prev => ({ ...prev, [c.key]: e.target.checked }))}
+            />
+            <span>{c.label}{c.required ? " *" : ""}</span>
+          </label>
+        ))}
+        {tpl.content?.extra_rules && (
+          <div className="mt-2 p-3 rounded bg-slate-50 text-sm">
+            <strong>Reglas adicionales:</strong>
+            <div className="whitespace-pre-wrap">{tpl.content.extra_rules}</div>
+          </div>
+        )}
       </section>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm text-slate-500">Nombre completo (firma)</span>
+        <input
+          className="rounded-xl border px-3 py-2"
+          value={fullName}
+          onChange={e => setFullName(e.target.value)}
+          placeholder="Nombre Apellidos"
+        />
+      </label>
+
+      <button onClick={accept} className="px-4 py-2 rounded-xl bg-blue-600 text-white">
+        Aceptar acuerdo
+      </button>
+      <p className="text-xs text-slate-500">Al continuar aceptas los términos arriba descritos.</p>
     </main>
   );
 }
