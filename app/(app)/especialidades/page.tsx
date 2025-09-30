@@ -1,37 +1,44 @@
-"use client";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import ModuleCard from "@/components/ModuleCard";
+import { ModuleGate } from "@/components/modules/ModuleGate";
 
-const areas = [
-  { href: "/modulos/mente", emoji: "🧠", title: "Mente", desc: "Evaluaciones, sesiones, timeline" },
-  { href: "/modulos/pulso", emoji: "💓", title: "Pulso", desc: "Signos, metas y seguimiento" },
-  { href: "/modulos/equilibrio", emoji: "⚖️", title: "Equilibrio", desc: "Hábitos, planes y progreso" },
-  { href: "/modulos/sonrisa", emoji: "😄", title: "Sonrisa", desc: "Odontograma, presupuestos" },
+const modules = [
+  { key: "mente", title: "Mente Pro", desc: "Evaluaciones, escalas y planes de apoyo.", emoji: "🧠" },
+  { key: "pulso", title: "Pulso Pro", desc: "Indicadores clínicos, semáforos y riesgo CV.", emoji: "🫀" },
+  { key: "equilibrio", title: "Equilibrio Pro", desc: "Planes de hábitos y seguimiento.", emoji: "⚖️" },
+  { key: "sonrisa", title: "Sonrisa Pro", desc: "Odontograma, presupuestos y firma.", emoji: "😄" },
 ];
 
-export default function AreasProPage() {
+export default function Page() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <h1 className="text-3xl font-semibold mb-6">Áreas Pro</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {areas.map((a) => (
-          <Card key={a.href} className="glass p-5 hover:scale-[1.01] transition">
-            <div className="text-4xl mb-3">{a.emoji}</div>
-            <h2 className="text-xl font-medium">{a.title}</h2>
-            <p className="text-sm opacity-80 mb-4">{a.desc}</p>
-            <div className="flex gap-2">
-              <Link href={a.href} className="grow">
-                <Button className="w-full glass-btn" type="button">
-                  🚀 Abrir (Vista previa)
-                </Button>
-              </Link>
-              <Link href={`/banco?sku=${encodeURIComponent("areas-pro.destacado")}`}>
-                <Button variant="outline" className="glass-btn">💳 Desbloquear</Button>
-              </Link>
-            </div>
-          </Card>
+    <div className="space-y-6">
+      <header className="flex items-center gap-3">
+        <h1 className="text-2xl font-semibold"><span className="emoji">🧩</span> Especialidades</h1>
+        <Link href="/banco" className="glass-btn ml-auto">Desbloquear en Sanoa Bank</Link>
+      </header>
+
+      <p className="text-sm text-slate-600 dark:text-slate-300">
+        Especialidades con herramientas avanzadas. <b>Desbloquea</b> módulos desde <Link href="/banco" className="underline">Sanoa Bank</Link>.
+      </p>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {modules.map((m) => (
+          <ModuleGate key={m.key} feature={m.key}>
+            <ModuleCard
+              title={`${m.emoji} ${m.title}`}
+              description={m.desc}
+              ctas={[
+                { label: "Ver módulo", href: `/modulos/${m.key}` },
+                { label: "Desbloquear", href: "/banco" },
+              ]}
+            />
+          </ModuleGate>
         ))}
+      </div>
+
+      <div className="glass-card text-sm">
+        <h2 className="font-medium mb-2"><span className="emoji">🔓</span> Suscripciones</h2>
+        <p>Estado por módulo: <i>activo</i> / <i>por activar</i>. Para activar, usa el botón “Desbloquear”.</p>
       </div>
     </div>
   );
