@@ -6,20 +6,50 @@ import Link from "next/link";
 import AccentHeader from "@/components/ui/AccentHeader";
 import ColorEmoji from "@/components/ColorEmoji";
 
-type Area = { href: string; name: string; desc: string; token: string; featureKey: string };
+type Area = {
+  href: string;
+  name: string;
+  desc: string;
+  token: string;
+  featureKey: string;
+};
 
 const AREAS: Area[] = [
-  { href: "/modulos/mente", name: "Mente", desc: "Evaluaciones, escalas y planes de apoyo.", token: "mente", featureKey: "mente" },
-  { href: "/modulos/pulso", name: "Pulso", desc: "Indicadores clínicos, semáforos y riesgo CV.", token: "pulso", featureKey: "pulso" },
-  { href: "/modulos/equilibrio", name: "Equilibrio", desc: "Planes de hábitos y seguimiento.", token: "equilibrio", featureKey: "equilibrio" },
-  { href: "/modulos/sonrisa", name: "Sonrisa", desc: "Odontograma, presupuestos y firma.", token: "sonrisa", featureKey: "sonrisa" },
+  {
+    href: "/modulos/mente",
+    name: "Mente",
+    desc: "Evaluaciones, escalas y planes de apoyo.",
+    token: "mente",
+    featureKey: "mente",
+  },
+  {
+    href: "/modulos/pulso",
+    name: "Pulso",
+    desc: "Indicadores clínicos, semáforos y riesgo CV.",
+    token: "pulso",
+    featureKey: "pulso",
+  },
+  {
+    href: "/modulos/equilibrio",
+    name: "Equilibrio",
+    desc: "Planes de hábitos y seguimiento.",
+    token: "equilibrio",
+    featureKey: "equilibrio",
+  },
+  {
+    href: "/modulos/sonrisa",
+    name: "Sonrisa",
+    desc: "Odontograma, presupuestos y firma.",
+    token: "sonrisa",
+    featureKey: "sonrisa",
+  },
 ];
 
 type SubStatus = {
   ok: boolean;
   data?: {
     active: boolean;
-    modules?: Record<string, boolean>; // p.ej. { mente:true, pulso:false, ... }
+    modules?: Record<string, boolean>;
   };
 };
 
@@ -53,6 +83,7 @@ export default function AreasProPage() {
         {AREAS.map((a) => {
           const enabled = !!modules[a.featureKey];
           const locked = !(subActive && enabled);
+
           return (
             <div key={a.href} className="relative rounded-3xl border bg-white/95 p-6">
               <div className="flex gap-3">
@@ -61,7 +92,10 @@ export default function AreasProPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">
-                    {a.name} <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 border border-violet-300">Pro</span>
+                    {a.name}{" "}
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 border border-violet-300">
+                      Pro
+                    </span>
                   </h3>
                   <p className="text-sm text-slate-600">{a.desc}</p>
                 </div>
@@ -74,7 +108,9 @@ export default function AreasProPage() {
                     "px-3 py-2 rounded-xl border",
                     locked ? "opacity-60 cursor-not-allowed" : "",
                   ].join(" ")}
-                  onClick={(e) => { if (locked) e.preventDefault(); }}
+                  onClick={(e) => {
+                    if (locked) e.preventDefault();
+                  }}
                   aria-disabled={locked}
                 >
                   Ver módulo
@@ -87,7 +123,10 @@ export default function AreasProPage() {
               </div>
 
               {locked && (
-                <div className="absolute inset-0 rounded-3xl bg-white/55 backdrop-blur-[1px] pointer-events-none" aria-hidden />
+                <div
+                  className="absolute inset-0 rounded-3xl bg-white/55 backdrop-blur-[1px] pointer-events-none"
+                  aria-hidden
+                />
               )}
             </div>
           );
