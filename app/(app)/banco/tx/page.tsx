@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import TxFilters from "@/components/bank/TxFilters";
 import TxTable from "@/components/bank/TxTable";
 import SavedViewsBar from "@/components/saved-views/SavedViewsBar";
@@ -9,42 +10,49 @@ import { getActiveOrg } from "@/lib/org-local";
 
 export default function BankTxPage() {
   const org = useMemo(() => getActiveOrg(), []);
-  const orgId = org?.id || "";
+  const orgId = org?.id ?? "";
   const search = useSearchParams();
-  const qs = search.toString();
   const exportHref = orgId
-    ? `/api/bank/tx/export?${new URLSearchParams({ org_id: orgId, ...Object.fromEntries(search.entries()) }).toString()}`
+    ? `/api/bank/tx/export?${new URLSearchParams({
+        org_id: orgId,
+        ...Object.fromEntries(search.entries()),
+      }).toString()}`
     : "#";
 
-  return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Banco · Transacciones</h1>
-        <a
-          href={exportHref}
-          className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border ${orgId ? "hover:shadow-sm" : "opacity-60 pointer-events-none"}`}
-          title="Exportar CSV (respeta filtros)"
-        >
-          Exportar CSV
-        </a>
+  if (!orgId) {
+    return (
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
+        <h1 className="text-2xl font-semibold">
+          <span className="emoji">🏦</span> Banco · Transacciones
+        </h1>
+        <div className="glass-card space-y-3">
+          <p>Selecciona una organización activa para continuar.</p>
+          <OrgSwitcherBadge />
+          <p className="text-xs text-slate-500">
+            ¿Sólo tienes una organización? Se seleccionará automáticamente en próximas visitas.
+          </p>
+        </div>
       </div>
+    );
+  }
 
-      {!orgId && (
-        <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 mt-2">
-          Selecciona una organización activa para continuar.
-        </p>
-      )}
-      {orgId && (
-        <>
-          <div className="mt-3">
-            <SavedViewsBar orgId={orgId} scope="bank_tx" />
-          </div>
-          <div className="mt-4">
-            <TxFilters />
-          </div>
-          <TxTable orgId={orgId} />
-        </>
-      )}
+  return (
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
+      <h1 className="text-2xl font-semibold">
+        <span className="emoji">🏦</span> Banco · Transacciones
+      </h1>
+      <div className="glass-card space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <a href={exportHref} className="glass-btn inline-flex items-center gap-2">
+            <span className="emoji">📤</span> Exportar CSV
+          </a>
+        </div>
+        <div>
+          <SavedViewsBar orgId={orgId} scope="bank_tx" />
+        </div>
+        <TxFilters />
+        <TxTable orgId={orgId} />
+      </div>
     </div>
   );
 }
