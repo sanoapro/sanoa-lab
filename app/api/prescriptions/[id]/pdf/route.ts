@@ -5,6 +5,7 @@ import { jsonError, readOrgIdFromQuery } from "@/lib/http/validate";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
 
+// Helpers
 async function fetchAsUint8(url: string): Promise<Uint8Array | null> {
   try {
     const r = await fetch(url, { cache: "no-store" });
@@ -35,10 +36,11 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const supa = await getSupabaseServer();
   const id = ctx.params.id;
 
-  // Cargar receta
+  // Cargar receta (filtrando por org si viene en query)
   let base = supa.from("prescriptions").select("*").eq("id", id).limit(1);
   const org = readOrgIdFromQuery(req);
   if (org.ok) base = base.eq("org_id", org.org_id);
+
   const { data: rx, error } = await base.single<Rx>();
   if (error || !rx) return jsonError("NOT_FOUND", "Receta no encontrada", 404);
 
@@ -50,12 +52,16 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       p_prefix: "RX",
     });
     if (!e1 && ensured) {
-      const { data: rx2 } = await supa.from("prescriptions").select("folio").eq("id", rx.id).maybeSingle();
+      const { data: rx2 } = await supa
+        .from("prescriptions")
+        .select("folio")
+        .eq("id", rx.id)
+        .maybeSingle();
       if (rx2?.folio) rx.folio = rx2.folio;
     }
   }
 
-  // Fallback a identidad del proveedor si faltan campos visuales
+  // Branding del proveedor (fallback si faltan campos visuales)
   let letterhead_url = rx.letterhead_url ?? null;
   let signature_url = rx.signature_url ?? null;
   let signature_name = rx.signature_name ?? null;
@@ -78,59 +84,90 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   // Paciente
   let patientName = "Paciente";
-  let patientId = rx.patient_id ?? "";
+  const patientId = rx.patient_id ?? "";
   {
-    const { data: p } = await supa.from("patients").select("full_name").eq("id", rx.patient_id).maybeSingle();
+    const { data: p } = await supa
+      .from("patients")
+      .select("full_name")
+      .eq("id", rx.patient_id)
+      .maybeSingle();
     if (p?.full_name) patientName = p.full_name;
   }
 
   // Especialista
   let providerName = "Especialista";
   {
-    const { data: pr } = await supa.from("profiles").select("full_name").eq("id", rx.provider_id).maybeSingle();
+    const { data: pr } = await supa
+      .from("profiles")
+      .select("full_name")
+      .eq("id", rx.provider_id)
+      .maybeSingle();
     if (pr?.full_name) providerName = pr.full_name;
   }
 
+  // URL de verificación (JSON)
   const origin = new URL(req.url).origin;
-  const verifyUrl = `${origin}/api/prescriptions/${rx.id}/json${org.ok ? `?org_id=${rx.org_id}` : ""}`;
+  const verifyUrl = `${origin}/api/prescriptions/${rx.id}/json${
+    org.ok ? `?org_id=${rx.org_id}` : ""
+  }`;
 
-  // PDF
+  // PDF (A4)
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([595.28, 841.89]);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const fontB = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const draw = (text: string, x: number, y: number, size = 11, bold = false, color = rgb(0,0,0)) => {
+  const draw = (
+    text: string,
+    x: number,
+    y: number,
+    size = 11,
+    bold = false,
+    color = rgb(0, 0, 0)
+  ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
+
   const marginX = 50;
   let cursorY = 810;
 
+  // Membrete (si hay imagen)
   if (letterhead_url) {
     const data = await fetchAsUint8(letterhead_url);
     if (data) {
       try {
         const img = await pdf.embedPng(data).catch(async () => await pdf.embedJpg(data));
-        const maxW = 495;
+        const maxW = 495; // ancho útil
         const ratio = img.width / img.height;
         const w = Math.min(maxW, img.width);
         const h = w / ratio;
         page.drawImage(img, { x: marginX, y: cursorY - h, width: w, height: h });
         cursorY -= h + 10;
-      } catch { /* ignore */ }
+      } catch {
+        // si falla, continuamos con encabezado textual
+      }
     }
   }
+
+  // Encabezado textual (si no hubo imagen arriba)
   if (cursorY > 770) {
     draw(clinic_name ?? "RECETA MÉDICA", marginX, cursorY, 16, true);
     cursorY -= 24;
   }
 
+  // Cabecera
   draw(`Folio: ${rx.folio ?? rx.id}`, marginX, cursorY, 10);
-  draw(`Fecha: ${new Date(rx.created_at ?? Date.now()).toLocaleString()}`, marginX + 250, cursorY, 10);
+  draw(
+    `Fecha: ${new Date(rx.created_at ?? Date.now()).toLocaleString()}`,
+    marginX + 250,
+    cursorY,
+    10
+  );
   cursorY -= 16;
   draw(`Paciente: ${patientName}`, marginX, cursorY, 12, true);
   cursorY -= 20;
 
+  // Contenido
   draw("Indicaciones:", marginX, cursorY, 12, true);
   cursorY -= 16;
 
@@ -140,7 +177,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     for (const ln of lines) {
       const chunks = ln.match(new RegExp(`.{1,${maxWidthChars}}`, "g")) ?? [ln];
       for (const ch of chunks) {
-        page.drawText(ch, { x: marginX, y: cursorY, size: 10, font });
+        page.drawText(ch, { x: marginX, y: cursorY, size: 10, font, color: rgb(0, 0, 0) });
         cursorY -= 14;
       }
     }
@@ -183,9 +220,11 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     draw(signature_name, marginX + 48, 140, 11);
   }
 
+  // Sello inferior (proveedor / verificación)
   draw(providerName, marginX, 100, 10, true);
   if (license_number) draw(`Cédula: ${license_number}`, marginX, 86, 9);
   if (patientId) draw(`Paciente ID: ${patientId}`, marginX, 72, 9);
+  draw("Verificación:", marginX, 58, 9);
 
   // QR de verificación
   try {
@@ -201,6 +240,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   const bytes = await pdf.save();
   const filename = `receta_${rx.folio ?? rx.id}.pdf`;
+
   return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
