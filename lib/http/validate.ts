@@ -73,6 +73,9 @@ export function asBool(v: string | null, fallback = false) {
   return fallback;
 }
 
+/** -----------------------------
+ * Headers y auth simple
+ * ------------------------------ */
 export function requireHeader(req: NextRequest, name: string, expected?: string) {
   const val = req.headers.get(name);
   if (!val)
@@ -103,7 +106,7 @@ export function ensureOrgId(org_id?: string | null) {
 }
 
 /** -----------------------------
- * Tipado de paginación simple
+ * Paginación simple
  * ------------------------------ */
 export const PageQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
