@@ -1,17 +1,20 @@
-import TemplatePicker from "@/components/prescriptions/TemplatePicker";
+"use client";
+
 import { RequireAuth } from "@/components/RequireAuth";
+import AccentHeader from "@/components/ui/AccentHeader";
+import PrescriptionEditor from "@/components/prescriptions/PrescriptionEditor";
 
 export default function Page() {
   return (
     <RequireAuth>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold">
-          <span className="emoji">🧾</span> Plantillas de recetas
-        </h1>
-        <div className="glass-card">
-          <TemplatePicker />
-        </div>
-      </div>
+      <main className="space-y-8">
+        <AccentHeader
+          title="Plantillas de recetas"
+          subtitle="Guarda combinaciones frecuentes y emite recetas listas para imprimir en segundos."
+          emojiToken="recetas"
+        />
+        <PrescriptionEditor />
+      </main>
     </RequireAuth>
   );
 }

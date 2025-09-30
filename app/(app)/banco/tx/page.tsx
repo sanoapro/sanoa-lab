@@ -1,3 +1,4 @@
+// app/(app)/bank/tx/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -11,8 +12,12 @@ import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
 export default function BankTxPage() {
   const { orgId, isLoading } = useBankActiveOrg();
   const search = useSearchParams();
+
   const exportHref = orgId
-    ? `/api/bank/tx/export?${new URLSearchParams({ org_id: orgId, ...Object.fromEntries(search.entries()) }).toString()}`
+    ? `/api/bank/tx/export?${new URLSearchParams({
+        org_id: orgId,
+        ...Object.fromEntries(search.entries()),
+      }).toString()}`
     : "#";
 
   if (isLoading) {
