@@ -1,52 +1,50 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
+import AccentHeader from "@/components/ui/AccentHeader";
 import ColorEmoji from "@/components/ColorEmoji";
 
-export default function ModulosIndexPage(){
+const CARDS = [
+  { href: "/modulos/mente", name: "Mente", desc: "Evaluaciones, escalas y planes.", token: "mente" },
+  { href: "/modulos/pulso", name: "Pulso", desc: "Semáforos, cálculos y riesgo CV.", token: "pulso" },
+  { href: "/modulos/equilibrio", name: "Equilibrio", desc: "Hábitos y seguimiento.", token: "equilibrio" },
+  { href: "/modulos/sonrisa", name: "Sonrisa", desc: "Odontograma y presupuestos.", token: "sonrisa" },
+];
+
+export default function ModulosHubPage() {
   return (
     <main className="p-6 md:p-10 space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-          <ColorEmoji token="carpeta" size={32} />
-          Módulos
-        </h1>
-        <p className="text-sm text-[var(--color-brand-text)]/80">
-          Acceso rápido a las suites de especialidad.
-        </p>
-      </header>
-
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        <ModuleCard href="/modulos/mente" title="Mente" desc="Evaluaciones y seguimiento" token="mente" />
-        <ModuleCard href="/modulos/pulso" title="Pulso" desc="Calculadoras, triaje, auxiliares" token="pulso" />
-        <ModuleCard href="/modulos/sonrisa" title="Sonrisa" desc="Odontograma y presupuesto" token="sonrisa" />
-        <ModuleCard href="/modulos/equilibrio" title="Equilibrio" desc="Sesiones SOAP y plan" token="equilibrio" />
+      <AccentHeader
+        title="Áreas Pro"
+        subtitle="Elige una especialidad para continuar."
+        emojiToken="carpeta"
+      />
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {CARDS.map((c) => (
+          <Link
+            key={c.href}
+            href={c.href}
+            className="rounded-3xl border bg-white/95 p-6 block hover:shadow transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <div className="flex gap-3">
+              <div className="h-12 w-12 rounded-2xl border inline-grid place-content-center">
+                <ColorEmoji token={c.token} />
+              </div>
+              <div>
+                <h3 className="font-semibold">
+                  {c.name}{" "}
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 border border-violet-300">
+                    Pro
+                  </span>
+                </h3>
+                <p className="text-sm text-slate-600">{c.desc}</p>
+              </div>
+            </div>
+            <div className="mt-4 text-sm text-blue-600">Abrir →</div>
+          </Link>
+        ))}
       </section>
     </main>
-  );
-}
-
-function ModuleCard({ href, title, desc, token }:{
-  href:string; title:string; desc:string; token:string;
-}){
-  return (
-    <Link
-      href={href}
-      className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
-    >
-      <div className="p-6 flex items-start gap-4">
-        <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-          <ColorEmoji token={token} size={28} />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">{title}</h3>
-          <p className="text-[var(--color-brand-bluegray)] mt-1">{desc}</p>
-        </div>
-      </div>
-      <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-      <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-        <span className="inline-flex items-center gap-2">
-          Abrir <ColorEmoji token="siguiente" size={18} />
-        </span>
-      </div>
-    </Link>
   );
 }

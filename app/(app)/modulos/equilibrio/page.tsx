@@ -1,16 +1,48 @@
-import Link from 'next/link';
-import AccentHeader from '@/components/ui/AccentHeader';
+"use client";
 
-export default function EquilibrioHome(){
+import * as React from "react";
+import Link from "next/link";
+import AccentHeader from "@/components/ui/AccentHeader";
+import ModuleGate from "@/components/modules/ModuleGate";
+import StarterTips from "@/components/modules/StarterTips";
+
+export default function EquilibrioPage() {
   return (
-    <div className="p-6 space-y-4">
-      <AccentHeader emoji="🧘">Equilibrio</AccentHeader>
-      <p className="opacity-80">Sesiones SOAP y plan de ejercicios.</p>
-      <ul className="list-disc ml-6">
-        <li><Link className="underline" href="/modulos/equilibrio/pacientes/ID-DEMO/sesiones">Sesiones del paciente</Link> (demo)</li>
-        <li><Link className="underline" href="/modulos/equilibrio/pacientes/ID-DEMO/sesiones/new">Nueva sesión SOAP</Link> (demo)</li>
-      </ul>
-      <p className="text-xs opacity-70">Sustituye <code>ID-DEMO</code> por un <code>patient_id</code> real.</p>
-    </div>
+    <main className="p-6 md:p-10 space-y-8">
+      <AccentHeader
+        title="Equilibrio"
+        subtitle="Planes de hábitos, tareas y seguimiento."
+        emojiToken="equilibrio"
+      />
+
+      <ModuleGate featureKey="equilibrio" className="space-y-6">
+        <section className="rounded-3xl border bg-white/95 p-6">
+          <h3 className="font-semibold">Acciones rápidas</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href="/modulos/equilibrio/planes/nuevo" className="px-3 py-2 rounded-xl border">
+              Nuevo plan de hábitos
+            </Link>
+            <Link href="/recordatorios/plantillas" className="px-3 py-2 rounded-xl border">
+              Tareas programadas
+            </Link>
+            <Link href="/reportes/overview" className="px-3 py-2 rounded-xl border">
+              Panel longitudinal
+            </Link>
+          </div>
+        </section>
+
+        <StarterTips
+          tips={[
+            "Crea plantillas de planes reutilizables por especialidad.",
+            "Mide adherencia con confirmaciones por WhatsApp.",
+            "Configura alertas cuando la adherencia baje del 60%.",
+          ]}
+          actions={[
+            { href: "/recordatorios", label: "Notificaciones" },
+            { href: "/reportes/confirmaciones", label: "Adherencia" },
+          ]}
+        />
+      </ModuleGate>
+    </main>
   );
 }
