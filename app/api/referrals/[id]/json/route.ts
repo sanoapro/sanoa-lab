@@ -6,10 +6,13 @@ import { jsonOk, jsonError, readOrgIdFromQuery } from "@/lib/http/validate";
 export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const supa = await getSupabaseServer();
   const id = ctx.params.id;
+
   let q = supa.from("referrals").select("*").eq("id", id).limit(1);
   const org = readOrgIdFromQuery(req);
   if (org.ok) q = q.eq("org_id", org.org_id);
+
   const { data, error } = await q.single();
-  if (error) return jsonError("NOT_FOUND", "Referencia no encontrada", 404);
+  if (error || !data) return jsonError("NOT_FOUND", "Referencia no encontrada", 404);
+
   return jsonOk(data);
 }

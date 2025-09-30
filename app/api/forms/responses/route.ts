@@ -4,7 +4,14 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import { jsonOk, jsonError, parseJson, parseOrError, parsePageQuery, readOrgIdFromQuery } from "@/lib/http/validate";
+import {
+  jsonOk,
+  jsonError,
+  parseJson,
+  parseOrError,
+  parsePageQuery,
+  readOrgIdFromQuery,
+} from "@/lib/http/validate";
 
 const CreateSchema = z.object({
   org_id: z.string().uuid(),
@@ -26,10 +33,14 @@ export async function GET(req: NextRequest) {
   let sel = supa.from("form_responses").select("*", { count: "exact" }).eq("org_id", q.org_id);
   if (patient_id) sel = sel.eq("patient_id", patient_id);
   if (template_id) sel = sel.eq("template_id", template_id);
-  sel = sel.order("created_at", { ascending: false }).range((page - 1) * pageSize, page * pageSize - 1);
+
+  sel = sel
+    .order("created_at", { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1);
 
   const { data, error, count } = await sel;
   if (error) return jsonError("DB_ERROR", error.message, 400);
+
   return jsonOk(data, { page, pageSize, total: count ?? 0 });
 }
 
@@ -39,7 +50,12 @@ export async function POST(req: NextRequest) {
   const parsed = parseOrError(CreateSchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
-  const { data, error } = await supa.from("form_responses").insert(parsed.data).select("id").single();
+  const { data, error } = await supa
+    .from("form_responses")
+    .insert(parsed.data)
+    .select("id")
+    .single();
+
   if (error) return jsonError("DB_ERROR", error.message, 400);
   return jsonOk<{ id: string }>(data);
 }

@@ -33,10 +33,9 @@ export async function POST(req: NextRequest) {
   const parsed = parseOrError(UpsertSchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
-  const payload = parsed.data;
   const { data, error } = await supa
     .from("prescription_templates")
-    .upsert(payload, { onConflict: "id" })
+    .upsert(parsed.data, { onConflict: "id" })
     .select("id")
     .single();
 

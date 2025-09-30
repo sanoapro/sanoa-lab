@@ -15,10 +15,12 @@ const BodySchema = z.object({
 
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
+
   const body = await parseJson(req);
   const parsed = parseOrError(BodySchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
+  // Cargar la plantilla en el mismo org
   const { data: tpl, error: e1 } = await supa
     .from("prescription_templates")
     .select("content")
@@ -27,7 +29,11 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (e1 || !tpl) return jsonError("NOT_FOUND", "Plantilla no encontrada", 404);
-  const content = parsed.data.overrides ? { ...tpl.content, ...parsed.data.overrides } : tpl.content;
+
+  // Combinar overrides simples
+  const content = parsed.data.overrides
+    ? { ...tpl.content, ...parsed.data.overrides }
+    : tpl.content;
 
   const insert = {
     org_id: parsed.data.org_id,
@@ -37,7 +43,12 @@ export async function POST(req: NextRequest) {
     status: parsed.data.status,
   };
 
-  const { data, error } = await supa.from("prescriptions").insert(insert).select("id").single();
+  const { data, error } = await supa
+    .from("prescriptions")
+    .insert(insert)
+    .select("id")
+    .single();
+
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
   return jsonOk<{ id: string }>(data);

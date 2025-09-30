@@ -8,10 +8,16 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const id = ctx.params.id;
 
   let q = supa.from("discharges").select("*").eq("id", id).limit(1);
+
+  // Filtro opcional por organización (si viene en la query)
   const org = readOrgIdFromQuery(req);
   if (org.ok) q = q.eq("org_id", org.org_id);
 
   const { data, error } = await q.single();
-  if (error) return jsonError("NOT_FOUND", "Alta no encontrada", 404);
+
+  if (error || !data) {
+    return jsonError("NOT_FOUND", "Alta no encontrada", 404);
+  }
+
   return jsonOk(data);
 }

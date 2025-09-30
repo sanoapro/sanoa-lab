@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
   const body = await parseJson(req);
   const parsed = parseOrError(BodySchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
+
   const { org_id, drugs, patient_id, allergies } = parsed.data;
 
   // Intentar RPC si existe (nombre ilustrativo: rx_check_interactions)
@@ -26,10 +27,14 @@ export async function POST(req: NextRequest) {
     p_allergies: allergies ?? [],
   });
 
-  // Fallback “seguro” si no existe el RPC (no rompemos UX)
-  if (error && error.code === "PGRST204") {
+  // Fallback si el RPC no existe (no rompemos la UX)
+  if (
+    error &&
+    (error.code === "PGRST204" || /function .* does not exist/i.test(error.message ?? ""))
+  ) {
     return jsonOk<{ interactions: unknown[] }>({ interactions: [] }, { source: "fallback" });
   }
+
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
   return jsonOk<{ interactions: unknown[] }>({ interactions: data ?? [] });
