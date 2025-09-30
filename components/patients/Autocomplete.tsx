@@ -4,132 +4,204 @@
 import * as React from "react";
 import { getActiveOrg } from "@/lib/org-local";
 
-type Suggest = { patient_id: string; display_name: string };
+type Hit = {
+  patient_id: string;
+  name: string;
+  gender?: string | null;
+  age?: number | null;
+  extra?: string | null;
+};
+
+type Props = {
+  placeholder?: string;
+  onSelect: (hit: Hit) => void;
+  /** Limita búsqueda a pacientes atendidos por el usuario actual (si el backend lo soporta). */
+  onlyMine?: boolean;
+  limit?: number;
+  autoFocus?: boolean;
+};
 
 export default function Autocomplete({
-  placeholder = "Buscar paciente…",
+  placeholder = "Busca paciente…",
   onSelect,
   onlyMine = true,
   limit = 10,
   autoFocus = false,
-}: {
-  placeholder?: string;
-  onSelect?: (s: Suggest) => void;
-  onlyMine?: boolean;
-  limit?: number;
-  autoFocus?: boolean;
-}) {
+}: Props) {
   const org = getActiveOrg();
   const [q, setQ] = React.useState("");
-  const [list, setList] = React.useState<Suggest[]>([]);
   const [open, setOpen] = React.useState(false);
-  const [idx, setIdx] = React.useState(-1);
   const [loading, setLoading] = React.useState(false);
-  const refInp = React.useRef<HTMLInputElement | null>(null);
-  const refBox = React.useRef<HTMLUListElement | null>(null);
+  const [hits, setHits] = React.useState<Hit[]>([]);
+  const [index, setIndex] = React.useState(-1);
+
+  const wrapRef = React.useRef<HTMLDivElement | null>(null);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
   const debounceRef = React.useRef<number | null>(null);
 
+  // Cerrar al click fuera
   React.useEffect(() => {
-    if (!q || q.trim().length < 2 || !org.id) {
-      setList([]);
+    function onDocClick(e: MouseEvent) {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  // Buscar con debounce (intenta /suggest y hace fallback a /search)
+  React.useEffect(() => {
+    if (!q || q.trim().length < 2 || !org?.id) {
+      setHits([]);
       setOpen(false);
-      setIdx(-1);
+      setIndex(-1);
       return;
     }
+
     setLoading(true);
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(async () => {
       try {
+        // 1) Primer intento: endpoint de sugerencias (más barato)
         const url = new URL("/api/patients/suggest", window.location.origin);
         url.searchParams.set("q", q.trim());
         url.searchParams.set("org_id", org.id!);
         url.searchParams.set("only_mine", onlyMine ? "true" : "false");
         url.searchParams.set("limit", String(limit));
-        const r = await fetch(url.toString(), { cache: "no-store" });
-        const j = await r.json();
-        if (j?.ok) {
-          setList(j.data as Suggest[]);
-          setOpen(true);
-          setIdx(j.data.length ? 0 : -1);
+        let r = await fetch(url.toString(), { cache: "no-store" });
+        let j: any = null;
+        try { j = await r.json(); } catch { j = null; }
+
+        let rows: any[] = [];
+        if (j?.ok && Array.isArray(j.data)) {
+          rows = j.data;
         } else {
-          setList([]);
-          setOpen(false);
-          setIdx(-1);
+          // 2) Fallback: endpoint de búsqueda “clásico”
+          const url2 = new URL("/api/patients/search", window.location.origin);
+          url2.searchParams.set("q", q.trim());
+          url2.searchParams.set("limit", String(limit));
+          r = await fetch(url2.toString(), { cache: "no-store" });
+          try { j = await r.json(); } catch { j = null; }
+          if (j?.ok && Array.isArray(j.data)) rows = j.data;
+          else if (Array.isArray(j?.items)) rows = j.items;
         }
+
+        const mapped: Hit[] = rows
+          .map((row: any) => ({
+            patient_id:
+              row.patient_id ?? row.id ?? row.patientId ?? row.p_id ?? row.uuid,
+            name:
+              row.display_name ??
+              row.name ??
+              row.full_name ??
+              row.display ??
+              "Paciente",
+            gender: row.gender ?? row.genero ?? null,
+            age: row.age ?? row.edad ?? null,
+            extra: row.extra ?? null,
+          }))
+          .filter((h: Hit) => !!h.patient_id && !!h.name);
+
+        setHits(mapped);
+        setOpen(mapped.length > 0);
+        setIndex(mapped.length ? 0 : -1);
+      } catch {
+        setHits([]);
+        setOpen(false);
+        setIndex(-1);
       } finally {
         setLoading(false);
       }
-    }, 150);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, org.id, onlyMine, limit]);
+    }, 160);
 
-  function selectAt(i: number) {
-    const s = list[i];
-    if (!s) return;
-    onSelect?.(s);
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [q, org?.id, onlyMine, limit]);
+
+  function commit(i: number) {
+    const h = hits[i];
+    if (!h) return;
+    onSelect(h);
     setOpen(false);
-    setIdx(-1);
+    setIndex(-1);
+    setQ("");
+    inputRef.current?.focus();
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!open || !list.length) return;
+    if (!open || !hits.length) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setIdx((v) => Math.min(v + 1, list.length - 1));
+      setIndex((i) => Math.min(hits.length - 1, i + 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setIdx((v) => Math.max(v - 1, 0));
+      setIndex((i) => Math.max(0, i - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (idx >= 0) selectAt(idx);
+      if (index >= 0) commit(index);
     } else if (e.key === "Escape") {
       setOpen(false);
-      setIdx(-1);
+      setIndex(-1);
     }
   }
 
   return (
-    <div className="relative w-full max-w-xl">
+    <div ref={wrapRef} className="relative w-full max-w-xl">
       <div className="flex items-center gap-2 rounded-xl border bg-white dark:bg-slate-900 px-3 py-2">
         <input
-          ref={refInp}
-          className="w-full bg-transparent outline-none"
+          ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onFocus={() => hits.length > 0 && setOpen(true)}
           onKeyDown={onKeyDown}
-          onFocus={() => { if (list.length) setOpen(true); }}
           placeholder={placeholder}
-          aria-autocomplete="list"
+          className="w-full bg-transparent outline-none"
           aria-expanded={open}
-          aria-controls="patient-ac-listbox"
+          aria-controls="patient-autocomplete-listbox"
+          aria-autocomplete="list"
+          role="combobox"
           autoFocus={autoFocus}
         />
         {loading && <span className="text-xs text-slate-500">Buscando…</span>}
       </div>
 
-      {open && list.length > 0 && (
+      {open && (
         <ul
-          id="patient-ac-listbox"
+          id="patient-autocomplete-listbox"
           role="listbox"
-          ref={refBox}
-          className="absolute z-50 mt-1 w-full max-w-xl rounded-xl border bg-white shadow-lg dark:bg-slate-900"
+          className="absolute z-50 mt-1 w-full max-w-xl rounded-xl border bg-white dark:bg-slate-900 shadow"
         >
-          {list.map((s, i) => (
+          {hits.map((h, i) => (
             <li
-              key={s.patient_id}
+              key={`${h.patient_id}-${i}`}
               role="option"
-              aria-selected={i === idx}
+              aria-selected={i === index}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                commit(i);
+              }}
+              onMouseEnter={() => setIndex(i)}
               className={[
-                "px-3 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/10",
-                i === idx ? "bg-slate-50 dark:bg-white/10" : "",
+                "px-3 py-2 cursor-pointer",
+                i === index ? "bg-slate-100 dark:bg-slate-800" : "",
               ].join(" ")}
-              onMouseDown={(e) => { e.preventDefault(); selectAt(i); }}
-              onMouseEnter={() => setIdx(i)}
-              title={s.display_name}
+              title={h.name}
             >
-              {s.display_name}
+              <div className="font-medium">{h.name}</div>
+              <div className="text-xs text-slate-500">
+                {h.gender ? `${h.gender} · ` : ""}
+                {typeof h.age === "number" ? `${h.age} años · ` : ""}
+                {h.extra ?? "Paciente"}
+              </div>
             </li>
           ))}
+          {loading && (
+            <li className="px-3 py-2 text-sm text-slate-500">Buscando…</li>
+          )}
+          {!loading && hits.length === 0 && (
+            <li className="px-3 py-2 text-sm text-slate-500">Sin resultados</li>
+          )}
         </ul>
       )}
     </div>
