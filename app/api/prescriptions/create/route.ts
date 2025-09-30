@@ -1,134 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
+import { jsonOk, jsonError, parseJson, parseOrError } from "@/lib/http/validate";
 
-interface LegacyItem {
-  drug?: string;
-  drug_name?: string;
-  dose?: string | null;
-  route?: string | null;
-  freq?: string | null;
-  frequency?: string | null;
-  duration?: string | null;
-  instructions?: string | null;
-}
-
-interface CreateBody {
-  org_id?: string;
-  patient_id?: string;
-  clinician_id?: string | null;
-  doctor_id?: string | null;
-  letterhead_path?: string | null;
-  signature_path?: string | null;
-  notes?: string | null;
-  diagnosis?: string | null;
-  issued_at?: string | null; // ISO string
-  items?: LegacyItem[];
-}
+const BodySchema = z.object({
+  org_id: z.string().uuid(),
+  patient_id: z.string().uuid(),
+  provider_id: z.string().uuid(),
+  content: z.any(), // JSON de indicaciones
+  letterhead_url: z.string().url().optional(),
+  signature_name: z.string().optional(),
+  notes: z.string().max(10_000).optional(),
+  status: z.enum(["draft", "signed"]).default("signed"),
+});
 
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
-  const { data: au } = await supa.auth.getUser();
-  if (!au?.user) {
-    return NextResponse.json(
-      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
-    );
-  }
+  const body = await parseJson(req);
+  const parsed = parseOrError(BodySchema, body);
+  if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
-  const body = (await req.json().catch(() => null)) as CreateBody | null;
-  const rawItems = Array.isArray(body?.items) ? body!.items : [];
+  const { data, error } = await supa.from("prescriptions").insert(parsed.data).select("id").single();
+  if (error) return jsonError("DB_ERROR", error.message, 400);
 
-  // org_id: del body o del membership
-  let orgId = body?.org_id ?? null;
-  if (!orgId) {
-    const { data: mem } = await supa
-      .from("organization_members")
-      .select("org_id")
-      .eq("user_id", au.user.id)
-      .maybeSingle();
-    orgId = mem?.org_id ?? null;
-  }
-
-  const patientId = body?.patient_id ?? null;
-
-  if (!orgId || !patientId || rawItems.length === 0) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: { code: "BAD_REQUEST", message: "org_id, patient_id e items requeridos" },
-      },
-      { status: 400 }
-    );
-  }
-
-  // issued_at
-  let issued = new Date();
-  if (body?.issued_at) {
-    const parsed = new Date(body.issued_at);
-    if (Number.isNaN(parsed.getTime())) {
-      return NextResponse.json(
-        { ok: false, error: { code: "BAD_REQUEST", message: "issued_at inválido" } },
-        { status: 400 }
-      );
-    }
-    issued = parsed;
-  }
-
-  const notes = body?.notes ?? null;
-  const diagnosis = body?.diagnosis ?? null;
-
-  const insertPayload: Record<string, any> = {
-    org_id: orgId,
-    patient_id: patientId,
-    doctor_id: body?.clinician_id ?? body?.doctor_id ?? au.user.id, // compat doctor/clinician
-    clinician_id: body?.clinician_id ?? null,
-    letterhead_path: body?.letterhead_path ?? null,
-    signature_path: body?.signature_path ?? null,
-    notes: notes ? String(notes).slice(0, 2000) : null,
-    issued_at: issued.toISOString(),
-    created_by: au.user.id,
-  };
-  if (diagnosis) insertPayload.diagnosis = String(diagnosis).slice(0, 2000);
-
-  // Insert cabecera
-  const { data: rec, error: e1 } = await supa
-    .from("prescriptions")
-    .insert(insertPayload)
-    .select("id")
-    .single();
-
-  if (e1 || !rec) {
-    return NextResponse.json(
-      { ok: false, error: { code: "DB_ERROR", message: e1?.message || "Error al crear" } },
-      { status: 400 }
-    );
-  }
-
-  // Normaliza y filtra ítems
-  const items = rawItems.map((it) => {
-    const freq = it.freq ?? it.frequency ?? null;
-    return {
-      prescription_id: rec.id,
-      drug: String(it.drug ?? it.drug_name ?? "").slice(0, 200),
-      dose: it.dose ? String(it.dose).slice(0, 120) : null,
-      route: it.route ? String(it.route).slice(0, 80) : null,
-      frequency: freq ? String(freq).slice(0, 120) : null,
-      duration: it.duration ? String(it.duration).slice(0, 120) : null,
-      instructions: it.instructions ? String(it.instructions).slice(0, 500) : null,
-    };
-  });
-
-  const filteredItems = items.filter((it) => it.drug.trim().length > 0);
-
-  if (filteredItems.length > 0) {
-    const { error: e2 } = await supa.from("prescription_items").insert(filteredItems);
-    if (e2) {
-      return NextResponse.json(
-        { ok: false, error: { code: "DB_ERROR", message: e2.message } },
-        { status: 400 }
-      );
-    }
-  }
-
-  return NextResponse.json({ ok: true, data: { id: rec.id } });
+  return jsonOk<{ id: string }>(data);
 }
