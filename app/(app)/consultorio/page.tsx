@@ -129,7 +129,7 @@ export default function ConsultorioPage() {
             )}
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            Solo aparecen pacientes de tu organización (RLS).
+            Solo aparecen pacientes de tu organización activa.
           </p>
         </section>
       </AnimateIn>
