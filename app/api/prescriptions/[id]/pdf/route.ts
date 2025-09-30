@@ -36,7 +36,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const supa = await getSupabaseServer();
   const id = ctx.params.id;
 
-  // Cargar receta
+  // Cargar receta (filtrando por org si viene en query)
   let base = supa.from("prescriptions").select("*").eq("id", id).limit(1);
   const org = readOrgIdFromQuery(req);
   if (org.ok) base = base.eq("org_id", org.org_id);
@@ -61,7 +61,28 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     }
   }
 
-  // (Opcional) Paciente
+  // Branding del proveedor (fallback si faltan campos visuales)
+  let letterhead_url = rx.letterhead_url ?? null;
+  let signature_url = rx.signature_url ?? null;
+  let signature_name = rx.signature_name ?? null;
+  let clinic_name: string | null = null;
+  let license_number: string | null = null;
+
+  if (!letterhead_url || !signature_url || !signature_name) {
+    const { data: pb } = await supa
+      .from("provider_branding")
+      .select("letterhead_url, signature_url, signature_name, clinic_name, license_number")
+      .eq("org_id", rx.org_id)
+      .eq("provider_id", rx.provider_id)
+      .maybeSingle();
+    letterhead_url = letterhead_url ?? pb?.letterhead_url ?? null;
+    signature_url = signature_url ?? pb?.signature_url ?? null;
+    signature_name = signature_name ?? pb?.signature_name ?? null;
+    clinic_name = pb?.clinic_name ?? null;
+    license_number = pb?.license_number ?? null;
+  }
+
+  // Paciente
   let patientName = "Paciente";
   const patientId = rx.patient_id ?? "";
   {
@@ -73,7 +94,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     if (p?.full_name) patientName = p.full_name;
   }
 
-  // (Opcional) Especialista
+  // Especialista
   let providerName = "Especialista";
   {
     const { data: pr } = await supa
@@ -84,12 +105,13 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     if (pr?.full_name) providerName = pr.full_name;
   }
 
+  // URL de verificación (JSON)
   const origin = new URL(req.url).origin;
   const verifyUrl = `${origin}/api/prescriptions/${rx.id}/json${
     org.ok ? `?org_id=${rx.org_id}` : ""
   }`;
 
-  // Construir PDF (A4)
+  // PDF (A4)
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([595.28, 841.89]);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -105,12 +127,13 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
+
   const marginX = 50;
   let cursorY = 810;
 
   // Membrete (si hay imagen)
-  if (rx.letterhead_url) {
-    const data = await fetchAsUint8(rx.letterhead_url);
+  if (letterhead_url) {
+    const data = await fetchAsUint8(letterhead_url);
     if (data) {
       try {
         const img = await pdf.embedPng(data).catch(async () => await pdf.embedJpg(data));
@@ -126,13 +149,13 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     }
   }
 
-  // Encabezado textual (si no hubo imagen)
+  // Encabezado textual (si no hubo imagen arriba)
   if (cursorY > 770) {
-    draw("RECETA MÉDICA", marginX, cursorY, 16, true);
+    draw(clinic_name ?? "RECETA MÉDICA", marginX, cursorY, 16, true);
     cursorY -= 24;
   }
 
-  // Datos de cabecera
+  // Cabecera
   draw(`Folio: ${rx.folio ?? rx.id}`, marginX, cursorY, 10);
   draw(
     `Fecha: ${new Date(rx.created_at ?? Date.now()).toLocaleString()}`,
@@ -148,7 +171,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   draw("Indicaciones:", marginX, cursorY, 12, true);
   cursorY -= 16;
 
-  // Render contenido (string o lista JSON común)
   const maxWidthChars = 95;
   const writeLines = (text: string) => {
     const lines = text.split("\n");
@@ -179,8 +201,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   // Firma
   cursorY = Math.max(cursorY, 150);
   draw("Firma:", marginX, 140, 11, true);
-  if (rx.signature_url) {
-    const imgBytes = await fetchAsUint8(rx.signature_url);
+  if (signature_url) {
+    const imgBytes = await fetchAsUint8(signature_url);
     if (imgBytes) {
       try {
         const img = await pdf.embedPng(imgBytes).catch(async () => await pdf.embedJpg(imgBytes));
@@ -189,21 +211,22 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
         const h = w / ratio;
         page.drawImage(img, { x: marginX + 48, y: 120, width: w, height: h });
       } catch {
-        if (rx.signature_name) draw(rx.signature_name, marginX + 48, 140, 11);
+        if (signature_name) draw(signature_name, marginX + 48, 140, 11);
       }
-    } else if (rx.signature_name) {
-      draw(rx.signature_name, marginX + 48, 140, 11);
+    } else if (signature_name) {
+      draw(signature_name, marginX + 48, 140, 11);
     }
-  } else if (rx.signature_name) {
-    draw(rx.signature_name, marginX + 48, 140, 11);
+  } else if (signature_name) {
+    draw(signature_name, marginX + 48, 140, 11);
   }
 
   // Sello inferior (proveedor / verificación)
   draw(providerName, marginX, 100, 10, true);
-  if (patientId) draw(`Paciente ID: ${patientId}`, marginX, 86, 9);
-  draw("Verificación:", marginX, 72, 9);
+  if (license_number) draw(`Cédula: ${license_number}`, marginX, 86, 9);
+  if (patientId) draw(`Paciente ID: ${patientId}`, marginX, 72, 9);
+  draw("Verificación:", marginX, 58, 9);
 
-  // QR
+  // QR de verificación
   try {
     const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 0, scale: 4 });
     const res = await fetch(qrDataUrl);
@@ -212,7 +235,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     const size = 92;
     page.drawImage(qrImg, { x: 595.28 - size - 40, y: 50, width: size, height: size });
   } catch {
-    // si el QR falla, escribimos la URL
     writeLines(verifyUrl);
   }
 
