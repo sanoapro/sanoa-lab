@@ -1,37 +1,31 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+// MODE: session (user-scoped, cookies)
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { jsonOk, jsonError, parseJson, parseOrError } from "@/lib/http/validate";
 
-export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const body = await req.json().catch(() => null);
-  const { patient_id, to_specialty, to_doctor_name, reason, summary, plan } = body || {};
+const BodySchema = z.object({
+  org_id: z.string().uuid(),
+  patient_id: z.string().uuid(),
+  provider_id: z.string().uuid(),
+  target_org: z.string().optional(),
+  target_specialty: z.string().optional(),
+  content: z.any(),
+  status: z.enum(["draft", "sent"]).default("sent"),
+});
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const supa = await getSupabaseServer();
+  const body = await parseJson(req);
+  const parsed = parseOrError(BodySchema, body);
+  if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
-  const { data: mem } = await supabase
-    .from("organization_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const org_id = mem?.org_id;
-  if (!org_id) return NextResponse.json({ error: "Sin organización" }, { status: 400 });
-  if (!patient_id) return NextResponse.json({ error: "Falta patient_id" }, { status: 400 });
+  const { data, error } = await supa
+    .from("referrals")
+    .insert(parsed.data)
+    .select("id")
+    .single();
 
-  const payload = {
-    org_id,
-    patient_id,
-    doctor_id: user.id,
-    to_specialty,
-    to_doctor_name,
-    reason,
-    summary,
-    plan,
-  };
-  const { data, error } = await supabase.from("referrals").insert(payload).select("id").single();
-  if (error) return NextResponse.json({ error: "create_failed" }, { status: 500 });
-  return NextResponse.json({ id: data?.id });
+  if (error) return jsonError("DB_ERROR", error.message, 400);
+  return jsonOk<{ id: string }>(data);
 }
