@@ -1,37 +1,48 @@
-"use client";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
 
-export default function ModuleCard({
-  title,
-  desc,
-  href,
-  locked,
-}: {
+import { cn } from "@/lib/utils";
+
+type ModuleCardProps = {
   title: string;
-  desc: string;
-  href: string;
-  locked?: boolean;
-}) {
+  description?: string;
+  ctas?: { label: string; href: string }[];
+  className?: string;
+};
+
+export default function ModuleCard({ title, description, ctas, className }: ModuleCardProps) {
   return (
-    <Card className="p-5 hover:shadow-md transition">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-sm opacity-70 mt-1">{desc}</p>
+    <div
+      className={cn(
+        "glass relative overflow-hidden rounded-2xl border border-white/20 px-5 py-6 shadow-lg transition hover:shadow-xl",
+        "bg-white/60 dark:bg-slate-900/60",
+        className,
+      )}
+    >
+      <div className="flex flex-col gap-3">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+          {description ? (
+            <p className="text-sm text-slate-600 dark:text-slate-200/80">{description}</p>
+          ) : null}
         </div>
-        {locked && (
-          <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-white/10">Bloqueado</span>
-        )}
+
+        {ctas && ctas.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {ctas.map((cta) => (
+              <Link
+                key={cta.href}
+                href={cta.href}
+                className="glass-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-800 transition hover:bg-white/70 dark:text-slate-100 dark:hover:bg-slate-950/55"
+              >
+                <span className="emoji" aria-hidden>
+                  🔗
+                </span>
+                {cta.label}
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </div>
-      <div className="mt-4">
-        <Link
-          className={`text-sm underline ${locked ? "pointer-events-none opacity-50" : ""}`}
-          href={href}
-        >
-          {locked ? "Requiere suscripción" : "Abrir"}
-        </Link>
-      </div>
-    </Card>
+    </div>
   );
 }
