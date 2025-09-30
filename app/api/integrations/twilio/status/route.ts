@@ -1,14 +1,21 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { jsonError } from '@/lib/http/validate';
+import { rawBody, verifyTwilioSignature } from '@/lib/http/signatures';
 
 export const runtime = 'nodejs';
 
-export async function POST(req: Request) {
-  const form = await req.formData();
-  const MessageSid = String(form.get('MessageSid') || '');
-  const MessageStatus = String(form.get('MessageStatus') || ''); // queued/sent/delivered/failed/undelivered
-  const To = String(form.get('To') || '');
-  const From = String(form.get('From') || '');
+export async function POST(req: NextRequest) {
+  const bodyRaw = await rawBody(req);
+  if (!verifyTwilioSignature(req, bodyRaw)) {
+    return jsonError('UNAUTHORIZED', 'Firma Twilio inválida', 401);
+  }
+
+  const params = new URLSearchParams(bodyRaw);
+  const MessageSid = params.get('MessageSid') || '';
+  const MessageStatus = params.get('MessageStatus') || '';
+  const To = params.get('To') || '';
+  const From = params.get('From') || '';
 
   const supa = createServiceClient();
 

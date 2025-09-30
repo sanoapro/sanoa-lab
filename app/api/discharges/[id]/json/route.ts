@@ -1,91 +1,23 @@
+// MODE: session (user-scoped, cookies)
 import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import { ok, unauthorized, badRequest, notFound, dbError, serverError } from "@/lib/api/responses";
+import { jsonOk, jsonError, readOrgIdFromQuery } from "@/lib/http/validate";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const supa = await getSupabaseServer();
+  const id = ctx.params.id;
 
-  try {
-    const { data: auth } = await supa.auth.getUser();
-    if (!auth?.user) {
-      return unauthorized();
-    }
+  let q = supa.from("discharges").select("*").eq("id", id).limit(1);
 
-    const orgId = new URL(req.url).searchParams.get("org_id");
-    if (!orgId) {
-      return badRequest("org_id requerido");
-    }
+  // Filtro opcional por organización (si viene en la query)
+  const org = readOrgIdFromQuery(req);
+  if (org.ok) q = q.eq("org_id", org.org_id);
 
-    const { data: discharge, error: dischargeError } = await supa
-      .from("discharges")
-      .select("*")
-      .eq("id", params.id)
-      .eq("org_id", orgId)
-      .maybeSingle();
+  const { data, error } = await q.single();
 
-    if (dischargeError) {
-      return dbError(dischargeError);
-    }
-
-    if (!discharge) {
-      return notFound("Alta no encontrada");
-    }
-
-    const [{ data: patient, error: patientError }, { data: letterhead, error: letterheadError }] = await Promise.all([
-      supa
-        .from("patients")
-        .select("full_name, external_id")
-        .eq("id", discharge.patient_id)
-        .maybeSingle(),
-      supa
-        .from("doctor_letterheads")
-        .select("*")
-        .eq("org_id", discharge.org_id)
-        .eq("doctor_id", discharge.doctor_id)
-        .maybeSingle(),
-    ]);
-
-    if (patientError) {
-      return dbError(patientError);
-    }
-
-    if (letterheadError) {
-      return dbError(letterheadError);
-    }
-
-    let footer = letterhead?.footer_disclaimer || "";
-    if (!footer) {
-      const { data: disclaimer, error: disclaimerError } = await supa
-        .from("org_disclaimers")
-        .select("text")
-        .eq("org_id", discharge.org_id)
-        .eq("kind", "discharge")
-        .maybeSingle();
-
-      if (disclaimerError) {
-        return dbError(disclaimerError);
-      }
-
-      footer = disclaimer?.text || footer;
-    }
-
-    const { data: ledger, error: ledgerError } = await supa.rpc("ensure_document_folio", {
-      p_doc_type: "discharge",
-      p_doc_id: params.id,
-    });
-
-    if (ledgerError) {
-      return dbError(ledgerError);
-    }
-
-    return ok({
-      discharge,
-      patient,
-      letterhead,
-      footer,
-      ledger,
-    });
-  } catch (err: any) {
-    return serverError(err?.message ?? "Error");
+  if (error || !data) {
+    return jsonError("NOT_FOUND", "Alta no encontrada", 404);
   }
+
+  return jsonOk(data);
 }
