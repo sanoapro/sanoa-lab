@@ -1,14 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendTwilioSMS, sendTwilioWhatsApp } from "@/lib/notify/twilio";
+import { hasValidCronKey } from "@/lib/http/signatures";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   // Autorización simple por header (configura CRON_SECRET en el entorno del servidor)
-  const sec = process.env.CRON_SECRET || "";
-  if (!sec || req.headers.get("x-cron-secret") !== sec) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!hasValidCronKey(req)) {
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "Invalid cron key" } },
+      { status: 401 },
+    );
   }
 
   const supa = createServiceClient();

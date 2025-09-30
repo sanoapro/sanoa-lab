@@ -4,7 +4,11 @@ import { listMyOrgs, getCurrentOrgId, setCurrentOrgId, type MyOrg } from "@/lib/
 import ColorEmoji from "@/components/ColorEmoji";
 import { showToast } from "@/components/Toaster";
 
-export default function OrgSwitcherBadge() {
+type OrgSwitcherBadgeProps = {
+  variant?: "fixed" | "inline";
+};
+
+export default function OrgSwitcherBadge({ variant = "fixed" }: OrgSwitcherBadgeProps) {
   const [orgs, setOrgs] = useState<MyOrg[]>([]);
   const [current, setCurrent] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -25,10 +29,10 @@ export default function OrgSwitcherBadge() {
     return () => window.removeEventListener("sanoa:org-changed", onChanged);
   }, []);
 
-  if (!current || orgs.length <= 1) return null;
+  if (variant !== "inline" && orgs.length <= 1) return null;
 
   const cur = orgs.find((o) => o.id === current);
-  const label = cur ? (cur.is_personal ? "Personal" : cur.name) : "Organización";
+  const label = cur ? (cur.is_personal ? "Personal" : cur.name) : "Selecciona organización";
 
   async function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const v = e.target.value;
@@ -42,6 +46,43 @@ export default function OrgSwitcherBadge() {
       showToast(err?.message || "No se pudo cambiar la organización.", "error");
     }
     setOpen(false);
+  }
+
+  if (variant === "inline") {
+    if (orgs.length === 0) {
+      return (
+        <div className="flex w-full flex-col gap-1 rounded-xl border border-dashed border-[var(--color-brand-border)] bg-white/70 p-3 text-sm text-slate-500">
+          No tienes organizaciones disponibles todavía.
+        </div>
+      );
+    }
+
+    const value = cur ? cur.id : "";
+
+    return (
+      <div className="flex w-full flex-col gap-2">
+        <label className="text-sm font-medium text-slate-600">Organización</label>
+        <div className="flex items-center gap-2">
+          <ColorEmoji token="laboratorio" size={16} />
+          <select
+            value={value}
+            onChange={onChange}
+            className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 text-sm"
+          >
+            {!cur && (
+              <option value="" disabled>
+                Selecciona organización…
+              </option>
+            )}
+            {orgs.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.is_personal ? "Personal" : o.name} {o.role !== "owner" ? `· ${o.role}` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -63,6 +104,9 @@ export default function OrgSwitcherBadge() {
             onChange={onChange}
             className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 text-sm"
           >
+            <option value="" disabled>
+              Selecciona organización…
+            </option>
             {orgs.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.is_personal ? "Personal" : o.name} {o.role !== "owner" ? `· ${o.role}` : ""}

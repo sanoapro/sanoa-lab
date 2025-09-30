@@ -1,3 +1,4 @@
+```tsx
 // components/Navbar.tsx
 "use client";
 
@@ -52,15 +53,11 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
-        <Link
-          href="/consultorio"
-          className="inline-flex items-center gap-2"
-          aria-label="Ir a Consultorio"
-        >
+        <Link href="/consultorio" className="inline-flex items-center gap-2" aria-label="Ir a Consultorio">
           <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <ColorEmoji token="logo" />
           </span>
-          <span className="font-semibold text-slate-900 dark:text-white">Sanoa</span>
+        <span className="font-semibold text-slate-900 dark:text-white">Sanoa</span>
         </Link>
 
         {/* Nav */}
@@ -105,3 +102,4 @@ export default function Navbar() {
     </header>
   );
 }
+```
