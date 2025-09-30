@@ -1,6 +1,39 @@
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import type { Patient } from "@/lib/patients";
 
+export type PatientSuggestion = {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+};
+
+export type SearchOptions = {
+  orgId: string;
+  q: string;
+  limit?: number;
+  scope?: "mine" | "org";
+  providerId?: string;
+  signal?: AbortSignal;
+};
+
+export async function fetchPatientSuggestions(opts: SearchOptions): Promise<PatientSuggestion[]> {
+  const { orgId, q, limit = 8, scope = "mine", providerId, signal } = opts;
+  const params = new URLSearchParams();
+  params.set("org_id", orgId);
+  params.set("q", q);
+  params.set("limit", String(limit));
+  params.set("scope", scope);
+  if (providerId) params.set("provider_id", providerId);
+
+  const res = await fetch(`/api/patients/search?${params.toString()}`, { method: "GET", signal });
+  if (!res.ok) return [];
+
+  const json = await res.json();
+  if (!json?.ok || !Array.isArray(json?.data)) return [];
+  return json.data as PatientSuggestion[];
+}
+
 export type PatientSearchFilters = {
   q?: string;
   genero?: "F" | "M" | "O" | "ALL";
