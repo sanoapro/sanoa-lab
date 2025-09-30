@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { track } from '@/lib/segment/track';
+import { jsonError } from '@/lib/http/validate';
+import { rawBody, verifyTwilioSignature } from '@/lib/http/signatures';
 
 export const runtime = 'nodejs';
 
@@ -22,12 +24,16 @@ function parseIntent(bodyRaw: string) {
   return 'unknown';
 }
 
-export async function POST(req: Request) {
-  // Twilio envía application/x-www-form-urlencoded
-  const form = await req.formData();
-  const From = String(form.get('From') || '');
-  const To = String(form.get('To') || '');
-  const Body = String(form.get('Body') || '');
+export async function POST(req: NextRequest) {
+  const bodyRaw = await rawBody(req);
+  if (!verifyTwilioSignature(req, bodyRaw)) {
+    return jsonError('UNAUTHORIZED', 'Firma Twilio inválida', 401);
+  }
+
+  const params = new URLSearchParams(bodyRaw);
+  const From = params.get('From') || '';
+  const To = params.get('To') || '';
+  const Body = params.get('Body') || '';
   const Channel = From.startsWith('whatsapp:') ? 'whatsapp' : 'sms';
 
   const supa = createServiceClient();

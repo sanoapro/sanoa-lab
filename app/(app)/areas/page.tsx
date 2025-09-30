@@ -1,3 +1,4 @@
+// app/(app)/areas/page.tsx
 "use client";
 
 import * as React from "react";

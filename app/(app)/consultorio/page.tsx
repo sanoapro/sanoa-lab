@@ -1,3 +1,4 @@
+// app/(app)/consultorio/page.tsx
 "use client";
 
 import * as React from "react";
@@ -23,6 +24,7 @@ export default function ConsultorioPage() {
   const [loading, setLoading] = React.useState(true);
   const [incomeTrend, setIncomeTrend] = React.useState<number[] | null>(null);
 
+  // Resumen rápido (best-effort)
   React.useEffect(() => {
     (async () => {
       try {
@@ -43,14 +45,13 @@ export default function ConsultorioPage() {
     })();
   }, []);
 
-  // Cargar serie (best-effort; si no existe, omitimos sparkline)
+  // Serie de ingresos (para sparkline en QuickMetrics)
   React.useEffect(() => {
     (async () => {
       try {
         const r = await fetch("/api/reports/series", { cache: "no-store" });
         const j = await r.json();
         if (j?.ok && Array.isArray(j.data)) {
-          // Intentar mapear los valores más comunes: value | total_cents | amount_cents
           const pts: number[] = j.data
             .map((x: any) =>
               typeof x?.value === "number"
@@ -112,7 +113,7 @@ export default function ConsultorioPage() {
             {orgId ? (
               <PatientAutocomplete
                 orgId={orgId}
-                scope="mine"
+                scope="org"
                 placeholder="Escribe nombre del paciente…"
                 onSelect={(hit) => {
                   if (hit?.id) window.location.href = `/pacientes/${hit.id}`;
@@ -133,42 +134,12 @@ export default function ConsultorioPage() {
       {/* Tarjetas operativas */}
       <AnimateIn delay={100}>
         <section id="tour-cards" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <CardLink
-            href="/agenda"
-            token="agenda"
-            title="Agenda"
-            desc="Citas, disponibilidad y confirmaciones."
-          />
-          <CardLink
-            href="/pacientes"
-            token="pacientes"
-            title="Pacientes"
-            desc="Listado, filtros, etiquetas y timeline."
-          />
-          <CardLink
-            href="/prescriptions/templates"
-            token="recetas"
-            title="Recetas"
-            desc="Plantillas y emisión con membrete."
-          />
-          <CardLink
-            href="/laboratorio"
-            token="laboratorio"
-            title="Laboratorio"
-            desc="Órdenes y resultados con firma."
-          />
-          <CardLink
-            href="/recordatorios"
-            token="recordatorios"
-            title="Recordatorios"
-            desc="Mensajes SMS/WhatsApp programados."
-          />
-          <CardLink
-            href="/reportes"
-            token="reportes"
-            title="Reportes"
-            desc="Indicadores operativos y clínicos."
-          />
+          <CardLink href="/agenda" token="agenda" title="Agenda" desc="Citas, disponibilidad y confirmaciones." />
+          <CardLink href="/pacientes" token="pacientes" title="Pacientes" desc="Listado, filtros, etiquetas y timeline." />
+          <CardLink href="/prescriptions/templates" token="recetas" title="Recetas" desc="Plantillas y emisión con membrete." />
+          <CardLink href="/laboratorio" token="laboratorio" title="Laboratorio" desc="Órdenes y resultados con firma." />
+          <CardLink href="/recordatorios" token="recordatorios" title="Recordatorios" desc="Mensajes SMS/WhatsApp programados." />
+          <CardLink href="/reportes" token="reportes" title="Reportes" desc="Indicadores operativos y clínicos." />
         </section>
       </AnimateIn>
 
@@ -188,7 +159,17 @@ export default function ConsultorioPage() {
   );
 }
 
-function CardLink({ href, token, title, desc }: { href: string; token: string; title: string; desc: string }) {
+function CardLink({
+  href,
+  token,
+  title,
+  desc,
+}: {
+  href: string;
+  token: string;
+  title: string;
+  desc: string;
+}) {
   return (
     <Link
       href={href}
