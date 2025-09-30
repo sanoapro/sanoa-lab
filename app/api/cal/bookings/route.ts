@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createServiceClient } from "@/lib/supabase/service";
+import { jsonOk, jsonError } from "@/lib/http/validate";
+import { rawBody, verifyCalSignature } from "@/lib/http/signatures";
 
 /* =====================
    GET: listar bookings (Cal v2)
@@ -119,9 +122,55 @@ async function tryCreateInCal(input: Required<Pick<Body, "start">> & Body) {
   }
 }
 
+function hasCalSignature(req: NextRequest) {
+  return (
+    req.headers.has("cal-signature-256") ||
+    req.headers.has("Cal-Signature-256") ||
+    req.headers.has("cal-signature") ||
+    req.headers.has("Cal-Signature")
+  );
+}
+
 export async function POST(req: NextRequest) {
+  const bodyRaw = await rawBody(req);
+
+  if (hasCalSignature(req)) {
+    if (!verifyCalSignature(req, bodyRaw)) {
+      return jsonError("UNAUTHORIZED", "Firma Cal.com inválida", 401);
+    }
+
+    const svc = createServiceClient();
+    try {
+      const payload = JSON.parse(bodyRaw);
+      const eventId = payload?.payload?.uid || payload?.uid || payload?.id || null;
+      const org_id = payload?.payload?.metadata?.org_id || null;
+
+      const { error } = await svc
+        .from("cal_webhooks")
+        .upsert(
+          { id: eventId, org_id, raw: payload },
+          { onConflict: "id", ignoreDuplicates: false },
+        );
+
+      if (error && error.code !== "42P01") {
+        return jsonError("DB_ERROR", error.message, 400);
+      }
+
+      return jsonOk({ accepted: true, id: eventId });
+    } catch {
+      return jsonOk({ accepted: true, parse: "skipped" });
+    }
+  }
+
   const supabase = createRouteHandlerClient({ cookies });
-  const b = (await req.json().catch(() => ({}))) as Body;
+  const parsed = (() => {
+    try {
+      return bodyRaw ? (JSON.parse(bodyRaw) as Partial<Body>) : ({} as Partial<Body>);
+    } catch {
+      return {} as Partial<Body>;
+    }
+  })();
+  const b = parsed as Body;
 
   if (!b.org_id || !b.patient_id || !b.start) {
     return NextResponse.json(
