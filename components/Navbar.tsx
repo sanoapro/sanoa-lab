@@ -1,3 +1,4 @@
+```tsx
 // components/Navbar.tsx
 "use client";
 
@@ -13,7 +14,7 @@ type NavItem = { href: string; label: string; token: string; emoji: string };
 
 const NAV: NavItem[] = [
   { href: "/consultorio", label: "Consultorio", token: "tablero", emoji: "🩺" },
-  { href: "/especialidades", label: "Especialidades", token: "carpeta", emoji: "🗂️" },
+  { href: "/especialidades", label: "Especialidades", token: "carpeta", emoji: "🧩" },
   { href: "/banco", label: "Banco", token: "banco", emoji: "🏦" },
   { href: "/perfil", label: "Perfil", token: "perfil", emoji: "🙂" },
   { href: "/ajustes", label: "Ajustes", token: "ajustes", emoji: "⚙️" },
@@ -52,19 +53,15 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
-        <Link
-          href="/consultorio"
-          className="inline-flex items-center gap-2"
-          aria-label="Ir a Consultorio"
-        >
+        <Link href="/consultorio" className="inline-flex items-center gap-2" aria-label="Ir a Consultorio">
           <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <ColorEmoji token="logo" />
           </span>
-          <span className="font-semibold text-slate-900 dark:text-white">Sanoa</span>
+        <span className="font-semibold text-slate-900 dark:text-white">Sanoa</span>
         </Link>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-1 text-[17px]">
+        <nav className="hidden md:flex items-center gap-2 text-[18px]">
           {NAV.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -75,15 +72,15 @@ export default function Navbar() {
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={[
-                  "inline-flex items-center gap-3 px-3 py-3 rounded-lg border transition",
+                  "inline-flex items-center gap-3.5 px-3.5 py-3.5 rounded-xl border transition text-[18px]",
                   "text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-white/10",
                   isActive
                     ? "bg-white dark:bg-white/10 border-slate-200 dark:border-slate-700"
                     : "border-transparent",
                 ].join(" ")}
               >
-                <EmojiIcon emoji={item.emoji} title={item.label} />
-                <span className="font-medium text-[17px]">{item.label}</span>
+                <EmojiIcon emoji={item.emoji} title={item.label} size="text-[26px]" />
+                <span className="font-semibold">{item.label}</span>
               </Link>
             );
           })}
@@ -94,7 +91,7 @@ export default function Navbar() {
           <button
             onClick={handleSignOut}
             disabled={signingOut}
-            className="inline-flex items-center gap-2 px-3 py-3 rounded-xl bg-rose-500 text-white text-[17px] hover:brightness-95 active:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center gap-2.5 px-4 py-3.5 rounded-2xl bg-rose-500 text-white text-[18px] hover:brightness-95 active:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed transition"
             title="Cerrar sesión"
           >
             <ColorEmoji token="desbloquear" />
@@ -105,3 +102,4 @@ export default function Navbar() {
     </header>
   );
 }
+```
