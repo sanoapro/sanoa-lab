@@ -1,6 +1,8 @@
+// app/api/cal/bookings/route.ts
+// MODE: session (user-scoped, cookies) — Next 15 compatible
+
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { getSupabaseServer } from "@/lib/supabase/server";
 
 /* =====================
    GET: listar bookings (Cal v2)
@@ -10,6 +12,7 @@ export async function GET(req: NextRequest) {
     const apiKey = process.env.CALCOM_API_KEY;
     const apiVersion = process.env.CALCOM_API_VERSION || "2024-08-13";
     if (!apiKey) {
+      // Mantengo shape original { data: [] } para no romper consumidores existentes
       return NextResponse.json({ data: [] }, { status: 200 });
     }
 
@@ -73,6 +76,9 @@ export async function GET(req: NextRequest) {
 
 /* =====================
    POST: crear booking (Cal v1 si hay API key) + siempre guarda local en Supabase
+   — Con gating de acuerdos:
+     • La primera cita paciente↔especialista se permite sin acuerdo.
+     • A partir de la segunda, se requiere acuerdo specialist_patient ACCEPTED.
    ===================== */
 type Body = {
   org_id: string;
@@ -120,20 +126,58 @@ async function tryCreateInCal(input: Required<Pick<Body, "start">> & Body) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const b = (await req.json().catch(() => ({}))) as Body;
+  // Supabase (session-aware)
+  const supa = await getSupabaseServer();
 
+  // Parse body
+  const b = (await req.json().catch(() => ({}))) as Body;
   if (!b.org_id || !b.patient_id || !b.start) {
     return NextResponse.json(
-      { error: "org_id, patient_id y start son requeridos" },
+      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, patient_id y start son requeridos" } },
       { status: 400 },
+    );
+  }
+
+  // Auth user (especialista)
+  const { data: auth, error: authError } = await supa.auth.getUser();
+  if (authError) {
+    return NextResponse.json(
+      { ok: false, error: { code: "AUTH_ERROR", message: "No se pudo validar la sesión" } },
+      { status: 500 },
+    );
+  }
+  const specialist_id = auth?.user?.id || null;
+  if (!specialist_id) {
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "Sesión requerida" } },
+      { status: 401 },
+    );
+  }
+
+  // Miembro de la organización
+  const { data: member, error: memberError } = await supa
+    .from("org_members")
+    .select("role")
+    .eq("org_id", b.org_id)
+    .eq("user_id", specialist_id)
+    .maybeSingle();
+  if (memberError) {
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: "No se pudo verificar pertenencia a la organización" } },
+      { status: 500 },
+    );
+  }
+  if (!member) {
+    return NextResponse.json(
+      { ok: false, error: { code: "FORBIDDEN", message: "No perteneces a la organización" } },
+      { status: 403 },
     );
   }
 
   // Normaliza tiempos
   const start = new Date(b.start);
   if (isNaN(start.getTime()))
-    return NextResponse.json({ error: "start inválido" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "start inválido" } }, { status: 400 });
 
   let end = b.end ? new Date(b.end) : null;
   if (!end) {
@@ -143,25 +187,89 @@ export async function POST(req: NextRequest) {
   const startISO = start.toISOString();
   const endISO = end!.toISOString();
 
+  // ===== Gating de acuerdos E↔P (segunda cita en adelante requiere ACCEPTED) =====
+  // ¿Ya hay al menos una cita previa entre este especialista y este paciente en esta org?
+  const { count: prevCount, error: prevErr } = await supa
+    .from("appointments")
+    .select("*", { count: "exact", head: true })
+    .eq("org_id", b.org_id)
+    .eq("patient_id", b.patient_id)
+    .eq("provider_id", specialist_id);
+
+  if (prevErr) {
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: "No se pudo verificar historial de citas" } },
+      { status: 500 },
+    );
+  }
+
+  if ((prevCount || 0) > 0) {
+    // Segunda+ cita: validar acuerdo specialist_patient
+    // Preferimos usar la función SQL si está disponible; si no, caemos al query directo.
+    let cleared = false;
+    try {
+      const { data: rpc, error: rpcError } = await supa.rpc("agreements_is_patient_cleared", {
+        p_org: b.org_id,
+        p_specialist: specialist_id,
+        p_patient: b.patient_id,
+      });
+      if (rpcError) throw rpcError;
+      cleared = !!rpc;
+    } catch {
+      const { count: accCount, error: accErr } = await supa
+        .from("agreements_acceptances")
+        .select("*", { count: "exact", head: true })
+        .eq("org_id", b.org_id)
+        .eq("specialist_id", specialist_id)
+        .eq("patient_id", b.patient_id)
+        .eq("contract_type", "specialist_patient")
+        .eq("status", "accepted");
+      if (accErr) {
+        return NextResponse.json(
+          { ok: false, error: { code: "DB_ERROR", message: "No se pudo validar acuerdos requeridos" } },
+          { status: 500 },
+        );
+      }
+      cleared = (accCount || 0) > 0;
+    }
+
+    if (!cleared) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "AGREEMENT_REQUIRED",
+            message:
+              "Se requiere aceptar el Acuerdo Especialista ↔ Paciente antes de agendar más sesiones. Genera el enlace en /acuerdos.",
+          },
+        },
+        { status: 412 }, // Precondition Failed
+      );
+    }
+  }
+
   // 1) Intento crear en Cal (si hay API key)
   const cal = await tryCreateInCal({ ...b, start: startISO, end: endISO });
 
-  // 2) Siempre persistimos en nuestra tabla local
-  const { data, error } = await supabase
+  // 2) Siempre persistimos en nuestra tabla local (asignando provider_id = especialista actual)
+  const { data, error } = await supa
     .from("appointments")
     .insert({
       org_id: b.org_id,
       patient_id: b.patient_id,
-      provider_id: null,
+      provider_id: specialist_id, // importante para el gating y reporting
       cal_event_id: cal?.uid || null,
       start_at: startISO,
       end_at: endISO,
+      title: b.title ?? null,
+      notes: b.notes ?? null,
+      location: b.location ?? null,
     })
     .select()
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
   }
 
   return NextResponse.json({
