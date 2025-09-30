@@ -19,11 +19,19 @@ export async function POST(req: NextRequest) {
     patient_id?: string;
     currency?: string;
     notes?: string;
-    items?: Array<{ description?: string; qty?: number; unit_price_cents?: number; treatment_id?: string | null }>;
+    items?: Array<{
+      description?: string;
+      qty?: number;
+      unit_price_cents?: number;
+      treatment_id?: string | null;
+    }>;
   };
   if (!body?.org_id || !body?.patient_id || !Array.isArray(body.items) || !body.items.length) {
     return NextResponse.json(
-      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, patient_id e items requeridos" } },
+      {
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, patient_id e items requeridos" },
+      },
       { status: 400 },
     );
   }

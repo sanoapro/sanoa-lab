@@ -10,10 +10,34 @@ import AnimateIn from "@/components/ui/AnimateIn";
 type Area = { href: string; name: string; desc: string; token: string; featureKey: string };
 
 const AREAS: Area[] = [
-  { href: "/modulos/mente", name: "Mente", desc: "Evaluaciones, escalas y planes de apoyo.", token: "mente", featureKey: "mente" },
-  { href: "/modulos/pulso", name: "Pulso", desc: "Indicadores clínicos, semáforos y riesgo CV.", token: "pulso", featureKey: "pulso" },
-  { href: "/modulos/equilibrio", name: "Equilibrio", desc: "Planes de hábitos y seguimiento.", token: "equilibrio", featureKey: "equilibrio" },
-  { href: "/modulos/sonrisa", name: "Sonrisa", desc: "Odontograma, presupuestos y firma.", token: "sonrisa", featureKey: "sonrisa" },
+  {
+    href: "/modulos/mente",
+    name: "Mente",
+    desc: "Evaluaciones, escalas y planes de apoyo.",
+    token: "mente",
+    featureKey: "mente",
+  },
+  {
+    href: "/modulos/pulso",
+    name: "Pulso",
+    desc: "Indicadores clínicos, semáforos y riesgo CV.",
+    token: "pulso",
+    featureKey: "pulso",
+  },
+  {
+    href: "/modulos/equilibrio",
+    name: "Equilibrio",
+    desc: "Planes de hábitos y seguimiento.",
+    token: "equilibrio",
+    featureKey: "equilibrio",
+  },
+  {
+    href: "/modulos/sonrisa",
+    name: "Sonrisa",
+    desc: "Odontograma, presupuestos y firma.",
+    token: "sonrisa",
+    featureKey: "sonrisa",
+  },
 ];
 
 type SubStatus = {

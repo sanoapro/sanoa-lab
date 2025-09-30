@@ -39,7 +39,13 @@ export async function GET(req: NextRequest) {
   const providerName = qp.get("provider_name") ?? "Especialista";
   const content = [
     { medication: "Paracetamol 500mg", dose: "1 tableta", frequency: "c/8h", duration: "3 días" },
-    { medication: "Ibuprofeno 400mg", dose: "1 tableta", frequency: "c/12h", duration: "2 días", notes: "Después de alimentos" },
+    {
+      medication: "Ibuprofeno 400mg",
+      dose: "1 tableta",
+      frequency: "c/12h",
+      duration: "2 días",
+      notes: "Después de alimentos",
+    },
   ];
   const folio = "PREVIEW-" + new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
@@ -48,7 +54,14 @@ export async function GET(req: NextRequest) {
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const fontB = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const draw = (text: string, x: number, y: number, size = 11, bold = false, color = rgb(0,0,0)) => {
+  const draw = (
+    text: string,
+    x: number,
+    y: number,
+    size = 11,
+    bold = false,
+    color = rgb(0, 0, 0),
+  ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
   const marginX = 50;
@@ -66,7 +79,9 @@ export async function GET(req: NextRequest) {
         const h = w / ratio;
         page.drawImage(img, { x: marginX, y: cursorY - h, width: w, height: h });
         cursorY -= h + 10;
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
   if (cursorY > 770) {
@@ -111,7 +126,8 @@ export async function GET(req: NextRequest) {
       const imgBytes = await fetchAsUint8(pb.signature_url);
       if (imgBytes) {
         const img = await pdf.embedPng(imgBytes).catch(async () => await pdf.embedJpg(imgBytes));
-        const w = 160, h = w / (img.width / img.height);
+        const w = 160,
+          h = w / (img.width / img.height);
         page.drawImage(img, { x: marginX + 48, y: 120, width: w, height: h });
       } else if (pb?.signature_name) {
         draw(pb.signature_name, marginX + 48, 140, 11);
@@ -135,7 +151,9 @@ export async function GET(req: NextRequest) {
     const qrImg = await pdf.embedPng(buf);
     const size = 92;
     page.drawImage(qrImg, { x: 595.28 - size - 40, y: 50, width: size, height: size });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   const bytes = await pdf.save();
   return new NextResponse(Buffer.from(bytes), {

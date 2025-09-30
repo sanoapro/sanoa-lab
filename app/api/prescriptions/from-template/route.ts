@@ -43,11 +43,7 @@ export async function POST(req: NextRequest) {
     status: parsed.data.status,
   };
 
-  const { data, error } = await supa
-    .from("prescriptions")
-    .insert(insert)
-    .select("id")
-    .single();
+  const { data, error } = await supa.from("prescriptions").insert(insert).select("id").single();
 
   if (error) return jsonError("DB_ERROR", error.message, 400);
 

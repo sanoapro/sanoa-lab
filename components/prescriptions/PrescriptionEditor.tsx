@@ -23,9 +23,7 @@ export default function PrescriptionEditor() {
   const [notes, setNotes] = useState("");
   const [letterheadPath, setLetterheadPath] = useState<string>("");
   const [signaturePath, setSignaturePath] = useState<string>("");
-  const [issuedAt, setIssuedAt] = useState<string>(() =>
-    new Date().toISOString().slice(0, 16)
-  );
+  const [issuedAt, setIssuedAt] = useState<string>(() => new Date().toISOString().slice(0, 16));
   const [saving, setSaving] = useState(false);
 
   function addEmpty() {

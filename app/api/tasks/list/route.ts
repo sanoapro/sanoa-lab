@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -18,13 +18,15 @@ export async function GET(req: NextRequest) {
   if (!org_id) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "org_id requerido" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   let q = supa
     .from("patient_tasks")
-    .select("id,org_id,module,patient_id,template_id,title,content,status,due_date,assigned_by,created_at,updated_at")
+    .select(
+      "id,org_id,module,patient_id,template_id,title,content,status,due_date,assigned_by,created_at,updated_at",
+    )
     .eq("org_id", org_id)
     .order("created_at", { ascending: false });
 
@@ -40,7 +42,7 @@ export async function GET(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
   return NextResponse.json({ ok: true, data });

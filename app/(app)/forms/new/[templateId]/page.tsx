@@ -18,7 +18,7 @@ function Inner() {
       const r = await fetch(`/api/forms/templates?specialty=mente`);
       const j = await r.json();
       const t: FormTemplate | undefined = (j.templates || []).find(
-        (x: FormTemplate) => x.id === params.templateId
+        (x: FormTemplate) => x.id === params.templateId,
       );
       setTpl(t || null);
     })();

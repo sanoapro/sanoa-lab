@@ -8,19 +8,22 @@ export default function FeatureGate({
   needs,
   children,
 }: {
-  orgIdKey?: string;              // localStorage key
-  needs: string | string[];       // feature_id o lista
+  orgIdKey?: string; // localStorage key
+  needs: string | string[]; // feature_id o lista
   children: React.ReactNode;
 }) {
   const [ok, setOk] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [orgId] = useState<string>(() =>
-    typeof window !== "undefined" ? localStorage.getItem(orgIdKey) || "" : ""
+    typeof window !== "undefined" ? localStorage.getItem(orgIdKey) || "" : "",
   );
 
   useEffect(() => {
     (async () => {
-      if (!orgId) { setLoading(false); return; }
+      if (!orgId) {
+        setLoading(false);
+        return;
+      }
       try {
         const r = await fetch(`/api/org/features?org_id=${orgId}`);
         const j = await r.json();

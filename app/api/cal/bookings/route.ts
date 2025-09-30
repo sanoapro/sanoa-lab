@@ -186,7 +186,10 @@ export async function POST(req: NextRequest) {
 
   if (!b.org_id || !b.patient_id || !b.start) {
     return NextResponse.json(
-      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, patient_id y start son requeridos" } },
+      {
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, patient_id y start son requeridos" },
+      },
       { status: 400 },
     );
   }
@@ -216,7 +219,10 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
   if (memberError) {
     return NextResponse.json(
-      { ok: false, error: { code: "DB_ERROR", message: "No se pudo verificar pertenencia a la organización" } },
+      {
+        ok: false,
+        error: { code: "DB_ERROR", message: "No se pudo verificar pertenencia a la organización" },
+      },
       { status: 500 },
     );
   }
@@ -230,7 +236,10 @@ export async function POST(req: NextRequest) {
   // Normaliza tiempos
   const start = new Date(b.start);
   if (isNaN(start.getTime()))
-    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "start inválido" } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "start inválido" } },
+      { status: 400 },
+    );
 
   let end = b.end ? new Date(b.end) : null;
   if (!end) {
@@ -250,7 +259,10 @@ export async function POST(req: NextRequest) {
 
   if (prevErr) {
     return NextResponse.json(
-      { ok: false, error: { code: "DB_ERROR", message: "No se pudo verificar historial de citas" } },
+      {
+        ok: false,
+        error: { code: "DB_ERROR", message: "No se pudo verificar historial de citas" },
+      },
       { status: 500 },
     );
   }
@@ -277,7 +289,10 @@ export async function POST(req: NextRequest) {
         .eq("status", "accepted");
       if (accErr) {
         return NextResponse.json(
-          { ok: false, error: { code: "DB_ERROR", message: "No se pudo validar acuerdos requeridos" } },
+          {
+            ok: false,
+            error: { code: "DB_ERROR", message: "No se pudo validar acuerdos requeridos" },
+          },
           { status: 500 },
         );
       }
@@ -320,7 +335,10 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: error.message } },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({

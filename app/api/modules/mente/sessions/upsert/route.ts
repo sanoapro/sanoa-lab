@@ -5,7 +5,10 @@ export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: u } = await supa.auth.getUser();
   if (!u?.user)
-    return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+      { status: 401 },
+    );
 
   const body = (await req.json().catch(() => null)) as {
     org_id?: string;
@@ -14,7 +17,13 @@ export async function POST(req: NextRequest) {
     sign?: boolean;
   };
   if (!body?.org_id || !body?.patient_id || typeof body.note_json === "undefined")
-    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "org_id, patient_id y note_json son requeridos" } }, { status: 400 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, patient_id y note_json son requeridos" },
+      },
+      { status: 400 },
+    );
 
   const row: any = {
     org_id: body.org_id,
@@ -34,7 +43,10 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error)
-    return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: error.message } },
+      { status: 400 },
+    );
 
   return NextResponse.json({ ok: true, data });
 }

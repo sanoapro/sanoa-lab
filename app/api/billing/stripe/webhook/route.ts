@@ -6,8 +6,12 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
 
-function ok() { return NextResponse.json({ received: true }); }
-function bad(msg: string, code = 400) { return NextResponse.json({ error: msg }, { status: code }); }
+function ok() {
+  return NextResponse.json({ received: true });
+}
+function bad(msg: string, code = 400) {
+  return NextResponse.json({ error: msg }, { status: code });
+}
 
 export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature");
@@ -33,24 +37,23 @@ export async function POST(req: Request) {
         const s = event.data.object as Stripe.Checkout.Session;
         // metadata recomendada: org_id, purpose, price_id
         const orgId = (s.metadata?.org_id as string) || null;
-        const priceId = (s.metadata?.price_id as string) || (s.subscription ? undefined : undefined);
+        const priceId =
+          (s.metadata?.price_id as string) || (s.subscription ? undefined : undefined);
 
         // Si fue “add funds” (one-off): carga en ledger
         if (s.mode === "payment" && s.payment_status === "paid") {
           const amount = s.amount_total ?? 0;
           if (orgId && amount > 0) {
             // Inserta en un ledger (si lo tienes). Envuelto en try/catch por si aún no existe.
-            await supa
-              .from("bank_ledger")
-              .insert({
-                org_id: orgId,
-                type: "credit",
-                source: "stripe_checkout",
-                amount_cents: amount,
-                currency: s.currency?.toUpperCase() || "MXN",
-                external_id: s.id,
-                note: "Recarga vía Stripe Checkout",
-              });
+            await supa.from("bank_ledger").insert({
+              org_id: orgId,
+              type: "credit",
+              source: "stripe_checkout",
+              amount_cents: amount,
+              currency: s.currency?.toUpperCase() || "MXN",
+              external_id: s.id,
+              note: "Recarga vía Stripe Checkout",
+            });
           }
         }
 
@@ -59,10 +62,12 @@ export async function POST(req: Request) {
           const p = priceId ?? (s.line_items?.data?.[0]?.price?.id as string | undefined);
           const feat = p ? PRICE_TO_FEATURES[p] : undefined;
           if (orgId && feat?.feature_key) {
-            await supa.from("org_features").upsert(
-              { org_id: orgId, feature_id: feat.feature_key, enabled: true },
-              { onConflict: "org_id,feature_id" }
-            );
+            await supa
+              .from("org_features")
+              .upsert(
+                { org_id: orgId, feature_id: feat.feature_key, enabled: true },
+                { onConflict: "org_id,feature_id" },
+              );
           }
         }
         break;

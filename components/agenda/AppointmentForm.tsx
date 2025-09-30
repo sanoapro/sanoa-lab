@@ -52,7 +52,9 @@ export default function AppointmentForm() {
       <div className="border rounded-2xl p-4 space-y-3">
         <h3 className="font-semibold">Datos básicos</h3>
         {!orgId && (
-          <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">Selecciona una organización activa.</p>
+          <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+            Selecciona una organización activa.
+          </p>
         )}
         <div className="grid md:grid-cols-3 gap-3">
           <div>
@@ -63,15 +65,26 @@ export default function AppointmentForm() {
               value={providerId}
               onChange={(e) => setProviderId(e.target.value)}
             />
-            <p className="text-xs text-slate-500 mt-1">En siguiente lote conectamos selector visual por profesional.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              En siguiente lote conectamos selector visual por profesional.
+            </p>
           </div>
           <div>
             <label className="text-sm">Fecha</label>
-            <input type="date" className="border rounded px-3 py-2 w-full" value={date} onChange={(e) => setDate(e.target.value)} />
+            <input
+              type="date"
+              className="border rounded px-3 py-2 w-full"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-sm">Zona horaria</label>
-            <input className="border rounded px-3 py-2 w-full" value={tz} onChange={(e) => setTz(e.target.value)} />
+            <input
+              className="border rounded px-3 py-2 w-full"
+              value={tz}
+              onChange={(e) => setTz(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-sm">Duración (min)</label>
@@ -89,7 +102,14 @@ export default function AppointmentForm() {
 
       <div className="border rounded-2xl p-4 space-y-3">
         <h3 className="font-semibold">Paciente</h3>
-        {orgId ? <PatientAutocomplete orgId={orgId} scope="mine" onSelect={setPatient} placeholder="Buscar paciente…" /> : null}
+        {orgId ? (
+          <PatientAutocomplete
+            orgId={orgId}
+            scope="mine"
+            onSelect={setPatient}
+            placeholder="Buscar paciente…"
+          />
+        ) : null}
         {patient && (
           <div className="text-sm text-slate-600">
             Paciente: <strong>{patient.label}</strong>
@@ -125,10 +145,18 @@ export default function AppointmentForm() {
           </div>
           <div>
             <label className="text-sm">Notas</label>
-            <input className="border rounded px-3 py-2 w-full" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <input
+              className="border rounded px-3 py-2 w-full"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
         </div>
-        <button className="border rounded px-3 py-2" onClick={save} disabled={!pendingIso || !patient || !providerId}>
+        <button
+          className="border rounded px-3 py-2"
+          onClick={save}
+          disabled={!pendingIso || !patient || !providerId}
+        >
           Crear cita + recordatorios
         </button>
       </div>

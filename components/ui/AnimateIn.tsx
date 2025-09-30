@@ -20,8 +20,14 @@ export default function AnimateIn({
       {children}
       <style jsx global>{`
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .motion-safe\\:animate-\\[fadeInUp_300ms_ease-out_forwards\\] {

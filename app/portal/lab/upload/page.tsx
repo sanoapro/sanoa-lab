@@ -35,14 +35,14 @@ function UploadClient() {
     if (!token) {
       showToast(
         { title: "Token faltante", description: "Abre el enlace completo del laboratorio." },
-        "error"
+        "error",
       );
       return;
     }
     if (!file) {
       showToast(
         { title: "Archivo requerido", description: "Selecciona un PDF o imagen del resultado." },
-        "error"
+        "error",
       );
       return;
     }
@@ -85,8 +85,8 @@ function UploadClient() {
           </h1>
           {!token && (
             <p className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-              No se encontró <code>token</code> en la URL. Abre el enlace que te enviaron
-              del laboratorio o pide uno nuevo.
+              No se encontró <code>token</code> en la URL. Abre el enlace que te enviaron del
+              laboratorio o pide uno nuevo.
             </p>
           )}
         </header>

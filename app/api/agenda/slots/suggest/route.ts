@@ -23,7 +23,11 @@ function weekdayISO(date: string) {
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: au } = await supa.auth.getUser();
-  if (!au?.user) return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }, { status: 401 });
+  if (!au?.user)
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+      { status: 401 },
+    );
 
   const u = new URL(req.url);
   const org_id = u.searchParams.get("org_id");
@@ -36,7 +40,10 @@ export async function GET(req: NextRequest) {
   const patient_id = u.searchParams.get("patient_id") || null;
 
   if (!org_id || !provider_id) {
-    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "org_id y provider_id requeridos" } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "org_id y provider_id requeridos" } },
+      { status: 400 },
+    );
   }
 
   const wd = weekdayISO(date);
@@ -50,7 +57,11 @@ export async function GET(req: NextRequest) {
     .eq("provider_id", provider_id)
     .eq("weekday", wd);
 
-  if (e1) return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: e1.message } }, { status: 400 });
+  if (e1)
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: e1.message } },
+      { status: 400 },
+    );
 
   // Overrides del día
   const { data: ovs } = await supa
@@ -84,7 +95,13 @@ export async function GET(req: NextRequest) {
   }
 
   // Construcción de slots
-  type Slot = { start_local: string; start_iso: string; end_iso: string; score: number; reasons: string[] };
+  type Slot = {
+    start_local: string;
+    start_iso: string;
+    end_iso: string;
+    score: number;
+    reasons: string[];
+  };
   const slots: Slot[] = [];
 
   function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string) {
@@ -106,7 +123,11 @@ export async function GET(req: NextRequest) {
     const baseEnd = new Date(`${date}T${a.end_time}:00`).toISOString();
     const step = a.slot_minutes || duration;
 
-    for (let cur = new Date(baseStart); cur < new Date(baseEnd); cur = new Date(cur.getTime() + step * 60_000)) {
+    for (
+      let cur = new Date(baseStart);
+      cur < new Date(baseEnd);
+      cur = new Date(cur.getTime() + step * 60_000)
+    ) {
       const sIso = cur.toISOString();
       const eIso = addMinutes(sIso, duration);
 
@@ -146,10 +167,10 @@ export async function GET(req: NextRequest) {
 
       // Bonus por gap grande antes/después (menos fricción)
       const gapBefore = Math.min(
-        ...((appts || [])
+        ...(appts || [])
           .filter((x) => x.ends_at <= sIso)
           .map((x) => new Date(sIso).getTime() - new Date(x.ends_at).getTime())
-          .concat([60 * 60_000]))
+          .concat([60 * 60_000]),
       ); // default 60min
       if (gapBefore >= 60 * 60_000) {
         score += 4;

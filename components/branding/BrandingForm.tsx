@@ -38,7 +38,9 @@ export default function BrandingForm() {
         const j = await r.json();
         if (j?.ok) setForm({ ...j.data, org_id: org.id, provider_id: uid });
         else setForm({ org_id: org.id, provider_id: uid });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     })();
   }, [org.id]);
 
@@ -63,50 +65,66 @@ export default function BrandingForm() {
     setUploading(kind === "letterheads" ? "letterhead" : "signature");
     const { error } = await supa.storage.from(bucket).upload(key, file, { upsert: true });
     setUploading(null);
-    if (error) { alert(error.message); return; }
+    if (error) {
+      alert(error.message);
+      return;
+    }
     // Usamos rutas de proxy existentes para servir (coinciden con bucket)
     const url = `/api/${kind === "letterheads" ? "storage/letterheads" : "storage/signatures"}/${org.id}/${meId}/${encodeURIComponent(file.name)}`;
-    if (kind === "letterheads") setForm(prev => ({ ...prev, letterhead_url: url }));
-    else setForm(prev => ({ ...prev, signature_url: url }));
+    if (kind === "letterheads") setForm((prev) => ({ ...prev, letterhead_url: url }));
+    else setForm((prev) => ({ ...prev, signature_url: url }));
   }
 
   function onChange<K extends keyof Branding>(k: K, v: Branding[K]) {
-    setForm(prev => ({ ...prev, [k]: v }));
+    setForm((prev) => ({ ...prev, [k]: v }));
   }
 
-  const previewHref = org.id && meId ? `/api/branding/preview/rx/pdf?org_id=${org.id}&provider_id=${meId}` : "#";
+  const previewHref =
+    org.id && meId ? `/api/branding/preview/rx/pdf?org_id=${org.id}&provider_id=${meId}` : "#";
 
   return (
     <div className="rounded-2xl border p-4 bg-white/95 dark:bg-slate-900/60 space-y-6">
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
-          <h3 className="font-semibold flex items-center gap-2"><ColorEmoji token="hoja" /> Membrete</h3>
+          <h3 className="font-semibold flex items-center gap-2">
+            <ColorEmoji token="hoja" /> Membrete
+          </h3>
           <input
             type="file"
             accept="image/png,image/jpeg"
-            onChange={e => e.target.files?.[0] && uploadFile("letterheads", e.target.files[0])}
+            onChange={(e) => e.target.files?.[0] && uploadFile("letterheads", e.target.files[0])}
           />
           {uploading === "letterhead" && <div className="text-sm text-slate-500">Subiendo…</div>}
           {form.letterhead_url && (
             <div className="rounded-xl border overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={form.letterhead_url} alt="Membrete" className="max-h-40 w-full object-contain bg-white" />
+              <img
+                src={form.letterhead_url}
+                alt="Membrete"
+                className="max-h-40 w-full object-contain bg-white"
+              />
             </div>
           )}
         </div>
 
         <div className="space-y-3">
-          <h3 className="font-semibold flex items-center gap-2"><ColorEmoji token="firma" /> Firma</h3>
+          <h3 className="font-semibold flex items-center gap-2">
+            <ColorEmoji token="firma" /> Firma
+          </h3>
           <input
             type="file"
             accept="image/png,image/jpeg"
-            onChange={e => e.target.files?.[0] && uploadFile("signatures", e.target.files[0])}
+            onChange={(e) => e.target.files?.[0] && uploadFile("signatures", e.target.files[0])}
           />
           {uploading === "signature" && <div className="text-sm text-slate-500">Subiendo…</div>}
           {form.signature_url && (
             <div className="rounded-xl border overflow-hidden p-3 bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={form.signature_url} alt="Firma" className="max-h-24 object-contain mx-auto" />
+              <img
+                src={form.signature_url}
+                alt="Firma"
+                className="max-h-24 object-contain mx-auto"
+              />
             </div>
           )}
         </div>
@@ -118,7 +136,7 @@ export default function BrandingForm() {
           <input
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={form.signature_name ?? ""}
-            onChange={e => onChange("signature_name", e.target.value)}
+            onChange={(e) => onChange("signature_name", e.target.value)}
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -126,7 +144,7 @@ export default function BrandingForm() {
           <input
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={form.clinic_name ?? ""}
-            onChange={e => onChange("clinic_name", e.target.value)}
+            onChange={(e) => onChange("clinic_name", e.target.value)}
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -134,16 +152,24 @@ export default function BrandingForm() {
           <input
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={form.license_number ?? ""}
-            onChange={e => onChange("license_number", e.target.value)}
+            onChange={(e) => onChange("license_number", e.target.value)}
           />
         </label>
       </section>
 
       <div className="flex gap-3">
-        <button onClick={upsert} disabled={loading} className="px-4 py-2 rounded-xl bg-blue-600 text-white disabled:opacity-60">
+        <button
+          onClick={upsert}
+          disabled={loading}
+          className="px-4 py-2 rounded-xl bg-blue-600 text-white disabled:opacity-60"
+        >
           {loading ? "Guardando…" : "Guardar identidad"}
         </button>
-        <a href={previewHref} target="_blank" className="px-4 py-2 rounded-xl border inline-flex items-center gap-2">
+        <a
+          href={previewHref}
+          target="_blank"
+          className="px-4 py-2 rounded-xl border inline-flex items-center gap-2"
+        >
           <ColorEmoji token="pdf" /> Previsualizar receta
         </a>
       </div>

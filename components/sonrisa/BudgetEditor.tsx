@@ -20,7 +20,10 @@ export default function BudgetEditor() {
   const [signature, setSignature] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
 
-  const totalCents = useMemo(() => items.reduce((s, it) => s + it.qty * it.unit_price_cents, 0), [items]);
+  const totalCents = useMemo(
+    () => items.reduce((s, it) => s + it.qty * it.unit_price_cents, 0),
+    [items],
+  );
 
   function add(it: Item) {
     setItems((xs) => [...xs, it]);
@@ -29,10 +32,14 @@ export default function BudgetEditor() {
     setItems((xs) => xs.filter((_, idx) => idx !== i));
   }
   function setQty(i: number, q: number) {
-    setItems((xs) => xs.map((x, idx) => (idx === i ? { ...x, qty: Math.max(1, Math.floor(q)) } : x)));
+    setItems((xs) =>
+      xs.map((x, idx) => (idx === i ? { ...x, qty: Math.max(1, Math.floor(q)) } : x)),
+    );
   }
   function setPrice(i: number, p: number) {
-    setItems((xs) => xs.map((x, idx) => (idx === i ? { ...x, unit_price_cents: Math.max(0, Math.floor(p)) } : x)));
+    setItems((xs) =>
+      xs.map((x, idx) => (idx === i ? { ...x, unit_price_cents: Math.max(0, Math.floor(p)) } : x)),
+    );
   }
 
   async function save() {
@@ -89,7 +96,12 @@ export default function BudgetEditor() {
             Selecciona una organización activa.
           </p>
         ) : (
-          <PatientAutocomplete orgId={orgId} scope="mine" onSelect={setPatient} placeholder="Buscar paciente…" />
+          <PatientAutocomplete
+            orgId={orgId}
+            scope="mine"
+            onSelect={setPatient}
+            placeholder="Buscar paciente…"
+          />
         )}
         {patient && (
           <div className="text-sm text-slate-600">
@@ -187,11 +199,19 @@ export default function BudgetEditor() {
           <h3 className="font-semibold">Firma del paciente</h3>
           <SignaturePad onChange={setSignature} />
           <div className="flex gap-2">
-            <button className="border rounded px-3 py-2" disabled={!signature || accepting} onClick={accept}>
+            <button
+              className="border rounded px-3 py-2"
+              disabled={!signature || accepting}
+              onClick={accept}
+            >
               Aceptar y firmar
             </button>
             {/* Opcional: pago */}
-            <form action="/api/modules/sonrisa/quotes/stripe/checkout" method="post" className="inline-flex gap-2">
+            <form
+              action="/api/modules/sonrisa/quotes/stripe/checkout"
+              method="post"
+              className="inline-flex gap-2"
+            >
               <input type="hidden" name="org_id" value={orgId} />
               <input type="hidden" name="quote_id" value={lastQuoteId} />
             </form>

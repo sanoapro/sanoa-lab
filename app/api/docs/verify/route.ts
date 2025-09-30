@@ -13,11 +13,7 @@ export async function GET(req: NextRequest) {
     const code = sp.get("code")?.trim() ?? "";
 
     if (!type || !id || !code) {
-      return jsonError(
-        "BAD_REQUEST",
-        "Parámetros type, id y code son requeridos",
-        400,
-      );
+      return jsonError("BAD_REQUEST", "Parámetros type, id y code son requeridos", 400);
     }
 
     const { data: led, error } = await svc

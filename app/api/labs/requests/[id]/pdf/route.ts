@@ -42,18 +42,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return notFound("Solicitud no encontrada");
     }
 
-    const [{ data: items, error: itemsError }, { data: patient, error: patientError }] = await Promise.all([
-      supabase
-        .from("lab_request_items")
-        .select("*")
-        .eq("request_id", params.id)
-        .order("id"),
-      supabase
-        .from("patients")
-        .select("full_name, external_id")
-        .eq("id", request.patient_id)
-        .maybeSingle(),
-    ]);
+    const [{ data: items, error: itemsError }, { data: patient, error: patientError }] =
+      await Promise.all([
+        supabase.from("lab_request_items").select("*").eq("request_id", params.id).order("id"),
+        supabase
+          .from("patients")
+          .select("full_name, external_id")
+          .eq("id", request.patient_id)
+          .maybeSingle(),
+      ]);
 
     if (itemsError) {
       return dbError(itemsError);
@@ -135,7 +132,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (ledger?.folio) {
       page.drawText(`Folio: ${ledger.folio}`, { x: W - 160, y: H - 40, size: 10 });
     }
-    page.drawText(new Date(request.created_at).toLocaleString(), { x: W - 160, y: H - 54, size: 10 });
+    page.drawText(new Date(request.created_at).toLocaleString(), {
+      x: W - 160,
+      y: H - 54,
+      size: 10,
+    });
 
     y -= 8;
     page.drawText("Solicitud de estudios de laboratorio", { x: 40, y, size: 12 });

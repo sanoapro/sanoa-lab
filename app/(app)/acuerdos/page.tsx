@@ -45,7 +45,10 @@ export default function AcuerdosPage() {
     });
     const j = await r.json();
     if (j?.ok) {
-      setStatus((prev) => ({ ...(prev || { specialist_platform: false }), specialist_platform: true }));
+      setStatus((prev) => ({
+        ...(prev || { specialist_platform: false }),
+        specialist_platform: true,
+      }));
       alert("Contrato Especialista ↔ Plataforma aceptado.");
     } else {
       alert(j?.error?.message || "No se pudo aceptar");
@@ -99,8 +102,8 @@ export default function AcuerdosPage() {
       <section className="rounded-3xl border bg-white/95 p-6">
         <h3 className="font-semibold">2) Especialista ↔ Paciente</h3>
         <p className="text-sm text-slate-600">
-          Genera un enlace de aceptación para el paciente. La primera sesión puede realizarse sin aceptar; a partir de la
-          segunda, se requiere aceptación.
+          Genera un enlace de aceptación para el paciente. La primera sesión puede realizarse sin
+          aceptar; a partir de la segunda, se requiere aceptación.
         </p>
 
         <div className="mt-3 max-w-xl">
@@ -133,7 +136,8 @@ export default function AcuerdosPage() {
       <section className="rounded-3xl border bg-white/95 p-6">
         <h3 className="font-semibold">3) Paciente ↔ Plataforma</h3>
         <p className="text-sm text-slate-600">
-          Este acuerdo se solicitará en la PWA de pacientes. (Infra lista del lado servidor y base de datos).
+          Este acuerdo se solicitará en la PWA de pacientes. (Infra lista del lado servidor y base
+          de datos).
         </p>
       </section>
     </main>

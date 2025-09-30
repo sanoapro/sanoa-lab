@@ -8,7 +8,12 @@ type DB = Database;
 type Tx = DB["public"]["Tables"]["bank_tx"]["Row"];
 
 function parseMulti(q: URLSearchParams, key: string): string[] | undefined {
-  const vals = q.getAll(key).flatMap(v => v.split(",").map(s => s.trim()).filter(Boolean));
+  const vals = q.getAll(key).flatMap((v) =>
+    v
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
   return vals.length ? Array.from(new Set(vals)) : undefined;
 }
 
@@ -18,13 +23,20 @@ export async function GET(req: NextRequest) {
     const supa = await getSupabaseServer();
     const { data: userRes } = await supa.auth.getUser();
     if (!userRes?.user) {
-      return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } },
+        { status: 401 },
+      );
     }
 
     const url = new URL(req.url);
     const q = url.searchParams;
     const org_id = q.get("org_id") ?? "";
-    if (!org_id) return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } }, { status: 400 });
+    if (!org_id)
+      return NextResponse.json(
+        { ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } },
+        { status: 400 },
+      );
 
     const page = Math.max(1, Number(q.get("page") ?? "1"));
     const pageSize = Math.min(200, Math.max(1, Number(q.get("pageSize") ?? "50")));
@@ -41,7 +53,10 @@ export async function GET(req: NextRequest) {
     const min = q.get("min") ? Number(q.get("min")) : undefined;
     const max = q.get("max") ? Number(q.get("max")) : undefined;
     const orderBy = q.get("orderBy") ?? "date";
-    const orderDir = (q.get("orderDir") ?? "desc").toLowerCase() === "asc" ? { ascending: true } : { ascending: false };
+    const orderDir =
+      (q.get("orderDir") ?? "desc").toLowerCase() === "asc"
+        ? { ascending: true }
+        : { ascending: false };
 
     let query = supa.from("bank_tx").select("*", { count: "exact" }).eq("org_id", org_id);
 
@@ -65,11 +80,18 @@ export async function GET(req: NextRequest) {
     const toIdx = fromIdx + pageSize - 1;
 
     const { data, error, count } = await query.range(fromIdx, toIdx);
-    if (error) return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+    if (error)
+      return NextResponse.json(
+        { ok: false, error: { code: "DB_ERROR", message: error.message } },
+        { status: 400 },
+      );
 
     return NextResponse.json({ ok: true, data, meta: { page, pageSize, total: count ?? 0 } });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }
 
@@ -79,7 +101,10 @@ export async function POST(req: NextRequest) {
     const supa = await getSupabaseServer();
     const { data: userRes } = await supa.auth.getUser();
     if (!userRes?.user) {
-      return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } },
+        { status: 401 },
+      );
     }
 
     const body = await req.json().catch(() => ({}));
@@ -87,10 +112,13 @@ export async function POST(req: NextRequest) {
     const items: Partial<Tx>[] | undefined = body?.items;
 
     if (!org_id || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "org_id e items requeridos." } }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: { code: "BAD_REQUEST", message: "org_id e items requeridos." } },
+        { status: 400 },
+      );
     }
 
-    const cleaned = items.map(it => ({
+    const cleaned = items.map((it) => ({
       org_id,
       account_id: it.account_id!,
       date: it.date!,
@@ -100,14 +128,21 @@ export async function POST(req: NextRequest) {
       memo: it.memo ?? null,
       method: it.method ?? null,
       tags: it.tags ?? null,
-      status: it.status ?? "pending"
+      status: it.status ?? "pending",
     }));
 
     const { data, error } = await supa.from("bank_tx").insert(cleaned).select("*");
-    if (error) return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+    if (error)
+      return NextResponse.json(
+        { ok: false, error: { code: "DB_ERROR", message: error.message } },
+        { status: 400 },
+      );
 
     return NextResponse.json({ ok: true, data });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }

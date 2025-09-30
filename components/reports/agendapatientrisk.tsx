@@ -67,7 +67,14 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
 
   async function load() {
     setLoading(true);
-    const p = new URLSearchParams({ org_id: orgId, from, to, tz, min_n: String(minN), top: String(top) });
+    const p = new URLSearchParams({
+      org_id: orgId,
+      from,
+      to,
+      tz,
+      min_n: String(minN),
+      top: String(top),
+    });
     const r = await fetch(`/api/reports/agenda/risk/patients/json?${p.toString()}`);
     const j = await r.json();
     const arr: Row[] = j?.ok ? j.data : [];
@@ -104,8 +111,17 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
       alert("Ponle un nombre a la vista");
       return;
     }
-    const body = { org_id: orgId, scope, name: viewName.trim(), filters: { from, to, tz, min_n: minN, top } };
-    const r = await fetch("/api/saved-views/upsert", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const body = {
+      org_id: orgId,
+      scope,
+      name: viewName.trim(),
+      filters: { from, to, tz, min_n: minN, top },
+    };
+    const r = await fetch("/api/saved-views/upsert", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
     const j = await r.json();
     if (!j.ok) alert(j.error?.message ?? "No se pudo guardar");
     else loadViews();
@@ -124,10 +140,16 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
         target: norm,
         template: "recordatorio_riesgo",
         schedule_at: new Date().toISOString(),
-        meta: { message: `Hola ${name}, te esperamos en tu próxima cita. Si necesitas reagendar, contesta este mensaje.` },
+        meta: {
+          message: `Hola ${name}, te esperamos en tu próxima cita. Si necesitas reagendar, contesta este mensaje.`,
+        },
       },
     };
-    const r = await fetch("/api/reminders/schedule", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const r = await fetch("/api/reminders/schedule", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
     const j = await r.json();
     if (!j.ok) alert(j.error?.message ?? "No se pudo enviar");
   }
@@ -160,7 +182,13 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
     setShowPred(next);
     if (next) {
       setPredLoading(true);
-      const p = new URLSearchParams({ org_id: orgId, days: "90", tz, min_n: String(minN), top: String(top) });
+      const p = new URLSearchParams({
+        org_id: orgId,
+        days: "90",
+        tz,
+        min_n: String(minN),
+        top: String(top),
+      });
       const r = await fetch(`/api/reports/agenda/risk/patients/predict/json?${p.toString()}`);
       const j = await r.json();
       const map: Record<string, Pred> = {};
@@ -179,23 +207,49 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
       <div className="grid grid-cols-1 md:grid-cols-7 gap-3 items-end">
         <div>
           <label className="block text-sm mb-1">Desde</label>
-          <input type="date" className="rounded border px-3 py-2 w-full" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <input
+            type="date"
+            className="rounded border px-3 py-2 w-full"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">Hasta</label>
-          <input type="date" className="rounded border px-3 py-2 w-full" value={to} onChange={(e) => setTo(e.target.value)} />
+          <input
+            type="date"
+            className="rounded border px-3 py-2 w-full"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">TZ</label>
-          <input className="rounded border px-3 py-2 w-full" value={tz} onChange={(e) => setTz(e.target.value)} />
+          <input
+            className="rounded border px-3 py-2 w-full"
+            value={tz}
+            onChange={(e) => setTz(e.target.value)}
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">Mín citas</label>
-          <input type="number" min={1} className="rounded border px-3 py-2 w-full" value={minN} onChange={(e) => setMinN(Math.max(1, parseInt(e.target.value || "1", 10)))} />
+          <input
+            type="number"
+            min={1}
+            className="rounded border px-3 py-2 w-full"
+            value={minN}
+            onChange={(e) => setMinN(Math.max(1, parseInt(e.target.value || "1", 10)))}
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">Top N</label>
-          <input type="number" min={1} className="rounded border px-3 py-2 w-full" value={top} onChange={(e) => setTop(Math.max(1, parseInt(e.target.value || "1", 10)))} />
+          <input
+            type="number"
+            min={1}
+            className="rounded border px-3 py-2 w-full"
+            value={top}
+            onChange={(e) => setTop(Math.max(1, parseInt(e.target.value || "1", 10)))}
+          />
         </div>
         <div className="flex gap-2">
           <button className="rounded px-4 py-2 border w-full" onClick={load}>
@@ -230,7 +284,12 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
         <div className="md:col-span-3">
           <label className="block text-sm mb-1">Nombre de la vista</label>
-          <input className="rounded border px-3 py-2 w-full" value={viewName} onChange={(e) => setViewName(e.target.value)} placeholder="Ej. Últimos 90 días, Top 100" />
+          <input
+            className="rounded border px-3 py-2 w-full"
+            value={viewName}
+            onChange={(e) => setViewName(e.target.value)}
+            placeholder="Ej. Últimos 90 días, Top 100"
+          />
         </div>
         <div>
           <button className="rounded px-4 py-2 border w-full" onClick={saveView}>
@@ -239,7 +298,8 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm">
-            <input type="checkbox" className="mr-2" checked={showPred} onChange={togglePred} /> Mostrar predicción
+            <input type="checkbox" className="mr-2" checked={showPred} onChange={togglePred} />{" "}
+            Mostrar predicción
           </label>
           {predLoading && <span className="text-xs text-slate-500">Calculando…</span>}
         </div>
@@ -249,7 +309,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
       <div
         className={cls(
           "flex items-center gap-3 border rounded-xl px-3 py-2",
-          selectedKeys.length ? "opacity-100" : "opacity-50 pointer-events-none"
+          selectedKeys.length ? "opacity-100" : "opacity-50 pointer-events-none",
         )}
         aria-live="polite"
       >
@@ -321,7 +381,11 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                     <span
                       className={cls(
                         "inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs",
-                        r.risk_band === "high" ? "bg-rose-100 text-rose-800" : r.risk_band === "med" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                        r.risk_band === "high"
+                          ? "bg-rose-100 text-rose-800"
+                          : r.risk_band === "med"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-emerald-100 text-emerald-800",
                       )}
                       aria-label={`Riesgo ${r.risk_band}`}
                     >
@@ -337,7 +401,15 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                   {showPred && (
                     <Td>
                       {p ? (
-                        <span className={cls(p.trend_30d > 0 ? "text-rose-700" : p.trend_30d < 0 ? "text-emerald-700" : "text-slate-700")}>
+                        <span
+                          className={cls(
+                            p.trend_30d > 0
+                              ? "text-rose-700"
+                              : p.trend_30d < 0
+                                ? "text-emerald-700"
+                                : "text-slate-700",
+                          )}
+                        >
                           {Math.round((p.trend_30d || 0) * 100)}%
                         </span>
                       ) : (
@@ -354,8 +426,8 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                             p.predicted_band === "high"
                               ? "bg-rose-100 text-rose-800"
                               : p.predicted_band === "med"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-emerald-100 text-emerald-800"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-emerald-100 text-emerald-800",
                           )}
                         >
                           ● {Math.round(p.predicted_score * 100)}%
@@ -382,16 +454,26 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                       <button
                         className="rounded px-3 py-1 border"
                         onClick={() => {
-                          const val = (document.getElementById(`tel-${r.patient_key}`) as HTMLInputElement)?.value || "";
+                          const val =
+                            (document.getElementById(`tel-${r.patient_key}`) as HTMLInputElement)
+                              ?.value || "";
                           sendReminder(val, r.patient_name);
                         }}
                       >
                         Recordar WA
                       </button>
-                      <a className="rounded px-3 py-1 border" href={cal} target="_blank" rel="noreferrer">
+                      <a
+                        className="rounded px-3 py-1 border"
+                        href={cal}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         Reagendar (Cal.com)
                       </a>
-                      <a className="rounded px-3 py-1 border" href={`/pacientes?q=${encodeURIComponent(r.patient_name)}`}>
+                      <a
+                        className="rounded px-3 py-1 border"
+                        href={`/pacientes?q=${encodeURIComponent(r.patient_name)}`}
+                      >
                         Ver paciente
                       </a>
                     </div>
@@ -403,7 +485,8 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
         </table>
       </div>
       <p className="text-xs text-slate-500">
-        Nota: el score y la predicción son heurísticos (tasa, racha y tendencia). Úsalos como apoyo para prevención, no como diagnóstico.
+        Nota: el score y la predicción son heurísticos (tasa, racha y tendencia). Úsalos como apoyo
+        para prevención, no como diagnóstico.
       </p>
     </section>
   );

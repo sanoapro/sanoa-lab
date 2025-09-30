@@ -123,7 +123,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     y: number,
     size = 11,
     bold = false,
-    color = rgb(0, 0, 0)
+    color = rgb(0, 0, 0),
   ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
@@ -161,7 +161,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     `Fecha: ${new Date(rx.created_at ?? Date.now()).toLocaleString()}`,
     marginX + 250,
     cursorY,
-    10
+    10,
   );
   cursorY -= 16;
   draw(`Paciente: ${patientName}`, marginX, cursorY, 12, true);

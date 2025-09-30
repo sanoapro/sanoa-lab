@@ -2,13 +2,19 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import { jsonOk, jsonError, parseJson, parseOrError, readOrgIdFromQuery } from "@/lib/http/validate";
+import {
+  jsonOk,
+  jsonError,
+  parseJson,
+  parseOrError,
+  readOrgIdFromQuery,
+} from "@/lib/http/validate";
 
 const UpsertSchema = z.object({
   id: z.string().uuid().optional(),
   org_id: z.string().uuid(),
   name: z.string().min(1),
-  schema: z.any(),              // JSON de definición del formulario
+  schema: z.any(), // JSON de definición del formulario
   is_active: z.boolean().default(true),
 });
 

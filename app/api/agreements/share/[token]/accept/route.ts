@@ -26,7 +26,8 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
 
   const now = new Date();
   if (link.used_at) return jsonError("ALREADY_USED", "Este enlace ya fue utilizado", 410);
-  if (link.expires_at && new Date(link.expires_at) < now) return jsonError("EXPIRED", "Enlace expirado", 410);
+  if (link.expires_at && new Date(link.expires_at) < now)
+    return jsonError("EXPIRED", "Enlace expirado", 410);
 
   const { data: tpl, error: eTpl } = await svc
     .from("agreements_templates")

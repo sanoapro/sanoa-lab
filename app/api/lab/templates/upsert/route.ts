@@ -59,11 +59,7 @@ export async function POST(req: NextRequest) {
       return ok({ id });
     }
 
-    const { data, error } = await supa
-      .from("lab_templates")
-      .insert(payload)
-      .select("id")
-      .single();
+    const { data, error } = await supa.from("lab_templates").insert(payload).select("id").single();
 
     if (error) {
       return dbError(error);

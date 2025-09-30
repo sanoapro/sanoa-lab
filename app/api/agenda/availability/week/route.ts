@@ -7,15 +7,14 @@ export async function GET(req: NextRequest) {
   if (!au?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   const u = new URL(req.url);
   const orgId = u.searchParams.get("org_id");
   const providerId = u.searchParams.get("provider_id");
-  const weekStart =
-    u.searchParams.get("week_start") || new Date().toISOString().slice(0, 10);
+  const weekStart = u.searchParams.get("week_start") || new Date().toISOString().slice(0, 10);
   if (!orgId || !providerId) {
     return NextResponse.json(
       {
@@ -25,7 +24,7 @@ export async function GET(req: NextRequest) {
           message: "org_id y provider_id requeridos",
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -39,7 +38,7 @@ export async function GET(req: NextRequest) {
   if (e1) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: e1.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -47,7 +46,7 @@ export async function GET(req: NextRequest) {
   if (Number.isNaN(start.getTime())) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "week_start inválido" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
   const end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
@@ -63,7 +62,7 @@ export async function GET(req: NextRequest) {
   if (e2) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: e2.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

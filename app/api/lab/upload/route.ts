@@ -124,7 +124,9 @@ export async function POST(req: NextRequest) {
     const originalName = (file as any).name || "archivo";
     const incomingMime = file.type || inferMimeFromName(originalName);
     if (!mimeAllowed(incomingMime, originalName)) {
-      return cors(jsonError("UNSUPPORTED_FORMAT", `Formato no permitido (${ALLOWED.join(", ")})`, 415));
+      return cors(
+        jsonError("UNSUPPORTED_FORMAT", `Formato no permitido (${ALLOWED.join(", ")})`, 415),
+      );
     }
 
     const supa = supaAdmin();
@@ -185,6 +187,10 @@ export async function POST(req: NextRequest) {
 
     return cors(ok({ request_id: tokenRow.request_id, path: key }));
   } catch (err: any) {
-    return cors(serverError("No se pudo subir el archivo", { details: { message: err?.message || String(err) } }));
+    return cors(
+      serverError("No se pudo subir el archivo", {
+        details: { message: err?.message || String(err) },
+      }),
+    );
   }
 }

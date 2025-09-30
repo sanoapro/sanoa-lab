@@ -1,12 +1,12 @@
 export type EqModule = "equilibrio" | "pulso" | "sonrisa" | "mente" | "general";
 
 export type TaskKind =
-  | "exercise"     // ejercicio físico
-  | "breathing"    // respiración/relajación
-  | "hydration"    // hidratación
-  | "medication"   // toma de medicamento (recordatorio complementario)
-  | "habit"        // hábito general
-  | "custom";      // libre
+  | "exercise" // ejercicio físico
+  | "breathing" // respiración/relajación
+  | "hydration" // hidratación
+  | "medication" // toma de medicamento (recordatorio complementario)
+  | "habit" // hábito general
+  | "custom"; // libre
 
 export interface LibraryTask {
   id: string;

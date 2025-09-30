@@ -7,11 +7,13 @@ import { jsonOk, jsonError, parseJson, parseOrError } from "@/lib/http/validate"
 const PatchBody = z.object({
   org_id: z.string().uuid(),
   ids: z.array(z.string().uuid()).min(1),
-  set: z.object({
-    status: z.enum(["active","completed","canceled"]).optional(),
-    due_at: z.string().datetime().optional(),
-    last_done_at: z.string().datetime().optional(),
-  }).refine(obj => Object.keys(obj).length > 0, { message: "Nada que actualizar" }),
+  set: z
+    .object({
+      status: z.enum(["active", "completed", "canceled"]).optional(),
+      due_at: z.string().datetime().optional(),
+      last_done_at: z.string().datetime().optional(),
+    })
+    .refine((obj) => Object.keys(obj).length > 0, { message: "Nada que actualizar" }),
 });
 
 export async function PATCH(req: NextRequest) {

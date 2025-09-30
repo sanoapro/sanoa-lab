@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
     const supa = await getSupabaseServer();
     const { data: userRes } = await supa.auth.getUser();
     if (!userRes?.user) {
-      return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } },
+        { status: 401 },
+      );
     }
 
     const url = new URL(req.url);
@@ -21,10 +24,16 @@ export async function GET(req: NextRequest) {
     const group = (url.searchParams.get("group") as Group) || "month";
 
     if (!org_id || !from || !to) {
-      return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "org_id, from y to son requeridos." } }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: { code: "BAD_REQUEST", message: "org_id, from y to son requeridos." } },
+        { status: 400 },
+      );
     }
     if (!["month", "week"].includes(group)) {
-      return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "group debe ser 'month' o 'week'." } }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: { code: "BAD_REQUEST", message: "group debe ser 'month' o 'week'." } },
+        { status: 400 },
+      );
     }
 
     const { data, error } = await supa.rpc("bank_flow", {
@@ -35,7 +44,10 @@ export async function GET(req: NextRequest) {
     });
 
     if (error) {
-      return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: { code: "DB_ERROR", message: error.message } },
+        { status: 400 },
+      );
     }
 
     // La RPC devuelve 'period' como date/text; mapeamos a 'month' (UI existente)
@@ -48,6 +60,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, data: rows });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }

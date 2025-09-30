@@ -3,21 +3,23 @@
 import { useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 
-export default function DepositarPage(){
-  const [orgId] = useState<string>(() => (typeof window!=='undefined' ? localStorage.getItem('org_id') || '' : ''));
+export default function DepositarPage() {
+  const [orgId] = useState<string>(() =>
+    typeof window !== "undefined" ? localStorage.getItem("org_id") || "" : "",
+  );
   const [amount, setAmount] = useState<string>("500"); // MXN, por default 500
   const [loading, setLoading] = useState(false);
 
-  async function submit(){
+  async function submit() {
     if (!orgId) return alert("Falta org_id");
     const mxn = Math.round(Number(amount || 0) * 100);
     if (!Number.isFinite(mxn) || mxn < 5000) return alert("Monto mínimo $50.00 MXN");
     setLoading(true);
-    try{
+    try {
       const r = await fetch("/api/billing/stripe/checkout/add-funds", {
-        method:"POST",
-        headers:{ "content-type":"application/json" },
-        body: JSON.stringify({ org_id: orgId, amount_cents: mxn })
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ org_id: orgId, amount_cents: mxn }),
       });
       const j = await r.json();
       if (!r.ok) return alert(j?.error || "Error al crear sesión de pago");
@@ -46,7 +48,7 @@ export default function DepositarPage(){
           min={50}
           step={10}
           value={amount}
-          onChange={e=>setAmount(e.target.value)}
+          onChange={(e) => setAmount(e.target.value)}
           className="w-full border rounded-xl p-3"
           placeholder="500"
         />

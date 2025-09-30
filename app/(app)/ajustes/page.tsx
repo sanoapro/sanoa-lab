@@ -27,13 +27,22 @@ export default function AjustesPage() {
       <section className="rounded-3xl bg-white/95 border p-6 space-y-3">
         <h3 className="font-semibold">Cuenta</h3>
         <div className="grid md:grid-cols-2 gap-3">
-          <Link href="/perfil" className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border">
+          <Link
+            href="/perfil"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border"
+          >
             <ColorEmoji token="perfil" /> Editar perfil
           </Link>
-          <Link href="/banco" className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border">
+          <Link
+            href="/banco"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border"
+          >
             <ColorEmoji token="banco" /> Pagos y suscripciones
           </Link>
-          <Link href="/profesionales" className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border">
+          <Link
+            href="/profesionales"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border"
+          >
             <ColorEmoji token="megafono" /> Ver perfil público
           </Link>
         </div>

@@ -14,12 +14,7 @@ export function ok(payload?: JsonObject, init?: ResponseInit) {
   return build({ ok: true, ...(payload ?? {}) }, init);
 }
 
-export function error(
-  code: string,
-  message: string,
-  status = 400,
-  extras?: ErrorExtras,
-) {
+export function error(code: string, message: string, status = 400, extras?: ErrorExtras) {
   const { details, ...rest } = extras ?? {};
   return build(
     {

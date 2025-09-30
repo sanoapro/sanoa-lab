@@ -6,7 +6,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { jsonError, jsonOk } from "@/lib/http/validate";
 
 function interpolate(body: string, map: Record<string, string>): string {
-  return body.replace(/\{\{([A-Z0-9_]+)\}\}/g, (_, k) => (map[k] ?? `{{${k}}}`));
+  return body.replace(/\{\{([A-Z0-9_]+)\}\}/g, (_, k) => map[k] ?? `{{${k}}}`);
 }
 
 export async function GET(req: NextRequest) {
@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (!acc) return jsonError("NOT_FOUND", "Solicitud no encontrada", 404);
-  if (acc.status !== "pending") return jsonError("CONFLICT", "La solicitud ya no está disponible", 409);
+  if (acc.status !== "pending")
+    return jsonError("CONFLICT", "La solicitud ya no está disponible", 409);
   if (acc.token_expires_at && new Date(acc.token_expires_at) < new Date())
     return jsonError("EXPIRED", "El enlace ha expirado", 410);
 
@@ -37,7 +38,11 @@ export async function GET(req: NextRequest) {
     SPECIALIST_NAME: acc.name_snapshot?.specialist_name || "Especialista",
     PATIENT_NAME: acc.name_snapshot?.patient_name || "Paciente",
     DATE_ISO: new Date().toISOString().slice(0, 10),
-    DATE_LONG: new Date().toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
+    DATE_LONG: new Date().toLocaleDateString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }),
   };
   const body = interpolate(tmpl.body, map);
   return jsonOk({ title: tmpl.title, body });

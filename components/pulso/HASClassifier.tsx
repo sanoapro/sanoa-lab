@@ -16,16 +16,30 @@ export default function HASClassifier() {
   const [sys, setSys] = useState<string>("");
   const [dia, setDia] = useState<string>("");
 
-  const cat = useMemo(()=> classify(parseFloat(sys), parseFloat(dia)), [sys, dia]);
+  const cat = useMemo(() => classify(parseFloat(sys), parseFloat(dia)), [sys, dia]);
 
   return (
     <div className="border rounded-xl p-3 space-y-2">
       <div className="text-sm font-medium">Clasificación HTA</div>
       <div className="grid grid-cols-2 gap-2">
-        <input className="border rounded px-3 py-2" placeholder="Sistólica (mmHg)" inputMode="numeric" value={sys} onChange={e=>setSys(e.target.value)} />
-        <input className="border rounded px-3 py-2" placeholder="Diastólica (mmHg)" inputMode="numeric" value={dia} onChange={e=>setDia(e.target.value)} />
+        <input
+          className="border rounded px-3 py-2"
+          placeholder="Sistólica (mmHg)"
+          inputMode="numeric"
+          value={sys}
+          onChange={(e) => setSys(e.target.value)}
+        />
+        <input
+          className="border rounded px-3 py-2"
+          placeholder="Diastólica (mmHg)"
+          inputMode="numeric"
+          value={dia}
+          onChange={(e) => setDia(e.target.value)}
+        />
       </div>
-      <div className="text-sm">Categoría: <strong>{cat}</strong></div>
+      <div className="text-sm">
+        Categoría: <strong>{cat}</strong>
+      </div>
     </div>
   );
 }

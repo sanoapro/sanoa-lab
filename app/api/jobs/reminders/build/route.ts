@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
       tz: pref?.tz ?? "America/Mexico_City",
       window_start: pref?.window_start ?? "09:00",
       window_end: pref?.window_end ?? "20:00",
-      days_of_week: pref?.days_of_week ?? [1,2,3,4,5],
-      channels_priority: (pref?.channels_priority as ("whatsapp"|"sms")[]) ?? ["whatsapp","sms"],
+      days_of_week: pref?.days_of_week ?? [1, 2, 3, 4, 5],
+      channels_priority: (pref?.channels_priority as ("whatsapp" | "sms")[]) ?? ["whatsapp", "sms"],
     });
 
     // Evitar duplicados (índice parcial UNIQUE lo refuerza)

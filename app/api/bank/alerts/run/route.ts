@@ -18,16 +18,22 @@ export async function POST(req: Request) {
   const { data: settings } = await supa.from("org_bank_settings").select("*");
 
   const settingsMap = new Map<string, any>();
-  (settings || []).forEach((s:any)=> settingsMap.set(s.org_id, s));
+  (settings || []).forEach((s: any) => settingsMap.set(s.org_id, s));
 
   const alerts: any[] = [];
-  for (const b of (balances || [])) {
+  for (const b of balances || []) {
     const s = settingsMap.get(b.org_id);
     if (!s) continue;
     const balance = Number(b.balance_cents || 0);
     const threshold = Number(s.low_balance_threshold_cents || 0);
     if (threshold > 0 && balance < threshold) {
-      alerts.push({ org_id: b.org_id, balance, threshold, channel: s.notify_channel, to: s.notify_to });
+      alerts.push({
+        org_id: b.org_id,
+        balance,
+        threshold,
+        channel: s.notify_channel,
+        to: s.notify_to,
+      });
     }
   }
 
@@ -42,7 +48,7 @@ export async function POST(req: Request) {
         await sendTwilioSMS(a.to, msg);
       }
       results.push({ org_id: a.org_id, ok: true });
-    } catch (e:any) {
+    } catch (e: any) {
       results.push({ org_id: a.org_id, ok: false, error: String(e?.message || e) });
     }
   }
@@ -50,9 +56,9 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, alerts: results });
 }
 
-function currency(cents:number){
-  return (cents/100).toLocaleString("es-MX", { style:"currency", currency:"MXN" });
+function currency(cents: number) {
+  return (cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 }
-function baseUrl(){
+function baseUrl() {
   return (process.env.NEXT_PUBLIC_BASE_URL || "").replace(/\/$/, "") || "http://localhost:3000";
 }

@@ -21,7 +21,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 export default function PlanPage() {
   const [orgId] = useState<string>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("org_id") || "" : ""
+    typeof window !== "undefined" ? localStorage.getItem("org_id") || "" : "",
   );
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<Status | null>(null);
@@ -47,8 +47,7 @@ export default function PlanPage() {
     const st = (status?.stripe_status || "incomplete").toLowerCase();
     const cls = STATUS_STYLE[st] || STATUS_STYLE["incomplete"];
     const until =
-      status?.current_period_end &&
-      new Date(status.current_period_end).toLocaleString();
+      status?.current_period_end && new Date(status.current_period_end).toLocaleString();
     return { st, cls, until };
   }, [status]);
 
@@ -83,8 +82,8 @@ export default function PlanPage() {
           Plan y facturación
         </h1>
         <p className="text-sm text-[var(--color-brand-text)]/80">
-          Activa módulos Pro para tu organización. Los accesos se habilitan
-          automáticamente al completar el pago.
+          Activa módulos Pro para tu organización. Los accesos se habilitan automáticamente al
+          completar el pago.
         </p>
       </header>
 
@@ -96,9 +95,7 @@ export default function PlanPage() {
               <ColorEmoji token="tablero" size={22} />
             </span>
             <div>
-              <div className="text-sm text-[var(--color-brand-text)]/70">
-                Estado de suscripción
-              </div>
+              <div className="text-sm text-[var(--color-brand-text)]/70">Estado de suscripción</div>
               {loading ? (
                 <div className="text-lg font-semibold text-[var(--color-brand-text)]">
                   Cargando…
@@ -157,7 +154,10 @@ export default function PlanPage() {
       <section className="text-xs text-[var(--color-brand-text)]/60 space-y-1">
         <div>
           Gestiona tus depósitos y movimientos en{" "}
-          <a href="/banco" className="underline">Sanoa Bank</a>.
+          <a href="/banco" className="underline">
+            Sanoa Bank
+          </a>
+          .
         </div>
       </section>
     </main>

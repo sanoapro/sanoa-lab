@@ -8,7 +8,7 @@ import CheckinForm from "@/components/equilibrio/CheckinForm";
 import ProgressBoard from "@/components/equilibrio/ProgressBoard";
 
 export default function EquilibrioCheckinsPage() {
-  const org = useMemo(()=> getActiveOrg(), []);
+  const org = useMemo(() => getActiveOrg(), []);
   const orgId = org?.id || "";
   const [patient, setPatient] = useState<{ id: string; label: string } | null>(null);
 
@@ -22,11 +22,22 @@ export default function EquilibrioCheckinsPage() {
       <section className="border rounded-2xl p-4 space-y-3">
         <h3 className="font-semibold">Selecciona paciente</h3>
         {!orgId ? (
-          <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">Selecciona una organización activa.</p>
+          <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+            Selecciona una organización activa.
+          </p>
         ) : (
-          <PatientAutocomplete orgId={orgId} scope="mine" onSelect={setPatient} placeholder="Buscar paciente…" />
+          <PatientAutocomplete
+            orgId={orgId}
+            scope="mine"
+            onSelect={setPatient}
+            placeholder="Buscar paciente…"
+          />
         )}
-        {patient && <div className="text-sm text-slate-600">Paciente: <strong>{patient.label}</strong></div>}
+        {patient && (
+          <div className="text-sm text-slate-600">
+            Paciente: <strong>{patient.label}</strong>
+          </div>
+        )}
       </section>
       {orgId && patient?.id && (
         <>

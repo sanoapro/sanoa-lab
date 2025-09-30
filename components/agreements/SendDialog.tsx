@@ -5,7 +5,11 @@ import * as React from "react";
 import { getActiveOrg } from "@/lib/org-local";
 import Autocomplete from "@/components/patients/Autocomplete";
 
-type Tpl = { id: string; title: string; type: "specialist_patient"|"specialist_platform"|"patient_platform" };
+type Tpl = {
+  id: string;
+  title: string;
+  type: "specialist_patient" | "specialist_platform" | "patient_platform";
+};
 
 export default function SendDialog() {
   const org = getActiveOrg();
@@ -28,7 +32,7 @@ export default function SendDialog() {
 
   async function createLink() {
     if (!org.id || !tplId) return alert("Elige una plantilla");
-    const tpl = tpls.find(t => t.id === tplId);
+    const tpl = tpls.find((t) => t.id === tplId);
     if (!tpl) return alert("Plantilla inválida");
     if (tpl.type === "specialist_patient" && !patient) return alert("Selecciona paciente");
 
@@ -54,22 +58,42 @@ export default function SendDialog() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <label className="flex flex-col gap-1">
           <span className="text-sm text-slate-500">Plantilla</span>
-          <select value={tplId} onChange={e => setTplId(e.target.value)} className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900">
+          <select
+            value={tplId}
+            onChange={(e) => setTplId(e.target.value)}
+            className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+          >
             <option value="">— Seleccionar —</option>
-            {tpls.map(t => <option key={t.id} value={t.id}>{t.title} ({t.type})</option>)}
+            {tpls.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.title} ({t.type})
+              </option>
+            ))}
           </select>
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-sm text-slate-500">Expira en (horas)</span>
-          <input type="number" className="rounded-xl border px-3 py-2" value={expires} onChange={e => setExpires(parseInt(e.target.value || "168"))} min={1} max={720} />
+          <input
+            type="number"
+            className="rounded-xl border px-3 py-2"
+            value={expires}
+            onChange={(e) => setExpires(parseInt(e.target.value || "168"))}
+            min={1}
+            max={720}
+          />
         </label>
         <div className="md:col-span-1">
           <span className="text-sm text-slate-500">Paciente (si aplica)</span>
-          <Autocomplete placeholder="Buscar paciente…" onSelect={(s) => setPatient({ id: s.patient_id, name: s.display_name })} />
+          <Autocomplete
+            placeholder="Buscar paciente…"
+            onSelect={(s) => setPatient({ id: s.patient_id, name: s.display_name })}
+          />
           {patient && <p className="text-xs text-slate-500 mt-1">Paciente: {patient.name}</p>}
         </div>
       </div>
-      <button onClick={createLink} className="px-4 py-2 rounded-xl bg-blue-600 text-white">Generar enlace</button>
+      <button onClick={createLink} className="px-4 py-2 rounded-xl bg-blue-600 text-white">
+        Generar enlace
+      </button>
     </div>
   );
 }

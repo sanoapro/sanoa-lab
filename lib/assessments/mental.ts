@@ -83,7 +83,7 @@ export function scoreAUDITC(a: AUDITCAnswers): ScoreResult {
 
 export function scoreAny(
   tool: "phq9" | "gad7" | "auditc",
-  answers: Record<string, number>
+  answers: Record<string, number>,
 ): ScoreResult {
   if (tool === "phq9") return scorePHQ9(answers);
   if (tool === "gad7") return scoreGAD7(answers);

@@ -14,7 +14,7 @@ function nowInTZ(tz: string) {
     minute: "2-digit",
     hour12: false,
   });
-  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map(p => [p.type, p.value]));
+  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
   const y = Number(parts.year);
   const m = Number(parts.month);
   const d = Number(parts.day);
@@ -22,8 +22,10 @@ function nowInTZ(tz: string) {
   const mm = Number(parts.minute);
   const date = new Date(Date.UTC(y, m - 1, d, hh, mm));
   // weekday 0=Sunday in local tz
-  const wdFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).formatToParts(new Date());
-  const wdShort = wdFmt.find(p => p.type === "weekday")?.value ?? "Sun";
+  const wdFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).formatToParts(
+    new Date(),
+  );
+  const wdShort = wdFmt.find((p) => p.type === "weekday")?.value ?? "Sun";
   const map: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const dow = map[wdShort] ?? 0;
   return { date, y, m, d, hh, mm, dow };
@@ -136,7 +138,14 @@ export async function POST(req: NextRequest) {
           .from("report_schedules")
           .update({ last_sent_at: new Date().toISOString() })
           .eq("id", sc.id);
-        results.push({ id: sc.id, scope: sc.scope, channel: sc.channel, target: sc.target, from, to });
+        results.push({
+          id: sc.id,
+          scope: sc.scope,
+          channel: sc.channel,
+          target: sc.target,
+          from,
+          to,
+        });
       }
     }
 

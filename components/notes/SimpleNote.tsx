@@ -45,7 +45,11 @@ export default function SimpleNote({
         Firmar la nota al guardar
       </label>
       <div>
-        <button className="border rounded px-3 py-2" onClick={save} disabled={saving || !text.trim()}>
+        <button
+          className="border rounded px-3 py-2"
+          onClick={save}
+          disabled={saving || !text.trim()}
+        >
           Guardar
         </button>
       </div>

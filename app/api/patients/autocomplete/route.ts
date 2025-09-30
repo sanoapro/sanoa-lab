@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   if (!org_id || !q) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "org_id y q requeridos" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -47,8 +47,11 @@ export async function GET(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
-  return NextResponse.json({ ok: true, data: (data || []).map((x) => ({ id: x.id, label: x.full_name })) });
+  return NextResponse.json({
+    ok: true,
+    data: (data || []).map((x) => ({ id: x.id, label: x.full_name })),
+  });
 }

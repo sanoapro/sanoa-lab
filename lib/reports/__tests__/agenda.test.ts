@@ -45,11 +45,7 @@ describe("computeAgendaSummary", () => {
   ];
 
   it("computes totals and averages for each status bucket", () => {
-    const summary = computeAgendaSummary(
-      ...baseArgs,
-      BOOKINGS_FIXTURE,
-      "Sin recurso"
-    );
+    const summary = computeAgendaSummary(...baseArgs, BOOKINGS_FIXTURE, "Sin recurso");
 
     assert.deepStrictEqual(summary.totals, {
       total: 4,
@@ -63,11 +59,7 @@ describe("computeAgendaSummary", () => {
   });
 
   it("aggregates bookings by day using the supplied timezone", () => {
-    const summary = computeAgendaSummary(
-      ...baseArgs,
-      BOOKINGS_FIXTURE,
-      "Sin recurso"
-    );
+    const summary = computeAgendaSummary(...baseArgs, BOOKINGS_FIXTURE, "Sin recurso");
 
     assert.deepStrictEqual(summary.by_day, [
       {
@@ -94,11 +86,7 @@ describe("computeAgendaSummary", () => {
   });
 
   it("aggregates totals by resource and respects the fallback label", () => {
-    const summary = computeAgendaSummary(
-      ...baseArgs,
-      BOOKINGS_FIXTURE,
-      "Sin recurso"
-    );
+    const summary = computeAgendaSummary(...baseArgs, BOOKINGS_FIXTURE, "Sin recurso");
 
     assert.deepStrictEqual(summary.by_resource, [
       {
@@ -136,4 +124,3 @@ describe("computeAgendaSummary", () => {
     ]);
   });
 });
-

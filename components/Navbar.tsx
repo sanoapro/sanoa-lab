@@ -51,7 +51,11 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
-        <Link href="/consultorio" className="inline-flex items-center gap-2" aria-label="Ir a Consultorio">
+        <Link
+          href="/consultorio"
+          className="inline-flex items-center gap-2"
+          aria-label="Ir a Consultorio"
+        >
           <span className="inline-grid place-content-center h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <ColorEmoji token="logo" />
           </span>
@@ -62,7 +66,8 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1">
           {NAV.map((item) => {
             const isActive =
-              pathname === item.href || (item.href !== "/consultorio" && pathname.startsWith(item.href + "/"));
+              pathname === item.href ||
+              (item.href !== "/consultorio" && pathname.startsWith(item.href + "/"));
             return (
               <Link
                 key={item.href}
@@ -71,7 +76,9 @@ export default function Navbar() {
                 className={[
                   "inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition",
                   "text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-white/10",
-                  isActive ? "bg-white dark:bg-white/10 border-slate-200 dark:border-slate-700" : "border-transparent",
+                  isActive
+                    ? "bg-white dark:bg-white/10 border-slate-200 dark:border-slate-700"
+                    : "border-transparent",
                 ].join(" ")}
               >
                 <ColorEmoji token={item.token} />

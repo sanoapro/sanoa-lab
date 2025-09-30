@@ -9,9 +9,5 @@
     "sourceMap": false,
     "declaration": false
   },
-  "include": [
-    "lib/reports/agenda.ts",
-    "lib/reports/__tests__/**/*.ts"
-  ]
+  "include": ["lib/reports/agenda.ts", "lib/reports/__tests__/**/*.ts"]
 }
-

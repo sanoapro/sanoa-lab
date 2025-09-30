@@ -17,7 +17,14 @@ export type WorkAssignment = {
   created_at?: string;
 };
 
-export async function listAssignments(params: { org_id: string; patient_id?: string; module?: WorkAssignment["module"]; status?: WorkAssignment["status"]; page?: number; limit?: number }) {
+export async function listAssignments(params: {
+  org_id: string;
+  patient_id?: string;
+  module?: WorkAssignment["module"];
+  status?: WorkAssignment["status"];
+  page?: number;
+  limit?: number;
+}) {
   const url = new URL("/api/work/assignments", window.location.origin);
   url.searchParams.set("org_id", params.org_id);
   if (params.patient_id) url.searchParams.set("patient_id", params.patient_id);
@@ -43,16 +50,36 @@ export async function assignWork(input: {
   occurrences?: number;
   notes?: string;
 }) {
-  const r = await fetch("/api/work/assign", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+  const r = await fetch("/api/work/assign", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
   return await r.json();
 }
 
-export async function logEvent(input: { org_id: string; assignment_id: string; kind: "completed" | "note" | "skipped"; payload?: any }) {
-  const r = await fetch("/api/work/events", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+export async function logEvent(input: {
+  org_id: string;
+  assignment_id: string;
+  kind: "completed" | "note" | "skipped";
+  payload?: any;
+}) {
+  const r = await fetch("/api/work/events", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
   return await r.json();
 }
 
-export async function patchAssignment(id: string, patch: Partial<Pick<WorkAssignment, "title" | "content" | "due_at" | "status" | "notes">>) {
-  const r = await fetch(`/api/work/assignments/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(patch) });
+export async function patchAssignment(
+  id: string,
+  patch: Partial<Pick<WorkAssignment, "title" | "content" | "due_at" | "status" | "notes">>,
+) {
+  const r = await fetch(`/api/work/assignments/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(patch),
+  });
   return await r.json();
 }

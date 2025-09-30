@@ -57,10 +57,10 @@ export default function ConsultorioPage() {
               typeof x?.value === "number"
                 ? x.value
                 : typeof x?.total_cents === "number"
-                ? x.total_cents / 100
-                : typeof x?.amount_cents === "number"
-                ? x.amount_cents / 100
-                : null
+                  ? x.total_cents / 100
+                  : typeof x?.amount_cents === "number"
+                    ? x.amount_cents / 100
+                    : null,
             )
             .filter((n: number | null) => typeof n === "number") as number[];
           if (pts.length >= 2) setIncomeTrend(pts);
@@ -93,7 +93,8 @@ export default function ConsultorioPage() {
           {
             id: "accesos",
             title: "Accesos principales",
-            description: "Accede a Agenda, Pacientes, Recetas, Laboratorio, Recordatorios y Reportes.",
+            description:
+              "Accede a Agenda, Pacientes, Recetas, Laboratorio, Recordatorios y Reportes.",
             selector: "#tour-cards",
           },
           {
@@ -127,19 +128,51 @@ export default function ConsultorioPage() {
               />
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-2">Solo aparecen pacientes de tu organización (RLS).</p>
+          <p className="text-xs text-slate-500 mt-2">
+            Solo aparecen pacientes de tu organización (RLS).
+          </p>
         </section>
       </AnimateIn>
 
       {/* Tarjetas operativas */}
       <AnimateIn delay={100}>
         <section id="tour-cards" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <CardLink href="/agenda" token="agenda" title="Agenda" desc="Citas, disponibilidad y confirmaciones." />
-          <CardLink href="/pacientes" token="pacientes" title="Pacientes" desc="Listado, filtros, etiquetas y timeline." />
-          <CardLink href="/prescriptions/templates" token="recetas" title="Recetas" desc="Plantillas y emisión con membrete." />
-          <CardLink href="/laboratorio" token="laboratorio" title="Laboratorio" desc="Órdenes y resultados con firma." />
-          <CardLink href="/recordatorios" token="recordatorios" title="Recordatorios" desc="Mensajes SMS/WhatsApp programados." />
-          <CardLink href="/reportes" token="reportes" title="Reportes" desc="Indicadores operativos y clínicos." />
+          <CardLink
+            href="/agenda"
+            token="agenda"
+            title="Agenda"
+            desc="Citas, disponibilidad y confirmaciones."
+          />
+          <CardLink
+            href="/pacientes"
+            token="pacientes"
+            title="Pacientes"
+            desc="Listado, filtros, etiquetas y timeline."
+          />
+          <CardLink
+            href="/prescriptions/templates"
+            token="recetas"
+            title="Recetas"
+            desc="Plantillas y emisión con membrete."
+          />
+          <CardLink
+            href="/laboratorio"
+            token="laboratorio"
+            title="Laboratorio"
+            desc="Órdenes y resultados con firma."
+          />
+          <CardLink
+            href="/recordatorios"
+            token="recordatorios"
+            title="Recordatorios"
+            desc="Mensajes SMS/WhatsApp programados."
+          />
+          <CardLink
+            href="/reportes"
+            token="reportes"
+            title="Reportes"
+            desc="Indicadores operativos y clínicos."
+          />
         </section>
       </AnimateIn>
 

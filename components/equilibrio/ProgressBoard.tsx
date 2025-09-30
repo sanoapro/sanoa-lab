@@ -3,16 +3,24 @@
 import { useEffect, useState } from "react";
 
 export default function ProgressBoard({ orgId, patientId }: { orgId: string; patientId: string }) {
-  const [data, setData] = useState<{ adherence_pct: number; totals: { done:number; skipped:number }; recent: any[] } | null>(null);
+  const [data, setData] = useState<{
+    adherence_pct: number;
+    totals: { done: number; skipped: number };
+    recent: any[];
+  } | null>(null);
 
   async function load() {
     const p = new URLSearchParams({ org_id: orgId, patient_id: patientId });
-    const r = await fetch(`/api/modules/equilibrio/overview?${p.toString()}`, { cache:"no-store" });
+    const r = await fetch(`/api/modules/equilibrio/overview?${p.toString()}`, {
+      cache: "no-store",
+    });
     const j = await r.json();
     setData(j?.ok ? j.data : null);
   }
 
-  useEffect(()=>{ if (orgId && patientId) load(); }, [orgId, patientId]);
+  useEffect(() => {
+    if (orgId && patientId) load();
+  }, [orgId, patientId]);
 
   if (!data) return <div className="rounded-2xl border p-4">Sin datos</div>;
 

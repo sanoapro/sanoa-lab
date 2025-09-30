@@ -28,12 +28,18 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   // Validar params/query
   const pp = Params.safeParse(ctx.params);
   if (!pp.success) {
-    return NextResponse.json({ ok: false, error: { code: "VALIDATION_ERROR", message: "id inválido" } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "VALIDATION_ERROR", message: "id inválido" } },
+      { status: 400 },
+    );
   }
   const qp = new URL(req.url).searchParams;
   const qv = Query.safeParse({ org_id: qp.get("org_id") });
   if (!qv.success) {
-    return NextResponse.json({ ok: false, error: { code: "VALIDATION_ERROR", message: "org_id requerido" } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "VALIDATION_ERROR", message: "org_id requerido" } },
+      { status: 400 },
+    );
   }
   const org_id = qv.data.org_id;
   const prescription_id = pp.data.id;
@@ -41,7 +47,10 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   // Usuario (proveedor actual)
   const { data: me, error: eUser } = await supa.auth.getUser();
   if (eUser || !me?.user?.id) {
-    return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "Sin sesión" } }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "Sin sesión" } },
+      { status: 401 },
+    );
   }
   const provider_id = me.user.id;
 
@@ -55,7 +64,10 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   });
 
   if (!jsonRes.ok) {
-    return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "No se pudo cargar la receta" } }, { status: 404 });
+    return NextResponse.json(
+      { ok: false, error: { code: "NOT_FOUND", message: "No se pudo cargar la receta" } },
+      { status: 404 },
+    );
   }
   const payload = await jsonRes.json().catch(() => null);
   const data = payload?.data ?? payload; // soporta { ok:true, data } o data plano
@@ -63,8 +75,16 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   // 2) Branding: provider_identity (si existe) + Storage (letterheads/signatures)
   const branding = await getBranding(supa, org_id, provider_id);
 
-  const letterheadBytes = await loadStorageImage(supa, "letterheads", branding.letterhead_path || `${org_id}/${provider_id}.png`);
-  const signatureBytes = await loadStorageImage(supa, "signatures", branding.signature_path || `${org_id}/${provider_id}.png`);
+  const letterheadBytes = await loadStorageImage(
+    supa,
+    "letterheads",
+    branding.letterhead_path || `${org_id}/${provider_id}.png`,
+  );
+  const signatureBytes = await loadStorageImage(
+    supa,
+    "signatures",
+    branding.signature_path || `${org_id}/${provider_id}.png`,
+  );
 
   // 3) Armar PDF con pdf-lib
   const pdf = await PDFDocument.create();
@@ -80,7 +100,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   if (letterheadBytes) {
     try {
       const img = await pdf.embedPng(letterheadBytes);
-      const iw = img.width, ih = img.height;
+      const iw = img.width,
+        ih = img.height;
       const targetW = width - margin * 2;
       const scale = targetW / iw;
       const targetH = ih * scale;
@@ -94,7 +115,13 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     const header = branding.clinic_name || "Receta médica";
     page.drawText(header, { x: margin, y: drawY.y - 16, size: 16, font: fontBold });
     if (branding.address) {
-      page.drawText(branding.address, { x: margin, y: drawY.y - 32, size: 10, font, color: rgb(0.2,0.2,0.2) });
+      page.drawText(branding.address, {
+        x: margin,
+        y: drawY.y - 32,
+        size: 10,
+        font,
+        color: rgb(0.2, 0.2, 0.2),
+      });
       drawY.y -= 36;
     } else {
       drawY.y -= 24;
@@ -107,12 +134,24 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   // Paciente y metadata (intentamos adaptarnos a tus campos)
   const patientName =
-    data?.patient?.name || data?.patient?.full_name || data?.patient_name || data?.patient?.display_name || "Paciente";
+    data?.patient?.name ||
+    data?.patient?.full_name ||
+    data?.patient_name ||
+    data?.patient?.display_name ||
+    "Paciente";
   const issuedAt = data?.issued_at || data?.created_at || new Date().toISOString();
   const folio = data?.folio || data?.id || prescription_id;
 
   drawField(page, fontBold, font, "Paciente", String(patientName), margin, drawY);
-  drawField(page, fontBold, font, "Fecha", new Date(issuedAt).toLocaleString("es-MX"), margin, drawY);
+  drawField(
+    page,
+    fontBold,
+    font,
+    "Fecha",
+    new Date(issuedAt).toLocaleString("es-MX"),
+    margin,
+    drawY,
+  );
   drawField(page, fontBold, font, "Folio", String(folio), margin, drawY);
   drawY.y -= 8;
 
@@ -131,7 +170,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   if (signatureBytes) {
     try {
       const img = await pdf.embedPng(signatureBytes);
-      const iw = img.width, ih = img.height;
+      const iw = img.width,
+        ih = img.height;
       const targetW = 180;
       const scale = targetW / iw;
       const targetH = ih * scale;
@@ -140,7 +180,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       // Línea y texto
       page.drawText(branding.sign_name || "", { x: margin, y: 120, size: 11, font: fontBold });
       const meta = [branding.sign_role, branding.license].filter(Boolean).join(" · ");
-      if (meta) page.drawText(meta, { x: margin, y: 106, size: 10, font, color: rgb(0.25,0.25,0.25) });
+      if (meta)
+        page.drawText(meta, { x: margin, y: 106, size: 10, font, color: rgb(0.25, 0.25, 0.25) });
     } catch {
       drawSignatureFallback(page, margin, branding, fontBold, font);
     }
@@ -156,7 +197,13 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     const png = dataURLtoBytes(qrDataURL);
     const qrImg = await pdf.embedPng(png);
     page.drawImage(qrImg, { x: width - margin - 90, y: 90, width: 90, height: 90 });
-    page.drawText("Verificar", { x: width - margin - 82, y: 82, size: 9, font, color: rgb(0.25,0.25,0.25) });
+    page.drawText("Verificar", {
+      x: width - margin - 82,
+      y: 82,
+      size: 9,
+      font,
+      color: rgb(0.25, 0.25, 0.25),
+    });
   } catch {
     // omitimos QR en caso de error
   }
@@ -164,7 +211,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   // Pie con datos de contacto (si hay)
   const footerBits = [branding.phone, branding.website].filter(Boolean).join("  •  ");
   if (footerBits) {
-    page.drawText(footerBits, { x: margin, y: 80, size: 9, font, color: rgb(0.25,0.25,0.25) });
+    page.drawText(footerBits, { x: margin, y: 80, size: 9, font, color: rgb(0.25, 0.25, 0.25) });
   }
 
   const pdfBytes = await pdf.save();
@@ -183,7 +230,9 @@ async function getBranding(supa: any, org_id: string, provider_id: string): Prom
   try {
     const { data, error } = await supa
       .from("provider_identity")
-      .select("clinic_name,sign_name,sign_role,license,phone,address,website,letterhead_path,signature_path")
+      .select(
+        "clinic_name,sign_name,sign_role,license,phone,address,website,letterhead_path,signature_path",
+      )
       .eq("org_id", org_id)
       .eq("provider_id", provider_id)
       .maybeSingle();
@@ -194,7 +243,11 @@ async function getBranding(supa: any, org_id: string, provider_id: string): Prom
   }
 }
 
-async function loadStorageImage(supa: any, bucket: "letterheads" | "signatures", path: string | null) {
+async function loadStorageImage(
+  supa: any,
+  bucket: "letterheads" | "signatures",
+  path: string | null,
+) {
   if (!path) return null;
   try {
     const { data, error } = await supa.storage.from(bucket).download(path);
@@ -206,16 +259,31 @@ async function loadStorageImage(supa: any, bucket: "letterheads" | "signatures",
   }
 }
 
-function drawField(page: any, fontBold: any, font: any, label: string, value: string, margin: number, drawY: { y: number }) {
+function drawField(
+  page: any,
+  fontBold: any,
+  font: any,
+  label: string,
+  value: string,
+  margin: number,
+  drawY: { y: number },
+) {
   page.drawText(`${label}:`, { x: margin, y: drawY.y - 12, size: 11, font: fontBold });
   page.drawText(value, { x: margin + 60, y: drawY.y - 12, size: 11, font });
   drawY.y -= 18;
 }
 
-function drawSignatureFallback(page: any, margin: number, branding: Branding, fontBold: any, font: any) {
+function drawSignatureFallback(
+  page: any,
+  margin: number,
+  branding: Branding,
+  fontBold: any,
+  font: any,
+) {
   // Línea y texto de firma sin imagen
   page.drawText("__________________________", { x: margin, y: 130, size: 11, font });
-  if (branding.sign_name) page.drawText(String(branding.sign_name), { x: margin, y: 114, size: 11, font: fontBold });
+  if (branding.sign_name)
+    page.drawText(String(branding.sign_name), { x: margin, y: 114, size: 11, font: fontBold });
   const meta = [branding.sign_role, branding.license].filter(Boolean).join(" · ");
   if (meta) page.drawText(meta, { x: margin, y: 100, size: 10, font });
 }

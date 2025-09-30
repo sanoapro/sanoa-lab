@@ -12,7 +12,9 @@ export default function BankTxPage() {
   const orgId = org?.id || "";
   const search = useSearchParams();
   const qs = search.toString();
-  const exportHref = orgId ? `/api/bank/tx/export?${new URLSearchParams({ org_id: orgId, ...Object.fromEntries(search.entries()) }).toString()}` : "#";
+  const exportHref = orgId
+    ? `/api/bank/tx/export?${new URLSearchParams({ org_id: orgId, ...Object.fromEntries(search.entries()) }).toString()}`
+    : "#";
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -27,7 +29,11 @@ export default function BankTxPage() {
         </a>
       </div>
 
-      {!orgId && <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 mt-2">Selecciona una organización activa para continuar.</p>}
+      {!orgId && (
+        <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 mt-2">
+          Selecciona una organización activa para continuar.
+        </p>
+      )}
       {orgId && (
         <>
           <div className="mt-3">

@@ -3,7 +3,7 @@ export type Booking = {
   id?: string;
   status?: string | null;
   start_at?: string | null; // ISO
-  end_at?: string | null;   // ISO
+  end_at?: string | null; // ISO
   created_at?: string | null;
   resource_id?: string | null;
   resource_name?: string | null;
@@ -46,15 +46,24 @@ export type AgendaSummary = {
 };
 
 function mapDowShort(w: string) {
-  const m: Record<string, number> = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  const m: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   return m[w] ?? 0;
 }
 
 export function dateKeyInTZ(iso: string, tz: string): string {
   const d = new Date(iso);
-  const parts = new Intl.DateTimeFormat("en-CA", { // YYYY-MM-DD
-    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit"
-  }).formatToParts(d).reduce<Record<string,string>>((acc,p)=>{ if(p.type!=="literal") acc[p.type]=p.value; return acc; }, {});
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    // YYYY-MM-DD
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .formatToParts(d)
+    .reduce<Record<string, string>>((acc, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
@@ -77,7 +86,7 @@ export function computeAgendaSummary(
   to: string,
   tz: string,
   items: Booking[],
-  resourceLabelFallback = "Sin recurso"
+  resourceLabelFallback = "Sin recurso",
 ): AgendaSummary {
   const totals = { total: 0, completed: 0, no_show: 0, cancelled: 0, other: 0 };
   let durationSumMin = 0;
@@ -85,8 +94,24 @@ export function computeAgendaSummary(
   let leadSumH = 0;
   let leadCount = 0;
 
-  const byDayMap = new Map<string, { total:number; completed:number; no_show:number; cancelled:number; other:number; durSum:number; durN:number; leadSum:number; leadN:number }>();
-  const byResMap = new Map<string, { total:number; completed:number; no_show:number; cancelled:number; other:number }>();
+  const byDayMap = new Map<
+    string,
+    {
+      total: number;
+      completed: number;
+      no_show: number;
+      cancelled: number;
+      other: number;
+      durSum: number;
+      durN: number;
+      leadSum: number;
+      leadN: number;
+    }
+  >();
+  const byResMap = new Map<
+    string,
+    { total: number; completed: number; no_show: number; cancelled: number; other: number }
+  >();
 
   for (const b of items) {
     const status = (b.status ?? "scheduled").toString();
@@ -110,41 +135,86 @@ export function computeAgendaSummary(
       leadCount += 1;
     }
 
-    const key = start ? dateKeyInTZ(start.toISOString(), tz) : dateKeyInTZ(new Date().toISOString(), tz);
-    const d = byDayMap.get(key) ?? { total:0, completed:0, no_show:0, cancelled:0, other:0, durSum:0, durN:0, leadSum:0, leadN:0 };
-    d.total += 1; d[bucket] += 1;
-    if (start && end && end > start) { d.durSum += (end.getTime()-start.getTime())/60000; d.durN += 1; }
-    if (start && created && start > created) { d.leadSum += (start.getTime()-created.getTime())/3600000; d.leadN += 1; }
+    const key = start
+      ? dateKeyInTZ(start.toISOString(), tz)
+      : dateKeyInTZ(new Date().toISOString(), tz);
+    const d = byDayMap.get(key) ?? {
+      total: 0,
+      completed: 0,
+      no_show: 0,
+      cancelled: 0,
+      other: 0,
+      durSum: 0,
+      durN: 0,
+      leadSum: 0,
+      leadN: 0,
+    };
+    d.total += 1;
+    d[bucket] += 1;
+    if (start && end && end > start) {
+      d.durSum += (end.getTime() - start.getTime()) / 60000;
+      d.durN += 1;
+    }
+    if (start && created && start > created) {
+      d.leadSum += (start.getTime() - created.getTime()) / 3600000;
+      d.leadN += 1;
+    }
     byDayMap.set(key, d);
 
-    const resName = (b.resource_name || b.provider || b.resource_id || resourceLabelFallback).toString();
-    const r = byResMap.get(resName) ?? { total:0, completed:0, no_show:0, cancelled:0, other:0 };
-    r.total += 1; r[bucket] += 1;
+    const resName = (
+      b.resource_name ||
+      b.provider ||
+      b.resource_id ||
+      resourceLabelFallback
+    ).toString();
+    const r = byResMap.get(resName) ?? {
+      total: 0,
+      completed: 0,
+      no_show: 0,
+      cancelled: 0,
+      other: 0,
+    };
+    r.total += 1;
+    r[bucket] += 1;
     byResMap.set(resName, r);
   }
 
-  const by_day = Array.from(byDayMap.entries()).sort(([a],[b])=> a.localeCompare(b)).map(([date, d]) => ({
-    date,
-    total: d.total,
-    completed: d.completed,
-    no_show: d.no_show,
-    cancelled: d.cancelled,
-    other: d.other,
-    avg_duration_min: d.durN ? Math.round((d.durSum/d.durN)*10)/10 : 0,
-    avg_lead_time_h: d.leadN ? Math.round((d.leadSum/d.leadN)*10)/10 : 0
-  }));
+  const by_day = Array.from(byDayMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, d]) => ({
+      date,
+      total: d.total,
+      completed: d.completed,
+      no_show: d.no_show,
+      cancelled: d.cancelled,
+      other: d.other,
+      avg_duration_min: d.durN ? Math.round((d.durSum / d.durN) * 10) / 10 : 0,
+      avg_lead_time_h: d.leadN ? Math.round((d.leadSum / d.leadN) * 10) / 10 : 0,
+    }));
 
-  const by_resource = Array.from(byResMap.entries()).sort((a,b)=> b[1].total - a[1].total).map(([resource, r]) => ({
-    resource, total: r.total, completed: r.completed, no_show: r.no_show, cancelled: r.cancelled, other: r.other
-  }));
+  const by_resource = Array.from(byResMap.entries())
+    .sort((a, b) => b[1].total - a[1].total)
+    .map(([resource, r]) => ({
+      resource,
+      total: r.total,
+      completed: r.completed,
+      no_show: r.no_show,
+      cancelled: r.cancelled,
+      other: r.other,
+    }));
 
-  const avg_duration_min = durationCount ? Math.round((durationSumMin/durationCount)*10)/10 : 0;
-  const avg_lead_time_h = leadCount ? Math.round((leadSumH/leadCount)*10)/10 : 0;
+  const avg_duration_min = durationCount
+    ? Math.round((durationSumMin / durationCount) * 10) / 10
+    : 0;
+  const avg_lead_time_h = leadCount ? Math.round((leadSumH / leadCount) * 10) / 10 : 0;
 
   return {
-    org_id, from, to, tz,
+    org_id,
+    from,
+    to,
+    tz,
     totals: { ...totals, avg_duration_min, avg_lead_time_h },
     by_day,
-    by_resource
+    by_resource,
   };
 }

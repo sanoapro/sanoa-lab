@@ -4,7 +4,10 @@ export function validateAnswers(schema: FormSchema, answers: Record<string, any>
   const fields = (schema as any)?.fields ?? [];
   const missing: string[] = [];
   for (const f of fields) {
-    if (f.required && (answers[f.key] === undefined || answers[f.key] === null || answers[f.key] === "")) {
+    if (
+      f.required &&
+      (answers[f.key] === undefined || answers[f.key] === null || answers[f.key] === "")
+    ) {
       missing.push(f.key);
     }
   }

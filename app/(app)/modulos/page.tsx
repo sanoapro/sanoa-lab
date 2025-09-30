@@ -6,10 +6,30 @@ import AccentHeader from "@/components/ui/AccentHeader";
 import ColorEmoji from "@/components/ColorEmoji";
 
 const CARDS = [
-  { href: "/modulos/mente", name: "Mente", desc: "Evaluaciones, escalas y planes.", token: "mente" },
-  { href: "/modulos/pulso", name: "Pulso", desc: "Semáforos, cálculos y riesgo CV.", token: "pulso" },
-  { href: "/modulos/equilibrio", name: "Equilibrio", desc: "Hábitos y seguimiento.", token: "equilibrio" },
-  { href: "/modulos/sonrisa", name: "Sonrisa", desc: "Odontograma y presupuestos.", token: "sonrisa" },
+  {
+    href: "/modulos/mente",
+    name: "Mente",
+    desc: "Evaluaciones, escalas y planes.",
+    token: "mente",
+  },
+  {
+    href: "/modulos/pulso",
+    name: "Pulso",
+    desc: "Semáforos, cálculos y riesgo CV.",
+    token: "pulso",
+  },
+  {
+    href: "/modulos/equilibrio",
+    name: "Equilibrio",
+    desc: "Hábitos y seguimiento.",
+    token: "equilibrio",
+  },
+  {
+    href: "/modulos/sonrisa",
+    name: "Sonrisa",
+    desc: "Odontograma y presupuestos.",
+    token: "sonrisa",
+  },
 ];
 
 export default function ModulosHubPage() {

@@ -7,14 +7,13 @@
 
 type TrackArgs = {
   event: string;
-  userId?: string;        // si conoces al usuario
-  anonymousId?: string;   // si no hay userId
+  userId?: string; // si conoces al usuario
+  anonymousId?: string; // si no hay userId
   properties?: Record<string, unknown>;
   context?: Record<string, unknown>;
 };
 
-const WRITE_KEY =
-  process.env.SEGMENT_WRITE_KEY || process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
+const WRITE_KEY = process.env.SEGMENT_WRITE_KEY || process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
 
 function authHeader() {
   // Basic <base64(write_key:)>

@@ -4,7 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
 function parseMulti(q: URLSearchParams, key: string): string[] | undefined {
-  const vals = q.getAll(key).flatMap(v => v.split(",").map(s => s.trim()).filter(Boolean));
+  const vals = q.getAll(key).flatMap((v) =>
+    v
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
   return vals.length ? Array.from(new Set(vals)) : undefined;
 }
 
@@ -21,13 +26,20 @@ export async function GET(req: NextRequest) {
     const supa = await getSupabaseServer();
     const { data: userRes } = await supa.auth.getUser();
     if (!userRes?.user) {
-      return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } },
+        { status: 401 },
+      );
     }
 
     const url = new URL(req.url);
     const q = url.searchParams;
     const org_id = q.get("org_id") ?? "";
-    if (!org_id) return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } }, { status: 400 });
+    if (!org_id)
+      return NextResponse.json(
+        { ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } },
+        { status: 400 },
+      );
 
     const from = q.get("from") ?? undefined;
     const to = q.get("to") ?? undefined;
@@ -42,7 +54,10 @@ export async function GET(req: NextRequest) {
     const max = q.get("max") ? Number(q.get("max")) : undefined;
 
     // 1) Conteo seguro para evitar respuestas gigantes
-    let countQ = supa.from("bank_tx").select("*", { count: "exact", head: true }).eq("org_id", org_id);
+    let countQ = supa
+      .from("bank_tx")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", org_id);
     if (from) countQ = countQ.gte("date", from);
     if (to) countQ = countQ.lte("date", to);
     if (text) countQ = countQ.ilike("memo", `%${text}%`);
@@ -56,20 +71,32 @@ export async function GET(req: NextRequest) {
     if (tagsAll?.length) countQ = countQ.contains("tags", tagsAll);
 
     const { count, error: countErr } = await countQ;
-    if (countErr) return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: countErr.message } }, { status: 400 });
+    if (countErr)
+      return NextResponse.json(
+        { ok: false, error: { code: "DB_ERROR", message: countErr.message } },
+        { status: 400 },
+      );
 
     const MAX = 5000;
     if ((count ?? 0) > MAX) {
-      return NextResponse.json({
-        ok: false,
-        error: { code: "TOO_MANY_ROWS", message: `Demasiados registros (${count}). Refina tus filtros o reduce el rango. Límite: ${MAX}.` }
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "TOO_MANY_ROWS",
+            message: `Demasiados registros (${count}). Refina tus filtros o reduce el rango. Límite: ${MAX}.`,
+          },
+        },
+        { status: 400 },
+      );
     }
 
     // 2) Consulta final (orden por fecha asc)
     let query = supa
       .from("bank_tx")
-      .select("id,date,amount_cents,currency,status,account_id,category_id,method,memo,tags,created_at")
+      .select(
+        "id,date,amount_cents,currency,status,account_id,category_id,method,memo,tags,created_at",
+      )
       .eq("org_id", org_id)
       .order("date", { ascending: true });
 
@@ -86,13 +113,27 @@ export async function GET(req: NextRequest) {
     if (tagsAll?.length) query = query.contains("tags", tagsAll);
 
     const { data, error } = await query.limit(MAX);
-    if (error) return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+    if (error)
+      return NextResponse.json(
+        { ok: false, error: { code: "DB_ERROR", message: error.message } },
+        { status: 400 },
+      );
 
     const header = [
-      "id","date","amount_cents","currency","status","account_id","category_id","method","memo","tags","created_at"
+      "id",
+      "date",
+      "amount_cents",
+      "currency",
+      "status",
+      "account_id",
+      "category_id",
+      "method",
+      "memo",
+      "tags",
+      "created_at",
     ];
 
-    const rows = (data ?? []).map(r => [
+    const rows = (data ?? []).map((r) => [
       r.id,
       r.date,
       r.amount_cents,
@@ -103,19 +144,25 @@ export async function GET(req: NextRequest) {
       r.method ?? "",
       r.memo ?? "",
       Array.isArray(r.tags) ? r.tags.join("|") : "",
-      r.created_at
+      r.created_at,
     ]);
 
-    const csv = [header.map(csvEscape).join(","), ...rows.map(line => line.map(csvEscape).join(","))].join("\n");
+    const csv = [
+      header.map(csvEscape).join(","),
+      ...rows.map((line) => line.map(csvEscape).join(",")),
+    ].join("\n");
 
-    const filename = `bank_tx_${org_id}_${new Date().toISOString().slice(0,10)}.csv`;
+    const filename = `bank_tx_${org_id}_${new Date().toISOString().slice(0, 10)}.csv`;
     return new Response(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${filename}"`
-      }
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
     });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }

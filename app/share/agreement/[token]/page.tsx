@@ -8,7 +8,11 @@ export default function AgreementSharePage() {
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [tpl, setTpl] = React.useState<{ title: string; description?: string | null; content: any } | null>(null);
+  const [tpl, setTpl] = React.useState<{
+    title: string;
+    description?: string | null;
+    content: any;
+  } | null>(null);
   const [fullName, setFullName] = React.useState("");
   const [checks, setChecks] = React.useState<Record<string, boolean>>({});
 
@@ -71,9 +75,24 @@ export default function AgreementSharePage() {
     }
   }
 
-  if (loading) return <main className="p-6"><p>Cargando…</p></main>;
-  if (error) return <main className="p-6"><p className="text-rose-600">{error}</p></main>;
-  if (!tpl) return <main className="p-6"><p>No disponible</p></main>;
+  if (loading)
+    return (
+      <main className="p-6">
+        <p>Cargando…</p>
+      </main>
+    );
+  if (error)
+    return (
+      <main className="p-6">
+        <p className="text-rose-600">{error}</p>
+      </main>
+    );
+  if (!tpl)
+    return (
+      <main className="p-6">
+        <p>No disponible</p>
+      </main>
+    );
 
   return (
     <main className="p-6 max-w-3xl mx-auto space-y-6">
@@ -87,9 +106,12 @@ export default function AgreementSharePage() {
               type="checkbox"
               className="mt-1"
               checked={!!checks[c.key]}
-              onChange={e => setChecks(prev => ({ ...prev, [c.key]: e.target.checked }))}
+              onChange={(e) => setChecks((prev) => ({ ...prev, [c.key]: e.target.checked }))}
             />
-            <span>{c.label}{c.required ? " *" : ""}</span>
+            <span>
+              {c.label}
+              {c.required ? " *" : ""}
+            </span>
           </label>
         ))}
         {tpl.content?.extra_rules && (
@@ -105,7 +127,7 @@ export default function AgreementSharePage() {
         <input
           className="rounded-xl border px-3 py-2"
           value={fullName}
-          onChange={e => setFullName(e.target.value)}
+          onChange={(e) => setFullName(e.target.value)}
           placeholder="Nombre Apellidos"
         />
       </label>

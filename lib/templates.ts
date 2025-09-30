@@ -32,7 +32,10 @@ export function isE164(s: string): boolean {
 
 /** Normaliza a formato E.164 “best effort” (quita separadores y convierte 00→+) */
 export function normalizeE164(s: string): string {
-  return s.replace(/[^\d+]/g, "").replace(/^00/, "+").trim();
+  return s
+    .replace(/[^\d+]/g, "")
+    .replace(/^00/, "+")
+    .trim();
 }
 
 /** Email bastante estricto (sin unicode avanzado) */

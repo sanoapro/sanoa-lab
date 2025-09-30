@@ -7,7 +7,7 @@ import { getActiveOrg } from "@/lib/org-local";
 type Template = {
   id: string;
   org_id: string;
-  module: "mente"|"equilibrio"|"sonrisa"|"pulso"|"general";
+  module: "mente" | "equilibrio" | "sonrisa" | "pulso" | "general";
   title: string;
   slug: string;
   description: string | null;
@@ -16,13 +16,19 @@ type Template = {
   updated_at?: string;
 };
 
-const MODULES = ["mente","equilibrio","sonrisa","pulso","general"] as const;
+const MODULES = ["mente", "equilibrio", "sonrisa", "pulso", "general"] as const;
 
 export default function TemplatesEditor() {
   const org = getActiveOrg();
   const [list, setList] = React.useState<Template[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [form, setForm] = React.useState<Partial<Template>>({ module: "general", title: "", description: "", content: {} as any, is_active: true });
+  const [form, setForm] = React.useState<Partial<Template>>({
+    module: "general",
+    title: "",
+    description: "",
+    content: {} as any,
+    is_active: true,
+  });
   const [q, setQ] = React.useState("");
   const [module, setModule] = React.useState<Template["module"] | "">("");
 
@@ -40,7 +46,9 @@ export default function TemplatesEditor() {
     else setList([]);
   }
 
-  React.useEffect(() => { load(); /* eslint-disable-next-line */ }, [org.id, q, module]);
+  React.useEffect(() => {
+    load(); /* eslint-disable-next-line */
+  }, [org.id, q, module]);
 
   async function save() {
     if (!org.id || !form.title || !form.module) return alert("Completa título y módulo");
@@ -60,7 +68,13 @@ export default function TemplatesEditor() {
     });
     const j = await r.json();
     if (!j?.ok) return alert(j?.error?.message || "Error al guardar");
-    setForm({ module: form.module, title: "", description: "", content: {} as any, is_active: true });
+    setForm({
+      module: form.module,
+      title: "",
+      description: "",
+      content: {} as any,
+      is_active: true,
+    });
     load();
   }
 
@@ -94,37 +108,73 @@ export default function TemplatesEditor() {
               onChange={(e) => setForm((f) => ({ ...f, module: e.target.value as any }))}
               className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             >
-              {MODULES.map(m => <option key={m} value={m}>{m}</option>)}
+              {MODULES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex flex-col gap-1 md:col-span-2">
             <span className="text-sm text-slate-500">Título</span>
-            <input className="rounded-xl border px-3 py-2" value={form.title ?? ""} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="p.ej., Respiración diafragmática 4-7-8" />
+            <input
+              className="rounded-xl border px-3 py-2"
+              value={form.title ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              placeholder="p.ej., Respiración diafragmática 4-7-8"
+            />
           </label>
         </div>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm text-slate-500">Descripción (opcional)</span>
-          <textarea className="rounded-xl border px-3 py-2" rows={3} value={form.description ?? ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+          <textarea
+            className="rounded-xl border px-3 py-2"
+            rows={3}
+            value={form.description ?? ""}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-slate-500">Contenido JSON (parámetros, pasos, links, etc.)</span>
-          <textarea className="font-mono text-xs rounded-xl border px-3 py-2" rows={8} value={jsonString(form.content)} onChange={e => setForm(f => ({ ...f, content: tryParse(e.target.value) }))} />
+          <span className="text-sm text-slate-500">
+            Contenido JSON (parámetros, pasos, links, etc.)
+          </span>
+          <textarea
+            className="font-mono text-xs rounded-xl border px-3 py-2"
+            rows={8}
+            value={jsonString(form.content)}
+            onChange={(e) => setForm((f) => ({ ...f, content: tryParse(e.target.value) }))}
+          />
         </label>
 
         <div className="flex items-center gap-3">
-          <button onClick={save} className="px-4 py-2 rounded-xl bg-blue-600 text-white">Guardar</button>
+          <button onClick={save} className="px-4 py-2 rounded-xl bg-blue-600 text-white">
+            Guardar
+          </button>
           {form.id && <span className="text-xs text-slate-500">Editando: {form.id}</span>}
         </div>
       </div>
 
       <div className="rounded-2xl border bg-white/95 dark:bg-slate-900/60">
         <div className="p-4 flex items-center gap-3">
-          <input className="rounded-xl border px-3 py-2" placeholder="Buscar…" value={q} onChange={e => setQ(e.target.value)} />
-          <select className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900" value={module} onChange={e => setModule(e.target.value as any)}>
+          <input
+            className="rounded-xl border px-3 py-2"
+            placeholder="Buscar…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <select
+            className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+            value={module}
+            onChange={(e) => setModule(e.target.value as any)}
+          >
             <option value="">Todos</option>
-            {MODULES.map(m => <option key={m} value={m}>{m}</option>)}
+            {MODULES.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
           </select>
           {loading && <span className="text-sm text-slate-500">Cargando…</span>}
         </div>
@@ -140,20 +190,30 @@ export default function TemplatesEditor() {
               </tr>
             </thead>
             <tbody>
-              {list.map(t => (
+              {list.map((t) => (
                 <tr key={t.id} className="border-b">
                   <td className="p-2">{t.title}</td>
                   <td className="p-2">{t.module}</td>
                   <td className="p-2">{t.is_active ? "Sí" : "No"}</td>
-                  <td className="p-2">{t.updated_at ? new Date(t.updated_at).toLocaleString() : "—"}</td>
+                  <td className="p-2">
+                    {t.updated_at ? new Date(t.updated_at).toLocaleString() : "—"}
+                  </td>
                   <td className="p-2 flex gap-2">
-                    <button className="px-3 py-1 rounded-lg border" onClick={() => edit(t)}>Editar</button>
-                    <button className="px-3 py-1 rounded-lg border" onClick={() => remove(t.id)}>Desactivar</button>
+                    <button className="px-3 py-1 rounded-lg border" onClick={() => edit(t)}>
+                      Editar
+                    </button>
+                    <button className="px-3 py-1 rounded-lg border" onClick={() => remove(t.id)}>
+                      Desactivar
+                    </button>
                   </td>
                 </tr>
               ))}
               {list.length === 0 && !loading && (
-                <tr><td className="p-4 text-slate-500" colSpan={5}>Sin plantillas.</td></tr>
+                <tr>
+                  <td className="p-4 text-slate-500" colSpan={5}>
+                    Sin plantillas.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -163,6 +223,20 @@ export default function TemplatesEditor() {
   );
 }
 
-function jsonString(v: any) { try { return JSON.stringify(v ?? {}, null, 2); } catch { return "{}"; } }
-function tryParse(s: string) { try { return JSON.parse(s); } catch { return {}; } }
-function safeJson(v: any){ return v && typeof v === "object" ? v : {}; }
+function jsonString(v: any) {
+  try {
+    return JSON.stringify(v ?? {}, null, 2);
+  } catch {
+    return "{}";
+  }
+}
+function tryParse(s: string) {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return {};
+  }
+}
+function safeJson(v: any) {
+  return v && typeof v === "object" ? v : {};
+}

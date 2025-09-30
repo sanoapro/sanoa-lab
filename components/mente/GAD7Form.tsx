@@ -18,7 +18,11 @@ const opts = [
   { v: 3, t: "Casi todos los días (3)" },
 ];
 
-export default function GAD7Form({ onScore }: { onScore: (res: any, answers: Record<string, number>) => void }) {
+export default function GAD7Form({
+  onScore,
+}: {
+  onScore: (res: any, answers: Record<string, number>) => void;
+}) {
   const [ans, setAns] = useState<Record<string, number>>({});
 
   function setQ(i: number, v: number) {
@@ -40,7 +44,11 @@ export default function GAD7Form({ onScore }: { onScore: (res: any, answers: Rec
       {items.map((text, i) => (
         <div key={i} className="grid md:grid-cols-2 gap-2 items-center">
           <label className="text-sm">{text}</label>
-          <select className="border rounded px-3 py-2" value={ans[`q${i + 1}`] ?? ""} onChange={(e) => setQ(i, Number(e.target.value))}>
+          <select
+            className="border rounded px-3 py-2"
+            value={ans[`q${i + 1}`] ?? ""}
+            onChange={(e) => setQ(i, Number(e.target.value))}
+          >
             <option value="">Selecciona…</option>
             {opts.map((o) => (
               <option key={o.v} value={o.v}>

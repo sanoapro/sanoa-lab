@@ -29,8 +29,8 @@ export default function TestEmojiPage() {
             const kind = repr?.startsWith?.("svg:")
               ? "svg"
               : repr?.startsWith?.("lucide:")
-              ? "lucide"
-              : "text";
+                ? "lucide"
+                : "text";
             return (
               <div key={t} className="rounded-xl border p-3 space-y-2">
                 <div className="flex items-center gap-2">
@@ -38,8 +38,12 @@ export default function TestEmojiPage() {
                   <strong>{t}</strong>
                 </div>
                 <div className="text-xs text-slate-500">
-                  <div>repr: <code>{String(repr)}</code></div>
-                  <div>kind: <code>{kind}</code></div>
+                  <div>
+                    repr: <code>{String(repr)}</code>
+                  </div>
+                  <div>
+                    kind: <code>{kind}</code>
+                  </div>
                 </div>
               </div>
             );

@@ -17,7 +17,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!pb.success) return jsonError("VALIDATION_ERROR", "org_id requerido", 400);
 
   if (pb.data.hard_delete) {
-    const { error } = await supa.from("agreements_templates").delete().eq("id", pp.data.id).eq("org_id", pb.data.org_id);
+    const { error } = await supa
+      .from("agreements_templates")
+      .delete()
+      .eq("id", pp.data.id)
+      .eq("org_id", pb.data.org_id);
     if (error) return jsonError("DB_ERROR", error.message, 400);
     return jsonOk({ deleted: true });
   } else {

@@ -23,7 +23,9 @@ function useQueryParam(name: string) {
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}>
+    <Suspense
+      fallback={<div className="p-6 text-center text-[var(--color-brand-bluegray)]">Cargando…</div>}
+    >
       <RequireAuth>
         <PageInner />
       </RequireAuth>

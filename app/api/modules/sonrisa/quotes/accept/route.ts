@@ -23,7 +23,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: { code: "BAD_REQUEST", message: "org_id, quote_id y signature_data_url son requeridos" },
+        error: {
+          code: "BAD_REQUEST",
+          message: "org_id, quote_id y signature_data_url son requeridos",
+        },
       },
       { status: 400 },
     );
