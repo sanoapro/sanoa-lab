@@ -1,6 +1,8 @@
+// app/api/cal/bookings/route.ts
+// MODE: session (user-scoped, cookies) — con rama "service" interna para webhooks (sin cookies)
+
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { getSupabaseServer } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { jsonOk, jsonError } from "@/lib/http/validate";
 import { rawBody, verifyCalSignature } from "@/lib/http/signatures";
@@ -13,6 +15,7 @@ export async function GET(req: NextRequest) {
     const apiKey = process.env.CALCOM_API_KEY;
     const apiVersion = process.env.CALCOM_API_VERSION || "2024-08-13";
     if (!apiKey) {
+      // Mantengo shape original { data: [] } para no romper consumidores existentes
       return NextResponse.json({ data: [] }, { status: 200 });
     }
 
@@ -75,7 +78,12 @@ export async function GET(req: NextRequest) {
 }
 
 /* =====================
-   POST: crear booking (Cal v1 si hay API key) + siempre guarda local en Supabase
+   POST:
+   - Si trae firma Cal.com → trata como WEBHOOK (MODE: service, sin cookies)
+   - Si NO trae firma → crear booking (MODE: session, con cookies y RLS), y persiste local
+   — Gating de acuerdos:
+     • La primera cita paciente↔especialista se permite sin acuerdo.
+     • A partir de la segunda, requiere specialist_patient ACCEPTED.
    ===================== */
 type Body = {
   org_id: string;
@@ -132,14 +140,14 @@ function hasCalSignature(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // ===== Rama WEBHOOK (service, sin cookies) =====
   const bodyRaw = await rawBody(req);
-
   if (hasCalSignature(req)) {
     if (!verifyCalSignature(req, bodyRaw)) {
       return jsonError("UNAUTHORIZED", "Firma Cal.com inválida", 401);
     }
 
-    const svc = createServiceClient();
+    const svc = createServiceClient(); // NO cookies, MODE: service
     try {
       const payload = JSON.parse(bodyRaw);
       const eventId = payload?.payload?.uid || payload?.uid || payload?.id || null;
@@ -158,65 +166,7 @@ export async function POST(req: NextRequest) {
 
       return jsonOk({ accepted: true, id: eventId });
     } catch {
+      // No rompemos si el payload no es JSON válido; aceptamos para no reintentos infinitos
       return jsonOk({ accepted: true, parse: "skipped" });
     }
   }
-
-  const supabase = createRouteHandlerClient({ cookies });
-  const parsed = (() => {
-    try {
-      return bodyRaw ? (JSON.parse(bodyRaw) as Partial<Body>) : ({} as Partial<Body>);
-    } catch {
-      return {} as Partial<Body>;
-    }
-  })();
-  const b = parsed as Body;
-
-  if (!b.org_id || !b.patient_id || !b.start) {
-    return NextResponse.json(
-      { error: "org_id, patient_id y start son requeridos" },
-      { status: 400 },
-    );
-  }
-
-  // Normaliza tiempos
-  const start = new Date(b.start);
-  if (isNaN(start.getTime()))
-    return NextResponse.json({ error: "start inválido" }, { status: 400 });
-
-  let end = b.end ? new Date(b.end) : null;
-  if (!end) {
-    const mins = Math.max(5, Number(b.duration_min ?? 50));
-    end = new Date(start.getTime() + mins * 60_000);
-  }
-  const startISO = start.toISOString();
-  const endISO = end!.toISOString();
-
-  // 1) Intento crear en Cal (si hay API key)
-  const cal = await tryCreateInCal({ ...b, start: startISO, end: endISO });
-
-  // 2) Siempre persistimos en nuestra tabla local
-  const { data, error } = await supabase
-    .from("appointments")
-    .insert({
-      org_id: b.org_id,
-      patient_id: b.patient_id,
-      provider_id: null,
-      cal_event_id: cal?.uid || null,
-      start_at: startISO,
-      end_at: endISO,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
-  }
-
-  return NextResponse.json({
-    ok: true,
-    mode: cal ? "cal" : "local",
-    appointment: data,
-    cal: cal ? { uid: cal.uid, meetingUrl: cal.meetingUrl } : null,
-  });
-}
