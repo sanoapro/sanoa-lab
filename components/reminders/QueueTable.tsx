@@ -25,20 +25,37 @@ export default function QueueTable() {
   const [loading, setLoading] = React.useState(false);
 
   async function load() {
-    if (!org.id) return;
+    if (!org.id) {
+      setItems([]);
+      return;
+    }
     setLoading(true);
-    const url = new URL("/api/reminders/queue/list", window.location.origin);
-    url.searchParams.set("org_id", org.id);
-    if (status) url.searchParams.set("status", status);
-    url.searchParams.set("limit", "100");
-    const r = await fetch(url.toString(), { cache: "no-store" });
-    const j = await r.json();
-    setLoading(false);
-    if (j?.ok && Array.isArray(j.data)) setItems(j.data as Item[]);
-    else setItems([]);
+    try {
+      const url = new URL("/api/reminders/queue/list", window.location.origin);
+      url.searchParams.set("org_id", org.id);
+      if (status) url.searchParams.set("status", status);
+      url.searchParams.set("limit", "100");
+
+      const r = await fetch(url.toString(), { cache: "no-store" });
+      const j = await r.json().catch(() => null);
+      if (j?.ok && Array.isArray(j.data)) {
+        setItems(j.data as Item[]);
+      } else if (Array.isArray(j?.items)) {
+        setItems(j.items as Item[]);
+      } else {
+        setItems([]);
+      }
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  React.useEffect(() => { load(); /* eslint-disable-next-line */ }, [org.id, status]);
+  React.useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [org.id, status]);
 
   return (
     <div className="rounded-2xl border bg-white/95 dark:bg-slate-900/60">
@@ -57,9 +74,12 @@ export default function QueueTable() {
             <option value="failed">failed</option>
             <option value="canceled">canceled</option>
           </select>
-          <button onClick={load} className="px-3 py-1 rounded-lg border">Refrescar</button>
+          <button onClick={load} className="px-3 py-1 rounded-lg border">
+            Refrescar
+          </button>
         </div>
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -74,23 +94,32 @@ export default function QueueTable() {
             </tr>
           </thead>
           <tbody>
-            {items.map(i => (
+            {items.map((i) => (
               <tr key={i.id} className="border-b">
                 <td className="p-2">{new Date(i.created_at).toLocaleString()}</td>
                 <td className="p-2">{i.status}</td>
                 <td className="p-2">{i.channel}</td>
                 <td className="p-2">{i.template_slug}</td>
                 <td className="p-2">{i.attempt_count}</td>
-                <td className="p-2">{i.next_attempt_at ? new Date(i.next_attempt_at).toLocaleString() : "—"}</td>
-                <td className="p-2 max-w-[280px] truncate" title={i.last_error ?? ""}>{i.last_error ?? "—"}</td>
+                <td className="p-2">
+                  {i.next_attempt_at ? new Date(i.next_attempt_at).toLocaleString() : "—"}
+                </td>
+                <td className="p-2 max-w-[280px] truncate" title={i.last_error ?? ""}>
+                  {i.last_error ?? "—"}
+                </td>
               </tr>
             ))}
             {items.length === 0 && !loading && (
-              <tr><td className="p-4 text-slate-500" colSpan={7}>Sin datos de cola por ahora.</td></tr>
+              <tr>
+                <td className="p-4 text-slate-500" colSpan={7}>
+                  Sin datos de cola por ahora.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
+
       {loading && <div className="p-3 text-sm text-slate-500">Cargando…</div>}
     </div>
   );
