@@ -1,198 +1,199 @@
-// app/(app)/especialidades/page.tsx
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import AccentHeader from "@/components/ui/AccentHeader";
-import ColorEmoji from "@/components/ColorEmoji";
-import AnimateIn from "@/components/ui/AnimateIn";
 
-const SPECIALTIES = [
+type FeatureKey = "mente" | "pulso" | "sonrisa" | "equilibrio";
+
+async function getActiveOrgId(): Promise<string | null> {
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    return cookieStore.get("org_id")?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchOrgFeatures(orgId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/orgs/features/check?org_id=${orgId}`,
+      { cache: "no-store", headers: { "x-requested-from": "especialidades-page" } }
+    );
+    if (!res.ok) throw new Error("fetch features failed");
+    const json = await res.json();
+    const features = (json?.features ?? {}) as Partial<Record<FeatureKey, boolean>>;
+    const bank_ready = Boolean(json?.bank_ready);
+    return { features, bank_ready };
+  } catch {
+    return { features: {} as Partial<Record<FeatureKey, boolean>>, bank_ready: false };
+  }
+}
+
+const CATALOG: Array<{
+  key: FeatureKey;
+  title: string;
+  emoji: string;
+  description: string;
+  viewHref: string;
+}> = [
   {
-    href: "/modulos/mente",
-    name: "Mente",
-    desc: "Evaluaciones clínicas avanzadas, notas SOAP y seguimiento emocional.",
-    token: "mente",
-    featureKey: "mente",
+    key: "mente",
+    title: "Mente Pro",
+    emoji: "🧠",
+    description: "Evaluaciones, escalas (PHQ-9, GAD-7) y planes de apoyo.",
+    viewHref: "/modulos?tab=mente",
   },
   {
-    href: "/modulos/pulso",
-    name: "Pulso",
-    desc: "Indicadores vitales, metas cardiometabólicas y panel de riesgo.",
-    token: "pulso",
-    featureKey: "pulso",
+    key: "pulso",
+    title: "Pulso Pro",
+    emoji: "🫀",
+    description: "Indicadores clínicos, semáforos y riesgo CV.",
+    viewHref: "/modulos?tab=pulso",
   },
   {
-    href: "/modulos/equilibrio",
-    name: "Equilibrio",
-    desc: "Planes de hábitos, ejercicios y bitácoras de progreso.",
-    token: "equilibrio",
-    featureKey: "equilibrio",
+    key: "equilibrio",
+    title: "Equilibrio Pro",
+    emoji: "🧘",
+    description: "Planes de hábitos, seguimiento y check-ins.",
+    viewHref: "/modulos?tab=equilibrio",
   },
   {
-    href: "/modulos/sonrisa",
-    name: "Sonrisa",
-    desc: "Odontograma digital, presupuestos inteligentes y firmas electrónicas.",
-    token: "sonrisa",
-    featureKey: "sonrisa",
+    key: "sonrisa",
+    title: "Sonrisa Pro",
+    emoji: "🦷",
+    description: "Odontograma, presupuestos y firma digital.",
+    viewHref: "/modulos?tab=sonrisa",
   },
 ];
 
-type SubscriptionStatus = {
-  ok?: boolean;
-  data?: {
-    active?: boolean;
-    modules?: Record<string, boolean> | null;
-  };
-};
-
-export default function EspecialidadesPage() {
-  const [status, setStatus] = useState<SubscriptionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [orgId] = useState<string>(() =>
-    typeof window !== "undefined" ? window.localStorage.getItem("org_id") || "" : "",
+function StatusChip({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+        active
+          ? "bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20"
+          : "bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20"
+      }`}
+    >
+      {active ? "Activa" : "Bloqueada"}
+    </span>
   );
+}
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setLoading(true);
-        if (!orgId) {
-          if (!alive) return;
-          setStatus({ ok: false, data: { active: false, modules: {} } });
-          return;
-        }
+export default async function Page() {
+  const orgId = await getActiveOrgId();
+  if (!orgId) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-semibold">
+          <span className="emoji">🧩</span> Especialidades
+        </h1>
+        <div className="glass-card">
+          <p className="mb-3">
+            Selecciona una organización activa para ver y gestionar tus Especialidades Pro.
+          </p>
+          <div className="mt-2">
+            <Link href="/dashboard" className="glass-btn">
+              <span className="emoji mr-1">🏷️</span> Elegir organización
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-        const params = new URLSearchParams({ org_id: orgId });
-        const r = await fetch(`/api/billing/subscription/status?${params.toString()}`, {
-          cache: "no-store",
-        });
-        if (!r.ok) {
-          if (!alive) return;
-          setStatus({ ok: false, data: { active: false, modules: {} } });
-          return;
-        }
-
-        const j = (await r.json()) as SubscriptionStatus;
-        if (!alive) return;
-        setStatus({ ok: j?.ok ?? true, data: j?.data });
-      } catch (err) {
-        if (!alive) return;
-        setStatus({ ok: false, data: { active: false, modules: {} } });
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [orgId]);
-
-  const bankReady = status ? status.ok !== false : false;
-  const modules = bankReady ? status?.data?.modules || {} : {};
-  const subActive = bankReady && Boolean(status?.data?.active);
+  const { features, bank_ready } = await fetchOrgFeatures(orgId);
 
   return (
-    <main className="space-y-8">
-      <AnimateIn>
-        <AccentHeader
-          title="Especialidades Pro"
-          subtitle="Activa módulos clínicos avanzados y pruébalos en modo vista previa. Gestiona accesos desde Sanoa Bank."
-          emojiToken="carpeta"
-        />
-      </AnimateIn>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">
+          <span className="emoji">🧩</span> Especialidades
+        </h1>
+        <div className="flex items-center gap-2">
+          <Link href="/banco" className="glass-btn">
+            <span className="emoji mr-1">🏦</span> Sanoa Bank
+          </Link>
+          <Link href="/modulos" className="glass-btn">
+            <span className="emoji mr-1">📚</span> Ver módulos
+          </Link>
+        </div>
+      </div>
 
-      {!loading && status?.ok === false && (
-        <AnimateIn>
-          <div className="glass rounded-3xl border border-[var(--color-brand-border)] bg-white/95 p-6 text-[var(--color-brand-text)] shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:bg-slate-900/70 dark:text-slate-100">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Configura Sanoa Bank para desbloquear especialidades</h3>
-                <p className="text-sm text-[var(--color-brand-text)]/70 dark:text-slate-100/80">
-                  Necesitas completar la configuración de Sanoa Bank antes de activar los módulos Pro en tu organización.
-                </p>
-              </div>
-              <Link
-                href="/banco"
-                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-400 bg-emerald-300 px-5 py-2 font-semibold text-emerald-950 shadow-[0_0_18px_rgba(52,211,153,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_0_26px_rgba(52,211,153,0.75)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-              >
-                Desbloquear con Sanoa Bank
-              </Link>
-            </div>
+      <div className="glass-card">
+        <p className="text-sm text-contrast mb-2">
+          Activa sólo lo que necesites. <strong>Las Especialidades Pro se habilitan a través de Sanoa Bank</strong> y
+          puedes cambiarlas en cualquier momento.
+        </p>
+        {!bank_ready && (
+          <div className="mt-2 text-sm">
+            <span className="emoji mr-1">ℹ️</span>
+            Primero configura tu cuenta en{" "}
+            <Link className="underline" href="/banco">
+              Sanoa Bank
+            </Link>{" "}
+            para poder desbloquear.
           </div>
-        </AnimateIn>
-      )}
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-        {SPECIALTIES.map((spec, idx) => {
-          const enabled = Boolean(modules?.[spec.featureKey]);
-          const locked = !(subActive && enabled);
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {CATALOG.map((item) => {
+          const active = Boolean(features[item.key]);
+          const unlockHref = bank_ready ? `/banco?checkout=${item.key}&org_id=${orgId}` : "/banco";
           return (
-            <AnimateIn key={spec.featureKey} delay={idx * 60}>
-              <div className="glass relative flex h-full flex-col gap-6 rounded-3xl p-6 md:p-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <span className="inline-grid h-16 w-16 place-content-center rounded-3xl border border-[var(--color-brand-border)] bg-white/80 text-5xl dark:bg-slate-900/40">
-                      <ColorEmoji token={spec.token} className="text-5xl" />
-                    </span>
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-semibold text-[var(--color-brand-text)] md:text-[28px]">
-                        {spec.name}
-                      </h2>
-                      <p className="text-base leading-relaxed text-[var(--color-brand-text)]/80 dark:text-slate-100/90">
-                        {spec.desc}
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`rounded-full border px-3 py-1 text-sm font-medium ${
-                      locked
-                        ? "bg-amber-100 text-amber-800 border-amber-200"
-                        : "bg-emerald-100 text-emerald-900 border-emerald-200"
-                    }`}
-                  >
-                    {locked ? "Bloqueada" : "Activa"}
-                  </span>
+            <div key={item.key} className="glass-card bubble">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    <span className="emoji mr-2">{item.emoji}</span>
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-contrast/90">{item.description}</p>
                 </div>
+                <StatusChip active={active} />
+              </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link
-                    href={spec.href}
-                    className={`glass-btn inline-flex items-center gap-2 rounded-full px-5 py-3 text-base font-semibold transition ${
-                      locked ? "pointer-events-none opacity-60" : "hover:-translate-y-0.5"
-                    }`}
-                    aria-disabled={locked}
-                    onClick={(e) => {
-                      if (locked) e.preventDefault();
-                    }}
-                  >
-                    🚀 Abrir vista previa
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href={item.viewHref} className="glass-btn">
+                  <span className="emoji mr-1">👀</span> Ver módulo
+                </Link>
+                {active ? (
+                  <Link href="/banco" className="glass-btn">
+                    <span className="emoji mr-1">🧾</span> Gestionar en Bank
                   </Link>
-                  <Link
-                    href={`/banco?module=${encodeURIComponent(spec.featureKey)}`}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-brand-border)] bg-white/80 px-5 py-3 text-base font-semibold text-[var(--color-brand-text)] transition hover:bg-white/95 dark:bg-slate-900/50 dark:text-slate-100 dark:hover:bg-slate-900/70"
-                  >
-                    <span className="emoji">🏦</span> Gestionar en Bank
+                ) : (
+                  <Link href={unlockHref} className="glass-btn neon">
+                    <span className="emoji mr-1">🔓</span> Desbloquear con Sanoa Bank
                   </Link>
-                </div>
-
-                {locked && (
-                  <div className="text-sm text-[var(--color-brand-text)]/70 dark:text-slate-100/80">
-                    Requiere suscripción activa. Completa la compra en Sanoa Bank y los accesos se desbloquearán al instante.
-                  </div>
-                )}
-
-                {loading && idx === 0 && (
-                  <div className="text-xs text-[var(--color-brand-text)]/60 dark:text-slate-100/70">
-                    Comprobando estado de módulos…
-                  </div>
                 )}
               </div>
-            </AnimateIn>
+            </div>
           );
         })}
       </div>
-    </main>
+
+      <div className="glass-card">
+        <h4 className="font-medium mb-1">
+          <span className="emoji mr-1">🧾</span> Suscripciones
+        </h4>
+        <p className="text-sm text-contrast mb-3">
+          Resumen rápido de tus estados para <span className="font-medium">esta organización</span>.
+        </p>
+        <ul className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          {CATALOG.map((m) => {
+            const active = Boolean(features[m.key]);
+            return (
+              <li key={m.key} className="flex items-center justify-between glass-subtle px-3 py-2 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="emoji">{m.emoji}</span>
+                  <span className="text-sm">{m.title.replace(" Pro", "")}</span>
+                </div>
+                <StatusChip active={active} />
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
   );
 }
