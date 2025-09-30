@@ -13,7 +13,7 @@ type NavItem = { href: string; label: string; token: string; emoji: string };
 
 const NAV: NavItem[] = [
   { href: "/consultorio", label: "Consultorio", token: "tablero", emoji: "🩺" },
-  { href: "/areas", label: "Áreas Pro", token: "carpeta", emoji: "🗂️" },
+  { href: "/especialidades", label: "Especialidades", token: "carpeta", emoji: "🧩" },
   { href: "/banco", label: "Banco", token: "banco", emoji: "🏦" },
   { href: "/perfil", label: "Perfil", token: "perfil", emoji: "🙂" },
   { href: "/ajustes", label: "Ajustes", token: "ajustes", emoji: "⚙️" },
@@ -64,7 +64,7 @@ export default function Navbar() {
         </Link>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-1 text-[17px]">
+        <nav className="hidden md:flex items-center gap-2 text-[18px]">
           {NAV.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -75,15 +75,15 @@ export default function Navbar() {
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={[
-                  "inline-flex items-center gap-3 px-3 py-3 rounded-lg border transition",
+                  "inline-flex items-center gap-3.5 px-3.5 py-3.5 rounded-xl border transition text-[18px]",
                   "text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-white/10",
                   isActive
                     ? "bg-white dark:bg-white/10 border-slate-200 dark:border-slate-700"
                     : "border-transparent",
                 ].join(" ")}
               >
-                <EmojiIcon emoji={item.emoji} title={item.label} />
-                <span className="font-medium text-[17px]">{item.label}</span>
+                <EmojiIcon emoji={item.emoji} title={item.label} size="text-[26px]" />
+                <span className="font-semibold">{item.label}</span>
               </Link>
             );
           })}
@@ -94,7 +94,7 @@ export default function Navbar() {
           <button
             onClick={handleSignOut}
             disabled={signingOut}
-            className="inline-flex items-center gap-2 px-3 py-3 rounded-xl bg-rose-500 text-white text-[17px] hover:brightness-95 active:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center gap-2.5 px-4 py-3.5 rounded-2xl bg-rose-500 text-white text-[18px] hover:brightness-95 active:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed transition"
             title="Cerrar sesión"
           >
             <ColorEmoji token="desbloquear" />

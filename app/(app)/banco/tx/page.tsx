@@ -6,6 +6,7 @@ import TxTable from "@/components/bank/TxTable";
 import SavedViewsBar from "@/components/saved-views/SavedViewsBar";
 import { useSearchParams } from "next/navigation";
 import { getActiveOrg } from "@/lib/org-local";
+import OrgSelectorHint from "@/components/bank/OrgSelectorHint";
 
 export default function BankTxPage() {
   const org = useMemo(() => getActiveOrg(), []);
@@ -30,9 +31,9 @@ export default function BankTxPage() {
       </div>
 
       {!orgId && (
-        <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 mt-2">
-          Selecciona una organización activa para continuar.
-        </p>
+        <div className="mt-2">
+          <OrgSelectorHint />
+        </div>
       )}
       {orgId && (
         <>
