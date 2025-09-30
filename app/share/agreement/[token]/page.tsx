@@ -15,20 +15,32 @@ export default function AgreementSharePage() {
   React.useEffect(() => {
     (async () => {
       setLoading(true);
-      const r = await fetch(`/api/agreements/share/${token}`);
-      const j = await r.json();
-      setLoading(false);
-      if (!j?.ok) { setError(j?.error?.message || "No disponible"); return; }
-      setTpl(j.data.template);
-      const def: Record<string, boolean> = {};
-      (j.data.template?.content?.clauses ?? []).forEach((c: any) => def[c.key] = !!c.defaultChecked);
-      setChecks(def);
+      try {
+        const r = await fetch(`/api/agreements/share/${token}`, { cache: "no-store" });
+        const j = await r.json();
+        if (!j?.ok) {
+          setError(j?.error?.message || "No disponible");
+          setTpl(null);
+        } else {
+          setTpl(j.data.template);
+          const def: Record<string, boolean> = {};
+          (j.data.template?.content?.clauses ?? []).forEach((c: any) => {
+            def[c.key] = !!c.defaultChecked;
+          });
+          setChecks(def);
+        }
+      } catch {
+        setError("No disponible");
+        setTpl(null);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [token]);
 
   async function accept() {
     if (!tpl) return;
-    // Validar requeridos
+    // Validar cláusulas requeridas
     const clauses = tpl.content?.clauses ?? [];
     for (const c of clauses) {
       if (c.required && !checks[c.key]) {
@@ -36,16 +48,27 @@ export default function AgreementSharePage() {
         return;
       }
     }
-    if (!fullName.trim()) return alert("Escribe tu nombre completo");
-    const r = await fetch(`/api/agreements/share/${token}/accept`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ full_name: fullName.trim(), accept: true, extra: { checks } }),
-    });
-    const j = await r.json();
-    if (!j?.ok) { alert(j?.error?.message || "Error"); return; }
-    alert("Acuerdo aceptado ✅");
-    window.location.replace("/");
+    if (!fullName.trim()) {
+      alert("Escribe tu nombre completo");
+      return;
+    }
+
+    try {
+      const r = await fetch(`/api/agreements/share/${token}/accept`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ full_name: fullName.trim(), accept: true, extra: { checks } }),
+      });
+      const j = await r.json();
+      if (!j?.ok) {
+        alert(j?.error?.message || "Error");
+        return;
+      }
+      alert("Acuerdo aceptado ✅");
+      window.location.replace("/");
+    } catch {
+      alert("No se pudo registrar tu aceptación");
+    }
   }
 
   if (loading) return <main className="p-6"><p>Cargando…</p></main>;
@@ -60,7 +83,12 @@ export default function AgreementSharePage() {
       <section className="rounded-2xl border bg-white p-4 space-y-3">
         {(tpl.content?.clauses ?? []).map((c: any) => (
           <label key={c.key} className="flex items-start gap-3">
-            <input type="checkbox" className="mt-1" checked={!!checks[c.key]} onChange={e => setChecks(prev => ({ ...prev, [c.key]: e.target.checked }))} />
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={!!checks[c.key]}
+              onChange={e => setChecks(prev => ({ ...prev, [c.key]: e.target.checked }))}
+            />
             <span>{c.label}{c.required ? " *" : ""}</span>
           </label>
         ))}
@@ -74,10 +102,17 @@ export default function AgreementSharePage() {
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-slate-500">Nombre completo (firma)</span>
-        <input className="rounded-xl border px-3 py-2" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Nombre Apellidos" />
+        <input
+          className="rounded-xl border px-3 py-2"
+          value={fullName}
+          onChange={e => setFullName(e.target.value)}
+          placeholder="Nombre Apellidos"
+        />
       </label>
 
-      <button onClick={accept} className="px-4 py-2 rounded-xl bg-blue-600 text-white">Aceptar acuerdo</button>
+      <button onClick={accept} className="px-4 py-2 rounded-xl bg-blue-600 text-white">
+        Aceptar acuerdo
+      </button>
       <p className="text-xs text-slate-500">Al continuar aceptas los términos arriba descritos.</p>
     </main>
   );
