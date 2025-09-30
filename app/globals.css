@@ -352,3 +352,40 @@ button {
 .tile-btn--danger:hover {
   background: #ffe4e6;
 }
+
+:root {
+  --scale: 1.06; /* sube todo ~6% */
+}
+
+html { font-size: calc(16px * var(--scale)); }
+* { -webkit-tap-highlight-color: transparent; }
+
+.glass {
+  background: var(--card-bg, rgba(255,255,255,0.14));
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+}
+
+.dark .glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  border-color: rgba(255,255,255,0.12);
+}
+
+.glass-btn {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+}
+
+.dark .glass-btn {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* Mejor contraste en dark dentro de tarjetas */
+.dark .glass, .dark .glass * {
+  color: rgba(255,255,255,0.92);
+}
