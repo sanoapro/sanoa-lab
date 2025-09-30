@@ -1,3 +1,4 @@
+// MODE: session (user-scoped, cookies)
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
@@ -20,7 +21,12 @@ export async function POST(req: NextRequest) {
   const parsed = parseOrError(BodySchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
-  const { data, error } = await supa.from("prescriptions").insert(parsed.data).select("id").single();
+  const { data, error } = await supa
+    .from("prescriptions")
+    .insert(parsed.data)
+    .select("id")
+    .single();
+
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
   return jsonOk<{ id: string }>(data);

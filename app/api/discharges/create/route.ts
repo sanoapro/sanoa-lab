@@ -1,3 +1,4 @@
+// MODE: session (user-scoped, cookies)
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";

@@ -1,3 +1,4 @@
+// MODE: session (user-scoped, cookies)
 import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { jsonOk, jsonError, readOrgIdFromQuery } from "@/lib/http/validate";
@@ -11,6 +12,9 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   if (org.ok) q = q.eq("org_id", org.org_id);
 
   const { data, error } = await q.single();
-  if (error || !data) return jsonError("NOT_FOUND", "Receta no encontrada", 404);
+  if (error || !data) {
+    return jsonError("NOT_FOUND", "Receta no encontrada", 404);
+  }
+
   return jsonOk(data);
 }
