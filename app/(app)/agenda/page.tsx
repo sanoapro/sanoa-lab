@@ -220,7 +220,10 @@ export default function AgendaPage() {
           <ColorEmoji token="agenda" />
           <span>Agenda</span>
         </h1>
-        <Button onClick={() => setOpenNew(true)}>Nueva cita</Button>
+        <Button onClick={() => setOpenNew(true)} className="inline-flex items-center gap-2">
+          <ColorEmoji token="nuevo" size={16} />
+          Nueva cita
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">

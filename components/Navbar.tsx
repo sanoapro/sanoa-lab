@@ -13,7 +13,7 @@ type NavItem = { href: string; label: string; token: string; emoji: string };
 
 const NAV: NavItem[] = [
   { href: "/consultorio", label: "Consultorio", token: "tablero", emoji: "🩺" },
-  { href: "/areas", label: "Áreas Pro", token: "carpeta", emoji: "🗂️" },
+  { href: "/areas", label: "Especialidades", token: "puzzle", emoji: "🧩" },
   { href: "/banco", label: "Banco", token: "banco", emoji: "🏦" },
   { href: "/perfil", label: "Perfil", token: "perfil", emoji: "🙂" },
   { href: "/ajustes", label: "Ajustes", token: "ajustes", emoji: "⚙️" },

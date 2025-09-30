@@ -87,7 +87,7 @@ export default function RecordatoriosPage() {
               className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border"
               title="Exportar CSV (respeta filtros)"
             >
-              Exportar CSV
+              <ColorEmoji token="exportar" size={16} /> Exportar CSV
             </a>
           </div>
 
