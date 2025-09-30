@@ -1,53 +1,33 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+// MODE: session (user-scoped, cookies)
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { jsonOk, jsonError, parseJson, parseOrError, readOrgIdFromQuery } from "@/lib/http/validate";
 
-export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
+const UpsertSchema = z.object({
+  id: z.string().uuid().optional(),
+  org_id: z.string().uuid(),
+  name: z.string().min(1),
+  content: z.any(),
+  is_active: z.boolean().default(true),
+});
 
-  const { data: mem } = await supabase
-    .from("organization_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const org_id = mem?.org_id;
-
-  const { data } = await supabase
-    .from("referral_templates")
-    .select("*")
-    .eq("org_id", org_id)
-    .or(`doctor_id.is.null,doctor_id.eq.${user.id}`)
-    .order("doctor_id", { ascending: false });
-
-  return NextResponse.json({ items: data || [] });
+export async function GET(req: NextRequest) {
+  const supa = await getSupabaseServer();
+  const q = readOrgIdFromQuery(req);
+  if (!q.ok) return jsonError(q.error.code, q.error.message, 400);
+  const { data, error } = await supa.from("referral_templates").select("*").eq("org_id", q.org_id).order("name");
+  if (error) return jsonError("DB_ERROR", error.message, 400);
+  return jsonOk(data);
 }
 
-export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
+export async function POST(req: NextRequest) {
+  const supa = await getSupabaseServer();
+  const body = await parseJson(req);
+  const parsed = parseOrError(UpsertSchema, body);
+  if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
-  const body = await req.json().catch(() => null);
-  const { name, body: b = {}, doctor_scope = true, specialty = null } = body || {};
-  const { data: mem } = await supabase
-    .from("organization_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const org_id = mem?.org_id;
-
-  const payload = { org_id, doctor_id: doctor_scope ? user.id : null, specialty, name, body: b };
-  const { data, error } = await supabase
-    .from("referral_templates")
-    .insert(payload)
-    .select("*")
-    .single();
-  if (error) return NextResponse.json({ error: "create_failed" }, { status: 500 });
-  return NextResponse.json({ item: data });
+  const { data, error } = await supa.from("referral_templates").upsert(parsed.data, { onConflict: "id" }).select("id").single();
+  if (error) return jsonError("DB_ERROR", error.message, 400);
+  return jsonOk<{ id: string }>(data);
 }
