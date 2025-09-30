@@ -523,12 +523,20 @@ button {
 
 @layer utilities {
   .text-contrast {
-    color: rgb(var(--text-contrast));
+    @apply text-slate-700 dark:text-slate-200;
   }
 
   .emoji {
-    font-size: 1.35em;
+    font-size: 1.2em;
     line-height: 1;
+    display: inline-block;
+    transform: translateY(1px);
+  }
+
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
   }
 
   .backdrop-blur {
