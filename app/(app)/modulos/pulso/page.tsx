@@ -1,60 +1,48 @@
-import Link from "next/link";
-import ColorEmoji from "@/components/ColorEmoji";
-import AccentHeader from "@/components/ui/AccentHeader";
+"use client";
 
-export default function PulsoPage(){
+import * as React from "react";
+import Link from "next/link";
+import AccentHeader from "@/components/ui/AccentHeader";
+import ModuleGate from "@/components/modules/ModuleGate";
+import StarterTips from "@/components/modules/StarterTips";
+
+export default function PulsoPage() {
   return (
     <main className="p-6 md:p-10 space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--color-brand-text)] tracking-tight flex items-center gap-3">
-          <ColorEmoji token="agenda" size={32} />
-          Pulso
-        </h1>
-        <p className="text-sm text-[var(--color-brand-text)]/80">
-          Suite para medicina general y especialidades: calculadoras, scores, triaje y herramientas clínicas.
-        </p>
-      </header>
+      <AccentHeader
+        title="Pulso"
+        subtitle="Indicadores clínicos, semáforos y riesgo cardiovascular."
+        emojiToken="pulso"
+      />
 
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Tile href="/modulos/pulso/calculadoras" title="Calculadoras" desc="IMC, SC, ClCr, GAP, QTc…" emoji="🧮" />
-        <Tile href="/modulos/pulso/scores" title="Scores clínicos" desc="CURB-65, CHA₂DS₂-VASc, HAS-BLED, qSOFA" emoji="📋" />
-        <Tile href="/modulos/pulso/triage" title="Triaje" desc="Clasificación por signos vitales" emoji="🚦" />
-        <Tile href="/modulos/pulso/herramientas" title="Herramientas" desc="Interacciones y atajos" emoji="🧰" />
-      </section>
+      <ModuleGate featureKey="pulso" className="space-y-6">
+        <section className="rounded-3xl border bg-white/95 p-6">
+          <h3 className="font-semibold">Acciones rápidas</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href="/modulos/pulso/calculadoras/imc" className="px-3 py-2 rounded-xl border">
+              IMC
+            </Link>
+            <Link href="/modulos/pulso/calculadoras/cvd" className="px-3 py-2 rounded-xl border">
+              Riesgo CV
+            </Link>
+            <Link href="/reportes/rapidos" className="px-3 py-2 rounded-xl border">
+              Semáforos (rápidos)
+            </Link>
+          </div>
+        </section>
 
-      <section className="space-y-3">
-        <AccentHeader emoji="ℹ️">Aviso</AccentHeader>
-        <p className="text-sm text-[var(--color-brand-text)]/70">
-          Estas funciones son auxiliares para profesionales. No sustituyen el juicio clínico. Verifica unidades y resultados.
-        </p>
-      </section>
+        <StarterTips
+          tips={[
+            "Define rangos de referencia por grupo etario en Ajustes del módulo.",
+            "Activa alertas por valores críticos vía Recordatorios.",
+            "Usa vistas guardadas de Pacientes para cohortes con riesgo alto.",
+          ]}
+          actions={[
+            { href: "/saved-views", label: "Vistas guardadas" },
+            { href: "/recordatorios", label: "Configurar alertas" },
+          ]}
+        />
+      </ModuleGate>
     </main>
-  );
-}
-
-function Tile({ href, title, desc, emoji }:{
-  href:string; title:string; desc:string; emoji:string;
-}){
-  return (
-    <Link
-      href={href}
-      className="group rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"
-    >
-      <div className="p-6 flex items-start gap-4">
-        <div className="rounded-2xl p-4 border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-          <span className="text-2xl">{emoji}</span>
-        </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">{title}</h3>
-          <p className="text-[var(--color-brand-bluegray)] mt-1">{desc}</p>
-        </div>
-      </div>
-      <div className="h-px bg-[var(--color-brand-border)] mx-6" />
-      <div className="p-6 pt-4 text-sm text-[var(--color-brand-text)]/80">
-        <span className="inline-flex items-center gap-2">
-          Abrir <span>➡️</span>
-        </span>
-      </div>
-    </Link>
   );
 }
