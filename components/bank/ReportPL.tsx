@@ -16,17 +16,22 @@ export default function ReportPL({ orgId, from, to }: { orgId: string; from: str
     let alive = true;
     setLoading(true);
     fetch(`/api/bank/report/pl?org_id=${orgId}&from=${from}&to=${to}`)
-      .then(r => r.json())
-      .then(j => { if (!alive) return; if (j.ok) setRows(j.data); })
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive) return;
+        if (j.ok) setRows(j.data);
+      })
       .finally(() => alive && setLoading(false));
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [orgId, from, to]);
 
   if (loading) return <p className="text-sm text-slate-500">Cargando…</p>;
   if (!rows.length) return <p className="text-sm text-slate-500">Sin datos en el rango.</p>;
 
-  const income = rows.filter(r => r.kind === "income");
-  const expense = rows.filter(r => r.kind === "expense");
+  const income = rows.filter((r) => r.kind === "income");
+  const expense = rows.filter((r) => r.kind === "expense");
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

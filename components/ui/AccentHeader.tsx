@@ -30,9 +30,7 @@ export default function AccentHeader({
           {heading}
         </h2>
       </div>
-      {subtitle ? (
-        <p className="text-sm text-[var(--color-brand-text)]/70">{subtitle}</p>
-      ) : null}
+      {subtitle ? <p className="text-sm text-[var(--color-brand-text)]/70">{subtitle}</p> : null}
       {!title && children && heading !== children ? (
         <div className="text-sm text-[var(--color-brand-text)]/70">{children}</div>
       ) : null}

@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 /** Intenta resolver un membrete del bucket 'letterheads' con el user_id. */
 export async function getUserLetterheadURL(
   supa: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<string | null> {
   try {
     const bucket = supa.storage.from("letterheads");

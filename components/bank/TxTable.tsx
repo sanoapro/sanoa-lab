@@ -41,14 +41,19 @@ export default function TxTable({ orgId }: { orgId: string }) {
     let alive = true;
     setLoading(true);
     fetch(`/api/bank/tx?${qs}`)
-      .then(r => r.json())
-      .then(j => {
+      .then((r) => r.json())
+      .then((j) => {
         if (!alive) return;
-        if (j.ok) { setRows(j.data); setTotal(j.meta?.total ?? 0); }
+        if (j.ok) {
+          setRows(j.data);
+          setTotal(j.meta?.total ?? 0);
+        }
       })
       .catch(() => {})
       .finally(() => alive && setLoading(false));
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [qs]);
 
   const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -69,36 +74,61 @@ export default function TxTable({ orgId }: { orgId: string }) {
             </tr>
           </thead>
           <tbody>
-            {loading && (<tr><td className="px-3 py-6 text-center" colSpan={5}>Cargando…</td></tr>)}
-            {!loading && rows.length === 0 && (<tr><td className="px-3 py-6 text-center" colSpan={5}>Sin resultados. Ajusta filtros o importa CSV.</td></tr>)}
-            {!loading && rows.map(r => (
-              <tr key={r.id} className="border-t">
-                <td className="px-3 py-2">{r.date}</td>
-                <td className="px-3 py-2">{r.memo ?? "—"}</td>
-                <td className="px-3 py-2 text-right">
-                  <span className={r.amount_cents >= 0 ? "text-emerald-700" : "text-rose-700"}>
-                    {fmtMoney(r.amount_cents, (r.currency ?? "mxn").toUpperCase())}
-                  </span>
+            {loading && (
+              <tr>
+                <td className="px-3 py-6 text-center" colSpan={5}>
+                  Cargando…
                 </td>
-                <td className="px-3 py-2">
-                  <span className={`inline-block rounded px-2 py-0.5 text-xs ${r.status === "cleared" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
-                    {r.status === "cleared" ? "Conciliado" : "Pendiente"}
-                  </span>
-                </td>
-                <td className="px-3 py-2">{r.method ?? "—"}</td>
               </tr>
-            ))}
+            )}
+            {!loading && rows.length === 0 && (
+              <tr>
+                <td className="px-3 py-6 text-center" colSpan={5}>
+                  Sin resultados. Ajusta filtros o importa CSV.
+                </td>
+              </tr>
+            )}
+            {!loading &&
+              rows.map((r) => (
+                <tr key={r.id} className="border-t">
+                  <td className="px-3 py-2">{r.date}</td>
+                  <td className="px-3 py-2">{r.memo ?? "—"}</td>
+                  <td className="px-3 py-2 text-right">
+                    <span className={r.amount_cents >= 0 ? "text-emerald-700" : "text-rose-700"}>
+                      {fmtMoney(r.amount_cents, (r.currency ?? "mxn").toUpperCase())}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`inline-block rounded px-2 py-0.5 text-xs ${r.status === "cleared" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}
+                    >
+                      {r.status === "cleared" ? "Conciliado" : "Pendiente"}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">{r.method ?? "—"}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
       <nav className="flex items-center justify-between mt-3 text-sm" aria-label="Paginación">
-        <div>Mostrando {start}–{end} de {total}</div>
+        <div>
+          Mostrando {start}–{end} de {total}
+        </div>
         <div className="flex gap-2">
-          <a className={`px-3 py-1 rounded border ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
-             href={`?${new URLSearchParams({ ...Object.fromEntries(search.entries()), page: String(page - 1) }).toString()}`}>Anterior</a>
-          <a className={`px-3 py-1 rounded border ${page >= pages ? "pointer-events-none opacity-50" : ""}`}
-             href={`?${new URLSearchParams({ ...Object.fromEntries(search.entries()), page: String(page + 1) }).toString()}`}>Siguiente</a>
+          <a
+            className={`px-3 py-1 rounded border ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+            href={`?${new URLSearchParams({ ...Object.fromEntries(search.entries()), page: String(page - 1) }).toString()}`}
+          >
+            Anterior
+          </a>
+          <a
+            className={`px-3 py-1 rounded border ${page >= pages ? "pointer-events-none opacity-50" : ""}`}
+            href={`?${new URLSearchParams({ ...Object.fromEntries(search.entries()), page: String(page + 1) }).toString()}`}
+          >
+            Siguiente
+          </a>
         </div>
       </nav>
     </div>

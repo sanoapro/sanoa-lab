@@ -107,7 +107,9 @@ export default function PatientsTable({ orgId }: { orgId: string }) {
       </table>
 
       <div className="flex items-center justify-between px-3 py-2 border-t text-sm">
-        <span>{meta.total} registros • Página {meta.page}</span>
+        <span>
+          {meta.total} registros • Página {meta.page}
+        </span>
         <span>Mostrando {meta.pageSize}</span>
       </div>
     </div>

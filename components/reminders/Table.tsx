@@ -18,7 +18,11 @@ type Row = {
 export default function RemindersTable({ orgId }: { orgId: string }) {
   const search = useSearchParams();
   const [rows, setRows] = useState<Row[]>([]);
-  const [meta, setMeta] = useState<{ page: number; pageSize: number; total: number }>({ page: 1, pageSize: 50, total: 0 });
+  const [meta, setMeta] = useState<{ page: number; pageSize: number; total: number }>({
+    page: 1,
+    pageSize: 50,
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   const page = useMemo(() => Number(search.get("page") ?? 1), [search]);
@@ -27,10 +31,15 @@ export default function RemindersTable({ orgId }: { orgId: string }) {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    const params = new URLSearchParams({ org_id: orgId, ...Object.fromEntries(search.entries()), page: String(page), pageSize: String(pageSize) });
+    const params = new URLSearchParams({
+      org_id: orgId,
+      ...Object.fromEntries(search.entries()),
+      page: String(page),
+      pageSize: String(pageSize),
+    });
     fetch(`/api/reminders/logs?${params.toString()}`)
-      .then(r => r.json())
-      .then(j => {
+      .then((r) => r.json())
+      .then((j) => {
         if (!alive) return;
         if (j.ok) {
           setRows(j.data);
@@ -38,7 +47,9 @@ export default function RemindersTable({ orgId }: { orgId: string }) {
         }
       })
       .finally(() => alive && setLoading(false));
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [orgId, search, page, pageSize]);
 
   return (
@@ -56,16 +67,32 @@ export default function RemindersTable({ orgId }: { orgId: string }) {
           </tr>
         </thead>
         <tbody>
-          {loading && <tr><td colSpan={7} className="px-3 py-6 text-center">Cargando…</td></tr>}
-          {!loading && rows.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center">Sin resultados.</td></tr>}
+          {loading && (
+            <tr>
+              <td colSpan={7} className="px-3 py-6 text-center">
+                Cargando…
+              </td>
+            </tr>
+          )}
+          {!loading && rows.length === 0 && (
+            <tr>
+              <td colSpan={7} className="px-3 py-6 text-center">
+                Sin resultados.
+              </td>
+            </tr>
+          )}
           {rows.map((r) => (
             <tr key={r.id} className="border-t">
               <td className="px-3 py-2">{r.channel ?? "—"}</td>
               <td className="px-3 py-2">{r.status ?? "—"}</td>
               <td className="px-3 py-2">{r.target ?? "—"}</td>
               <td className="px-3 py-2">{r.template ?? "—"}</td>
-              <td className="px-3 py-2">{r.created_at ? new Date(r.created_at).toLocaleString() : "—"}</td>
-              <td className="px-3 py-2">{r.last_attempt_at ? new Date(r.last_attempt_at).toLocaleString() : "—"}</td>
+              <td className="px-3 py-2">
+                {r.created_at ? new Date(r.created_at).toLocaleString() : "—"}
+              </td>
+              <td className="px-3 py-2">
+                {r.last_attempt_at ? new Date(r.last_attempt_at).toLocaleString() : "—"}
+              </td>
               <td className="px-3 py-2">{r.attempts ?? 0}</td>
             </tr>
           ))}

@@ -36,7 +36,11 @@ export async function PATCH(req: NextRequest, ctx: { params: { id: string } }) {
 
 export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
   const supa = await getSupabaseServer();
-  const { data, error } = await supa.from("work_assignments").select("*").eq("id", ctx.params.id).single();
+  const { data, error } = await supa
+    .from("work_assignments")
+    .select("*")
+    .eq("id", ctx.params.id)
+    .single();
   if (error) return jsonError("DB_ERROR", error.message, 400);
   return jsonOk(data);
 }

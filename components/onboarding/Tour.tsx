@@ -43,7 +43,9 @@ export default function Tour({ steps }: { steps: TourStep[] }) {
         aria-modal="true"
         aria-label="Tour de inicio"
       >
-        <p className="text-xs text-slate-500">{index + 1} / {total}</p>
+        <p className="text-xs text-slate-500">
+          {index + 1} / {total}
+        </p>
         <h3 className="mt-1 font-semibold">{current.title}</h3>
         <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{current.description}</p>
         <div className="mt-3 flex items-center justify-between">
@@ -62,7 +64,10 @@ export default function Tour({ steps }: { steps: TourStep[] }) {
               Siguiente
             </button>
           </div>
-          <button onClick={finish} className="px-2 py-1 rounded-lg text-xs text-slate-600 underline">
+          <button
+            onClick={finish}
+            className="px-2 py-1 rounded-lg text-xs text-slate-600 underline"
+          >
             Omitir
           </button>
         </div>

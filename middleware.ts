@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
 
 type Bucket = { count: number; resetAt: number };
 const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000); // 1 min
-const MAX_REQ = Number(process.env.RATE_LIMIT_MAX_REQ ?? 60);        // 60 req/min por IP+ruta
+const MAX_REQ = Number(process.env.RATE_LIMIT_MAX_REQ ?? 60); // 60 req/min por IP+ruta
 const DISABLED = process.env.RATE_LIMIT_DISABLED === "1";
 
 const globalBuckets = globalThis as unknown as { __sanoaBuckets?: Map<string, Bucket> };
@@ -35,7 +35,10 @@ export function middleware(req: NextRequest) {
   }
 
   if (b.count >= MAX_REQ) {
-    const res = NextResponse.json({ ok: false, error: { code: "RATE_LIMITED", message: "Too Many Requests" } }, { status: 429 });
+    const res = NextResponse.json(
+      { ok: false, error: { code: "RATE_LIMITED", message: "Too Many Requests" } },
+      { status: 429 },
+    );
     res.headers.set("Retry-After", String(Math.ceil((b.resetAt - now) / 1000)));
     return res;
   }
@@ -47,9 +50,5 @@ export function middleware(req: NextRequest) {
 
 // Aplica sólo a rutas automatizadas / webhooks / notificaciones
 export const config = {
-  matcher: [
-    "/api/integrations/:path*",
-    "/api/jobs/:path*",
-    "/api/notify/:path*",
-  ],
+  matcher: ["/api/integrations/:path*", "/api/jobs/:path*", "/api/notify/:path*"],
 };

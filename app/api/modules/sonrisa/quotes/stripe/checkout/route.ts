@@ -32,7 +32,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: { code: "BAD_REQUEST", message: "org_id, quote_id, success_url y cancel_url requeridos" },
+        error: {
+          code: "BAD_REQUEST",
+          message: "org_id, quote_id, success_url y cancel_url requeridos",
+        },
       },
       { status: 400 },
     );

@@ -12,7 +12,11 @@ function addMinutesISO(iso: string, min: number) {
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: au } = await supa.auth.getUser();
-  if (!au?.user) return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }, { status: 401 });
+  if (!au?.user)
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+      { status: 401 },
+    );
 
   const body = (await req.json().catch(() => null)) as {
     org_id?: string;
@@ -26,15 +30,31 @@ export async function POST(req: NextRequest) {
     schedule_reminders?: boolean;
   };
 
-  if (!body?.org_id || !body?.provider_id || !body?.patient_id || !body?.starts_at || !body?.duration_min || !body?.tz) {
-    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "Campos requeridos faltantes" } }, { status: 400 });
+  if (
+    !body?.org_id ||
+    !body?.provider_id ||
+    !body?.patient_id ||
+    !body?.starts_at ||
+    !body?.duration_min ||
+    !body?.tz
+  ) {
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "Campos requeridos faltantes" } },
+      { status: 400 },
+    );
   }
 
   const startsISO = new Date(body.starts_at);
   if (isNaN(startsISO.getTime())) {
-    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "starts_at inválido" } }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "starts_at inválido" } },
+      { status: 400 },
+    );
   }
-  const endsISO = addMinutesISO(startsISO.toISOString(), Math.max(10, Math.min(240, body.duration_min)));
+  const endsISO = addMinutesISO(
+    startsISO.toISOString(),
+    Math.max(10, Math.min(240, body.duration_min)),
+  );
 
   // Colisión básica
   const { data: coll } = await supa
@@ -45,7 +65,10 @@ export async function POST(req: NextRequest) {
     .or(`and(starts_at.lte.${endsISO},ends_at.gte.${startsISO.toISOString()})`)
     .limit(1);
   if (coll && coll.length > 0) {
-    return NextResponse.json({ ok: false, error: { code: "TIME_CONFLICT", message: "Conflicto con otra cita" } }, { status: 409 });
+    return NextResponse.json(
+      { ok: false, error: { code: "TIME_CONFLICT", message: "Conflicto con otra cita" } },
+      { status: 409 },
+    );
   }
 
   const { data: appt, error: e1 } = await supa
@@ -65,7 +88,11 @@ export async function POST(req: NextRequest) {
     .select("id, starts_at, ends_at, tz")
     .single();
 
-  if (e1) return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: e1.message } }, { status: 400 });
+  if (e1)
+    return NextResponse.json(
+      { ok: false, error: { code: "DB_ERROR", message: e1.message } },
+      { status: 400 },
+    );
 
   if (body.schedule_reminders) {
     // Llama al orquestador (no falla la creación si esto falla)

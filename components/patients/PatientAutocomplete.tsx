@@ -97,14 +97,9 @@ export default function PatientAutocomplete({
         const r2 = await fetch(`/api/patients/search?${p2.toString()}`, { signal: ctrl.signal });
         if (r2.ok) {
           const j2 = await r2.json();
-          const rows: OptionRaw[] = j2?.ok ? j2.data ?? [] : [];
+          const rows: OptionRaw[] = j2?.ok ? (j2.data ?? []) : [];
           const mapped: PatientOption[] = rows.map((r) => {
-            const base =
-              r.label ??
-              r.name ??
-              r.title ??
-              r.text ??
-              "Paciente sin nombre";
+            const base = r.label ?? r.name ?? r.title ?? r.text ?? "Paciente sin nombre";
             const extra = [r.gender, r.dob ? new Date(r.dob).toLocaleDateString() : null]
               .filter(Boolean)
               .join(" · ");

@@ -11,7 +11,7 @@ const ListQuery = z.object({
   module: z.enum(["mente", "equilibrio", "sonrisa", "pulso", "general"]).optional(),
   status: z.enum(["active", "completed", "canceled"]).optional(),
   from: z.string().datetime().optional(), // filtra por due_at >= from
-  to: z.string().datetime().optional(),   // filtra por due_at <= to
+  to: z.string().datetime().optional(), // filtra por due_at <= to
   limit: z.coerce.number().int().min(1).max(200).default(100),
   offset: z.coerce.number().int().min(0).default(0),
 });
@@ -19,16 +19,18 @@ const ListQuery = z.object({
 const AssignBody = z.object({
   org_id: z.string().uuid(),
   provider_id: z.string().uuid().optional(),
-  items: z.array(
-    z.object({
-      patient_id: z.string().uuid(),
-      template_id: z.string().uuid().optional(),
-      module: z.enum(["mente", "equilibrio", "sonrisa", "pulso", "general"]).optional(),
-      title: z.string().min(3).optional(),
-      details: z.any().optional(),
-      due_at: z.string().datetime().optional(),
-    })
-  ).min(1),
+  items: z
+    .array(
+      z.object({
+        patient_id: z.string().uuid(),
+        template_id: z.string().uuid().optional(),
+        module: z.enum(["mente", "equilibrio", "sonrisa", "pulso", "general"]).optional(),
+        title: z.string().min(3).optional(),
+        details: z.any().optional(),
+        due_at: z.string().datetime().optional(),
+      }),
+    )
+    .min(1),
 });
 
 export async function GET(req: NextRequest) {
@@ -47,7 +49,7 @@ export async function GET(req: NextRequest) {
     offset: qp.get("offset") || undefined,
   });
   if (!parsed.success) {
-    const msg = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 
@@ -121,10 +123,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const { data, error } = await supa
-    .from("work_assignments")
-    .insert(out)
-    .select("*");
+  const { data, error } = await supa.from("work_assignments").insert(out).select("*");
 
   if (error) return jsonError("DB_ERROR", error.message, 400);
   return jsonOk(data ?? []);

@@ -193,10 +193,16 @@ export default function PatientTasksPanel({
                 <td className="px-3 py-2">{new Date(t.created_at).toLocaleString()}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-2">
-                    <button className="border rounded px-2 py-1" onClick={() => setStatus(t.id, "in_progress")}>
+                    <button
+                      className="border rounded px-2 py-1"
+                      onClick={() => setStatus(t.id, "in_progress")}
+                    >
                       En curso
                     </button>
-                    <button className="border rounded px-2 py-1" onClick={() => setStatus(t.id, "done")}>
+                    <button
+                      className="border rounded px-2 py-1"
+                      onClick={() => setStatus(t.id, "done")}
+                    >
                       Hecha
                     </button>
                   </div>

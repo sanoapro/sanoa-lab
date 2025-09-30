@@ -13,7 +13,7 @@ export function jsonError(
   code: string,
   message: string,
   status = 400,
-  extra?: Record<string, unknown>
+  extra?: Record<string, unknown>,
 ) {
   return NextResponse.json({ ok: false, error: { code, message, ...(extra || {}) } }, { status });
 }
@@ -54,11 +54,7 @@ export function parseOrError<T>(schema: z.ZodType<T>, data: unknown) {
 /** -----------------------------
  * Coerciones frecuentes
  * ------------------------------ */
-export function asInt(
-  v: string | null,
-  fallback: number,
-  opts?: { min?: number; max?: number }
-) {
+export function asInt(v: string | null, fallback: number, opts?: { min?: number; max?: number }) {
   const n = v != null ? Number.parseInt(v, 10) : Number.NaN;
   if (Number.isNaN(n)) return fallback;
   if (opts?.min != null && n < opts.min) return opts.min;

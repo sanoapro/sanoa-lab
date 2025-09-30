@@ -70,7 +70,11 @@ export default function Autocomplete({
         url.searchParams.set("limit", String(limit));
         let r = await fetch(url.toString(), { cache: "no-store" });
         let j: any = null;
-        try { j = await r.json(); } catch { j = null; }
+        try {
+          j = await r.json();
+        } catch {
+          j = null;
+        }
 
         let rows: any[] = [];
         if (j?.ok && Array.isArray(j.data)) {
@@ -81,21 +85,19 @@ export default function Autocomplete({
           url2.searchParams.set("q", q.trim());
           url2.searchParams.set("limit", String(limit));
           r = await fetch(url2.toString(), { cache: "no-store" });
-          try { j = await r.json(); } catch { j = null; }
+          try {
+            j = await r.json();
+          } catch {
+            j = null;
+          }
           if (j?.ok && Array.isArray(j.data)) rows = j.data;
           else if (Array.isArray(j?.items)) rows = j.items;
         }
 
         const mapped: Hit[] = rows
           .map((row: any) => ({
-            patient_id:
-              row.patient_id ?? row.id ?? row.patientId ?? row.p_id ?? row.uuid,
-            name:
-              row.display_name ??
-              row.name ??
-              row.full_name ??
-              row.display ??
-              "Paciente",
+            patient_id: row.patient_id ?? row.id ?? row.patientId ?? row.p_id ?? row.uuid,
+            name: row.display_name ?? row.name ?? row.full_name ?? row.display ?? "Paciente",
             gender: row.gender ?? row.genero ?? null,
             age: row.age ?? row.edad ?? null,
             extra: row.extra ?? null,
@@ -196,9 +198,7 @@ export default function Autocomplete({
               </div>
             </li>
           ))}
-          {loading && (
-            <li className="px-3 py-2 text-sm text-slate-500">Buscando…</li>
-          )}
+          {loading && <li className="px-3 py-2 text-sm text-slate-500">Buscando…</li>}
           {!loading && hits.length === 0 && (
             <li className="px-3 py-2 text-sm text-slate-500">Sin resultados</li>
           )}

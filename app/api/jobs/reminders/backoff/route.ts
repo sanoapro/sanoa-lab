@@ -10,7 +10,10 @@ import { createServiceClient } from "@/lib/supabase/server";
 export async function POST(req: NextRequest) {
   const key = req.headers.get("x-cron-key");
   if (key !== process.env.CRON_SECRET) {
-    return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "Bad key" } }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "Bad key" } },
+      { status: 401 },
+    );
   }
 
   createServiceClient();
@@ -24,6 +27,9 @@ export async function POST(req: NextRequest) {
     const j = await res.json().catch(() => ({ ok: false }));
     return NextResponse.json({ ok: !!j?.ok, data: j });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "RUN_ERROR", message: String(e?.message || e) } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "RUN_ERROR", message: String(e?.message || e) } },
+      { status: 500 },
+    );
   }
 }

@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (!au?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
           message: "org_id, provider_id, from y to requeridos",
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

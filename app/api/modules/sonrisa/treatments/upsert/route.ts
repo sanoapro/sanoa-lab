@@ -16,7 +16,13 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => null)) as {
     org_id?: string;
-    items?: Array<{ id?: string; code?: string; name?: string; default_price_cents?: number; active?: boolean }>;
+    items?: Array<{
+      id?: string;
+      code?: string;
+      name?: string;
+      default_price_cents?: number;
+      active?: boolean;
+    }>;
   };
   if (!body?.org_id || !Array.isArray(body.items) || !body.items.length) {
     return NextResponse.json(

@@ -11,7 +11,7 @@ const BodySchema = z.object({
   module: z.enum(["mente", "equilibrio", "sonrisa", "pulso", "general"]).default("general"),
   template_id: z.string().uuid().optional(),
   title: z.string().min(1).max(200).optional(), // si ad-hoc
-  content: z.any().optional(),                  // si ad-hoc
+  content: z.any().optional(), // si ad-hoc
   due_at: z.string().datetime().optional(),
   frequency: z.enum(["once", "daily", "weekly", "monthly"]).default("once"),
   occurrences: z.coerce.number().int().min(1).max(100).optional(),
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     tplContent = tplContent ?? tpl?.content ?? {};
   }
 
-  const rows = parsed.data.patient_ids.map(pid => ({
+  const rows = parsed.data.patient_ids.map((pid) => ({
     org_id: parsed.data.org_id,
     patient_id: pid,
     provider_id: provider,
@@ -57,11 +57,8 @@ export async function POST(req: NextRequest) {
     status: "active",
   }));
 
-  const { data, error } = await supa
-    .from("work_assignments")
-    .insert(rows)
-    .select("id");
+  const { data, error } = await supa.from("work_assignments").insert(rows).select("id");
 
   if (error) return jsonError("DB_ERROR", error.message, 400);
-  return jsonOk({ created: data?.length ?? 0, ids: data?.map(r => r.id) });
+  return jsonOk({ created: data?.length ?? 0, ids: data?.map((r) => r.id) });
 }

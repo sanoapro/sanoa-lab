@@ -6,7 +6,7 @@ import { getActiveOrg } from "@/lib/org-local";
 import AgendaCompareForm from "@/components/reports/AgendaCompareForm";
 
 export default function AgendaComparePage() {
-  const org = useMemo(()=> getActiveOrg(), []);
+  const org = useMemo(() => getActiveOrg(), []);
   const orgId = org?.id || "";
   return (
     <main className="p-6 md:p-10 space-y-6">

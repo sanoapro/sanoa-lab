@@ -13,15 +13,33 @@ export default function SegmentLoader() {
 
     // Snippet Analytics.js (Segment)
     !(function () {
-      const analytics: any = (window as any).analytics = (window as any).analytics || [];
+      const analytics: any = ((window as any).analytics = (window as any).analytics || []);
       if (!analytics.initialize)
-        if (analytics.invoked) window.console && console.error && console.error("Segment snippet included twice.");
+        if (analytics.invoked)
+          window.console && console.error && console.error("Segment snippet included twice.");
         else {
           analytics.invoked = true;
           analytics.methods = [
-            "trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group",
-            "track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware",
-            "setAnonymousId","addDestinationMiddleware"
+            "trackSubmit",
+            "trackClick",
+            "trackLink",
+            "trackForm",
+            "pageview",
+            "identify",
+            "reset",
+            "group",
+            "track",
+            "ready",
+            "alias",
+            "debug",
+            "page",
+            "once",
+            "off",
+            "on",
+            "addSourceMiddleware",
+            "addIntegrationMiddleware",
+            "setAnonymousId",
+            "addDestinationMiddleware",
           ];
           analytics.factory = function (e: string) {
             return function () {

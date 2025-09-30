@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   if (!org_id) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "org_id requerido" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
   return NextResponse.json({ ok: true, data });
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -60,8 +60,11 @@ export async function POST(req: NextRequest) {
   };
   if (!body?.org_id || !body?.module || !body?.title) {
     return NextResponse.json(
-      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, module y title son requeridos" } },
-      { status: 400 }
+      {
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, module y title son requeridos" },
+      },
+      { status: 400 },
     );
   }
 
@@ -80,7 +83,7 @@ export async function POST(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
   return NextResponse.json({ ok: true, data });
@@ -92,7 +95,7 @@ export async function DELETE(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -100,7 +103,7 @@ export async function DELETE(req: NextRequest) {
   if (!body?.id || !body?.org_id) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "id y org_id requeridos" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -112,7 +115,7 @@ export async function DELETE(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

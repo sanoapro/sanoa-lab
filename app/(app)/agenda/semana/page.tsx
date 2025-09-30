@@ -12,9 +12,7 @@ export default function AgendaSemanaPage() {
   const orgId = org?.id || "";
 
   const [providerId, setProviderId] = useState<string>("");
-  const [patient, setPatient] = useState<{ id: string; label: string } | null>(
-    null
-  );
+  const [patient, setPatient] = useState<{ id: string; label: string } | null>(null);
   const [tz, setTz] = useState<string>("America/Mexico_City");
   const [baseDate, setBaseDate] = useState<string>(() => {
     const d = new Date();
@@ -91,16 +89,10 @@ export default function AgendaSemanaPage() {
             onChange={(e) => setBaseDate(e.target.value)}
           />
           <div className="ml-auto flex items-center gap-2">
-            <button
-              className="border rounded px-3 py-2"
-              onClick={() => shiftDays(-7)}
-            >
+            <button className="border rounded px-3 py-2" onClick={() => shiftDays(-7)}>
               ← Anterior
             </button>
-            <button
-              className="border rounded px-3 py-2"
-              onClick={() => shiftDays(7)}
-            >
+            <button className="border rounded px-3 py-2" onClick={() => shiftDays(7)}>
               Siguiente →
             </button>
           </div>
@@ -117,9 +109,7 @@ export default function AgendaSemanaPage() {
           defaultDurationMin={30}
         />
       ) : (
-        <p className="text-slate-500">
-          Completa profesional y organización para ver la agenda.
-        </p>
+        <p className="text-slate-500">Completa profesional y organización para ver la agenda.</p>
       )}
     </main>
   );

@@ -16,11 +16,17 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
       .single();
 
     if (errShare || !share) {
-      return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "Token inválido." } }, { status: 404 });
+      return NextResponse.json(
+        { ok: false, error: { code: "NOT_FOUND", message: "Token inválido." } },
+        { status: 404 },
+      );
     }
     const now = new Date();
     if (share.revoked_at || (share.expires_at && new Date(share.expires_at) < now)) {
-      return NextResponse.json({ ok: false, error: { code: "EXPIRED", message: "Enlace expirado o revocado." } }, { status: 410 });
+      return NextResponse.json(
+        { ok: false, error: { code: "EXPIRED", message: "Enlace expirado o revocado." } },
+        { status: 410 },
+      );
     }
 
     // 2) Snapshot mínimo del paciente (via v_patients)
@@ -32,7 +38,10 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
       .single();
 
     if (errP || !patient) {
-      return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "Paciente no disponible." } }, { status: 404 });
+      return NextResponse.json(
+        { ok: false, error: { code: "NOT_FOUND", message: "Paciente no disponible." } },
+        { status: 404 },
+      );
     }
 
     // 3) Trail de acceso
@@ -41,12 +50,18 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
       const ua = _req.headers.get("user-agent") || null;
       await svc.from("patient_share_access").insert({
         share_id: share.id,
-        ip, user_agent: ua ?? null,
+        ip,
+        user_agent: ua ?? null,
       });
-    } catch(_) { /* no romper la entrega si falla el trail */ }
+    } catch (_) {
+      /* no romper la entrega si falla el trail */
+    }
 
     return NextResponse.json({ ok: true, data: { patient } });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }

@@ -6,18 +6,20 @@ import { jsonOk, jsonError, parseJson, parseOrError } from "@/lib/http/validate"
 
 const ListQuery = z.object({
   org_id: z.string().uuid(),
-  module: z.enum(["mente","equilibrio","sonrisa","pulso","general"]).optional(),
+  module: z.enum(["mente", "equilibrio", "sonrisa", "pulso", "general"]).optional(),
   q: z.string().trim().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   offset: z.coerce.number().int().min(0).default(0),
-  include_inactive: z.union([z.literal("true"), z.literal("false")]).optional()
-    .transform(v => v === "true"),
+  include_inactive: z
+    .union([z.literal("true"), z.literal("false")])
+    .optional()
+    .transform((v) => v === "true"),
 });
 
 const UpsertBody = z.object({
   org_id: z.string().uuid(),
   id: z.string().uuid().optional(),
-  module: z.enum(["mente","equilibrio","sonrisa","pulso","general"]),
+  module: z.enum(["mente", "equilibrio", "sonrisa", "pulso", "general"]),
   title: z.string().min(3),
   slug: z.string().trim().min(2).optional(),
   description: z.string().optional(),
@@ -28,7 +30,8 @@ const UpsertBody = z.object({
 function slugify(s: string) {
   return s
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 }
@@ -46,7 +49,7 @@ export async function GET(req: NextRequest) {
     include_inactive: qp.get("include_inactive") || undefined,
   });
   if (!parsed.success) {
-    const msg = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 

@@ -18,7 +18,8 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!acc) return jsonError("NOT_FOUND", "Solicitud no encontrada", 404);
-  if (acc.status !== "pending") return jsonError("CONFLICT", "La solicitud ya no está disponible", 409);
+  if (acc.status !== "pending")
+    return jsonError("CONFLICT", "La solicitud ya no está disponible", 409);
   if (acc.token_expires_at && new Date(acc.token_expires_at) < new Date())
     return jsonError("EXPIRED", "El enlace ha expirado", 410);
 

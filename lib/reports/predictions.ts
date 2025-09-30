@@ -9,9 +9,7 @@ export function weekKey(d: Date) {
   date.setUTCDate(date.getUTCDate() - dayNum + 3);
   const isoYear = date.getUTCFullYear();
   const jan4 = new Date(Date.UTC(isoYear, 0, 4));
-  const week = Math.round(
-    (date.getTime() - jan4.getTime()) / 86400000 / 7 + 1
-  );
+  const week = Math.round((date.getTime() - jan4.getTime()) / 86400000 / 7 + 1);
   return `${isoYear}-${String(week).padStart(2, "0")}`;
 }
 
@@ -47,10 +45,7 @@ export function weeklyRatesByPatient(bookings: Booking[]) {
 }
 
 /** Diferencia entre promedio reciente (N semanas) y previo (N semanas) */
-export function deltaRecent(
-  series: Array<{ rate: number }>,
-  recentWeeks = 4
-) {
+export function deltaRecent(series: Array<{ rate: number }>, recentWeeks = 4) {
   if (!series.length) return 0;
   const n = series.length;
   const lo = Math.max(0, n - recentWeeks * 2);

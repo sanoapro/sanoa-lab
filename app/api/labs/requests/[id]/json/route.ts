@@ -31,18 +31,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return notFound("Solicitud no encontrada");
     }
 
-    const [{ data: items, error: itemsError }, { data: patient, error: patientError }] = await Promise.all([
-      supa
-        .from("lab_request_items")
-        .select("*")
-        .eq("request_id", params.id)
-        .order("id"),
-      supa
-        .from("patients")
-        .select("full_name, external_id")
-        .eq("id", request.patient_id)
-        .maybeSingle(),
-    ]);
+    const [{ data: items, error: itemsError }, { data: patient, error: patientError }] =
+      await Promise.all([
+        supa.from("lab_request_items").select("*").eq("request_id", params.id).order("id"),
+        supa
+          .from("patients")
+          .select("full_name, external_id")
+          .eq("id", request.patient_id)
+          .maybeSingle(),
+      ]);
 
     if (itemsError) {
       return dbError(itemsError);

@@ -10,14 +10,14 @@ import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
  */
 export async function getSupabaseServer() {
   const cookieStore = await nextCookies(); // ✅ Next 15
-  const hdrs = await nextHeaders();        // ✅ Next 15
+  const hdrs = await nextHeaders(); // ✅ Next 15
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !anonKey) {
     throw new Error(
-      "Faltan variables NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY (no se debe usar service key aquí)."
+      "Faltan variables NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY (no se debe usar service key aquí).",
     );
   }
 

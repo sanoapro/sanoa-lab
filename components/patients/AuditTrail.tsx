@@ -22,12 +22,25 @@ export default function AuditTrail({ orgId, patientId }: { orgId: string; patien
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    const p = new URLSearchParams({ org_id: orgId, patient_id: patientId, page: "1", pageSize: "50" });
+    const p = new URLSearchParams({
+      org_id: orgId,
+      patient_id: patientId,
+      page: "1",
+      pageSize: "50",
+    });
     fetch(`/api/patients/share/access?${p.toString()}`)
-      .then(r => r.json())
-      .then(j => { if (!alive) return; if (j.ok) { setRows(j.data); setMeta(j.meta); } })
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive) return;
+        if (j.ok) {
+          setRows(j.data);
+          setMeta(j.meta);
+        }
+      })
       .finally(() => alive && setLoading(false));
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [orgId, patientId]);
 
   return (
@@ -47,23 +60,41 @@ export default function AuditTrail({ orgId, patientId }: { orgId: string; patien
             </tr>
           </thead>
           <tbody>
-            {loading && <tr><td colSpan={7} className="px-3 py-6 text-center">Cargando…</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center">Sin registros.</td></tr>}
+            {loading && (
+              <tr>
+                <td colSpan={7} className="px-3 py-6 text-center">
+                  Cargando…
+                </td>
+              </tr>
+            )}
+            {!loading && rows.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-3 py-6 text-center">
+                  Sin registros.
+                </td>
+              </tr>
+            )}
             {rows.map((r) => (
               <tr key={`${r.share_id}-${r.access_at}`} className="border-t">
                 <td className="px-3 py-2">{new Date(r.access_at).toLocaleString()}</td>
                 <td className="px-3 py-2">
-                  <span className={`inline-flex px-2 py-0.5 rounded text-xs border ${
-                    r.status === "vigente" ? "bg-green-50 border-green-200" :
-                    r.status === "expirado" ? "bg-amber-50 border-amber-200" :
-                    "bg-rose-50 border-rose-200"
-                  }`}>
+                  <span
+                    className={`inline-flex px-2 py-0.5 rounded text-xs border ${
+                      r.status === "vigente"
+                        ? "bg-green-50 border-green-200"
+                        : r.status === "expirado"
+                          ? "bg-amber-50 border-amber-200"
+                          : "bg-rose-50 border-rose-200"
+                    }`}
+                  >
                     {r.status}
                   </span>
                 </td>
                 <td className="px-3 py-2">{new Date(r.created_at).toLocaleString()}</td>
                 <td className="px-3 py-2">{new Date(r.expires_at).toLocaleString()}</td>
-                <td className="px-3 py-2">{r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}</td>
+                <td className="px-3 py-2">
+                  {r.revoked_at ? new Date(r.revoked_at).toLocaleString() : "—"}
+                </td>
                 <td className="px-3 py-2">{r.ip || "—"}</td>
                 <td className="px-3 py-2">{r.user_agent || "—"}</td>
               </tr>
@@ -71,7 +102,9 @@ export default function AuditTrail({ orgId, patientId }: { orgId: string; patien
           </tbody>
         </table>
         <div className="flex items-center justify-between px-3 py-2 border-t text-sm">
-          <span>{meta.total} accesos • Página {meta.page}</span>
+          <span>
+            {meta.total} accesos • Página {meta.page}
+          </span>
           <span>Mostrando {meta.pageSize}</span>
         </div>
       </div>

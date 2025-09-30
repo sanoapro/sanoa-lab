@@ -11,28 +11,33 @@ type Interaction = {
   note?: string;
 };
 
-export default function HerramientasPulso(){
+export default function HerramientasPulso() {
   const [text, setText] = useState("ibuprofeno, losartán, sertralina");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Interaction[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function check(){
+  async function check() {
     setLoading(true);
     setError(null);
     setResult(null);
-    try{
+    try {
       const r = await fetch("/api/prescriptions/check-interactions", {
-        method:"POST",
-        headers:{ "content-type":"application/json" },
-        body: JSON.stringify({ items: text.split(",").map(s=>s.trim()).filter(Boolean) })
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          items: text
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+        }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j?.error || "Error al consultar interacciones");
       setResult(j?.data || []);
-    }catch(e:any){
+    } catch (e: any) {
       setError(String(e?.message || e));
-    }finally{
+    } finally {
       setLoading(false);
     }
   }
@@ -57,7 +62,7 @@ export default function HerramientasPulso(){
             className="w-full border rounded-xl p-3 mt-1"
             rows={3}
             value={text}
-            onChange={e=>setText(e.target.value)}
+            onChange={(e) => setText(e.target.value)}
             placeholder="paracetamol, amoxicilina, claritromicina"
           />
         </label>
@@ -84,9 +89,13 @@ export default function HerramientasPulso(){
               </thead>
               <tbody>
                 {result.length === 0 && (
-                  <tr><td className="p-2 text-[var(--color-brand-text)]/60" colSpan={4}>Sin interacciones relevantes.</td></tr>
+                  <tr>
+                    <td className="p-2 text-[var(--color-brand-text)]/60" colSpan={4}>
+                      Sin interacciones relevantes.
+                    </td>
+                  </tr>
                 )}
-                {result.map((x, i)=>(
+                {result.map((x, i) => (
                   <tr key={i} className="border-t border-[var(--color-brand-border)]">
                     <td className="p-2">{x.drugA}</td>
                     <td className="p-2">{x.drugB}</td>

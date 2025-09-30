@@ -6,7 +6,12 @@ import { ok, badRequest, serverError, error as jsonError } from "@/lib/api/respo
 const bucket = process.env.LAB_RESULTS_BUCKET || "lab-results";
 const schema = z.object({
   path: z.string().min(1, "path requerido"),
-  expires: z.coerce.number().int().min(5).max(60 * 60 * 24).optional(),
+  expires: z.coerce
+    .number()
+    .int()
+    .min(5)
+    .max(60 * 60 * 24)
+    .optional(),
 });
 
 export async function POST(req: NextRequest) {

@@ -21,7 +21,12 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   page.drawText("ALTA MÉDICA", { x: 50, y: 800, size: 18, font, color: rgb(0, 0, 0) });
   page.drawText(`Folio: ${dc.folio ?? dc.id}`, { x: 50, y: 780, size: 10, font });
-  page.drawText(`Fecha: ${new Date(dc.created_at ?? Date.now()).toLocaleString()}`, { x: 50, y: 760, size: 10, font });
+  page.drawText(`Fecha: ${new Date(dc.created_at ?? Date.now()).toLocaleString()}`, {
+    x: 50,
+    y: 760,
+    size: 10,
+    font,
+  });
 
   const summary =
     typeof dc.summary === "string" ? dc.summary : JSON.stringify(dc.summary ?? {}, null, 2);

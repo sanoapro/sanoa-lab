@@ -23,7 +23,10 @@ export default function AssessmentsScreen() {
   const [tool, setTool] = useState<"phq9" | "gad7" | "auditc">("phq9");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { setLastScore(null); setAnswers({}); }, [tool]);
+  useEffect(() => {
+    setLastScore(null);
+    setAnswers({});
+  }, [tool]);
 
   async function save() {
     if (!orgId || !patient?.id || !tool || !answers) return;
@@ -55,14 +58,33 @@ export default function AssessmentsScreen() {
             placeholder="Buscar paciente (solo mis pacientes)…"
           />
         )}
-        {patient && <div className="text-sm text-slate-600">Paciente: <strong>{patient.label}</strong></div>}
+        {patient && (
+          <div className="text-sm text-slate-600">
+            Paciente: <strong>{patient.label}</strong>
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border p-4 space-y-3">
         <div className="flex flex-wrap gap-2">
-          <button className={`border rounded px-3 py-2 ${tool === "phq9" ? "bg-slate-100" : ""}`} onClick={() => setTool("phq9")}>PHQ-9</button>
-          <button className={`border rounded px-3 py-2 ${tool === "gad7" ? "bg-slate-100" : ""}`} onClick={() => setTool("gad7")}>GAD-7</button>
-          <button className={`border rounded px-3 py-2 ${tool === "auditc" ? "bg-slate-100" : ""}`} onClick={() => setTool("auditc")}>AUDIT-C</button>
+          <button
+            className={`border rounded px-3 py-2 ${tool === "phq9" ? "bg-slate-100" : ""}`}
+            onClick={() => setTool("phq9")}
+          >
+            PHQ-9
+          </button>
+          <button
+            className={`border rounded px-3 py-2 ${tool === "gad7" ? "bg-slate-100" : ""}`}
+            onClick={() => setTool("gad7")}
+          >
+            GAD-7
+          </button>
+          <button
+            className={`border rounded px-3 py-2 ${tool === "auditc" ? "bg-slate-100" : ""}`}
+            onClick={() => setTool("auditc")}
+          >
+            AUDIT-C
+          </button>
         </div>
 
         {tool === "phq9" && (
@@ -95,11 +117,17 @@ export default function AssessmentsScreen() {
             <div className="text-sm">Resultado</div>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-lg font-semibold">{lastScore.total}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${bandCls(lastScore.risk_band)}`}>● {lastScore.risk_band}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${bandCls(lastScore.risk_band)}`}>
+                ● {lastScore.risk_band}
+              </span>
               <span className="text-xs text-slate-600">({lastScore.severity})</span>
             </div>
             <div className="mt-2">
-              <button className="border rounded px-3 py-2" onClick={save} disabled={saving || !patient}>
+              <button
+                className="border rounded px-3 py-2"
+                onClick={save}
+                disabled={saving || !patient}
+              >
                 Guardar en el expediente
               </button>
             </div>

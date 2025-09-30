@@ -20,15 +20,13 @@ export async function POST(req: NextRequest) {
   const { data: me } = await supa.auth.getUser();
   const actor = me?.user?.id ?? null;
 
-  const { error: e1 } = await supa
-    .from("work_events")
-    .insert({
-      org_id: parsed.data.org_id,
-      assignment_id: parsed.data.assignment_id,
-      kind: parsed.data.kind,
-      payload: parsed.data.payload ?? {},
-      created_by: actor,
-    });
+  const { error: e1 } = await supa.from("work_events").insert({
+    org_id: parsed.data.org_id,
+    assignment_id: parsed.data.assignment_id,
+    kind: parsed.data.kind,
+    payload: parsed.data.payload ?? {},
+    created_by: actor,
+  });
   if (e1) return jsonError("DB_ERROR", e1.message, 400);
 
   // Si es completado, marca en assignment

@@ -2,7 +2,14 @@ import { NextRequest } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import { ok, unauthorized, dbError, serverError, error as jsonError, badRequest } from "@/lib/api/responses";
+import {
+  ok,
+  unauthorized,
+  dbError,
+  serverError,
+  error as jsonError,
+  badRequest,
+} from "@/lib/api/responses";
 import { renderTransactionalEmail, toTextFallback } from "@/lib/mail/templates";
 
 const payloadSchema = z.object({
@@ -21,7 +28,12 @@ const payloadSchema = z.object({
     )
     .optional(),
   due_at: z.string().optional().nullable(),
-  token_hours: z.coerce.number().int().min(1).max(24 * 14).optional(),
+  token_hours: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(24 * 14)
+    .optional(),
 });
 
 function addHours(h: number) {
@@ -43,7 +55,16 @@ export async function POST(req: NextRequest) {
       return badRequest("Payload inválido", { details: parsed.error.flatten() });
     }
 
-    const { org_id, patient_id, email, title, instructions, items = [], due_at = null, token_hours = 72 } = parsed.data;
+    const {
+      org_id,
+      patient_id,
+      email,
+      title,
+      instructions,
+      items = [],
+      due_at = null,
+      token_hours = 72,
+    } = parsed.data;
 
     const { data: requestRow, error: insertError } = await supa
       .from("lab_requests")
@@ -124,7 +145,11 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const payload = await res.json().catch(() => ({}));
-      return jsonError("MAIL_ERROR", payload.error || "No se pudo enviar el correo", res.status || 400);
+      return jsonError(
+        "MAIL_ERROR",
+        payload.error || "No se pudo enviar el correo",
+        res.status || 400,
+      );
     }
 
     return ok({ request_id: requestRow!.id, link, expires_at });

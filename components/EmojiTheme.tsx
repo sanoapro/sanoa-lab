@@ -13,8 +13,8 @@ const TOKEN_TO_REPR = {
   calendario: "📅",
   pacientes: "🧑‍⚕️",
   laboratorio: "🧪",
-  carpeta: "🗂️",        // Módulos
-  modulos: "🗂️",        // alias
+  carpeta: "🗂️", // Módulos
+  modulos: "🗂️", // alias
   recordatorios: "🔔",
   reportes: "📈",
   banco: "🏦",
@@ -78,11 +78,11 @@ const TOKEN_TO_REPR = {
   sonrisa: "🦷",
   equilibrio: "⚖️",
 
-  ajustes: "⚙️",      // ajustes / settings
-  compartir: "🤝",    // compartir acceso
-  exportar: "📤",     // exportar CSV/archivos
-  limpiar: "🧹",      // limpiar filtros/búsqueda
-  usuario: "👤",      // perfil de usuario / ficha
+  ajustes: "⚙️", // ajustes / settings
+  compartir: "🤝", // compartir acceso
+  exportar: "📤", // exportar CSV/archivos
+  limpiar: "🧹", // limpiar filtros/búsqueda
+  usuario: "👤", // perfil de usuario / ficha
 
   // Fallback
   [EMOJI_FALLBACK_TOKEN]: "❓",

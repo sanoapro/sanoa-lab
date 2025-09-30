@@ -23,7 +23,9 @@ export async function POST(req: NextRequest) {
   // Traer lote (≤100) listo para enviar
   const { data: items, error: e1 } = await svc
     .from("reminder_queue")
-    .select("id, org_id, patient_id, provider_id, assignment_id, channel, template_slug, payload, status, attempt_count")
+    .select(
+      "id, org_id, patient_id, provider_id, assignment_id, channel, template_slug, payload, status, attempt_count",
+    )
     .or("status.eq.scheduled,status.eq.retrying")
     .lte("next_attempt_at", nowIso)
     .order("created_at", { ascending: true })
@@ -32,7 +34,8 @@ export async function POST(req: NextRequest) {
   if (e1) return jsonError("DB_ERROR", e1.message, 400);
   if (!items || items.length === 0) return jsonOk({ processed: 0 });
 
-  let sent = 0, failed = 0;
+  let sent = 0,
+    failed = 0;
 
   for (const it of items) {
     // Componer mensaje con datos frescos de asignación/paciente
@@ -68,12 +71,15 @@ export async function POST(req: NextRequest) {
 
     const ok = !!res && res.ok;
     if (ok) {
-      await svc.from("reminder_queue").update({
-        status: "sent",
-        sent_at: new Date().toISOString(),
-        last_error: null,
-        attempt_count: it.attempt_count + 1,
-      }).eq("id", it.id);
+      await svc
+        .from("reminder_queue")
+        .update({
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          last_error: null,
+          attempt_count: it.attempt_count + 1,
+        })
+        .eq("id", it.id);
       sent++;
       continue;
     }
@@ -94,23 +100,29 @@ export async function POST(req: NextRequest) {
       tz: pref?.tz ?? "America/Mexico_City",
       window_start: pref?.window_start ?? "09:00",
       window_end: pref?.window_end ?? "20:00",
-      days_of_week: pref?.days_of_week ?? [1,2,3,4,5],
+      days_of_week: pref?.days_of_week ?? [1, 2, 3, 4, 5],
     });
 
     if (!retryPlan.shouldRetry) {
-      await svc.from("reminder_queue").update({
-        status: "failed",
-        last_error: res ? `HTTP ${res.status}` : "Fetch error",
-        attempt_count: it.attempt_count + 1,
-      }).eq("id", it.id);
+      await svc
+        .from("reminder_queue")
+        .update({
+          status: "failed",
+          last_error: res ? `HTTP ${res.status}` : "Fetch error",
+          attempt_count: it.attempt_count + 1,
+        })
+        .eq("id", it.id);
       failed++;
     } else {
-      await svc.from("reminder_queue").update({
-        status: "retrying",
-        attempt_count: it.attempt_count + 1,
-        next_attempt_at: retryPlan.nextAttemptAt.toISOString(),
-        last_error: res ? `HTTP ${res.status}` : "Fetch error",
-      }).eq("id", it.id);
+      await svc
+        .from("reminder_queue")
+        .update({
+          status: "retrying",
+          attempt_count: it.attempt_count + 1,
+          next_attempt_at: retryPlan.nextAttemptAt.toISOString(),
+          last_error: res ? `HTTP ${res.status}` : "Fetch error",
+        })
+        .eq("id", it.id);
     }
   }
 

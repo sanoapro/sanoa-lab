@@ -8,7 +8,11 @@ export async function GET(req: NextRequest) {
   // MODE: session
   const supa = await getSupabaseServer();
   const { data: u } = await supa.auth.getUser();
-  if (!u?.user) return new Response(JSON.stringify({ ok:false, error:{ code:"UNAUTHORIZED", message:"No autenticado" } }), { status:401 });
+  if (!u?.user)
+    return new Response(
+      JSON.stringify({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }),
+      { status: 401 },
+    );
 
   const url = new URL(req.url);
   const org_id = url.searchParams.get("org_id")!;
@@ -18,12 +22,20 @@ export async function GET(req: NextRequest) {
   const min_n = url.searchParams.get("min_n") ?? "3";
   const top = url.searchParams.get("top") ?? "50";
   if (!org_id || !from || !to) {
-    return new Response(JSON.stringify({ ok:false, error:{ code:"BAD_REQUEST", message:"org_id, from y to requeridos" } }), { status:400 });
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, from y to requeridos" },
+      }),
+      { status: 400 },
+    );
   }
 
   const qp = new URLSearchParams({ org_id, from, to, tz, min_n, top });
-  const r = await fetch(`${url.origin}/api/reports/agenda/risk/patients/json?${qp.toString()}`, { cache:"no-store" });
-  const j = await r.json().catch(()=>null);
+  const r = await fetch(`${url.origin}/api/reports/agenda/risk/patients/json?${qp.toString()}`, {
+    cache: "no-store",
+  });
+  const j = await r.json().catch(() => null);
   const rows = Array.isArray(j) ? j : (j?.data ?? []);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "RiesgoPacientes");
@@ -32,9 +44,9 @@ export async function GET(req: NextRequest) {
   const filename = `risk_pacientes_${org_id}_${from}_${to}.xlsx`;
   return new Response(buf, {
     headers: {
-      "Content-Type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition":`attachment; filename="${filename}"`,
-      "Cache-Control":"no-store"
-    }
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "no-store",
+    },
   });
 }

@@ -1,9 +1,9 @@
 "use client";
 
 type Props = {
-  points: number[];       // valores en orden temporal
-  width?: number;         // px
-  height?: number;        // px
+  points: number[]; // valores en orden temporal
+  width?: number; // px
+  height?: number; // px
   strokeWidth?: number;
   ariaLabel?: string;
 };

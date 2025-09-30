@@ -20,12 +20,20 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     const supa = await getSupabaseServer();
     const { data: u } = await supa.auth.getUser();
-    if (!u?.user) return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }, { status: 401 });
+    if (!u?.user)
+      return NextResponse.json(
+        { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+        { status: 401 },
+      );
 
     const url = new URL(req.url);
     const org_id = url.searchParams.get("org_id");
     const customLetterheadPath = url.searchParams.get("letterheadPath"); // ej: <org_id>/current.png
-    if (!org_id) return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } }, { status: 400 });
+    if (!org_id)
+      return NextResponse.json(
+        { ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } },
+        { status: 400 },
+      );
 
     // 1) Carga paciente
     const { data: patient, error } = await supa
@@ -35,7 +43,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       .eq("org_id", org_id)
       .single();
 
-    if (error || !patient) return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "Paciente no encontrado" } }, { status: 404 });
+    if (error || !patient)
+      return NextResponse.json(
+        { ok: false, error: { code: "NOT_FOUND", message: "Paciente no encontrado" } },
+        { status: 404 },
+      );
 
     // 2) PDF base
     const pdf = await PDFDocument.create();
@@ -48,10 +60,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const origin = url.origin;
     let letterheadBytes: ArrayBuffer | null = null;
     if (customLetterheadPath) {
-      letterheadBytes = await fetchArrayBuffer(`${origin}/api/storage/letterheads/${customLetterheadPath}`);
+      letterheadBytes = await fetchArrayBuffer(
+        `${origin}/api/storage/letterheads/${customLetterheadPath}`,
+      );
     } else {
       // Convención por defecto: letterheads/<org_id>/letterhead.png
-      letterheadBytes = await fetchArrayBuffer(`${origin}/api/storage/letterheads/${org_id}/letterhead.png`);
+      letterheadBytes = await fetchArrayBuffer(
+        `${origin}/api/storage/letterheads/${org_id}/letterhead.png`,
+      );
     }
     if (letterheadBytes) {
       try {
@@ -68,12 +84,23 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const scale = Math.min(maxW / iw, 120 / ih);
         const drawW = iw * scale;
         const drawH = ih * scale;
-        page.drawImage(img, { x: (width - drawW) / 2, y: height - 40 - drawH, width: drawW, height: drawH });
+        page.drawImage(img, {
+          x: (width - drawW) / 2,
+          y: height - 40 - drawH,
+          width: drawW,
+          height: drawH,
+        });
       } catch {}
     }
 
     // 4) Título
-    page.drawText("Resumen clínico del paciente", { x: 40, y: height - 180, size: 18, font: fontBold, color: rgb(0,0,0) });
+    page.drawText("Resumen clínico del paciente", {
+      x: 40,
+      y: height - 180,
+      size: 18,
+      font: fontBold,
+      color: rgb(0, 0, 0),
+    });
 
     // 5) Datos principales
     const y0 = height - 210;
@@ -85,7 +112,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ["Fecha de nacimiento", patient.dob ?? "—"],
       ["Creado en", patient.created_at ? new Date(patient.created_at).toLocaleString() : "—"],
       ["Tags", Array.isArray(patient.tags) && patient.tags.length ? patient.tags.join(", ") : "—"],
-      ["ID", patient.id]
+      ["ID", patient.id],
     ];
     lines.forEach(([k, v], i) => {
       const y = y0 - i * (LH + 6);
@@ -95,7 +122,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     // 6) Footer
     const footer = `Generado: ${new Date().toLocaleString()}  •  Org: ${org_id}`;
-    page.drawText(footer, { x: 40, y: 30, size: 10, font, color: rgb(0.2,0.2,0.2) });
+    page.drawText(footer, { x: 40, y: 30, size: 10, font, color: rgb(0.2, 0.2, 0.2) });
 
     const bytes = await pdf.save();
     const filename = `paciente_${patient.id}.pdf`;
@@ -103,10 +130,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
-        "Cache-Control": "no-store"
-      }
+        "Cache-Control": "no-store",
+      },
     });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }

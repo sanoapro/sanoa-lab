@@ -8,7 +8,7 @@ type WindowCfg = {
   now: Date;
   tz: string; // informativo; no aplicamos conversión compleja
   window_start: string; // "HH:MM"
-  window_end: string;   // "HH:MM"
+  window_end: string; // "HH:MM"
   days_of_week: number[]; // 0..6 Domingo..Sábado
   channels_priority: ("whatsapp" | "sms")[];
 };
@@ -16,11 +16,13 @@ type WindowCfg = {
 export function pickChannelAndWindow(cfg: WindowCfg) {
   const channel = cfg.channels_priority[0] ?? "whatsapp";
   const now = cfg.now;
-  const [sH, sM] = cfg.window_start.split(":").map(n => parseInt(n, 10));
-  const [eH, eM] = cfg.window_end.split(":").map(n => parseInt(n, 10));
+  const [sH, sM] = cfg.window_start.split(":").map((n) => parseInt(n, 10));
+  const [eH, eM] = cfg.window_end.split(":").map((n) => parseInt(n, 10));
 
-  const start = new Date(now); start.setHours(sH, sM, 0, 0);
-  const end = new Date(now);   end.setHours(eH, eM, 0, 0);
+  const start = new Date(now);
+  start.setHours(sH, sM, 0, 0);
+  const end = new Date(now);
+  end.setHours(eH, eM, 0, 0);
 
   const todayDow = now.getDay();
   const inDay = cfg.days_of_week.includes(todayDow);
@@ -58,7 +60,7 @@ function nextActiveDayAt(days: number[], base: Date, hour: number, min: number) 
 
 export function scheduleRetry(opts: {
   now: Date;
-  attempt: number;          // intento que se va a registrar (1,2,...)
+  attempt: number; // intento que se va a registrar (1,2,...)
   max_retries: number;
   retry_backoff_min: number;
   tz: string;
@@ -66,16 +68,19 @@ export function scheduleRetry(opts: {
   window_end: string;
   days_of_week: number[];
 }) {
-  if (opts.attempt > opts.max_retries) return { shouldRetry: false, nextAttemptAt: new Date(opts.now) };
+  if (opts.attempt > opts.max_retries)
+    return { shouldRetry: false, nextAttemptAt: new Date(opts.now) };
   // backoff exponencial suave: base * 2^(attempt-1)
   const minutes = opts.retry_backoff_min * Math.pow(2, Math.max(0, opts.attempt - 1));
   const baseNext = new Date(opts.now.getTime() + minutes * 60 * 1000);
 
   // Ajustar a ventana/día activo si cae fuera
-  const [sH, sM] = opts.window_start.split(":").map(n => parseInt(n, 10));
-  const [eH, eM] = opts.window_end.split(":").map(n => parseInt(n, 10));
-  const start = new Date(baseNext); start.setHours(sH, sM, 0, 0);
-  const end = new Date(baseNext);   end.setHours(eH, eM, 0, 0);
+  const [sH, sM] = opts.window_start.split(":").map((n) => parseInt(n, 10));
+  const [eH, eM] = opts.window_end.split(":").map((n) => parseInt(n, 10));
+  const start = new Date(baseNext);
+  start.setHours(sH, sM, 0, 0);
+  const end = new Date(baseNext);
+  end.setHours(eH, eM, 0, 0);
 
   let next = baseNext;
   const dow = baseNext.getDay();
@@ -92,7 +97,10 @@ export function scheduleRetry(opts: {
   return { shouldRetry: true, nextAttemptAt: next };
 }
 
-export function buildMessage(args: { template_slug: "work_due" | "work_overdue"; assignment: any }) {
+export function buildMessage(args: {
+  template_slug: "work_due" | "work_overdue";
+  assignment: any;
+}) {
   const a = args.assignment;
   const due = a?.due_at ? new Date(a.due_at) : null;
   if (args.template_slug === "work_overdue") {

@@ -12,11 +12,9 @@ export default function ClearAuthPage() {
       try {
         // 1) Limpia el token local de Supabase (derivado de tu project-ref)
         const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.match(
-          /https:\/\/([^.]+)\.supabase\.co/
+          /https:\/\/([^.]+)\.supabase\.co/,
         )?.[1];
-        const authStorageKey = projectRef
-          ? `sb-${projectRef}-auth-token`
-          : null;
+        const authStorageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
         if (authStorageKey) {
           localStorage.removeItem(authStorageKey);
         } else {

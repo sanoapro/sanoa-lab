@@ -15,7 +15,9 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
   // Trae cabecera de la receta (campos garantizados)
   const { data: rec } = await supa
     .from("prescriptions")
-    .select("id, org_id, patient_id, clinician_id, letterhead_path, signature_path, notes, issued_at")
+    .select(
+      "id, org_id, patient_id, clinician_id, letterhead_path, signature_path, notes, issued_at",
+    )
     .eq("id", id)
     .single();
 
@@ -79,9 +81,7 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
                   <td className="px-3 py-2">
                     <strong>{it.drug}</strong>
                   </td>
-                  <td className="px-3 py-2">
-                    {[it.dose, it.route].filter(Boolean).join(" / ")}
-                  </td>
+                  <td className="px-3 py-2">{[it.dose, it.route].filter(Boolean).join(" / ")}</td>
                   <td className="px-3 py-2">
                     {[it.frequency, it.duration].filter(Boolean).join(" / ")}
                   </td>

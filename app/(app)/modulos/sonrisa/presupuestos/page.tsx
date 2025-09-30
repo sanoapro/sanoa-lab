@@ -27,7 +27,12 @@ export default function SonrisaPresupuestosPage() {
             Selecciona una organización activa.
           </p>
         ) : (
-          <PatientAutocomplete orgId={orgId} scope="mine" onSelect={setPatient} placeholder="Buscar paciente…" />
+          <PatientAutocomplete
+            orgId={orgId}
+            scope="mine"
+            onSelect={setPatient}
+            placeholder="Buscar paciente…"
+          />
         )}
         {patient && (
           <div className="text-sm text-slate-600">

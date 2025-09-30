@@ -10,7 +10,11 @@ export default function Page() {
   const patientId = params?.id;
   return (
     <main className="p-6 md:p-10 space-y-8">
-      <AccentHeader title="Tareas del paciente" subtitle="Seguimiento y acciones rápidas." emojiToken="trabajo" />
+      <AccentHeader
+        title="Tareas del paciente"
+        subtitle="Seguimiento y acciones rápidas."
+        emojiToken="trabajo"
+      />
       {patientId ? <PatientAssignments patientId={patientId} /> : <p>Falta paciente</p>}
     </main>
   );

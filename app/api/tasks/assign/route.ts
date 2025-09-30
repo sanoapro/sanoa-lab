@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -25,8 +25,11 @@ export async function POST(req: NextRequest) {
   };
   if (!body?.org_id || !body?.module || !body?.patient_id) {
     return NextResponse.json(
-      { ok: false, error: { code: "BAD_REQUEST", message: "org_id, module y patient_id son requeridos" } },
-      { status: 400 }
+      {
+        ok: false,
+        error: { code: "BAD_REQUEST", message: "org_id, module y patient_id son requeridos" },
+      },
+      { status: 400 },
     );
   }
 
@@ -43,11 +46,11 @@ export async function POST(req: NextRequest) {
     if (eTpl) {
       return NextResponse.json(
         { ok: false, error: { code: "NOT_FOUND", message: "Plantilla no encontrada" } },
-        { status: 404 }
+        { status: 404 },
       );
     }
     title = title || tpl.title;
-    content = Object.keys(content || {}).length ? content : tpl.content ?? {};
+    content = Object.keys(content || {}).length ? content : (tpl.content ?? {});
   }
 
   const { data, error } = await supa
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
   if (error) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: error.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
   return NextResponse.json({ ok: true, data });

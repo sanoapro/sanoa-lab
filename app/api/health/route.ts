@@ -22,7 +22,8 @@ export async function GET() {
     const storage_configured = has(process.env.NEXT_PUBLIC_SUPABASE_URL);
     const stripe_configured = has(process.env.STRIPE_SECRET_KEY);
     const twilio_configured = has(process.env.TWILIO_AUTH_TOKEN) || has(process.env.TWILIO_API_KEY);
-    const cal_configured = has(process.env.CALCOM_API_KEY) || has(process.env.NEXT_PUBLIC_CALCOM_URL);
+    const cal_configured =
+      has(process.env.CALCOM_API_KEY) || has(process.env.NEXT_PUBLIC_CALCOM_URL);
     const build_info = {
       env: process.env.NODE_ENV,
       commit: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT ?? null,
@@ -37,9 +38,12 @@ export async function GET() {
         twilio_configured,
         cal_configured,
         build_info,
-      }
+      },
     });
   } catch (e: any) {
-    return NextResponse.json({ ok:false, error:{ code:"SERVER_ERROR", message: e?.message ?? "Error" } }, { status:500 });
+    return NextResponse.json(
+      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { status: 500 },
+    );
   }
 }

@@ -17,12 +17,18 @@ const UpsertSchema = z.object({
   org_id: z.string().uuid(),
   provider_id: z.string().uuid().optional(), // default auth.uid()
   tz: z.string().min(1).default("America/Mexico_City"),
-  window_start: z.string().regex(/^\d{2}:\d{2}$/).default("09:00"),
-  window_end: z.string().regex(/^\d{2}:\d{2}$/).default("20:00"),
-  days_of_week: z.array(z.number().int().min(0).max(6)).default([1,2,3,4,5]), // 0=Domingo
-  channels_priority: z.array(z.enum(["whatsapp","sms"])).default(["whatsapp","sms"]),
+  window_start: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default("09:00"),
+  window_end: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default("20:00"),
+  days_of_week: z.array(z.number().int().min(0).max(6)).default([1, 2, 3, 4, 5]), // 0=Domingo
+  channels_priority: z.array(z.enum(["whatsapp", "sms"])).default(["whatsapp", "sms"]),
   max_retries: z.number().int().min(0).max(10).default(3),
-  retry_backoff_min: z.number().int().min(1).max(240).default(30) // minutos
+  retry_backoff_min: z.number().int().min(1).max(240).default(30), // minutos
 });
 
 export async function GET(req: NextRequest) {
@@ -33,7 +39,7 @@ export async function GET(req: NextRequest) {
     provider_id: qp.get("provider_id") || undefined,
   });
   if (!parsed.success) {
-    const msg = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 
@@ -49,17 +55,19 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
-  return jsonOk(data ?? {
-    org_id: parsed.data.org_id,
-    provider_id,
-    tz: "America/Mexico_City",
-    window_start: "09:00",
-    window_end: "20:00",
-    days_of_week: [1,2,3,4,5],
-    channels_priority: ["whatsapp","sms"],
-    max_retries: 3,
-    retry_backoff_min: 30,
-  });
+  return jsonOk(
+    data ?? {
+      org_id: parsed.data.org_id,
+      provider_id,
+      tz: "America/Mexico_City",
+      window_start: "09:00",
+      window_end: "20:00",
+      days_of_week: [1, 2, 3, 4, 5],
+      channels_priority: ["whatsapp", "sms"],
+      max_retries: 3,
+      retry_backoff_min: 30,
+    },
+  );
 }
 
 export async function POST(req: NextRequest) {

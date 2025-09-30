@@ -4,31 +4,38 @@ import { useMemo, useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import AccentHeader from "@/components/ui/AccentHeader";
 
-export default function TriagePulso(){
-  const [fc, setFc] = useState<string>("90");   // lpm
+export default function TriagePulso() {
+  const [fc, setFc] = useState<string>("90"); // lpm
   const [pas, setPas] = useState<string>("120"); // mmHg
-  const [sat, setSat] = useState<string>("97");  // %
+  const [sat, setSat] = useState<string>("97"); // %
   const [temp, setTemp] = useState<string>("37.0");
   const [fr, setFr] = useState<string>("16");
 
-  const score = useMemo(()=>{
-    const n = (x:any)=>Number(x);
+  const score = useMemo(() => {
+    const n = (x: any) => Number(x);
     let s = 0;
-    if (n(fc) >= 130) s += 3; else if (n(fc) >= 110) s += 2; else if (n(fc) <= 40) s += 3;
-    if (n(pas) < 90) s += 3; else if (n(pas) < 100) s += 2;
-    if (n(sat) < 90) s += 3; else if (n(sat) < 94) s += 2;
+    if (n(fc) >= 130) s += 3;
+    else if (n(fc) >= 110) s += 2;
+    else if (n(fc) <= 40) s += 3;
+    if (n(pas) < 90) s += 3;
+    else if (n(pas) < 100) s += 2;
+    if (n(sat) < 90) s += 3;
+    else if (n(sat) < 94) s += 2;
     if (n(temp) >= 40 || n(temp) < 35) s += 2;
-    if (n(fr) >= 30) s += 3; else if (n(fr) >= 22) s += 2; else if (n(fr) <= 8) s += 3;
+    if (n(fr) >= 30) s += 3;
+    else if (n(fr) >= 22) s += 2;
+    else if (n(fr) <= 8) s += 3;
     return s;
   }, [fc, pas, sat, temp, fr]);
 
-  const nivel = useMemo(()=>{
-    if (score >= 6) return { label:"Rojo", desc:"Atención inmediata", color:"bg-rose-600" };
-    if (score >= 3) return { label:"Amarillo", desc:"Alta prioridad", color:"bg-amber-500" };
-    return { label:"Verde", desc:"Prioridad estándar", color:"bg-emerald-600" };
+  const nivel = useMemo(() => {
+    if (score >= 6) return { label: "Rojo", desc: "Atención inmediata", color: "bg-rose-600" };
+    if (score >= 3) return { label: "Amarillo", desc: "Alta prioridad", color: "bg-amber-500" };
+    return { label: "Verde", desc: "Prioridad estándar", color: "bg-emerald-600" };
   }, [score]);
 
-  const box = "rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6";
+  const box =
+    "rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6";
 
   return (
     <main className="p-6 md:p-10 space-y-8">
@@ -38,18 +45,29 @@ export default function TriagePulso(){
           Pulso · Triaje
         </h1>
         <p className="text-sm text-[var(--color-brand-text)]/80">
-          Clasificación simple por signos vitales (heurística). No sustituye protocolos institucionales.
+          Clasificación simple por signos vitales (heurística). No sustituye protocolos
+          institucionales.
         </p>
       </header>
 
       <section className={box}>
         <AccentHeader emoji="🩺">Signos vitales</AccentHeader>
         <div className="grid md:grid-cols-5 gap-3 mt-4">
-          <L label="FC (lpm)"><I v={fc} set={setFc} /></L>
-          <L label="PAS (mmHg)"><I v={pas} set={setPas} /></L>
-          <L label="SatO₂ (%)"><I v={sat} set={setSat} /></L>
-          <L label="Temp (°C)"><I v={temp} set={setTemp} /></L>
-          <L label="FR (rpm)"><I v={fr} set={setFr} /></L>
+          <L label="FC (lpm)">
+            <I v={fc} set={setFc} />
+          </L>
+          <L label="PAS (mmHg)">
+            <I v={pas} set={setPas} />
+          </L>
+          <L label="SatO₂ (%)">
+            <I v={sat} set={setSat} />
+          </L>
+          <L label="Temp (°C)">
+            <I v={temp} set={setTemp} />
+          </L>
+          <L label="FR (rpm)">
+            <I v={fr} set={setFr} />
+          </L>
         </div>
       </section>
 
@@ -79,9 +97,20 @@ export default function TriagePulso(){
   );
 }
 
-function L({label, children}:{label:string; children:React.ReactNode}){
-  return <label className="text-sm">{label}<div className="mt-1">{children}</div></label>;
+function L({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="text-sm">
+      {label}
+      <div className="mt-1">{children}</div>
+    </label>
+  );
 }
-function I({v, set}:{v:string; set:(x:string)=>void}){
-  return <input value={v} onChange={e=>set(e.target.value)} className="border rounded-xl p-2 w-full" />;
+function I({ v, set }: { v: string; set: (x: string) => void }) {
+  return (
+    <input
+      value={v}
+      onChange={(e) => set(e.target.value)}
+      className="border rounded-xl p-2 w-full"
+    />
+  );
 }

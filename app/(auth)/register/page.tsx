@@ -35,9 +35,7 @@ export default function RegisterPage() {
           setMsg("Cuenta creada. Preparando tu tablero…");
           router.replace("/dashboard");
         } else {
-          setMsg(
-            "Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de acceder."
-          );
+          setMsg("Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de acceder.");
         }
       }
     } catch (err: any) {

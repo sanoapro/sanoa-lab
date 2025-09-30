@@ -22,7 +22,10 @@ export default function SonrisaPage() {
             <Link href="/modulos/sonrisa/odontograma/nuevo" className="px-3 py-2 rounded-xl border">
               Nuevo odontograma
             </Link>
-            <Link href="/modulos/sonrisa/presupuestos/nuevo" className="px-3 py-2 rounded-xl border">
+            <Link
+              href="/modulos/sonrisa/presupuestos/nuevo"
+              className="px-3 py-2 rounded-xl border"
+            >
               Nuevo presupuesto
             </Link>
             <Link href="/prescriptions/templates" className="px-3 py-2 rounded-xl border">

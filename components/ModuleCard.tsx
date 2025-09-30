@@ -1,10 +1,18 @@
-'use client';
-import Link from 'next/link';
-import { Card } from '@/components/ui/card';
+"use client";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
 
 export default function ModuleCard({
-  title, desc, href, locked
-}: { title:string; desc:string; href:string; locked?:boolean }) {
+  title,
+  desc,
+  href,
+  locked,
+}: {
+  title: string;
+  desc: string;
+  href: string;
+  locked?: boolean;
+}) {
   return (
     <Card className="p-5 hover:shadow-md transition">
       <div className="flex items-start justify-between">
@@ -18,10 +26,10 @@ export default function ModuleCard({
       </div>
       <div className="mt-4">
         <Link
-          className={`text-sm underline ${locked ? 'pointer-events-none opacity-50' : ''}`}
+          className={`text-sm underline ${locked ? "pointer-events-none opacity-50" : ""}`}
           href={href}
         >
-          {locked ? 'Requiere suscripción' : 'Abrir'}
+          {locked ? "Requiere suscripción" : "Abrir"}
         </Link>
       </div>
     </Card>

@@ -1,8 +1,8 @@
-'use client';
-import { ButtonHTMLAttributes } from 'react';
+"use client";
+import { ButtonHTMLAttributes } from "react";
 
 export default function CTAButton(props: ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { className = '', children, ...rest } = props;
+  const { className = "", children, ...rest } = props;
   return (
     <button
       {...rest}

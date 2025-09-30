@@ -2,7 +2,9 @@
 import AccentHeader from "@/components/ui/AccentHeader";
 
 async function load(token: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/patients/share/${token}`, { cache: "no-store" });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/patients/share/${token}`, {
+    cache: "no-store",
+  });
   // fallback: si no está NEXT_PUBLIC_BASE_URL, usar ruta relativa
   if (!res.ok) {
     const r2 = await fetch(`/api/patients/share/${token}`, { cache: "no-store" });
@@ -23,11 +25,25 @@ export default async function SharedPatientPage({ params }: { params: { token: s
       />
       {json?.ok ? (
         <section className="rounded-2xl border p-4 space-y-2 text-sm">
-          <div><span className="text-slate-500">Nombre:</span> {json.data.patient.name ?? "—"}</div>
-          <div><span className="text-slate-500">Género:</span> {json.data.patient.gender ?? "—"}</div>
-          <div><span className="text-slate-500">Fecha de nacimiento:</span> {json.data.patient.dob ?? "—"}</div>
-          <div><span className="text-slate-500">Tags:</span> {Array.isArray(json.data.patient.tags) && json.data.patient.tags.length ? json.data.patient.tags.join(", ") : "—"}</div>
-          <p className="text-xs text-slate-500 mt-2">Este acceso queda registrado por motivos de auditoría.</p>
+          <div>
+            <span className="text-slate-500">Nombre:</span> {json.data.patient.name ?? "—"}
+          </div>
+          <div>
+            <span className="text-slate-500">Género:</span> {json.data.patient.gender ?? "—"}
+          </div>
+          <div>
+            <span className="text-slate-500">Fecha de nacimiento:</span>{" "}
+            {json.data.patient.dob ?? "—"}
+          </div>
+          <div>
+            <span className="text-slate-500">Tags:</span>{" "}
+            {Array.isArray(json.data.patient.tags) && json.data.patient.tags.length
+              ? json.data.patient.tags.join(", ")
+              : "—"}
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            Este acceso queda registrado por motivos de auditoría.
+          </p>
         </section>
       ) : (
         <p className="text-rose-700 bg-rose-50 border border-rose-200 rounded p-3">

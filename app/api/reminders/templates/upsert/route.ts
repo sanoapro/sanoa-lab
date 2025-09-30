@@ -27,13 +27,7 @@ export async function POST(req: NextRequest) {
     const tplBody: string = (body?.body ?? "").toString();
 
     const variables: string[] = Array.isArray(body?.variables)
-      ? Array.from(
-          new Set(
-            body.variables
-              .map((s: any) => String(s).trim())
-              .filter(Boolean),
-          ),
-        )
+      ? Array.from(new Set(body.variables.map((s: any) => String(s).trim()).filter(Boolean)))
       : [];
 
     const is_active: boolean = Boolean(body?.is_active ?? true);
@@ -41,7 +35,10 @@ export async function POST(req: NextRequest) {
     // Requeridos
     if (!org_id || !name || !channel || !tplBody) {
       return NextResponse.json(
-        { ok: false, error: { code: "BAD_REQUEST", message: "org_id, name, channel y body son requeridos" } },
+        {
+          ok: false,
+          error: { code: "BAD_REQUEST", message: "org_id, name, channel y body son requeridos" },
+        },
         { status: 400 },
       );
     }

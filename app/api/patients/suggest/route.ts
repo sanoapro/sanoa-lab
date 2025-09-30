@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!parsed.success) {
-    const msg = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 

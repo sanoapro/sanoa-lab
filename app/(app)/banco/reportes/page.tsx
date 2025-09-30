@@ -8,7 +8,9 @@ import ReportFlow from "@/components/bank/ReportFlow";
 import ReportPL from "@/components/bank/ReportPL";
 import ScheduleForm from "@/components/reports/ScheduleForm";
 
-function iso(d: Date) { return d.toISOString().slice(0, 10); }
+function iso(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
 
 export default function BankReportsPage() {
   const org = useMemo(() => getActiveOrg(), []);
@@ -37,11 +39,21 @@ export default function BankReportsPage() {
             <div className="flex flex-wrap gap-3 items-end">
               <div>
                 <label className="block text-sm mb-1">Desde</label>
-                <input type="date" className="rounded border px-3 py-2" value={from} onChange={(e) => setFrom(e.target.value)} />
+                <input
+                  type="date"
+                  className="rounded border px-3 py-2"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
               </div>
               <div>
                 <label className="block text-sm mb-1">Hasta</label>
-                <input type="date" className="rounded border px-3 py-2" value={to} onChange={(e) => setTo(e.target.value)} />
+                <input
+                  type="date"
+                  className="rounded border px-3 py-2"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
               </div>
             </div>
 

@@ -22,6 +22,6 @@
     "node_modules",
     ".next",
     "logs/**",
-    "supabase/functions/**"   // ⬅️ evita errores de Deno en build de Next
+    "supabase/functions/**" // ⬅️ evita errores de Deno en build de Next
   ]
 }

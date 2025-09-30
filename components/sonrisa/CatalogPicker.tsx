@@ -9,7 +9,12 @@ export default function CatalogPicker({
   onAdd,
 }: {
   orgId: string;
-  onAdd: (item: { description: string; qty: number; unit_price_cents: number; treatment_id?: string }) => void;
+  onAdd: (item: {
+    description: string;
+    qty: number;
+    unit_price_cents: number;
+    treatment_id?: string;
+  }) => void;
 }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [q, setQ] = useState("");
@@ -17,7 +22,9 @@ export default function CatalogPicker({
   async function load() {
     const p = new URLSearchParams({ org_id: orgId, active: "true" });
     if (q) p.set("q", q);
-    const r = await fetch(`/api/modules/sonrisa/treatments/list?${p.toString()}`, { cache: "no-store" });
+    const r = await fetch(`/api/modules/sonrisa/treatments/list?${p.toString()}`, {
+      cache: "no-store",
+    });
     const j = await r.json();
     setRows(j?.ok ? j.data : []);
   }
@@ -47,7 +54,10 @@ export default function CatalogPicker({
                 <td className="px-3 py-2 w-24 text-xs text-slate-500">{r.code}</td>
                 <td className="px-3 py-2">{r.name}</td>
                 <td className="px-3 py-2 w-32 text-right">
-                  {(r.default_price_cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                  {(r.default_price_cents / 100).toLocaleString("es-MX", {
+                    style: "currency",
+                    currency: "MXN",
+                  })}
                 </td>
                 <td className="px-3 py-2 w-28 text-right">
                   <button

@@ -12,11 +12,30 @@ function minusMinutesISO(iso: string, min: number) {
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: au } = await supa.auth.getUser();
-  if (!au?.user) return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }, { status: 401 });
+  if (!au?.user)
+    return NextResponse.json(
+      { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
+      { status: 401 },
+    );
 
-  const body = (await req.json().catch(() => null)) as { org_id?: string; appointment_id?: string; patient_id?: string; starts_at?: string; tz?: string };
-  if (!body?.org_id || !body?.appointment_id || !body?.patient_id || !body?.starts_at || !body?.tz) {
-    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "Campos requeridos faltantes" } }, { status: 400 });
+  const body = (await req.json().catch(() => null)) as {
+    org_id?: string;
+    appointment_id?: string;
+    patient_id?: string;
+    starts_at?: string;
+    tz?: string;
+  };
+  if (
+    !body?.org_id ||
+    !body?.appointment_id ||
+    !body?.patient_id ||
+    !body?.starts_at ||
+    !body?.tz
+  ) {
+    return NextResponse.json(
+      { ok: false, error: { code: "BAD_REQUEST", message: "Campos requeridos faltantes" } },
+      { status: 400 },
+    );
   }
 
   // Aquí asumimos que /api/reminders/schedule existe y acepta window_start/end y channel.

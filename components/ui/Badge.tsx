@@ -1,5 +1,5 @@
-'use client';
-import { PropsWithChildren } from 'react';
+"use client";
+import { PropsWithChildren } from "react";
 
 export function Badge({ children }: PropsWithChildren) {
   return (

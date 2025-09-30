@@ -49,7 +49,9 @@ function mapDbToUi(row: any): PatientNote {
 
 /** Convierte modelo UI -> payload DB (guarda JSON en `content`) */
 function mapUiToDbPayload(input: NoteInput) {
-  return { content: JSON.stringify({ titulo: input.titulo ?? null, contenido: input.contenido ?? null }) };
+  return {
+    content: JSON.stringify({ titulo: input.titulo ?? null, contenido: input.contenido ?? null }),
+  };
 }
 
 /** Cache simple para saber si existe deleted_at */
@@ -111,7 +113,12 @@ export async function updateNote(id: string, patch: NoteInput): Promise<PatientN
     ...(typeof patch.contenido !== "undefined" ? { contenido: patch.contenido } : {}),
   });
 
-  const { data, error } = await supabase.from("patient_notes").update(payload).eq("id", id).select("*").single();
+  const { data, error } = await supabase
+    .from("patient_notes")
+    .update(payload)
+    .eq("id", id)
+    .select("*")
+    .single();
   if (error) throw error;
   return mapDbToUi(data);
 }
@@ -121,7 +128,10 @@ export async function deleteNote(id: string): Promise<void> {
   const supabase = getSupabaseBrowser();
   const hasSoft = await notesSoftDeleteSupported();
   if (hasSoft) {
-    const { error } = await supabase.from("patient_notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+    const { error } = await supabase
+      .from("patient_notes")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", id);
     if (error) throw error;
   } else {
     const { error } = await supabase.from("patient_notes").delete().eq("id", id);
@@ -134,7 +144,12 @@ export async function restoreNote(id: string): Promise<PatientNote> {
   const hasSoft = await notesSoftDeleteSupported();
   if (!hasSoft) throw new Error("Restaurar no soportado: falta 'deleted_at' en patient_notes.");
   const supabase = getSupabaseBrowser();
-  const { data, error } = await supabase.from("patient_notes").update({ deleted_at: null }).eq("id", id).select("*").single();
+  const { data, error } = await supabase
+    .from("patient_notes")
+    .update({ deleted_at: null })
+    .eq("id", id)
+    .select("*")
+    .single();
   if (error) throw error;
   return mapDbToUi(data);
 }
@@ -142,7 +157,11 @@ export async function restoreNote(id: string): Promise<PatientNote> {
 /** DUPLICAR */
 export async function duplicateNote(noteId: string): Promise<PatientNote> {
   const supabase = getSupabaseBrowser();
-  const { data: original, error: e1 } = await supabase.from("patient_notes").select("*").eq("id", noteId).maybeSingle();
+  const { data: original, error: e1 } = await supabase
+    .from("patient_notes")
+    .select("*")
+    .eq("id", noteId)
+    .maybeSingle();
   if (e1) throw e1;
   if (!original) throw new Error("Nota no encontrada.");
 
@@ -152,7 +171,9 @@ export async function duplicateNote(noteId: string): Promise<PatientNote> {
   const now = new Date();
   // Título de la copia: usa el título original si existe (deserializando)
   let orig = mapDbToUi(original);
-  const copyTitle = orig.titulo ? `${orig.titulo} (copia ${now.toLocaleString()})` : `Copia ${now.toLocaleString()}`;
+  const copyTitle = orig.titulo
+    ? `${orig.titulo} (copia ${now.toLocaleString()})`
+    : `Copia ${now.toLocaleString()}`;
 
   const payload = {
     patient_id: original.patient_id,

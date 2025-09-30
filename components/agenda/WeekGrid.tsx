@@ -51,10 +51,7 @@ export default function WeekGrid({
   defaultDurationMin?: number;
 }) {
   const weekStart = useMemo(() => new Date(`${baseDate}T00:00:00`), [baseDate]);
-  const weekDays = useMemo(
-    () => [...Array(7)].map((_, i) => addDays(weekStart, i)),
-    [weekStart]
-  );
+  const weekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(weekStart, i)), [weekStart]);
 
   const [availability, setAvailability] = useState<Avail[]>([]);
   const [overrides, setOverrides] = useState<Override[]>([]);
@@ -69,10 +66,7 @@ export default function WeekGrid({
   } | null>(null);
 
   const fromIso = useMemo(() => new Date(weekStart).toISOString(), [weekStart]);
-  const toIso = useMemo(
-    () => new Date(addDays(weekStart, 7)).toISOString(),
-    [weekStart]
-  );
+  const toIso = useMemo(() => new Date(addDays(weekStart, 7)).toISOString(), [weekStart]);
 
   async function loadAll() {
     if (!orgId || !providerId) return;
@@ -209,9 +203,7 @@ export default function WeekGrid({
         <span className="px-2 py-1 rounded border bg-white">
           Semana: {dayKey(weekDays[0])} → {dayKey(weekDays[6])}
         </span>
-        <span className="px-2 py-1 rounded border bg-white">
-          {busy ? "Cargando…" : "Listo"}
-        </span>
+        <span className="px-2 py-1 rounded border bg-white">{busy ? "Cargando…" : "Listo"}</span>
         <div className="ml-auto flex items-center gap-2">
           <label>Horario:</label>
           <input
@@ -296,10 +288,7 @@ export default function WeekGrid({
           <button className="border rounded px-3 py-2" onClick={doReschedule}>
             Guardar
           </button>
-          <button
-            className="border rounded px-3 py-2"
-            onClick={() => setResched(null)}
-          >
+          <button className="border rounded px-3 py-2" onClick={() => setResched(null)}>
             Cancelar
           </button>
         </div>
@@ -324,10 +313,7 @@ function FragmentRow({
   isWithinAvailability: (d: Date) => boolean;
   apptAt: (d: Date) => Appt | undefined;
   onCreate: (d: Date) => Promise<void>;
-  onStatus: (
-    id: string,
-    st: "completed" | "no_show" | "cancelled"
-  ) => Promise<void>;
+  onStatus: (id: string, st: "completed" | "no_show" | "cancelled") => Promise<void>;
   onPlanReschedule: (id: string, newStartIso: string, dur: number) => void;
 }) {
   return (
@@ -340,11 +326,7 @@ function FragmentRow({
         if (ap) {
           const dur = Math.max(
             10,
-            Math.round(
-              (new Date(ap.ends_at).getTime() -
-                new Date(ap.starts_at).getTime()) /
-                60000
-            )
+            Math.round((new Date(ap.ends_at).getTime() - new Date(ap.starts_at).getTime()) / 60000),
           );
           return (
             <div key={cIdx} className="border-t p-1">
@@ -384,9 +366,7 @@ function FragmentRow({
             key={cIdx}
             className={[
               "border-t h-10 w-full text-xs",
-              allowed
-                ? "hover:bg-emerald-50"
-                : "bg-slate-50 text-slate-400 cursor-not-allowed",
+              allowed ? "hover:bg-emerald-50" : "bg-slate-50 text-slate-400 cursor-not-allowed",
             ].join(" ")}
             onClick={() => allowed && onCreate(dt)}
             disabled={!allowed}

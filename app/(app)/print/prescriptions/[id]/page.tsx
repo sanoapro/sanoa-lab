@@ -58,7 +58,9 @@ export default async function PrintPrescriptionPage({ params }: { params: { id: 
           {/* header injectado */}
           <div dangerouslySetInnerHTML={{ __html: headerHtml }} />
           <h1>Receta médica</h1>
-          <div className="muted">Folio: {p.id} — Emitida: {p.issued_at || "—"}</div>
+          <div className="muted">
+            Folio: {p.id} — Emitida: {p.issued_at || "—"}
+          </div>
 
           <h2>Paciente</h2>
           <div>

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   if (!au?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: { code: "BAD_REQUEST", message: "org_id, id y starts_at requeridos" },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (e0 || !oldAppt) {
     return NextResponse.json(
       { ok: false, error: { code: "NOT_FOUND", message: "Cita no encontrada" } },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   if (Number.isNaN(newStart.getTime())) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "starts_at inválido" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -60,11 +60,9 @@ export async function POST(req: NextRequest) {
       240,
       body.duration_min ??
         Math.round(
-          (new Date(oldAppt.ends_at).getTime() -
-            new Date(oldAppt.starts_at).getTime()) /
-            60000
-        )
-    )
+          (new Date(oldAppt.ends_at).getTime() - new Date(oldAppt.starts_at).getTime()) / 60000,
+        ),
+    ),
   );
   const newEnd = addMinutesIso(newStart.toISOString(), durationMin);
 
@@ -80,7 +78,7 @@ export async function POST(req: NextRequest) {
   if (coll && coll.length > 0) {
     return NextResponse.json(
       { ok: false, error: { code: "TIME_CONFLICT", message: "Conflicto con otra cita" } },
-      { status: 409 }
+      { status: 409 },
     );
   }
 
@@ -93,7 +91,7 @@ export async function POST(req: NextRequest) {
   if (e1) {
     return NextResponse.json(
       { ok: false, error: { code: "DB_ERROR", message: e1.message } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

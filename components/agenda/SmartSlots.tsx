@@ -28,7 +28,14 @@ export default function SmartSlots({
   const load = useCallback(async () => {
     if (!orgId || !providerId || !date) return;
     setLoading(true);
-    const p = new URLSearchParams({ org_id: orgId, provider_id: providerId, date, tz, duration: String(duration), limit: "60" });
+    const p = new URLSearchParams({
+      org_id: orgId,
+      provider_id: providerId,
+      date,
+      tz,
+      duration: String(duration),
+      limit: "60",
+    });
     if (patientId) p.set("patient_id", patientId);
     const r = await fetch(`/api/agenda/slots/suggest?${p.toString()}`, { cache: "no-store" });
     const j = await r.json();
@@ -62,13 +69,16 @@ export default function SmartSlots({
             {rows.map((s, i) => {
               const start = new Date(s.start_iso);
               const end = new Date(s.end_iso);
-              const fmt = (d: Date) => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+              const fmt = (d: Date) =>
+                d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               return (
                 <tr key={i} className="border-t">
                   <td className="px-3 py-2">
                     {fmt(start)} – {fmt(end)}
                   </td>
-                  <td className="px-3 py-2">{Math.round((end.getTime() - start.getTime()) / 60000)} min</td>
+                  <td className="px-3 py-2">
+                    {Math.round((end.getTime() - start.getTime()) / 60000)} min
+                  </td>
                   <td className="px-3 py-2">
                     <NoShowBadge score={s.score} />
                   </td>

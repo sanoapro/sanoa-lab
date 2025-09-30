@@ -85,7 +85,10 @@ export default function AssignForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-2xl border bg-white/95 dark:bg-slate-900/60 p-4 space-y-4">
+    <form
+      onSubmit={onSubmit}
+      className="rounded-2xl border bg-white/95 dark:bg-slate-900/60 p-4 space-y-4"
+    >
       <h3 className="font-semibold flex items-center gap-2">
         <ColorEmoji token="trabajo" /> Nueva asignación
       </h3>

@@ -125,7 +125,9 @@ export default function TableroPage() {
               <ColorEmoji token="recordatorios" size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">Recordatorios</h3>
+              <h3 className="text-lg font-semibold text-[var(--color-brand-text)]">
+                Recordatorios
+              </h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
                 Confirmaciones y no-show diarios.
               </p>

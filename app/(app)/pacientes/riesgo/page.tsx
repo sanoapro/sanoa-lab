@@ -6,7 +6,13 @@ import { getActiveOrg } from "@/lib/org-local";
 import Link from "next/link";
 
 type Summary = { label: string; total: number };
-type Row = { id: string; name: string | null; gender: string | null; dob: string | null; created_at: string | null };
+type Row = {
+  id: string;
+  name: string | null;
+  gender: string | null;
+  dob: string | null;
+  created_at: string | null;
+};
 
 export default function RiskBoardPage() {
   const org = useMemo(() => getActiveOrg(), []);
@@ -19,16 +25,23 @@ export default function RiskBoardPage() {
   useEffect(() => {
     if (!orgId) return;
     fetch(`/api/patients/labels/summary?org_id=${orgId}`)
-      .then(r => r.json())
-      .then(j => { if (j.ok) setSummary(j.data); });
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.ok) setSummary(j.data);
+      });
   }, [orgId]);
 
   useEffect(() => {
     if (!orgId || !label) return;
     const p = new URLSearchParams({ org_id: orgId, label, page: "1", pageSize: "50" });
     fetch(`/api/patients/labels/search?${p.toString()}`)
-      .then(r => r.json())
-      .then(j => { if (j.ok) { setRows(j.data); setTotal(j.meta.total); } });
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.ok) {
+          setRows(j.data);
+          setTotal(j.meta.total);
+        }
+      });
   }, [orgId, label]);
 
   return (
@@ -48,8 +61,8 @@ export default function RiskBoardPage() {
       {orgId && (
         <>
           <section className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {["Riesgo","Embarazo","Prioridad"].map((lab) => {
-              const n = summary.find(s => s.label === lab)?.total ?? 0;
+            {["Riesgo", "Embarazo", "Prioridad"].map((lab) => {
+              const n = summary.find((s) => s.label === lab)?.total ?? 0;
               const active = label === lab;
               return (
                 <button
@@ -67,7 +80,7 @@ export default function RiskBoardPage() {
             <div className="rounded-2xl border p-4">
               <div className="text-sm text-slate-500">Otros (todas las etiquetas)</div>
               <div className="text-3xl font-semibold mt-1">
-                {summary.reduce((a,b) => a + (b.total || 0), 0)}
+                {summary.reduce((a, b) => a + (b.total || 0), 0)}
               </div>
             </div>
           </section>
@@ -87,15 +100,25 @@ export default function RiskBoardPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.length === 0 && <tr><td colSpan={4} className="px-3 py-6 text-center">Sin pacientes.</td></tr>}
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-6 text-center">
+                      Sin pacientes.
+                    </td>
+                  </tr>
+                )}
                 {rows.map((r) => (
                   <tr key={r.id} className="border-t">
                     <td className="px-3 py-2">
-                      <Link href={`/pacientes/${r.id}`} className="underline underline-offset-2">{r.name ?? "—"}</Link>
+                      <Link href={`/pacientes/${r.id}`} className="underline underline-offset-2">
+                        {r.name ?? "—"}
+                      </Link>
                     </td>
                     <td className="px-3 py-2">{r.gender ?? "—"}</td>
                     <td className="px-3 py-2">{r.dob ?? "—"}</td>
-                    <td className="px-3 py-2">{r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}</td>
+                    <td className="px-3 py-2">
+                      {r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

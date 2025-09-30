@@ -8,19 +8,29 @@ export async function GET(req: NextRequest) {
   // MODE: session
   const supa = await getSupabaseServer();
   const { data: u } = await supa.auth.getUser();
-  if (!u?.user) return new Response(JSON.stringify({ ok:false, error:{ code:"UNAUTHORIZED", message:"No autenticado" } }), { status:401 });
+  if (!u?.user)
+    return new Response(
+      JSON.stringify({ ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } }),
+      { status: 401 },
+    );
 
   const url = new URL(req.url);
   const org_id = url.searchParams.get("org_id");
   const from = url.searchParams.get("from") ?? "";
   const to = url.searchParams.get("to") ?? "";
-  if (!org_id) return new Response(JSON.stringify({ ok:false, error:{ code:"BAD_REQUEST", message:"Falta org_id" } }), { status:400 });
+  if (!org_id)
+    return new Response(
+      JSON.stringify({ ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } }),
+      { status: 400 },
+    );
 
   // Llama a tu endpoint JSON existente
   const origin = url.origin;
-  const qp = new URLSearchParams({ org_id, ...(from?{from}:{}) , ...(to?{to}:{}) });
-  const r = await fetch(`${origin}/api/export/metrics/monthly?${qp.toString()}`, { cache:"no-store" });
-  const j = await r.json().catch(()=>null);
+  const qp = new URLSearchParams({ org_id, ...(from ? { from } : {}), ...(to ? { to } : {}) });
+  const r = await fetch(`${origin}/api/export/metrics/monthly?${qp.toString()}`, {
+    cache: "no-store",
+  });
+  const j = await r.json().catch(() => null);
 
   const rows = Array.isArray(j) ? j : (j?.data ?? []);
   // Construcción básica de hoja
@@ -29,12 +39,12 @@ export async function GET(req: NextRequest) {
   XLSX.utils.book_append_sheet(wb, ws, "metrics_monthly");
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
 
-  const filename = `metrics_monthly_${org_id}_${new Date().toISOString().slice(0,10)}.xlsx`;
+  const filename = `metrics_monthly_${org_id}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   return new Response(buf, {
     headers: {
-      "Content-Type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition":`attachment; filename="${filename}"`,
-      "Cache-Control":"no-store"
-    }
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "no-store",
+    },
   });
 }

@@ -7,7 +7,7 @@ import { getActiveOrg } from "@/lib/org-local";
 type Tpl = {
   id: string;
   org_id: string;
-  type: "specialist_patient"|"specialist_platform"|"patient_platform";
+  type: "specialist_patient" | "specialist_platform" | "patient_platform";
   title: string;
   slug: string;
   description: string | null;
@@ -50,7 +50,9 @@ export default function TemplatesEditor() {
     setList(j?.ok ? (j.data as Tpl[]) : []);
   }
 
-  React.useEffect(() => { load(); /* eslint-disable-next-line */ }, [org.id, type, q]);
+  React.useEffect(() => {
+    load(); /* eslint-disable-next-line */
+  }, [org.id, type, q]);
 
   async function save() {
     if (!org.id || !form.title || !form.type) return alert("Completa título y tipo");
@@ -71,7 +73,13 @@ export default function TemplatesEditor() {
     });
     const j = await r.json();
     if (!j?.ok) return alert(j?.error?.message || "Error al guardar");
-    setForm({ type: form.type, title: "Acuerdo de atención", description: "", content: defaultContent(), is_active: true });
+    setForm({
+      type: form.type,
+      title: "Acuerdo de atención",
+      description: "",
+      content: defaultContent(),
+      is_active: true,
+    });
     load();
   }
 
@@ -105,42 +113,77 @@ export default function TemplatesEditor() {
               onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as any }))}
               className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             >
-              {TYPES.map(t => <option key={t.val} value={t.val}>{t.label}</option>)}
+              {TYPES.map((t) => (
+                <option key={t.val} value={t.val}>
+                  {t.label}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex flex-col gap-1 md:col-span-2">
             <span className="text-sm text-slate-500">Título</span>
-            <input className="rounded-xl border px-3 py-2" value={form.title ?? ""} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="p.ej., Acuerdo de atención psicológica" />
+            <input
+              className="rounded-xl border px-3 py-2"
+              value={form.title ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              placeholder="p.ej., Acuerdo de atención psicológica"
+            />
           </label>
         </div>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm text-slate-500">Descripción</span>
-          <textarea className="rounded-xl border px-3 py-2" rows={2} value={form.description ?? ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+          <textarea
+            className="rounded-xl border px-3 py-2"
+            rows={2}
+            value={form.description ?? ""}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm text-slate-500">Contenido JSON</span>
-          <textarea className="font-mono text-xs rounded-xl border px-3 py-2" rows={10}
+          <textarea
+            className="font-mono text-xs rounded-xl border px-3 py-2"
+            rows={10}
             value={JSON.stringify(form.content ?? defaultContent(), null, 2)}
             onChange={(e) => {
-              try { setForm(f => ({ ...f, content: JSON.parse(e.target.value) })); }
-              catch { /* noop */ }
-            }} />
+              try {
+                setForm((f) => ({ ...f, content: JSON.parse(e.target.value) }));
+              } catch {
+                /* noop */
+              }
+            }}
+          />
         </label>
 
         <div className="flex items-center gap-3">
-          <button onClick={save} className="px-4 py-2 rounded-xl bg-blue-600 text-white">Guardar</button>
+          <button onClick={save} className="px-4 py-2 rounded-xl bg-blue-600 text-white">
+            Guardar
+          </button>
           {form.id && <span className="text-xs text-slate-500">Editando: {form.id}</span>}
         </div>
       </div>
 
       <div className="rounded-2xl border bg-white/95 dark:bg-slate-900/60">
         <div className="p-4 flex items-center gap-3">
-          <input className="rounded-xl border px-3 py-2" placeholder="Buscar…" value={q} onChange={e => setQ(e.target.value)} />
-          <select className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900" value={type} onChange={e => setType(e.target.value as any)}>
+          <input
+            className="rounded-xl border px-3 py-2"
+            placeholder="Buscar…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <select
+            className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+            value={type}
+            onChange={(e) => setType(e.target.value as any)}
+          >
             <option value="">Todos</option>
-            {TYPES.map(t => <option key={t.val} value={t.val}>{t.label}</option>)}
+            {TYPES.map((t) => (
+              <option key={t.val} value={t.val}>
+                {t.label}
+              </option>
+            ))}
           </select>
           {loading && <span className="text-sm text-slate-500">Cargando…</span>}
         </div>
@@ -156,20 +199,30 @@ export default function TemplatesEditor() {
               </tr>
             </thead>
             <tbody>
-              {list.map(t => (
+              {list.map((t) => (
                 <tr key={t.id} className="border-b">
                   <td className="p-2">{t.title}</td>
                   <td className="p-2">{t.type}</td>
                   <td className="p-2">{t.is_active ? "Sí" : "No"}</td>
-                  <td className="p-2">{t.updated_at ? new Date(t.updated_at).toLocaleString() : "—"}</td>
+                  <td className="p-2">
+                    {t.updated_at ? new Date(t.updated_at).toLocaleString() : "—"}
+                  </td>
                   <td className="p-2 flex gap-2">
-                    <button className="px-3 py-1 rounded-lg border" onClick={() => edit(t)}>Editar</button>
-                    <button className="px-3 py-1 rounded-lg border" onClick={() => remove(t.id)}>Desactivar</button>
+                    <button className="px-3 py-1 rounded-lg border" onClick={() => edit(t)}>
+                      Editar
+                    </button>
+                    <button className="px-3 py-1 rounded-lg border" onClick={() => remove(t.id)}>
+                      Desactivar
+                    </button>
                   </td>
                 </tr>
               ))}
               {list.length === 0 && !loading && (
-                <tr><td className="p-4 text-slate-500" colSpan={5}>Sin plantillas.</td></tr>
+                <tr>
+                  <td className="p-4 text-slate-500" colSpan={5}>
+                    Sin plantillas.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -182,13 +235,48 @@ export default function TemplatesEditor() {
 function defaultContent() {
   return {
     clauses: [
-      { key: "cancel_24h", label: "Cancelación con al menos 24h de antelación; de lo contrario, penalización.", required: true, defaultChecked: true },
-      { key: "penalty", label: "Penalización según política indicada (porcentaje o monto fijo).", required: true, defaultChecked: true },
-      { key: "punctuality", label: "Puntualidad: tolerancia máxima de X minutos.", required: false, defaultChecked: true },
-      { key: "prepay", label: "Pago anticipado obligatorio.", required: true, defaultChecked: true },
-      { key: "no_refund", label: "Sesión no reembolsable si se pierde la cita.", required: true, defaultChecked: true },
-      { key: "confidential", label: "Confidencialidad de la información.", required: true, defaultChecked: true },
-      { key: "digital_use", label: "Uso permitido de material digital proporcionado sólo para fines personales.", required: true, defaultChecked: true },
+      {
+        key: "cancel_24h",
+        label: "Cancelación con al menos 24h de antelación; de lo contrario, penalización.",
+        required: true,
+        defaultChecked: true,
+      },
+      {
+        key: "penalty",
+        label: "Penalización según política indicada (porcentaje o monto fijo).",
+        required: true,
+        defaultChecked: true,
+      },
+      {
+        key: "punctuality",
+        label: "Puntualidad: tolerancia máxima de X minutos.",
+        required: false,
+        defaultChecked: true,
+      },
+      {
+        key: "prepay",
+        label: "Pago anticipado obligatorio.",
+        required: true,
+        defaultChecked: true,
+      },
+      {
+        key: "no_refund",
+        label: "Sesión no reembolsable si se pierde la cita.",
+        required: true,
+        defaultChecked: true,
+      },
+      {
+        key: "confidential",
+        label: "Confidencialidad de la información.",
+        required: true,
+        defaultChecked: true,
+      },
+      {
+        key: "digital_use",
+        label: "Uso permitido de material digital proporcionado sólo para fines personales.",
+        required: true,
+        defaultChecked: true,
+      },
     ],
     extra_rules: "",
   };

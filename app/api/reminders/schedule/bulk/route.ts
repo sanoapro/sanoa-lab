@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!u?.user) {
     return NextResponse.json(
       { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -32,19 +32,22 @@ export async function POST(req: NextRequest) {
   if (!body?.org_id || !Array.isArray(body?.items)) {
     return NextResponse.json(
       { ok: false, error: { code: "BAD_REQUEST", message: "org_id e items son requeridos" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
   if (body.items.length === 0 || body.items.length > 100) {
     return NextResponse.json(
       { ok: false, error: { code: "LIMIT", message: "items debe ser 1..100" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   // cookies (Next 15)
   const cookieStore = await nextCookies();
-  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
 
   let okCount = 0;
   const results: Array<{ target: string; ok: boolean; error?: string }> = [];
@@ -78,5 +81,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, data: { sent: okCount, total: body.items.length, results } });
+  return NextResponse.json({
+    ok: true,
+    data: { sent: okCount, total: body.items.length, results },
+  });
 }

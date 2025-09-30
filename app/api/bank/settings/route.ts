@@ -17,13 +17,12 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    data:
-      data ?? {
-        org_id,
-        low_balance_threshold_cents: 0,
-        notify_channel: "whatsapp",
-        notify_to: null,
-      },
+    data: data ?? {
+      org_id,
+      low_balance_threshold_cents: 0,
+      notify_channel: "whatsapp",
+      notify_to: null,
+    },
   });
 }
 
@@ -33,18 +32,16 @@ export async function POST(req: Request) {
 
   if (!org_id) return NextResponse.json({ error: "Falta org_id" }, { status: 400 });
 
-  const { error } = await svc
-    .from("org_bank_settings")
-    .upsert(
-      {
-        org_id,
-        low_balance_threshold_cents: Number(low_balance_threshold_cents || 0),
-        notify_channel: notify_channel || "whatsapp",
-        notify_to: notify_to || null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "org_id" },
-    );
+  const { error } = await svc.from("org_bank_settings").upsert(
+    {
+      org_id,
+      low_balance_threshold_cents: Number(low_balance_threshold_cents || 0),
+      notify_channel: notify_channel || "whatsapp",
+      notify_to: notify_to || null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "org_id" },
+  );
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });

@@ -48,7 +48,7 @@ function UpdatePasswordClient() {
         if (error) throw error;
         if (!data.session) {
           setErr(
-            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo."
+            "No se detectó una sesión de recuperación. Usa el enlace del correo o solicita uno nuevo.",
           );
           setReady("error");
           return;

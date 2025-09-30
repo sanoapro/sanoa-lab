@@ -10,12 +10,12 @@ export function percentile(sorted: number[], p: number): number {
 }
 
 export function pctSummary(values: number[]) {
-  const arr = values.slice().sort((a,b)=>a-b);
+  const arr = values.slice().sort((a, b) => a - b);
   return {
-    p50: Math.round(percentile(arr, 0.50)*1000)/1000,
-    p75: Math.round(percentile(arr, 0.75)*1000)/1000,
-    p90: Math.round(percentile(arr, 0.90)*1000)/1000,
-    p95: Math.round(percentile(arr, 0.95)*1000)/1000,
-    count: arr.length
+    p50: Math.round(percentile(arr, 0.5) * 1000) / 1000,
+    p75: Math.round(percentile(arr, 0.75) * 1000) / 1000,
+    p90: Math.round(percentile(arr, 0.9) * 1000) / 1000,
+    p95: Math.round(percentile(arr, 0.95) * 1000) / 1000,
+    count: arr.length,
   };
 }

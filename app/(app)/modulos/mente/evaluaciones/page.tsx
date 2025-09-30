@@ -24,7 +24,11 @@ export default function MenteEvaluacionesPage() {
         <Gate
           orgId={orgId}
           featureId="mente.evaluaciones"
-          fallback={<div className="border rounded-2xl p-4">No tienes habilitada la función de Evaluaciones.</div>}
+          fallback={
+            <div className="border rounded-2xl p-4">
+              No tienes habilitada la función de Evaluaciones.
+            </div>
+          }
         >
           <AssessmentsScreen />
         </Gate>
