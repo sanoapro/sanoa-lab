@@ -1,7 +1,8 @@
 // MODE: service (no session, no cookies) — protegido por x-cron-key
 // Ruta: /api/jobs/reports/run
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { jsonOk, jsonError, requireHeader } from "@/lib/http/validate";
 
 function nowInTZ(tz: string) {
   const fmt = new Intl.DateTimeFormat("en-CA", {
@@ -62,29 +63,37 @@ function shouldRun(item: any, nowTZ: ReturnType<typeof nowInTZ>) {
 }
 
 export async function POST(req: NextRequest) {
-  // MODE: service (no session, no cookies) + x-cron-key
-  try {
-    const key = req.headers.get("x-cron-key");
-    if (!process.env.CRON_SECRET || key !== process.env.CRON_SECRET) {
-      return NextResponse.json({ ok: false, error: { code: "UNAUTHORIZED", message: "Bad key" } }, { status: 401 });
-    }
+  const key = requireHeader(req, "x-cron-key", process.env.CRON_SECRET);
+  if (!key.ok) {
+    return jsonError(key.error.code, key.error.message, 401);
+  }
 
-    const svc = createServiceClient();
+  const svc = createServiceClient();
+  const { error: rpcError } = await svc.rpc("reports_schedules_run", {});
+
+  if (!rpcError) {
+    return jsonOk({ queued: true, rpc: "reports_schedules_run" });
+  }
+
+  if (rpcError.code && rpcError.code !== "PGRST204") {
+    return jsonError("DB_ERROR", rpcError.message, 400);
+  }
+
+  try {
     const { data: schedules, error } = await svc
       .from("report_schedules")
       .select("*")
       .eq("is_active", true);
 
     if (error) {
-      return NextResponse.json({ ok: false, error: { code: "DB_ERROR", message: error.message } }, { status: 400 });
+      return jsonError("DB_ERROR", error.message, 400);
     }
 
     const due: any[] = [];
     const results: any[] = [];
 
-    // Agrupar por tz para precisión
     const tzGroups: Record<string, any[]> = {};
-    (schedules ?? []).forEach(sc => {
+    (schedules ?? []).forEach((sc) => {
       const tz = sc.tz || "America/Mexico_City";
       (tzGroups[tz] ||= []).push(sc);
     });
@@ -98,32 +107,41 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Ejecutar cálculos (no enviamos por WA/email aquí; solo actualizamos last_sent_at)
     for (const sc of due) {
       let payload: any = null;
 
-      // Parámetros por defecto (últimos 30 días)
       const to = (sc.params?.to as string) ?? new Date().toISOString().slice(0, 10);
-      const from = (sc.params?.from as string) ??
+      const from =
+        (sc.params?.from as string) ??
         new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
       if (sc.scope === "bank_flow") {
-        const { data, error } = await svc.rpc("bank_flow", { p_org_id: sc.org_id, p_from: from, p_to: to });
-        if (!error) payload = { type: "bank_flow", from, to, data };
+        const { data, error: flowError } = await svc.rpc("bank_flow", {
+          p_org_id: sc.org_id,
+          p_from: from,
+          p_to: to,
+        });
+        if (!flowError) payload = { type: "bank_flow", from, to, data };
       } else if (sc.scope === "bank_pl") {
-        const { data, error } = await svc.rpc("bank_pl", { p_org_id: sc.org_id, p_from: from, p_to: to });
-        if (!error) payload = { type: "bank_pl", from, to, data };
+        const { data, error: plError } = await svc.rpc("bank_pl", {
+          p_org_id: sc.org_id,
+          p_from: from,
+          p_to: to,
+        });
+        if (!plError) payload = { type: "bank_pl", from, to, data };
       }
 
-      // Marca como enviado si calculó sin error (aunque no disparemos canal aún)
       if (payload) {
-        await svc.from("report_schedules").update({ last_sent_at: new Date().toISOString() }).eq("id", sc.id);
+        await svc
+          .from("report_schedules")
+          .update({ last_sent_at: new Date().toISOString() })
+          .eq("id", sc.id);
         results.push({ id: sc.id, scope: sc.scope, channel: sc.channel, target: sc.target, from, to });
       }
     }
 
-    return NextResponse.json({ ok: true, data: { processed: results.length, results } });
+    return jsonOk({ data: { processed: results.length, results } });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } }, { status: 500 });
+    return jsonError("SERVER_ERROR", e?.message ?? "Error", 500);
   }
 }
