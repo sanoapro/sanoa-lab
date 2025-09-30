@@ -1,3 +1,4 @@
+// app/(app)/especialidades/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -132,7 +133,7 @@ export default function EspecialidadesPage() {
                     href={`/banco?module=${encodeURIComponent(spec.featureKey)}`}
                     className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-brand-border)] bg-white/80 px-5 py-3 text-base font-semibold text-[var(--color-brand-text)] transition hover:bg-white/95 dark:bg-slate-900/50 dark:text-slate-100 dark:hover:bg-slate-900/70"
                   >
-                    <ColorEmoji token="banco" className="text-2xl" /> Gestionar en Bank
+                    <span className="emoji">🏦</span> Gestionar en Bank
                   </Link>
                 </div>
 
