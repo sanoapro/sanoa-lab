@@ -104,7 +104,8 @@ export default function RecordatoriosPage() {
               className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border"
               title="Exportar CSV (respeta filtros)"
             >
-              Exportar CSV
+              <span aria-hidden>📤</span>
+              <span>Exportar CSV</span>
             </a>
           </div>
 
