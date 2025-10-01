@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     const client = stripe;
     if (!client) {
-      return NextResponse.json({ error: "Stripe no está configurado" }, { status: 500 });
+      return NextResponse.json({ error: "Stripe no está configurado" }, { status: 501 });
     }
 
     const { org_id, amount_cents } = await req.json();
