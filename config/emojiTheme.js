@@ -1,17 +1,14 @@
 export const emojiTheme = {
-  // Marca / generales
   logo: "svg:icons/logo",
   info: "ℹ️",
   ok: "✅",
   error: "⚠️",
-
-  // Navegación principal
   tablero: "📊",
   pacientes: "🙋🏻‍♀️",
   perfil: "🆔",
-  cargas: "📤", // usado como "Importar"
-  agenda: "🗓️", // NUEVO
-  calendario: "🗓️", // alias por compatibilidad
+  cargas: "📤",
+  agenda: "🗓️",
+  calendario: "🗓️",
   laboratorio: "🧪",
   banco: "🏦",
   megafono: "📣",
@@ -31,8 +28,6 @@ export const emojiTheme = {
   pdf: "📄",
   buscador: "🔎",
   trabajo: "💼",
-
-  // Archivos / acciones
   archivo: "📄",
   carpeta: "📁",
   documentos: "📚",
@@ -43,10 +38,8 @@ export const emojiTheme = {
   ver: "👁️‍🗨️",
   borrar: "🗑️",
   copiar: "📋",
-  refrescar: "🔄", // NUEVO
+  refrescar: "🔄",
   desbloquear: "🔓",
-
-  // UI / sistema
   usuario: "👤",
   imagen: "📸",
   limpiar: "🧹",
@@ -77,20 +70,15 @@ export const emojiTheme = {
   ayuda: "🆘",
   chat: "💬",
   notificaciones: "🔔",
-
-  // “Iconos” nominales (por si tu UI los usa como tokens)
   ArrowLeft: "⬅️",
   Loader2: "🔄",
   Trash2: "🗑️",
   Download: "📥",
   Copy: "📋",
   History: "🕒",
-
-  // Aliases / varios
   web: "🌐",
   leaf: "🍃",
   google: "G",
-} as const;
+};
 
-export const EMOJI_FALLBACK_TOKEN: keyof typeof emojiTheme = "info";
-export type EmojiToken = keyof typeof emojiTheme;
+export const EMOJI_FALLBACK_TOKEN = "info";
