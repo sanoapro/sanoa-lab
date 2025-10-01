@@ -117,24 +117,26 @@
    ======================= */
 html {
   min-height: 100%;
-  font-size: 16px;
+  font-size: 17px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1280px) {
   html {
-    font-size: 17px;
+    font-size: 18px;
   }
 }
 
 .emoji {
-  font-size: 1.25em;
-  line-height: 1;
+  font-size: 1.35em;
+  line-height: 0.9;
   display: inline-block;
-  transform: translateY(1px);
+  transform: translateY(0.06em);
 }
 
 body {
   min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 :focus-visible {
   outline: 2px solid var(--color-brand-primary);
@@ -194,6 +196,11 @@ button {
   padding: 0 1rem;
 }
 
+.nav-lg {
+  --nav-size: 1.05;
+  font-size: calc(1rem * var(--nav-size));
+}
+
 /* =======================
    UTILIDAD: “surface-light”
    Forzar texto oscuro cuando uses fondo claro (p. ej. .bg-white, .bg-white/80, tarjetas personalizadas)
@@ -204,11 +211,11 @@ button {
 }
 
 .text-contrast {
-  color: #334155;
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.dark .text-contrast {
-  color: #e2e8f0;
+:root:has(html[class~="dark"]) .text-contrast {
+  color: rgba(255, 255, 255, 0.92);
 }
 
 /* =======================
@@ -268,19 +275,30 @@ button {
 }
 
 .glass-card {
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  position: relative;
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.22));
+  backdrop-filter: saturate(160%) blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
-  padding: 16px;
 }
 
-.dark .glass-card {
-  background: rgba(15, 23, 42, 0.45);
+html.dark .glass-card {
+  background: linear-gradient(180deg, rgba(15, 15, 20, 0.35), rgba(15, 15, 20, 0.18));
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(1200px 1200px at 0% 0%, rgba(255, 255, 255, 0.2), transparent 40%),
+    radial-gradient(1000px 700px at 100% 0%, rgba(255, 255, 255, 0.12), transparent 45%),
+    radial-gradient(700px 800px at 100% 100%, rgba(255, 255, 255, 0.1), transparent 50%);
+  pointer-events: none;
 }
 
 .glass-card input,
@@ -370,30 +388,55 @@ button {
   box-shadow: 0 16px 38px rgba(15, 23, 42, 0.2);
 }
 
+.glass-input {
+  width: 100%;
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  outline: none;
+}
+
+.glass-input::placeholder {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+html.dark .glass-input {
+  background: rgba(20, 20, 26, 0.5);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+html.dark .glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .glass-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border-radius: 14px;
-  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.28));
+  backdrop-filter: saturate(160%) blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  transition: transform 0.08s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .glass-btn:hover {
-  background: rgba(255, 255, 255, 0.75);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.12);
 }
 
-.dark .glass-btn {
-  background: rgba(17, 24, 39, 0.55);
+html.dark .glass-btn {
+  background: linear-gradient(180deg, rgba(20, 20, 26, 0.45), rgba(20, 20, 26, 0.25));
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-.dark .glass-btn:hover {
-  background: rgba(17, 24, 39, 0.7);
+.glass-btn.neon {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35) inset, 0 6px 18px rgba(59, 130, 246, 0.25);
 }
 
 .btn-primary {
