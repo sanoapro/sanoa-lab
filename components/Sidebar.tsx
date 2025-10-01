@@ -21,7 +21,12 @@ export default function Sidebar(){
       {items.map(it => {
         const active = pathname?.startsWith(it.href);
         return (
-          <Link key={it.href} href={it.href} className={clsx("hover-glow", active && "neon")} aria-current={active ? "page" : undefined}>
+          <Link
+            key={it.href}
+            href={it.href}
+            className={clsx("hover-glow text-[15px] sm:text-base", active && "neon")}
+            aria-current={active ? "page" : undefined}
+          >
             <span className="emoji">{it.emoji}</span>
             <span>{it.label}</span>
           </Link>

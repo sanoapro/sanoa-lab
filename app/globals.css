@@ -34,11 +34,12 @@ html, body {
 
 /* ====== Tipografía global ====== */
 @layer base {
-  h1 { @apply text-2xl font-semibold leading-tight; }
-  h2 { @apply text-xl font-semibold leading-snug; }
+  body { @apply text-[15px] leading-relaxed; }
+  h1 { @apply text-[22px] font-semibold leading-tight; }
+  h2 { @apply text-[20px] font-semibold leading-snug; }
   h3 { @apply text-lg font-semibold leading-snug; }
   p  { @apply leading-relaxed; }
-  small { @apply text-sm; }
+  small { @apply text-xs sm:text-sm; }
 }
 
 /* ====== Helpers ====== */
@@ -48,7 +49,7 @@ html, body {
 
 /* ====== Emojis más grandes y nítidos ====== */
 .emoji {
-  font-size: 1.4em;          /* +40% */
+  font-size: 1.25em;         /* +25% */
   line-height: 1;
   transform: translateY(1px);
   -webkit-text-size-adjust: 100%;

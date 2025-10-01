@@ -121,8 +121,8 @@ export default function Providers({ children }: { children: ReactNode }) {
           <QueryParamsBridge />
         </Suspense>
         {children}
+        <Toaster />
       </ThemeProvider>
-      <Toaster />
     </ToastProvider>
   );
 }
