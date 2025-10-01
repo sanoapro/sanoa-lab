@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import StatusBadge from "@/components/modules/StatusBadge";
+
 type FeatureKey = "mente" | "pulso" | "equilibrio" | "sonrisa";
 
 type FeaturesResponse = {
@@ -45,17 +47,11 @@ export default async function Page() {
             <div key={c.key} className="glass-card bubble space-y-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold">
+                  <h3 className="font-semibold flex items-center gap-2">
                     <span className="emoji">{c.emoji}</span> {c.title}
+                    <StatusBadge active={active} />
                   </h3>
                   <p className="text-sm text-contrast">{c.desc}</p>
-                  <p
-                    className={`mt-1 text-xs ${
-                      active ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
-                    }`}
-                  >
-                    {active ? "Activo ✅" : "Por activar 🔒"}
-                  </p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Link href={`/modulos/${c.key}`} className="glass-btn">
