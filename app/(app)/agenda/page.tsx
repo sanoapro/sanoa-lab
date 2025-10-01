@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { fetchBookings, type CalBooking } from "@/lib/cal";
 import { listPatients, type Patient } from "@/lib/patients";
@@ -44,7 +44,8 @@ type UniItem =
 
 export default function AgendaPage() {
   const supabase = getSupabaseBrowser();
-  const org = getActiveOrg();
+  const org = getActiveOrg() as { id?: string } | null;
+  const orgId = org?.id ?? "";
 
   const [status, setStatus] = useState<Status>("upcoming");
   const [q, setQ] = useState("");
@@ -72,6 +73,25 @@ export default function AgendaPage() {
   const [notes, setNotes] = useState("");
   const [busyCreate, setBusyCreate] = useState(false);
 
+  // Formateadores consistentes en es-MX (zona MX)
+  const dtDateTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es-MX", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "America/Mexico_City",
+      }),
+    []
+  );
+  const dtTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es-MX", {
+        timeStyle: "short",
+        timeZone: "America/Mexico_City",
+      }),
+    []
+  );
+
   const range = useMemo(() => {
     const afterStart = from ? new Date(from + "T00:00:00").toISOString() : undefined;
     const beforeEnd = to ? new Date(to + "T23:59:59").toISOString() : undefined;
@@ -79,16 +99,17 @@ export default function AgendaPage() {
   }, [from, to]);
 
   const exportUrl = useMemo(() => {
-    if (!org.id) return "";
-    const params = new URLSearchParams({ org_id: org.id });
+    if (!orgId) return "";
+    const params = new URLSearchParams({ org_id: orgId });
     if (range.afterStart) params.set("from", range.afterStart);
     if (range.beforeEnd) params.set("to", range.beforeEnd);
     if (status !== "all") params.set("status", status);
     if (q.trim()) params.set("q", q.trim());
     return `/api/export/agenda/xlsx?${params.toString()}`;
-  }, [org.id, range.afterStart, range.beforeEnd, status, q]);
+  }, [orgId, range.afterStart, range.beforeEnd, status, q]);
 
-  async function load() {
+  // Carga unificada de Cal.com + citas locales
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       // Cal.com
@@ -101,34 +122,40 @@ export default function AgendaPage() {
       setCalItems(bk);
 
       // Local (appointments)
-      if (org.id) {
+      if (orgId) {
         let sel = supabase
           .from("appointments")
           .select("id, patient_id, start_at, end_at, cal_event_id")
-          .eq("org_id", org.id)
+          .eq("org_id", orgId)
           .order("start_at", { ascending: true })
           .limit(100);
+
         if (range.afterStart) sel = sel.gte("start_at", range.afterStart);
         if (range.beforeEnd) sel = sel.lte("start_at", range.beforeEnd);
+
         const { data, error } = await sel;
-        if (!error) setLocalItems((data || []) as any);
+        if (error) {
+          throw new Error(error.message || "No se pudieron cargar citas locales");
+        }
+        setLocalItems((data || []) as LocalAppt[]);
+      } else {
+        setLocalItems([]);
       }
     } catch (e: any) {
       showToast({ title: "Error", description: e?.message || String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId, q, range, status, supabase]);
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, q, from, to, org.id]);
+  }, [load]);
 
-  // Autocomplete paciente (nueva cita) — ahora con try/catch
+  // Autocomplete paciente (nueva cita) — try/catch + cancelación simple
   useEffect(() => {
     let cancel = false;
-    async function run() {
+    (async () => {
       const term = pQ.trim();
       if (!term) {
         setPList([]);
@@ -144,15 +171,11 @@ export default function AgendaPage() {
         });
         if (!cancel) setPList(res.items);
       } catch (e) {
-        // Evita “unhandledrejection” en dev overlay
-        // Puedes mostrar toast si quieres ruido controlado:
-        // showToast({ title: "No se pudo buscar pacientes", description: (e as any)?.message, variant: "destructive" });
         if (!cancel) setPList([]);
         // eslint-disable-next-line no-console
         console.warn("[agenda] listPatients failed", e);
       }
-    }
-    run();
+    })();
     return () => {
       cancel = true;
     };
@@ -166,20 +189,21 @@ export default function AgendaPage() {
 
   // Crear cita
   async function createAppt() {
-    if (!org.id || !pSel?.id || !date || !time) {
-      showToast({ title: "Faltan datos" });
+    const dur = Number.isFinite(duration) ? Math.max(5, Math.min(480, duration)) : 50;
+    if (!orgId || !pSel?.id || !date || !time) {
+      showToast({ title: "Faltan datos", description: "Completa paciente, fecha y hora." });
       return;
     }
     setBusyCreate(true);
     try {
       const localStart = new Date(`${date}T${time}:00`);
       const body = {
-        org_id: org.id,
+        org_id: orgId,
         patient_id: pSel.id,
-        title,
+        title: title || "Consulta",
         notes: notes || undefined,
         start: localStart.toISOString(),
-        duration_min: duration,
+        duration_min: dur,
         attendee_email: (pSel as any).email || null,
       };
       const res = await fetch("/api/cal/bookings", {
@@ -187,8 +211,8 @@ export default function AgendaPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j.error || "No se pudo crear");
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || "No se pudo crear la cita");
       setOpenNew(false);
       showToast({
         title: "Cita creada",
@@ -197,32 +221,42 @@ export default function AgendaPage() {
       });
       await load();
     } catch (e: any) {
-      showToast({ title: "Error", description: e.message, variant: "destructive" });
+      showToast({ title: "Error", description: e?.message || String(e), variant: "destructive" });
     } finally {
       setBusyCreate(false);
     }
   }
 
-  const unified: UniItem[] = [
-    ...calItems.map((b) => ({
-      kind: "cal" as const,
-      uid: b.uid,
-      title: b.title || "Cita",
-      start: b.start,
-      end: b.end,
-      meetingUrl: b.meetingUrl,
-      attendee: b.attendees?.[0]?.email,
-    })),
-    ...localItems.map((a) => ({
-      kind: "local" as const,
-      id: a.id,
-      title: "Cita (local)",
-      start: a.start_at,
-      end: a.end_at || a.start_at,
-      patient_id: a.patient_id,
-      cal_event_id: a.cal_event_id || null,
-    })),
-  ].sort((x, y) => +new Date(x.start) - +new Date(y.start));
+  const unified: UniItem[] = useMemo(() => {
+    const items: UniItem[] = [
+      ...calItems.map((b) => ({
+        kind: "cal" as const,
+        uid: b.uid,
+        title: b.title || "Cita",
+        start: b.start,
+        end: b.end,
+        meetingUrl: b.meetingUrl,
+        attendee: b.attendees?.[0]?.email,
+      })),
+      ...localItems.map((a) => ({
+        kind: "local" as const,
+        id: a.id,
+        title: "Cita (local)",
+        start: a.start_at,
+        end: a.end_at || a.start_at,
+        patient_id: a.patient_id,
+        cal_event_id: a.cal_event_id ?? null,
+      })),
+    ];
+    // sort estable: por fecha y en empate por título para que la key no "salte"
+    return items.sort((x, y) => {
+      const dx = +new Date(x.start) - +new Date(y.start);
+      if (dx !== 0) return dx;
+      const ax = "uid" in x ? x.uid : x.id;
+      const ay = "uid" in y ? y.uid : y.id;
+      return ax.localeCompare(ay);
+    });
+  }, [calItems, localItems]);
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -240,7 +274,7 @@ export default function AgendaPage() {
             className={clsx(
               "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm transition",
               "bg-white/80 hover:bg-white dark:bg-slate-900/60 dark:hover:bg-slate-900/80",
-              !exportUrl && "pointer-events-none opacity-50",
+              !exportUrl && "pointer-events-none opacity-50"
             )}
             aria-disabled={!exportUrl}
             title={exportUrl ? "Exportar agenda en XLSX" : "Activa una organización para exportar"}
@@ -274,6 +308,7 @@ export default function AgendaPage() {
         <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         <Button
+          type="button"
           variant="secondary"
           onClick={() => {
             setQ("");
@@ -284,51 +319,60 @@ export default function AgendaPage() {
         >
           Limpiar
         </Button>
-        <Button onClick={() => void load()} disabled={loading}>
-          Actualizar
+        <Button type="button" onClick={() => void load()} disabled={loading}>
+          {loading ? "Actualizando…" : "Actualizar"}
         </Button>
       </div>
 
       <div className="surface-light border rounded-xl divide-y bg-white/90 dark:bg-white/[0.06] backdrop-blur">
         {unified.length === 0 && (
           <div className="p-4 text-sm text-slate-700">
-            {" "}
             {loading ? "Cargando…" : "Sin resultados."}
           </div>
         )}
-        {unified.map((it) => (
-          <div
-            key={it.kind === "cal" ? it.uid : it.id}
-            className="p-4 flex items-center justify-between gap-4"
-          >
-            <div className="flex-1">
-              <div className="font-medium">
-                {it.title}{" "}
-                {it.kind === "local" && !it.cal_event_id ? (
-                  <span className="text-xs text-amber-600">(local)</span>
+        {unified.map((it) => {
+          const key = it.kind === "cal" ? it.uid : it.id;
+          const start = new Date(it.start);
+          const end = new Date(it.end);
+          return (
+            <div key={key} className="p-4 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="font-medium">
+                  {it.title}{" "}
+                  {it.kind === "local" && !it.cal_event_id ? (
+                    <span className="text-xs text-amber-600 align-middle">(local)</span>
+                  ) : null}
+                </div>
+                <div className="text-sm text-slate-600">
+                  {dtDateTime.format(start)} – {dtTime.format(end)}
+                  {it.kind === "cal" && it.attendee ? ` · email: ${it.attendee}` : ""}
+                </div>
+                {"meetingUrl" in it && it.meetingUrl ? (
+                  <div className="text-xs text-slate-500 break-all">{it.meetingUrl}</div>
                 ) : null}
               </div>
-              <div className="text-sm text-slate-600">
-                {new Date(it.start).toLocaleString()} – {new Date(it.end).toLocaleTimeString()}
-                {it.kind === "cal" && it.attendee ? ` · email: ${it.attendee}` : ""}
+              <div className="flex gap-2 shrink-0">
+                {"meetingUrl" in it && it.meetingUrl && (
+                  <a
+                    className={clsx(
+                      "inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm",
+                      "bg-white/80 hover:bg-white dark:bg-slate-900/60 dark:hover:bg-slate-900/80"
+                    )}
+                    href={it.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Abrir
+                  </a>
+                )}
               </div>
-              {"meetingUrl" in it && it.meetingUrl && (
-                <div className="text-xs text-slate-500 break-all">{it.meetingUrl}</div>
-              )}
             </div>
-            <div className="flex gap-2">
-              {"meetingUrl" in it && it.meetingUrl && (
-                <Button variant="secondary" onClick={() => window.open(it.meetingUrl!, "_blank")}>
-                  Abrir
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Modal NUEVA CITA */}
-      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Agregar cita">
+      <Modal open={openNew} onOpenChange={setOpenNew} title="Agregar cita">
         <div className="space-y-4">
           <div>
             <label className="text-sm block mb-1">Paciente</label>
@@ -345,6 +389,7 @@ export default function AgendaPage() {
                 {pList.map((p) => (
                   <button
                     key={p.id}
+                    type="button"
                     className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b"
                     onClick={() => pickPatient(p)}
                   >
@@ -397,11 +442,13 @@ export default function AgendaPage() {
               className="w-full border rounded-md p-2"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              rows={4}
             />
           </div>
 
           <div className="flex justify-end">
             <Button
+              type="button"
               onClick={() => void createAppt()}
               disabled={busyCreate || !pSel || !date || !time}
             >

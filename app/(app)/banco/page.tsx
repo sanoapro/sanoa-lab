@@ -38,8 +38,22 @@ const MODULE_DEFS: Array<{
 
 type ModulesStatus = { active: boolean; modules: Record<string, boolean> };
 
+type SubscriptionStatusResponse =
+  | {
+      data?: {
+        active?: boolean;
+        modules?: Record<string, boolean>;
+      };
+      error?: string;
+    }
+  | null;
+
+type PortalResponse = { url?: string; error?: string } | null;
+type CheckoutResponse = { url?: string; error?: string; mode?: "cal" | "local" } | null;
+
 function cents(n: number) {
-  return (n / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+  const safe = Number.isFinite(n) ? n : 0;
+  return (safe / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 }
 
 export default function BancoPage() {
@@ -65,10 +79,10 @@ export default function BancoPage() {
 
   const hasModulesInfo = useMemo(
     () => Object.keys(modulesStatus.modules).length > 0,
-    [modulesStatus.modules],
+    [modulesStatus.modules]
   );
 
-  // Handle deep-link to checkout
+  // Manejo de deep-link para checkout (?checkout=product&org_id=...)
   useEffect(() => {
     if (!orgId) return;
 
@@ -77,15 +91,15 @@ export default function BancoPage() {
     if (!product || !orgFromQuery) return;
 
     const signature = `${product}-${orgFromQuery}`;
-    if (checkoutSignatureRef.current === signature) return; // already handled
+    if (checkoutSignatureRef.current === signature) return; // ya manejado
     checkoutSignatureRef.current = signature;
 
-    const moduleLabel =
-      MODULE_DEFS.find((m) => m.key === product)?.label ?? product;
+    const moduleLabel = MODULE_DEFS.find((m) => m.key === product)?.label ?? product;
     setCheckoutModule(moduleLabel);
 
     if (orgFromQuery !== orgId) {
-      const message = "Selecciona la organización correspondiente para continuar con el checkout.";
+      const message =
+        "Selecciona la organización correspondiente para continuar con el checkout.";
       setIsCheckoutLoading(false);
       setCheckoutMessage(message);
       toast({
@@ -93,6 +107,7 @@ export default function BancoPage() {
         title: "No se pudo iniciar checkout",
         description: message,
       });
+      // Limpia la URL para evitar reintentos en renders siguientes
       router.replace("/banco");
       return;
     }
@@ -111,7 +126,7 @@ export default function BancoPage() {
             return_path: "/banco",
           }),
         });
-        const json = await res.json().catch(() => null);
+        const json: CheckoutResponse = await res.json().catch(() => null);
         if (!res.ok || !json?.url) {
           throw new Error(json?.error ?? "No se pudo iniciar checkout");
         }
@@ -130,11 +145,13 @@ export default function BancoPage() {
     })();
   }, [orgId, router, searchParams, toast]);
 
-  // Reset checkout UI when query is gone
+  // Reset de UI cuando desaparece el query ?checkout
   useEffect(() => {
     if (!searchParams.get("checkout")) {
       checkoutSignatureRef.current = null;
       setCheckoutModule(null);
+      setCheckoutMessage(null);
+      setIsCheckoutLoading(false);
     }
   }, [searchParams]);
 
@@ -149,13 +166,13 @@ export default function BancoPage() {
       const res = await fetch(`/api/billing/subscription/status?${params.toString()}`, {
         cache: "no-store",
       });
-      const json = await res.json().catch(() => null);
+      const json: SubscriptionStatusResponse = await res.json().catch(() => null);
       if (!res.ok || !json) {
         throw new Error(json?.error ?? "No se pudo obtener el estado de módulos");
       }
       setModulesStatus({
-        active: Boolean(json?.data?.active),
-        modules: (json?.data?.modules as Record<string, boolean> | undefined) ?? {},
+        active: Boolean(json.data?.active),
+        modules: json.data?.modules ?? {},
       });
     } catch (error: any) {
       toast({
@@ -168,7 +185,7 @@ export default function BancoPage() {
     }
   }, [orgId, toast]);
 
-  // Load modules status
+  // Cargar estado de módulos al entrar/cambiar org
   useEffect(() => {
     if (!orgId) {
       setModulesStatus({ active: false, modules: {} });
@@ -180,7 +197,7 @@ export default function BancoPage() {
   if (isLoading) {
     return (
       <main className="p-6 md:p-10">
-        <div className="glass-card p-6 max-w-md space-y-2">
+        <div className="glass-card p-6 max-w-md space-y-2" aria-busy>
           <div className="h-6 w-48 rounded bg-white/50" />
           <div className="h-4 w-64 rounded bg-white/40" />
           <div className="h-4 w-40 rounded bg-white/40" />
@@ -197,7 +214,17 @@ export default function BancoPage() {
           subtitle="Centraliza tu saldo, depósitos, pagos y activaciones de módulos."
           emojiToken="banco"
         />
-        <OrgInspector ctaHref="/organizaciones" />
+        {/* OrgInspector NO acepta ctaHref; usamos children para CTA */}
+        <OrgInspector>
+          <div className="mt-4">
+            <Link
+              href="/organizaciones"
+              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium hover:bg-white/80"
+            >
+              <ColorEmoji token="ajustes" /> Ir a Organizaciones
+            </Link>
+          </div>
+        </OrgInspector>
       </main>
     );
   }
@@ -210,26 +237,23 @@ export default function BancoPage() {
         emojiToken="banco"
       />
 
-      {/* Customer portal manage button */}
+      {/* Botón del Customer Portal */}
       <div className="mt-3 flex flex-wrap gap-2">
         <button
+          type="button"
           className="glass-btn"
           title="Administrar suscripciones"
-          disabled={loadingPortal || !orgId}
+          disabled={loadingPortal}
           onClick={async () => {
-            if (loadingPortal) {
-              return;
-            }
-            const org_id = orgId;
-            if (!org_id) return;
+            if (loadingPortal || !orgId) return;
             try {
               setLoadingPortal(true);
               const r = await fetch("/api/bank/portal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ org_id, return_path: "/banco" }),
+                body: JSON.stringify({ org_id: orgId, return_path: "/banco" }),
               });
-              const j = await r.json().catch(() => null);
+              const j: PortalResponse = await r.json().catch(() => null);
               if (!r.ok || !j?.url) {
                 throw new Error(j?.error ?? "No se pudo abrir el portal del cliente.");
               }
@@ -245,11 +269,14 @@ export default function BancoPage() {
             }
           }}
         >
-          <span className="emoji">🧰</span> {loadingPortal ? "Abriendo…" : "Portal de suscripción"}
+          <span className="emoji" aria-hidden>
+            🧰
+          </span>{" "}
+          {loadingPortal ? "Abriendo…" : "Portal de suscripción"}
         </button>
       </div>
 
-      {/* Checkout status panel */}
+      {/* Panel de estado del Checkout */}
       {(isCheckoutLoading || checkoutMessage) && (
         <section
           className={`glass-card p-5 space-y-2 border ${
@@ -257,6 +284,8 @@ export default function BancoPage() {
               ? "border-amber-200 bg-amber-50/80 text-amber-800"
               : "border-white/60 bg-white/70"
           }`}
+          role="status"
+          aria-live="polite"
         >
           <div className="flex items-start gap-3">
             <span className="text-2xl" aria-hidden>
@@ -373,6 +402,7 @@ export default function BancoPage() {
             </div>
           </div>
           <button
+            type="button"
             onClick={refreshModules}
             disabled={loadingModules}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 text-sm font-medium hover:bg-white/80 disabled:opacity-60"
@@ -392,7 +422,9 @@ export default function BancoPage() {
                     <div className="flex items-center gap-2 font-medium">
                       <ColorEmoji token={module.token} /> {module.label}
                     </div>
-                    <p className="text-xs text-[var(--color-brand-bluegray)] mt-0.5">{module.desc}</p>
+                    <p className="text-xs text-[var(--color-brand-bluegray)] mt-0.5">
+                      {module.desc}
+                    </p>
                   </div>
                   <span
                     className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${
@@ -400,6 +432,7 @@ export default function BancoPage() {
                         ? "bg-emerald-100 text-emerald-800 border-emerald-200"
                         : "bg-amber-100 text-amber-800 border-amber-200"
                     }`}
+                    aria-label={active ? "Módulo activo" : "Módulo pendiente"}
                   >
                     {active ? "Activo" : "Pendiente"}
                   </span>

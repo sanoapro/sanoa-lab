@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ColorEmoji from "@/components/ColorEmoji";
 import { showToast } from "@/components/Toaster";
+import { getActiveOrg } from "@/lib/org-local";
 
+/* ==================== Tipos ==================== */
 type ReqRow = {
   id: string;
   title: string;
@@ -12,26 +14,56 @@ type ReqRow = {
   lab_results?: { path: string }[] | null;
 };
 
+type RequestsListResponse =
+  | { ok: true; rows: ReqRow[] }
+  | { ok: false; error: string };
+
+type SignResultResponse =
+  | { ok: true; url: string }
+  | { ok: false; error: string };
+
+type TemplateItem = { code?: string | null; name: string; notes?: string | null };
+
 type Template = {
   id: string;
   name: string;
   notes?: string | null;
-  items: { code?: string | null; name: string; notes?: string | null }[];
+  items: TemplateItem[];
   is_active: boolean;
   created_at: string;
 };
 
+type TemplatesListResponse =
+  | { ok: true; rows: Template[] }
+  | { ok: false; error: string };
+
+type SaveTemplateResponse =
+  | { ok: true; id: string }
+  | { ok: false; error: string };
+
+type DeleteTemplateResponse =
+  | { ok: true }
+  | { ok: false; error: string };
+
+type CreateRequestResponse =
+  | { ok: true; id: string }
+  | { ok: false; error: string };
+
+/* ==================== Utilidades ==================== */
+const rtf = new Intl.RelativeTimeFormat("es-MX", { numeric: "auto" });
 function timeAgo(iso: string) {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
-  const d = Math.floor(h / 24);
-  return `${d}d`;
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const sec = Math.round(diffMs / 1000);
+  if (Math.abs(sec) < 60) return rtf.format(-sec, "second");
+  const min = Math.round(sec / 60);
+  if (Math.abs(min) < 60) return rtf.format(-min, "minute");
+  const hr = Math.round(min / 60);
+  if (Math.abs(hr) < 24) return rtf.format(-hr, "hour");
+  const day = Math.round(hr / 24);
+  return rtf.format(-day, "day");
 }
 
+/* ==================== Página ==================== */
 export default function LabDashboard() {
   const [tab, setTab] = useState<"req" | "tpl">("req");
 
@@ -41,16 +73,27 @@ export default function LabDashboard() {
         <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
           <ColorEmoji token="laboratorio" /> Laboratorio
         </h1>
-        <nav className="inline-flex rounded-xl border border-[var(--color-brand-border)] bg-white p-1">
+        <nav
+          className="inline-flex rounded-xl border border-[var(--color-brand-border)] bg-white p-1"
+          aria-label="Pestañas de laboratorio"
+        >
           <button
+            type="button"
             onClick={() => setTab("req")}
-            className={`px-3 py-1.5 rounded-lg text-sm ${tab === "req" ? "bg-[var(--color-brand-bluegray)] text-white" : ""}`}
+            className={`px-3 py-1.5 rounded-lg text-sm ${
+              tab === "req" ? "bg-[var(--color-brand-bluegray)] text-white" : ""
+            }`}
+            aria-pressed={tab === "req"}
           >
             Solicitudes
           </button>
           <button
+            type="button"
             onClick={() => setTab("tpl")}
-            className={`px-3 py-1.5 rounded-lg text-sm ${tab === "tpl" ? "bg-[var(--color-brand-bluegray)] text-white" : ""}`}
+            className={`px-3 py-1.5 rounded-lg text-sm ${
+              tab === "tpl" ? "bg-[var(--color-brand-bluegray)] text-white" : ""
+            }`}
+            aria-pressed={tab === "tpl"}
           >
             Sugerencias
           </button>
@@ -62,19 +105,28 @@ export default function LabDashboard() {
   );
 }
 
-/* -------------------- Solicitudes -------------------- */
+/* ==================== Solicitudes ==================== */
 function RequestsPanel() {
   const [rows, setRows] = useState<ReqRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [downloadingPath, setDownloadingPath] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   async function load() {
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+
     setBusy(true);
     try {
-      const r = await fetch("/api/lab/requests/list", { cache: "no-store" });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "No se pudo cargar");
+      const r = await fetch("/api/lab/requests/list", { cache: "no-store", signal: ac.signal });
+      const j = (await r.json().catch(() => ({}))) as RequestsListResponse;
+      if (!r.ok || !("ok" in j) || j.ok !== true) {
+        throw new Error(("error" in j && j.error) || "No se pudo cargar");
+      }
       setRows(j.rows || []);
     } catch (e: any) {
+      if (e?.name === "AbortError") return;
       showToast({
         title: "Error",
         description: e?.message || "No se pudo cargar",
@@ -87,17 +139,21 @@ function RequestsPanel() {
 
   useEffect(() => {
     void load();
+    return () => abortRef.current?.abort();
   }, []);
 
   async function download(path: string) {
+    setDownloadingPath(path);
     try {
       const r = await fetch("/api/lab/results/sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path }),
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "No se pudo firmar");
+      const j = (await r.json().catch(() => ({}))) as SignResultResponse;
+      if (!r.ok || !("ok" in j) || j.ok !== true || !("url" in j)) {
+        throw new Error(("error" in j && j.error) || "No se pudo firmar");
+      }
       window.open(j.url, "_blank", "noopener,noreferrer");
     } catch (e: any) {
       showToast({
@@ -105,6 +161,8 @@ function RequestsPanel() {
         description: e?.message || "No se pudo descargar",
         variant: "error",
       });
+    } finally {
+      setDownloadingPath(null);
     }
   }
 
@@ -113,9 +171,11 @@ function RequestsPanel() {
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-semibold">Últimas solicitudes</h2>
         <button
+          type="button"
           onClick={() => void load()}
           className="text-sm px-3 py-1.5 rounded-lg border border-[var(--color-brand-border)]"
           disabled={busy}
+          aria-busy={busy}
         >
           {busy ? "Actualizando…" : "Actualizar"}
         </button>
@@ -134,6 +194,10 @@ function RequestsPanel() {
           <tbody>
             {rows.map((r) => {
               const hasFile = !!r.lab_results?.[0]?.path;
+              const isUploaded = r.status === "uploaded";
+              const path = r.lab_results?.[0]?.path ?? null;
+              const isDownloading = path && downloadingPath === path;
+
               return (
                 <tr
                   key={r.id}
@@ -141,24 +205,28 @@ function RequestsPanel() {
                 >
                   <td className="py-2 pr-3">{r.title}</td>
                   <td className="py-2 pr-3">
-                    {r.status === "uploaded" ? (
+                    {isUploaded ? (
                       <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-emerald-700 border border-emerald-200">
-                        <ColorEmoji emoji="✅" /> Recibido
+                        <ColorEmoji token="ok" /> Recibido
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-0.5 text-amber-700 border border-amber-200">
-                        <ColorEmoji emoji="⏳" /> Pendiente
+                        <ColorEmoji token="espera" /> Pendiente
                       </span>
                     )}
                   </td>
                   <td className="py-2 pr-3">{timeAgo(r.created_at)}</td>
                   <td className="py-2">
-                    {hasFile ? (
+                    {hasFile && path ? (
                       <button
-                        onClick={() => download(r.lab_results![0].path)}
-                        className="px-3 py-1.5 rounded-lg bg-[var(--color-brand-bluegray)] text-white"
+                        type="button"
+                        onClick={() => void download(path)}
+                        className="px-3 py-1.5 rounded-lg bg-[var(--color-brand-bluegray)] text-white disabled:opacity-60"
+                        disabled={!!isDownloading}
+                        aria-busy={!!isDownloading}
+                        title="Descargar resultado firmado"
                       >
-                        Descargar
+                        {isDownloading ? "Firmando…" : "Descargar"}
                       </button>
                     ) : (
                       <span className="text-xs text-[var(--color-brand-bluegray)]">—</span>
@@ -181,8 +249,11 @@ function RequestsPanel() {
   );
 }
 
-/* -------------------- Plantillas (Sugerencias) -------------------- */
+/* ==================== Plantillas (Sugerencias) ==================== */
 function TemplatesPanel() {
+  const org = getActiveOrg() as { id?: string } | null;
+  const orgId = org?.id ?? null;
+
   const [rows, setRows] = useState<Template[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -193,22 +264,24 @@ function TemplatesPanel() {
   const [itemsText, setItemsText] = useState(""); // 1 por línea
   const [active, setActive] = useState(true);
 
-  const items = useMemo(
+  const items: TemplateItem[] = useMemo(
     () =>
       itemsText
         .split("\n")
         .map((s) => s.trim())
         .filter(Boolean)
         .map((name) => ({ name })),
-    [itemsText],
+    [itemsText]
   );
 
   async function load() {
     setBusy(true);
     try {
       const r = await fetch("/api/lab/templates", { cache: "no-store" });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "No se pudo cargar");
+      const j = (await r.json().catch(() => ({}))) as TemplatesListResponse;
+      if (!r.ok || !("ok" in j) || j.ok !== true) {
+        throw new Error(("error" in j && j.error) || "No se pudo cargar");
+      }
       setRows(j.rows || []);
     } catch (e: any) {
       showToast({
@@ -241,8 +314,10 @@ function TemplatesPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: tplId || undefined, name, notes, items, is_active: active }),
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "No se pudo guardar");
+      const j = (await r.json().catch(() => ({}))) as SaveTemplateResponse;
+      if (!r.ok || !("ok" in j) || j.ok !== true) {
+        throw new Error(("error" in j && j.error) || "No se pudo guardar");
+      }
       showToast({ title: "Plantilla guardada", variant: "success" });
       resetForm();
       void load();
@@ -271,8 +346,10 @@ function TemplatesPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "No se pudo eliminar");
+      const j = (await r.json().catch(() => ({}))) as DeleteTemplateResponse;
+      if (!r.ok || !("ok" in j) || j.ok !== true) {
+        throw new Error(("error" in j && j.error) || "No se pudo eliminar");
+      }
       showToast({ title: "Plantilla eliminada", variant: "success" });
       void load();
     } catch (e: any) {
@@ -285,7 +362,7 @@ function TemplatesPanel() {
   }
 
   async function assign(t: Template) {
-    // Pide datos mínimos del paciente
+    // Sugerencia: reemplazar prompts por UI propia; conservamos por simplicidad.
     const email = prompt("Correo del paciente:");
     if (!email) return;
     const patient_id = prompt("ID del paciente (si ya existe), opcional:") || null;
@@ -296,7 +373,7 @@ function TemplatesPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          org_id: null, // ajústalo si ya manejas org en sesión
+          org_id: orgId ?? null, // usa organización activa si está disponible
           patient_id,
           email,
           title,
@@ -304,8 +381,10 @@ function TemplatesPanel() {
           items: t.items,
         }),
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "No se pudo crear la solicitud");
+      const j = (await r.json().catch(() => ({}))) as CreateRequestResponse;
+      if (!r.ok || !("ok" in j) || j.ok !== true) {
+        throw new Error(("error" in j && j.error) || "No se pudo crear la solicitud");
+      }
       showToast({
         title: "Solicitud enviada",
         description: "Se envió el correo al paciente.",
@@ -325,7 +404,7 @@ function TemplatesPanel() {
       {/* Formulario */}
       <section className="rounded-2xl border border-[var(--color-brand-border)] bg-white p-4">
         <h2 className="font-semibold mb-3 inline-flex items-center gap-2">
-          <ColorEmoji emoji="🧩" /> {tplId ? "Editar plantilla" : "Nueva plantilla"}
+          <ColorEmoji token="pieza" /> {tplId ? "Editar plantilla" : "Nueva plantilla"}
         </h2>
         <form onSubmit={save} className="space-y-3">
           <label className="block">
@@ -397,9 +476,11 @@ function TemplatesPanel() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold">Plantillas guardadas</h2>
           <button
+            type="button"
             onClick={() => void load()}
             className="text-sm px-3 py-1.5 rounded-lg border border-[var(--color-brand-border)]"
             disabled={busy}
+            aria-busy={busy}
           >
             {busy ? "Actualizando…" : "Actualizar"}
           </button>
@@ -427,19 +508,22 @@ function TemplatesPanel() {
               </div>
               <div className="shrink-0 flex gap-2">
                 <button
-                  onClick={() => assign(t)}
+                  type="button"
+                  onClick={() => void assign(t)}
                   className="px-3 py-1.5 rounded-lg bg-[var(--color-brand-bluegray)] text-white"
                   title="Asignar a paciente"
                 >
                   Asignar
                 </button>
                 <button
+                  type="button"
                   onClick={() => edit(t)}
                   className="px-3 py-1.5 rounded-lg border border-[var(--color-brand-border)]"
                 >
                   Editar
                 </button>
                 <button
+                  type="button"
                   onClick={() => remove(t.id)}
                   className="px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600"
                 >
