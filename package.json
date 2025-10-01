@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "typecheck": "tsc -noEmit",
+    "typecheck": "tsc --noEmit",
     "lint:fix": "eslint . --fix",
     "build:clean": "rm -rf .next && next build",
     "emoji:check": "node scripts/check-emojis.mjs",
