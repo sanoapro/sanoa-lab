@@ -10,7 +10,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Faltan org_id o price_id" }, { status: 400 });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const client = stripe;
+    if (!client) {
+      return NextResponse.json({ error: "Stripe no está configurado" }, { status: 500 });
+    }
+
+    const session = await client.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: price_id, quantity: qty }],
       success_url: `${getBaseUrl()}/ajustes?checkout=success`,

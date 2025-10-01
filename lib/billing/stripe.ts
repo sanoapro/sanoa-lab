@@ -1,11 +1,15 @@
 // lib/billing/stripe.ts
 import Stripe from "stripe";
 
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+
 // Usa la misma versión que configuraste en el endpoint del webhook.
 // Si prefieres usar la versión por defecto de tu cuenta, elimina la línea `apiVersion`.
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-08-27.basil",
-});
+export const stripe = stripeSecret
+  ? new Stripe(stripeSecret, {
+      apiVersion: "2025-08-27.basil",
+    })
+  : null;
 
 // Base URL seguras para callback/redirect
 export function getBaseUrl() {
