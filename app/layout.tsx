@@ -21,13 +21,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body
-        className={bodyClass}
-      >
-        {/* Nodo para portales de toasts */}
-        <div id="toast-root" />
-        {/* Providers (incluye ToastProvider) */}
-        <Providers>{children}</Providers>
+      <body className={bodyClass}>
+        <Providers>
+          {/* Nodo para portales de toasts */}
+          <div id="toast-root" />
+          {/* Contenido de la aplicación */}
+          {children}
+        </Providers>
       </body>
     </html>
   );
