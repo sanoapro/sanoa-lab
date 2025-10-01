@@ -1,27 +1,91 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import TemplateLibraryModal from "@/components/templates/TemplateLibraryModal";
+import { getActiveOrg } from "@/lib/org-local";
+import { listReferralTemplates, type ReferralTemplate } from "@/lib/referrals/templates";
+
+type ReferralForm = {
+  to_specialty: string;
+  to_doctor_name: string;
+  reason: string;
+  summary: string;
+  plan: string;
+};
 
 export default function NewReferral({ params }: { params: { id: string } }) {
   const patientId = params.id;
-  const [tpl, setTpl] = useState<any[]>([]);
+  const org = useMemo(() => getActiveOrg(), []);
+  const orgId = org?.id || "";
+  const [templates, setTemplates] = useState<ReferralTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [sel, setSel] = useState("");
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<ReferralForm>({
     to_specialty: "",
     to_doctor_name: "",
     reason: "",
     summary: "",
     plan: "",
   });
+
+  const loadTemplates = useCallback(async () => {
+    if (!orgId) {
+      setTemplates([]);
+      return [] as ReferralTemplate[];
+    }
+    setLoadingTemplates(true);
+    try {
+      const data = await listReferralTemplates(orgId);
+      const active = data.filter((tpl) => tpl.is_active !== false);
+      setTemplates(active);
+      return active;
+    } catch (err) {
+      console.error(err);
+      setTemplates([]);
+      return [] as ReferralTemplate[];
+    } finally {
+      setLoadingTemplates(false);
+    }
+  }, [orgId]);
+
   useEffect(() => {
-    (async () => {
-      const j = await fetch("/api/referrals/templates").then((r) => r.json());
-      setTpl(j.items || []);
-    })();
-  }, []);
-  const loadTpl = () => {
-    const t = tpl.find((x: any) => x.id === sel);
-    if (t) setForm({ ...form, ...t.body });
+    loadTemplates();
+  }, [loadTemplates]);
+
+  const applyTemplate = useCallback(
+    (tpl?: ReferralTemplate) => {
+      if (!tpl) return;
+      setForm((prev) => ({
+        ...prev,
+        to_specialty: tpl.content?.to_specialty ?? "",
+        to_doctor_name: tpl.content?.to_doctor_name ?? "",
+        reason: tpl.content?.reason ?? "",
+        summary: tpl.content?.summary ?? "",
+        plan: tpl.content?.plan ?? "",
+      }));
+    },
+    [],
+  );
+
+  const handleSelectChange = (value: string) => {
+    setSel(value);
+    const tpl = templates.find((t) => t.id === value);
+    applyTemplate(tpl);
   };
+
+  const handleUseFromModal = useCallback(
+    async (tpl: { id: string; name: string }) => {
+      setModalOpen(false);
+      const data = await loadTemplates();
+      const found = data.find((item) => item.id === tpl.id);
+      if (found) {
+        setSel(found.id);
+        applyTemplate(found);
+      }
+    },
+    [applyTemplate, loadTemplates],
+  );
+
   const save = async () => {
     if (!(form.to_specialty || form.to_doctor_name))
       return alert("Falta: Especialidad o Dr. destino");
@@ -36,20 +100,39 @@ export default function NewReferral({ params }: { params: { id: string } }) {
     window.open(`/api/referrals/${j.id}/pdf`, "_blank");
   };
   return (
-    <div className="p-4 max-w-3xl space-y-3">
+    <div className="p-4 max-w-3xl space-y-4">
       <h1 className="text-2xl font-semibold">Nueva interconsulta</h1>
-      <div className="flex gap-2 items-end">
-        <select className="border rounded p-2" value={sel} onChange={(e) => setSel(e.target.value)}>
-          <option value="">Plantilla…</option>
-          {tpl.map((t: any) => (
-            <option key={t.id} value={t.id}>
-              {t.doctor_id ? "Mi: " : "Org: "}
-              {t.name}
-            </option>
-          ))}
-        </select>
-        <button className="px-3 py-2 border rounded" onClick={loadTpl}>
-          Cargar
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="flex-1">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-slate-600">Plantillas activas</span>
+            <select
+              className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
+              value={sel}
+              disabled={!templates.length}
+              onChange={(e) => handleSelectChange(e.target.value)}
+            >
+              <option value="">Selecciona plantilla…</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                  {t.content?.meta?.specialty ? ` · ${t.content.meta.specialty}` : ""}
+                </option>
+              ))}
+            </select>
+            {loadingTemplates && <span className="text-xs text-slate-500">Cargando plantillas…</span>}
+            {!loadingTemplates && !templates.length && (
+              <span className="text-xs text-slate-500">Aún no hay plantillas activas.</span>
+            )}
+          </label>
+        </div>
+        <button
+          className="glass-btn"
+          type="button"
+          onClick={() => setModalOpen(true)}
+          disabled={!orgId}
+        >
+          📚 Administrar plantillas
         </button>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -92,6 +175,17 @@ export default function NewReferral({ params }: { params: { id: string } }) {
           Guardar + PDF
         </button>
       </div>
+
+      <TemplateLibraryModal
+        kind="referral"
+        orgId={orgId}
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          loadTemplates();
+        }}
+        onUse={handleUseFromModal}
+      />
     </div>
   );
 }
