@@ -37,7 +37,7 @@ export default function EmptyState({
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-contrast sm:text-2xl">{title}</h2>
-        {hint ? <p className="text-sm text-contrast/80 sm:text-base">{hint}</p> : null}
+        {hint ? <p className="text-[15px] text-contrast/80 sm:text-base">{hint}</p> : null}
       </div>
       {ctaText && onCta ? (
         <button
