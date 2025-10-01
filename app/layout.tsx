@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import Providers from "./providers";
 import AppShell from "@/components/AppShell";
 
-const bodyClass =
-  "font-body text-[var(--color-brand-text)] min-h-dvh antialiased bg-[length:100%_100%]";
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: "Sanoa Lab",
@@ -22,7 +23,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={bodyClass}>
+      <body className={`${inter.variable} ${jakarta.variable} antialiased`} data-theme="light">
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>
