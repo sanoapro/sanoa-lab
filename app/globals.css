@@ -692,3 +692,121 @@ html.dark .glass-btn {
 .neon:hover {
   box-shadow: 0 8px 32px rgba(16, 185, 129, 0.35);
 }
+
+/* ===== Glass DNA - base ===== */
+:root{
+  --glass-bg: 255 255 255 / .55;         /* light */
+  --glass-br: 255 255 255 / .25;
+  --glass-fg: 17 24 39;                  /* slate-900 approx */
+  --ring: 59 130 246 /.35;               /* ring azul */
+  --emoji-scale: 1.45;                   /* +45% */
+  --radius-2xl: 1.25rem;
+  --shadow-1: 0 10px 30px rgba(0,0,0,.08);
+  --shadow-2: 0 6px 20px rgba(0,0,0,.12);
+  --gap: 14px;
+  --font-size-root: 17px;                /* subo tipografía global */
+}
+
+/* Dark mode: más contraste de texto dentro del cristal */
+.dark:root{
+  --glass-bg: 17 25 40 / .45;            /* slate-900-ish con alpha */
+  --glass-br: 255 255 255 / .1;
+  --glass-fg: 241 245 249;               /* slate-100 */
+  --ring: 96 165 250 /.45;
+  --shadow-1: 0 10px 30px rgba(0,0,0,.35);
+  --shadow-2: 0 10px 30px rgba(0,0,0,.45);
+}
+
+html { font-size: var(--font-size-root); }
+body { color: rgb(var(--glass-fg)); }
+
+/* Texto legible en cajas translúcidas */
+.text-contrast { color: rgb(var(--glass-fg)); }
+
+/* Emojis más grandes y alineados */
+.emoji { font-size: var(--emoji-scale); line-height: 1; display: inline-flex; transform: translateY(1px); }
+
+/* Tarjeta “cristal + burbuja” */
+.glass-card{
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(180deg, rgba(var(--glass-bg)) 0%, rgba(var(--glass-bg)) 100%);
+  border: 1px solid rgba(var(--glass-br));
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  padding: 16px;
+}
+.glass-card.bubble{ position: relative; overflow: hidden; }
+.glass-card.bubble::after{
+  content:"";
+  position:absolute; inset:0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), inset 0 -1px 0 rgba(0,0,0,.08);
+  pointer-events:none;
+}
+
+/* Botón “cristal” */
+.glass-btn{
+  --bg: rgba(var(--glass-bg));
+  --bd: rgba(var(--glass-br));
+  appearance: none;
+  display: inline-flex; align-items:center; gap:8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border:1px solid var(--bd);
+  background: linear-gradient(180deg, var(--bg) 0%, rgba(255,255,255,.08) 100%);
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.glass-btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow-2); }
+.glass-btn:active{ transform: translateY(0); }
+.glass-btn[disabled]{ opacity:.5; cursor:not-allowed; }
+.glass-btn.neon{ box-shadow: 0 0 0 2px rgba(var(--ring)); }
+
+/* Input “cristal” */
+.glass-input{
+  width:100%;
+  border-radius: 12px;
+  border:1px solid rgba(var(--glass-br));
+  background: linear-gradient(180deg, rgba(var(--glass-bg)) 0%, rgba(255,255,255,.06) 100%);
+  padding: 10px 12px;
+  color: rgb(var(--glass-fg));
+  outline: none;
+  backdrop-filter: blur(12px) saturate(140%);
+}
+.glass-input:focus{ box-shadow: 0 0 0 3px rgba(var(--ring)); }
+
+/* Navbar tamaño “LG” */
+.nav-lg{ padding: 10px 14px; }
+
+/* Sidebar */
+.sidebar{
+  position: sticky; top: 12px;
+  height: calc(100dvh - 24px);
+  padding: 12px;
+}
+.sidebar a{
+  display:flex; align-items:center; gap:10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border:1px solid rgba(var(--glass-br));
+  background: linear-gradient(180deg, rgba(var(--glass-bg)) 0%, rgba(255,255,255,.05) 100%);
+  margin-bottom: 8px;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.sidebar a:hover{ transform: translateY(-1px); box-shadow: var(--shadow-2); }
+
+/* Badges de estado */
+.badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.85rem; border:1px solid rgba(var(--glass-br)); }
+.badge-active{ background: rgba(34,197,94,.18); }
+.badge-inactive{ background: rgba(244, 63, 94, .18); }
+
+/* Densidad (compacta vs cómoda) controlado en <html data-density="..."> */
+html[data-density="compact"] { --font-size-root: 15px; --gap: 10px; }
+html[data-density="comfortable"] { --font-size-root: 17px; --gap: 14px; }
+
+/* Utilidades pequeñas */
+.hover-glow:hover{ box-shadow: var(--shadow-2); }
+

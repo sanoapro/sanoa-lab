@@ -5,147 +5,110 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
-import { createPortal } from "react-dom";
-import ColorEmoji from "@/components/ColorEmoji";
 
-type ToastVariant = "success" | "error" | "info" | "warning";
-type ToastOptions = {
-  variant?: ToastVariant;
+type ToastVariant = "default" | "success" | "error" | "info";
+
+type ToastInput = {
   title?: string;
   description?: string;
-  emoji?: string;
-  duration?: number; // ms (default 3500)
+  variant?: ToastVariant;
 };
-type ToastItem = { id: string; opts: Required<ToastOptions> };
-type ToastContextValue = { toast: (opts: ToastOptions) => void };
 
-const ToastContext = createContext<ToastContextValue | undefined>(undefined);
+type Toast = ToastInput & { id: string };
 
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) {
-    throw new Error("useToast debe usarse dentro de <ToastProvider />");
-  }
-  return ctx;
-}
+type ToastContextValue = {
+  show: (_toast: ToastInput) => void;
+  toast: (_toast: ToastInput) => void;
+  remove: (_id: string) => void;
+  toasts: Toast[];
+};
 
-/** Hook seguro: si el provider no existe, no rompe. */
-export function useToastSafe(): ToastContextValue {
-  const ctx = useContext(ToastContext);
-  return (
-    ctx ?? {
-      toast: () => {
-        // noop en fallback; útil si el árbol montó sin provider por un error fatal
-      },
-    }
-  );
-}
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+let externalShow: ((_toast: ToastInput) => void) | null = null;
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const timers = useRef<Record<string, any>>({});
-  const [mounted, setMounted] = useState(false);
-  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  useEffect(() => {
-    setMounted(true);
-    setContainer(document.getElementById("toast-root") ?? document.body);
-    return () => {
-      Object.values(timers.current).forEach(clearTimeout);
-    };
+  const show = useCallback((toast: ToastInput) => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, ...toast }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((item) => item.id !== id));
+    }, 4000);
   }, []);
 
   const remove = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-    if (timers.current[id]) {
-      clearTimeout(timers.current[id]);
-      delete timers.current[id];
-    }
+    setToasts((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const toast = useCallback(
-    (opts: ToastOptions) => {
-      const id = Math.random().toString(36).slice(2);
-      const item: ToastItem = {
-        id,
-        opts: {
-          variant: opts.variant ?? "info",
-          title: opts.title ?? "",
-          description: opts.description ?? "",
-          emoji: opts.emoji ?? "ℹ️",
-          duration: opts.duration ?? 3500,
-        },
-      };
-      setToasts((prev) => [item, ...prev]);
-      timers.current[id] = setTimeout(() => remove(id), item.opts.duration);
-    },
-    [remove],
-  );
+  useEffect(() => {
+    externalShow = show;
+    return () => {
+      externalShow = null;
+    };
+  }, [show]);
 
-  const value = useMemo(() => ({ toast }), [toast]);
+  const value: ToastContextValue = {
+    show,
+    toast: show,
+    remove,
+    toasts,
+  };
 
-  const portal =
-    mounted && container
-      ? createPortal(
-          <div className="pointer-events-none fixed inset-0 z-[9999] flex flex-col items-end gap-2 p-4 sm:p-6">
-            <div className="ml-auto w-full max-w-sm space-y-2">
-              {toasts.map(({ id, opts }) => (
-                <div
-                  key={id}
-                  className={`
-                    pointer-events-auto rounded-2xl border p-4 shadow-[0_10px_30px_rgba(0,0,0,0.10)]
-                    bg-white/95 backdrop-blur
-                    animate-in fade-in zoom-in-95 duration-200
-                    ${
-                      {
-                        success: "border-green-200",
-                        error: "border-red-200",
-                        info: "border-[var(--color-brand-border)]",
-                        warning: "border-yellow-200",
-                      }[opts.variant]
-                    }
-                  `}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 grid place-content-center rounded-xl border border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-                      <ColorEmoji emoji={opts.emoji} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      {opts.title && (
-                        <p className="font-semibold text-[var(--color-brand-text)] truncate">
-                          {opts.title}
-                        </p>
-                      )}
-                      {opts.description && (
-                        <p className="text-sm text-[var(--color-brand-bluegray)]">
-                          {opts.description}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => remove(id)}
-                      className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-xl hover:bg-[var(--color-brand-background)] text-[var(--color-brand-text)]"
-                      title="Cerrar"
-                    >
-                      <span className="sr-only">Cerrar</span>✖️
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>,
-          container,
-        )
-      : null;
+  return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;
+}
 
+export function useToast() {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error("useToast debe usarse dentro de <ToastProvider />");
+  }
+  return context;
+}
+
+export function useToastSafe(): ToastContextValue {
+  const context = useContext(ToastContext);
   return (
-    <ToastContext.Provider value={value}>
-      {children}
-      {portal}
-    </ToastContext.Provider>
+    context ?? {
+      show: () => {},
+      toast: () => {},
+      remove: () => {},
+      toasts: [],
+    }
   );
 }
+
+type ShowToastArg =
+  | string
+  | ({
+      title?: string;
+      description?: string;
+      variant?: "success" | "error" | "info" | "destructive" | "default";
+    } & Record<string, unknown>);
+
+type ShowToastKind = "success" | "error" | "info";
+
+export function showToast(arg: ShowToastArg, kind?: ShowToastKind) {
+  if (!externalShow) {
+    throw new Error("showToast requiere que el árbol esté envuelto por <ToastProvider />");
+  }
+
+  if (typeof arg === "string") {
+    externalShow({ description: arg, variant: kind ?? "default" });
+    return;
+  }
+
+  const mappedVariant =
+    arg.variant === "destructive" ? "error" : (arg.variant ?? "default");
+
+  externalShow({
+    title: arg.title,
+    description: arg.description,
+    variant: mappedVariant,
+  });
+}
+
+export type { Toast, ToastInput, ToastVariant, ToastContextValue };
