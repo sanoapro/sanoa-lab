@@ -3,6 +3,7 @@
 
 import AccentHeader from "@/components/ui/AccentHeader";
 import PrescriptionEditor from "@/components/prescriptions/PrescriptionEditor";
+import Link from "next/link";
 
 export default function RecetasPage() {
   return (
@@ -12,6 +13,11 @@ export default function RecetasPage() {
         subtitle="Crea recetas con membrete y firma, reutiliza plantillas y exporta a impresión."
         emojiToken="receta"
       />
+      <div className="flex justify-end">
+        <Link href="/prescriptions/templates" className="glass-btn">
+          <span className="emoji">📝</span> Plantillas
+        </Link>
+      </div>
       <PrescriptionEditor />
     </main>
   );
