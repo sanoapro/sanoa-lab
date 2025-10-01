@@ -31,7 +31,8 @@ export default function PatientsFilters() {
     setOrDel("to", to);
     setOrDel("tagsAny", tagsAny);
     setOrDel("tagsAll", tagsAll);
-    includeDeleted ? p.set("includeDeleted", "true") : p.delete("includeDeleted");
+    if (includeDeleted) p.set("includeDeleted", "true");
+    else p.delete("includeDeleted");
     p.delete("page"); // reset
     router.push(`${pathname}?${p.toString()}`);
   }
