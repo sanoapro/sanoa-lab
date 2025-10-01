@@ -1,37 +1,25 @@
-"use client";
+// app/(app)/banco/reglas/page.tsx
 
-import RulesEditor from "@/components/bank/RulesEditor";
-import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
 import OrgInspector from "@/components/shared/OrgInspector";
+import RulesEditor from "@/components/bank/RulesEditor";
 
-export default function BankRulesPage() {
-  const { orgId, isLoading } = useBankActiveOrg();
+export const metadata = { title: "Banco · Reglas" };
 
-  if (isLoading) {
-    return (
-      <main className="mx-auto max-w-6xl p-4 md:p-6">
-        <div className="glass-card bubble text-contrast max-w-md p-6">
-          <h1 className="mb-3 text-2xl font-semibold">
-            <span className="emoji">🏦</span> Sanoa Bank
-          </h1>
-          <p className="text-base text-slate-600 dark:text-slate-200/90">Cargando organizaciones…</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!orgId) {
-    return (
-      <main className="container py-6">
-        <OrgInspector />
-      </main>
-    );
-  }
-
+export default function Page() {
   return (
-    <main className="mx-auto max-w-6xl p-4 md:p-6">
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight">Banco · Reglas</h1>
-      <RulesEditor />
+    <main className="container py-6 space-y-4">
+      <div>
+        <h1 className="text-xl font-bold">Banco · Reglas</h1>
+        <p className="text-sm text-muted-foreground">
+          Crea y ajusta reglas de categorización. Se aplican a futuras transacciones.
+        </p>
+      </div>
+
+      <OrgInspector>
+        <section className="rounded-lg border border-border bg-card p-4">
+          <RulesEditor />
+        </section>
+      </OrgInspector>
     </main>
   );
 }
