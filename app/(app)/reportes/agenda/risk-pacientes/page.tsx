@@ -3,7 +3,7 @@
 import AccentHeader from "@/components/ui/AccentHeader";
 import { useMemo } from "react";
 import { getActiveOrg } from "@/lib/org-local";
-import AgendaPatientRisk from "@/components/reports/AgendaPatientRisk";
+import AgendaPatientRisk from "@/components/reports/agenda-patient-risk";
 
 export default function RiskPacientesPage() {
   const org = useMemo(() => getActiveOrg(), []);
