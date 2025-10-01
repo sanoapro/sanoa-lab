@@ -6,7 +6,7 @@ import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ThemeProvider } from "next-themes";
 import { ToastProvider } from "@/components/Toast";
-import { Toaster } from "@/components/Toaster";
+import Toaster from "@/components/Toaster";
 
 // ---- Segment Loader (analytics.js) ----
 declare global {
