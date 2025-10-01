@@ -196,7 +196,7 @@ export default function BancoAjustesPage() {
             href="/organizaciones"
             className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm"
           >
-            Administrar organizaciones
+            <span className="emoji">👥</span> Administrar organizaciones
           </Link>
         </div>
       </main>
@@ -255,13 +255,16 @@ export default function BancoAjustesPage() {
                 placeholder="+52..."
               />
             </label>
-            <button
-              disabled={saving}
-              onClick={save}
-              className="px-4 py-2 rounded-xl bg-black text-white text-sm hover:opacity-90 disabled:opacity-60"
-            >
-              {saving ? "Guardando…" : "Guardar"}
-            </button>
+          <button
+            disabled={saving}
+            onClick={save}
+            className="px-4 py-2 rounded-xl bg-black text-white text-sm hover:opacity-90 disabled:opacity-60"
+          >
+            <span className="emoji" aria-hidden>
+              {saving ? "⏳" : "💾"}
+            </span>{" "}
+            {saving ? "Guardando…" : "Guardar"}
+          </button>
           </div>
         )}
       </section>
@@ -279,6 +282,9 @@ export default function BancoAjustesPage() {
             disabled={loadingModules}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] bg-white/80 px-3 py-2 text-sm font-medium text-[var(--color-brand-text)] transition hover:bg-white disabled:opacity-60 dark:bg-slate-900/50 dark:hover:bg-slate-900/70"
           >
+            <span className="emoji" aria-hidden>
+              {loadingModules ? "⏳" : "🔄"}
+            </span>{" "}
             {loadingModules ? "Actualizando…" : "Actualizar estado"}
           </button>
         </div>

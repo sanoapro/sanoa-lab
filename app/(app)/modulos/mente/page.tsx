@@ -1,17 +1,26 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import AccentHeader from "@/components/ui/AccentHeader";
 import ColorEmoji from "@/components/ColorEmoji";
 import ModuleGate from "@/components/modules/ModuleGate";
+import StatusBadge from "@/components/modules/StatusBadge";
+import { useModuleAccess } from "@/components/modules/useModuleAccess";
 import StarterTips from "@/components/modules/StarterTips";
 
 export default function MentePage() {
+  const { active, enabled } = useModuleAccess("mente");
+  const isActive = active && enabled;
+
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
-        title="Mente"
+        title={
+          <span className="flex items-center gap-2">
+            Mente Pro
+            <StatusBadge active={isActive} />
+          </span>
+        }
         subtitle="Evaluaciones (PHQ-9, GAD-7), seguimiento y planes."
         emojiToken="mente"
       />
