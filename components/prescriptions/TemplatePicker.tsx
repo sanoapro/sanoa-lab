@@ -1,90 +1,106 @@
 "use client";
-import { useEffect, useState } from "react";
 
-type Template = { id: string; name: string; active?: boolean | null };
+import * as React from "react";
+import TemplateLibraryModal from "@/components/templates/TemplateLibraryModal";
+import { listPrescriptionTemplates } from "@/lib/prescriptions/templates";
+
+type TemplateSummary = { id: string; name: string; active?: boolean | null; specialty?: string | null };
 
 type Props = {
   orgId: string;
   mine?: boolean;
-  onChoose: (tpl: Template) => void;
+  onChoose: (tpl: TemplateSummary) => void;
 };
 
-export default function TemplatePicker({ orgId, mine = false, onChoose }: Props) {
-  const [q, setQ] = useState("");
-  const [rows, setRows] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function TemplatePicker({ orgId, onChoose }: Props) {
+  const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [rows, setRows] = React.useState<TemplateSummary[]>([]);
 
-  async function load() {
+  const load = React.useCallback(async () => {
     if (!orgId) {
       setRows([]);
       return;
     }
     setLoading(true);
     try {
-      const params = new URLSearchParams({ org_id: orgId, mine: mine ? "1" : "0" });
-      if (q) params.set("q", q);
-
-      const r = await fetch(`/api/prescriptions/templates?${params.toString()}`, {
-        cache: "no-store",
-      });
-      const j = await r.json().catch(() => null);
-
-      if (j?.ok && Array.isArray(j.data)) {
-        setRows(j.data);
-      } else if (Array.isArray(j?.items)) {
-        setRows(j.items);
-      } else {
-        setRows([]);
-      }
+      const data = await listPrescriptionTemplates(orgId);
+      setRows(
+        data
+          .filter((tpl) => tpl.is_active !== false)
+          .map((tpl) => ({
+            id: tpl.id,
+            name: tpl.name,
+            active: tpl.is_active,
+            specialty: tpl.content?.meta?.specialty ?? null,
+          })),
+      );
     } catch (err) {
       console.error(err);
       setRows([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, q, mine]);
+  }, [load]);
+
+  const handleUse = React.useCallback(
+    (tpl: { id: string; name: string }) => {
+      onChoose({ id: tpl.id, name: tpl.name });
+      setOpen(false);
+      load();
+    },
+    [onChoose, load],
+  );
 
   return (
-    <section className="border rounded-2xl p-4 space-y-3">
-      <div className="flex items-center gap-2">
-        <input
-          className="border rounded px-3 py-2 flex-1"
-          placeholder="Buscar plantilla..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <button className="border rounded px-3 py-2" onClick={load} disabled={loading}>
-          {loading ? "Cargando..." : "Buscar"}
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h4 className="text-lg font-semibold">Plantillas disponibles</h4>
+          <p className="text-sm text-slate-500">Selecciona o administra tus plantillas de receta.</p>
+        </div>
+        <button className="glass-btn" onClick={() => setOpen(true)}>
+          📚 Administrar
         </button>
       </div>
-      <div className="rounded border overflow-auto max-h-72">
-        <table className="w-full text-sm">
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-b">
-                <td className="px-3 py-2">{r.name}</td>
-                <td className="px-3 py-2 w-28 text-right">
-                  <button className="border rounded px-3 py-1" onClick={() => onChoose(r)}>
-                    Usar
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {!rows.length && (
-              <tr>
-                <td className="px-3 py-6 text-center text-slate-500">
-                  {loading ? "Cargando..." : "Sin plantillas"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+
+      <div className="rounded-2xl border border-white/30 bg-white/80 p-3 dark:bg-slate-950/40">
+        <ul className="space-y-2">
+          {rows.map((tpl) => (
+            <li key={tpl.id} className="flex items-center justify-between rounded-xl bg-white/90 px-3 py-2 text-sm shadow-sm dark:bg-slate-900/60">
+              <div>
+                <div className="font-medium text-slate-700 dark:text-slate-100">{tpl.name}</div>
+                {tpl.specialty ? (
+                  <div className="text-xs text-slate-500">{tpl.specialty}</div>
+                ) : null}
+              </div>
+              <button className="glass-btn text-xs" onClick={() => onChoose(tpl)}>
+                Usar
+              </button>
+            </li>
+          ))}
+          {!rows.length && (
+            <li className="rounded-xl bg-white/90 px-3 py-4 text-center text-sm text-slate-500 dark:bg-slate-900/60">
+              {loading ? "Cargando…" : "Aún no tienes plantillas activas"}
+            </li>
+          )}
+        </ul>
       </div>
+
+      <TemplateLibraryModal
+        kind="prescription"
+        orgId={orgId}
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          load();
+        }}
+        onUse={handleUse}
+      />
     </section>
   );
 }
