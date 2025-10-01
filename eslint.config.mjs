@@ -1,17 +1,17 @@
 // eslint.config.mjs
 import js from "@eslint/js";
-import next from "eslint-config-next";
-import ts from "typescript-eslint";
+import globals from "globals";
+import nextPlugin from "@next/eslint-plugin-next";
+import tseslint from "typescript-eslint";
 
 export default [
-  { ignores: ["node_modules/**", ".next/**", "dist/**"] },
+  { ignores: ["**/.next/**", "dist/**", "build/**"] },
   js.configs.recommended,
-  ...ts.configs.recommended,
-  ...next,
+  ...tseslint.configs.recommended,
+  nextPlugin.flatConfig.recommended,
   {
-    rules: {
-      "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-      "react-hooks/exhaustive-deps": "off",
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
     },
   },
 ];
