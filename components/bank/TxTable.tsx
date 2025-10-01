@@ -16,6 +16,39 @@ type Tx = {
   created_at: string;
 };
 
+function toCSV(rows: any[]) {
+  if (!rows?.length) return "";
+  const headers = Array.from(
+    rows.reduce((set, r) => {
+      Object.keys(r ?? {}).forEach((k) => set.add(k));
+      return set;
+    }, new Set<string>())
+  );
+  const esc = (v: any) => {
+    const s = v == null ? "" : String(v);
+    if (/[",\n]/.test(s)) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  };
+  const lines = [headers.join(",")];
+  for (const r of rows) {
+    lines.push(headers.map((h) => esc((r as any)[h])).join(","));
+  }
+  return lines.join("\n");
+}
+
+function downloadCSV(rows: any[], filename = "transacciones.csv") {
+  const csv = toCSV(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function fmtMoney(cents: number, currency = "MXN") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format((cents || 0) / 100);
 }
@@ -61,7 +94,21 @@ export default function TxTable({ orgId }: { orgId: string }) {
   const end = Math.min(page * pageSize, total);
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">
+          <span className="emoji">📒</span> Transacciones
+        </h2>
+        <button
+          className="glass-btn"
+          onClick={() => downloadCSV(rows)}
+          disabled={!rows?.length}
+          title="Exportar CSV"
+        >
+          <span className="emoji">🧾</span> Exportar CSV
+        </button>
+      </div>
+
       <div className="rounded border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
