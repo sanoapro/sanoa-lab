@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
+import OrgSwitcher from "@/components/OrgSwitcher";
 import { useToastSafe } from "@/components/Toast";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { cn } from "@/lib/utils";
@@ -58,20 +59,24 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 px-3 py-4 sm:px-5">
       <div className="mx-auto max-w-6xl">
-        <div className="glass bubble relative flex items-center gap-3 px-5 py-4">
-          {/* Brand */}
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-white dark:focus-visible:ring-offset-slate-900 md:text-xl"
-            aria-label="Ir al dashboard"
-          >
-            <span className="emoji">✨</span>
-            <span>Sanoa</span>
-          </Link>
+        <div className="glass bubble relative flex flex-wrap items-center gap-3 px-5 py-4">
+          <div className="flex items-center gap-3">
+            {/* Brand */}
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-white dark:focus-visible:ring-offset-slate-900 md:text-xl"
+              aria-label="Ir al dashboard"
+            >
+              <span className="emoji">✨</span>
+              <span>Sanoa</span>
+            </Link>
+
+            <OrgSwitcher />
+          </div>
 
           {/* Main nav */}
           <nav
-            className="ml-4 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap"
+            className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap sm:ml-2"
             aria-label="Secciones principales"
           >
             {NAV.map((item) => {
