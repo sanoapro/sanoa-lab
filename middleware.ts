@@ -17,7 +17,14 @@ if (!globalBuckets.__sanoaBuckets) globalBuckets.__sanoaBuckets = new Map();
 const buckets = globalBuckets.__sanoaBuckets;
 
 function getIp(req: NextRequest) {
-  return req.ip || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]?.trim() || "unknown";
+  if ("ip" in req) {
+    const ip = (req as { ip?: string | null }).ip;
+    if (ip) return ip;
+  }
+  const realIp = req.headers.get("x-real-ip");
+  return realIp?.trim() || "unknown";
 }
 
 export function middleware(req: NextRequest) {
