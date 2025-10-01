@@ -57,13 +57,14 @@ html, body {
 /* ====== Estilo “Cristal” reutilizable ====== */
 .glass-card {
   background: color-mix(in oklab, rgb(var(--glass-bg)) calc(var(--glass-alpha) * 100%), transparent);
-  @apply backdrop-blur-md rounded-2xl border border-white/15 shadow-glass;
+  @apply backdrop-blur-md rounded-2xl border border-white/15 shadow-glass p-4;
 }
 
 /* burbuja: borde suave y gradiente sutil */
 .bubble {
   position: relative;
   overflow: hidden;
+  @apply p-4;
 }
 .bubble::before{
   content:"";
@@ -72,9 +73,6 @@ html, body {
               linear-gradient(180deg, rgba(255,255,255,0.08), transparent 60%);
   pointer-events:none;
 }
-
-/* tarjetas y contenedores: padding coherente */
-.glass-card, .bubble { @apply p-4; }
 
 /* ====== Botón cristal ====== */
 .glass-btn {
@@ -95,15 +93,33 @@ html, body {
   background: linear-gradient(180deg, rgba(244,63,94,.22), rgba(244,63,94,.12));
 }
 
-/* ====== Inputs / campos dentro de cards ====== */
-.input, input[type="text"], input[type="search"], textarea, select {
+/* ====== Inputs / campos ====== */
+.input,
+input[type="text"],
+input[type="search"],
+textarea,
+select {
   @apply w-full px-3 py-2 rounded-xl border border-white/15 bg-transparent backdrop-blur-sm;
   color: rgb(var(--contrast));
 }
 .input::placeholder { color: rgb(var(--contrast) / .55); }
-.input:focus, input:focus, textarea:focus, select:focus {
+.input:focus,
+input:focus,
+textarea:focus,
+select:focus {
   outline: none; box-shadow: 0 0 0 2px rgba(var(--ring), .45);
 }
+
+/* Input “cristal” simple */
+.glass-input{
+  @apply w-full rounded-xl border border-white/15;
+  background: color-mix(in oklab, rgb(var(--glass-bg)) 22%, transparent);
+  padding: 10px 12px;
+  color: rgb(var(--contrast));
+  outline: none;
+  backdrop-filter: blur(12px) saturate(140%);
+}
+.glass-input:focus{ box-shadow: 0 0 0 3px rgba(var(--ring), .45); }
 
 /* ====== Badges ====== */
 .badge{
@@ -118,9 +134,36 @@ table { @apply w-full; }
 th { @apply text-sm font-semibold text-contrast/80 py-2; }
 td { @apply py-2; }
 
-/* ====== Navbar / layout (ligeramente más grande) ====== */
+/* ====== Navbar / layout ====== */
 .navbar {
-  @apply h-14 px-4 flex items-center justify-between sticky top-0 z-40;
+  @apply h-14 px-4 flex items-center justify-between sticky top-0 z-40 border-b border-white/10 backdrop-blur-md;
   background: color-mix(in oklab, rgb(var(--glass-bg)) 18%, transparent);
-  @apply border-b border-white/10 backdrop-blur-md;
 }
+
+/* ====== Utilidades de backdrop personalizadas ====== */
+@layer utilities {
+  .backdrop-blur { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .backdrop-blur-md { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .backdrop-blur-\[1px\] { backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px); }
+  .backdrop-blur-\[2px\] { backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+}
+
+/* ====== Sidebar / pequeñas utilidades ====== */
+.sidebar{
+  position: sticky; top: 12px;
+  height: calc(100dvh - 24px);
+  padding: 12px;
+}
+.sidebar a{
+  display:flex; align-items:center; gap:10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border:1px solid rgba(var(--glass-border), .15);
+  background: color-mix(in oklab, rgb(var(--glass-bg)) 22%, transparent);
+  margin-bottom: 8px;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.sidebar a:hover{ transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+
+.hover-glow:hover{ box-shadow: 0 6px 20px rgba(0,0,0,.12); }

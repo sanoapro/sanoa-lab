@@ -231,16 +231,16 @@ export default function RulesEditor() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="glass-btn"
-                        onClick={() => removeRule(r.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
-                </li>
+          <button
+            type="button"
+            className="glass-btn"
+            onClick={() => removeRule(r.id)}
+          >
+            <span className="emoji" aria-hidden="true">🗑️</span> Eliminar
+          </button>
+        </div>
+      </div>
+    </li>
               );
             })}
           </ul>
