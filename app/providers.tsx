@@ -1,5 +1,6 @@
 "use client";
 
+import "../sentry.client.config"; // <-- relativo a /app/providers.tsx (sube un nivel)
 import type { ReactNode } from "react";
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
