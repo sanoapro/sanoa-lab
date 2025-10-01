@@ -148,52 +148,43 @@ export default function ModulosHubPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParamsString = searchParams.toString();
 
-  const queryTab = searchParams.get("tab") || undefined;
   const fallbackTab = MODULES[0]?.token ?? "";
+  const queryTab = searchParams.get("tab") || undefined;
 
-  const [activeTab, setActiveTab] = React.useState<string>(() => {
+  // Tab activa derivada de la URL (fuente de verdad)
+  const activeTab = React.useMemo(() => {
     if (queryTab && MODULE_TOKENS.has(queryTab)) return queryTab;
     return fallbackTab;
-  });
+  }, [queryTab, fallbackTab]);
 
+  // Si el queryTab es inválido, reescribe a fallback (una sola vez por cambio)
   React.useEffect(() => {
-    if (!queryTab && fallbackTab && activeTab !== fallbackTab) {
-      setActiveTab(fallbackTab);
-      return;
+    if (!queryTab) return;
+    if (!MODULE_TOKENS.has(queryTab) && fallbackTab) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", fallbackTab);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     }
-    if (queryTab && MODULE_TOKENS.has(queryTab) && queryTab !== activeTab) {
-      setActiveTab(queryTab);
-    }
-  }, [queryTab, fallbackTab, activeTab]);
-
-  React.useEffect(() => {
-    if (!queryTab || MODULE_TOKENS.has(queryTab)) return;
-    const fallback = fallbackTab;
-    if (!fallback) return;
-    setActiveTab(fallback);
-    const params = new URLSearchParams(searchParamsString);
-    params.set("tab", fallback);
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [queryTab, fallbackTab, pathname, router, searchParamsString]);
+  }, [queryTab, fallbackTab, pathname, router, searchParams]);
 
   const handleSelect = React.useCallback(
     (token: string) => {
       if (!MODULE_TOKENS.has(token)) return;
-      setActiveTab(token);
-      const params = new URLSearchParams(searchParamsString);
+      if (token === queryTab) return; // evita replace innecesario
+      const params = new URLSearchParams(searchParams.toString());
       params.set("tab", token);
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [pathname, router, searchParamsString],
+    [pathname, router, searchParams, queryTab]
   );
 
-  const activeModule = React.useMemo(() => {
-    return MODULES.find((m) => m.token === activeTab) ?? MODULES[0];
-  }, [activeTab]);
+  const activeModule = React.useMemo(
+    () => MODULES.find((m) => m.token === activeTab) ?? MODULES[0],
+    [activeTab]
+  );
 
   return (
     <main className="p-6 md:p-10 space-y-8">
@@ -204,7 +195,12 @@ export default function ModulosHubPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,260px)_1fr]">
-        <nav className="flex flex-col gap-3" aria-label="Módulos" role="tablist">
+        <nav
+          className="flex flex-col gap-3"
+          aria-label="Módulos"
+          role="tablist"
+          aria-orientation="vertical"
+        >
           {MODULES.map((module) => {
             const tabId = `module-${module.token}`;
             const isActive = module.token === activeModule.token;
@@ -217,8 +213,22 @@ export default function ModulosHubPage() {
                 aria-controls={`${tabId}-panel`}
                 aria-selected={isActive}
                 onClick={() => handleSelect(module.token)}
+                onKeyDown={(e) => {
+                  // Navegación con flechas ↑/↓
+                  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                    e.preventDefault();
+                    const idx = MODULES.findIndex((m) => m.token === activeModule.token);
+                    const nextIdx =
+                      e.key === "ArrowDown"
+                        ? Math.min(MODULES.length - 1, idx + 1)
+                        : Math.max(0, idx - 1);
+                    handleSelect(MODULES[nextIdx].token);
+                  }
+                }}
                 className={`rounded-3xl border bg-white/90 px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 ${
-                  isActive ? "border-blue-200 bg-blue-50/70 shadow" : "hover:border-blue-200 hover:bg-blue-50/40"
+                  isActive
+                    ? "border-blue-200 bg-blue-50/70 shadow"
+                    : "hover:border-blue-200 hover:bg-blue-50/40"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -227,7 +237,9 @@ export default function ModulosHubPage() {
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[var(--color-brand-text)]">{module.name}</span>
+                      <span className="font-semibold text-[var(--color-brand-text)]">
+                        {module.name}
+                      </span>
                       <span className="rounded-full border border-violet-200 bg-violet-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-violet-800">
                         Pro
                       </span>

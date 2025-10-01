@@ -1,10 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* === Tailwind v4 entry === */
+@import "tailwindcss";
 
 /* === Design tokens (AA+) === */
 :root {
   --font-scale: 1.02;
+  /* Mantén SIEMPRE el formato "tripletas HSL sin hsl()" si luego usas hsl(var(--...)) */
   --bg: 210 40% 98%;
   --fg: 222 47% 12%;
   --card: 0 0% 100%;
@@ -48,18 +48,144 @@
   --ring: 86 128 255;
 }
 
-/* Base */
-html { font-size: calc(16px * var(--font-scale)); }
-body {
-  background: hsl(var(--bg));
-  color: hsl(var(--fg));
-  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", Roboto);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  margin: 0;
+/* ===== Base tipográfica y resets mínimos ===== */
+@layer base {
+  html { font-size: calc(16px * var(--font-scale)); } /* ← deja SOLO esta */
+
+  body {
+    background: hsl(var(--bg));
+    color: hsl(var(--fg));
+    font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", Roboto);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    margin: 0;
+  }
+
+  /* Tipografías globales */
+  body { @apply text-base leading-relaxed; }
+  h1 { @apply text-3xl font-semibold leading-tight; }
+  h2 { @apply text-2xl font-semibold leading-snug; }
+  h3 { @apply text-xl  font-semibold leading-snug; }
+  p  { @apply leading-relaxed; }
+  small { @apply text-xs sm:text-sm; }
 }
 
-/* Sutiles fondos “hero” en dark */
+/* ===== Componentes y utilidades propias ===== */
+@layer components {
+  /* Navbar */
+  .navbar {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    background: hsl(var(--bg) / 0.88);
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* Cards genéricas */
+  .card {
+    @apply rounded-2xl border border-border bg-card text-card-foreground shadow-card transition-shadow duration-300 ease-soft;
+  }
+  .card:hover { @apply shadow-card-hover; }
+
+  .card-hover { transition: transform .15s ease, box-shadow .15s ease; }
+  .card-hover:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+
+  .shadow-elevated { box-shadow: 0 8px 28px rgba(0,0,0,.08); }
+  .glass-card { @apply card; }
+
+  /* Botón base */
+  .btn-base { @apply inline-flex h-12 items-center justify-center gap-2 rounded-xl px-5 text-base font-semibold transition-all duration-200 ease-soft shadow-sm; }
+  .btn-base:hover { @apply shadow-md; }
+  .btn-base:active { transform: translateY(1px); }
+
+  .glass-btn { @apply btn-base border border-border bg-muted text-foreground; }
+  .glass-btn:hover { @apply bg-muted/80; }
+  .glass-btn.primary { @apply bg-primary text-primary-foreground shadow-card; }
+  .glass-btn.danger  { @apply bg-danger  text-danger-foreground; }
+  .glass-btn.neon    { @apply bg-secondary text-secondary-foreground shadow-card; }
+
+  /* Inputs */
+  .input { @apply w-full rounded-xl border border-border bg-muted px-4 py-3 text-base text-foreground transition-shadow duration-200 ease-soft; }
+  .input::placeholder { color: hsl(var(--muted-fg)); opacity: .7; }
+  .input:focus { outline: none; box-shadow: 0 0 0 2px rgba(99,102,241,.25); }
+
+  /* Badge */
+  .badge { @apply inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground; }
+
+  /* Helpers */
+  .text-contrast     { color: rgb(var(--contrast)); }
+  .text-contrast\/80 { color: rgb(var(--contrast) / .8); }
+  .text-contrast\/70 { color: rgb(var(--contrast) / .7); }
+
+  /* Emojis consistentes */
+  .emoji {
+    display: inline-block;
+    font-size: 1.2em;
+    line-height: 1;
+  }
+
+  /* ====== Tablas Pro: header sticky, altura de fila, hover ====== */
+  .pro-table table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .pro-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 2;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .pro-table tbody tr { height: 56px; } /* 52–56px */
+  .pro-table tbody tr:hover {
+    background: color-mix(in oklab, var(--muted) 65%, transparent);
+  }
+  .pro-table th, .pro-table td {
+    padding: 12px 16px; /* grid 8px: 16–24px coherente */
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  /* ====== Chips de filtro ====== */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--background);
+    color: var(--foreground);
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .chip[data-active="true"] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+  }
+  .chip:active { transform: scale(.98); }
+
+  /* ====== Skeleton / Loader ====== */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 25%,
+      color-mix(in oklab, var(--muted) 90%, white) 37%,
+      var(--muted) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 8px;
+  }
+}
+
+/* ===== Accesibilidad (focus visible) ===== */
+*:focus-visible {
+  outline: 3px solid rgb(var(--ring));
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgb(var(--ring) / 0.25);
+}
+
+/* ===== Efecto de fondo en modo dark (fuera de layers) ===== */
 .dark body {
   background:
     radial-gradient(1200px 800px at 10% -20%, rgba(255,255,255,0.06), transparent 60%),
@@ -69,223 +195,38 @@ body {
   background-attachment: fixed;
 }
 
-/* ====== Tipografía global ====== */
-@layer base {
-  body { @apply text-base leading-relaxed; }
-  h1 { @apply text-3xl font-semibold leading-tight; }
-  h2 { @apply text-2xl font-semibold leading-snug; }
-  h3 { @apply text-xl font-semibold leading-snug; }
-  p  { @apply leading-relaxed; }
-  small { @apply text-xs sm:text-sm; }
-}
-
-/* Accesibilidad (focus visible) */
-*:focus-visible {
-  outline: 3px solid rgb(var(--ring));
-  outline-offset: 3px;
-  box-shadow: 0 0 0 4px rgb(var(--ring) / 0.25);
-}
-
-/* ===== UI helpers ===== */
-.text-contrast { color: rgb(var(--contrast)); }
-.text-contrast\/80 { color: rgb(var(--contrast) / 0.8); }
-.text-contrast\/70 { color: rgb(var(--contrast) / 0.7); }
-
-/* Emojis consistentes */
-.emoji {
-  display: inline-block;
-  font-size: 1.2em;
-  line-height: 1;
-}
-
-/* Navbar */
-.navbar{
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: hsl(var(--bg) / 0.88);
-  border-bottom: 1px solid hsl(var(--border));
-}
-
-/* Cards genéricas */
-.card {
-  @apply rounded-2xl border border-border bg-card text-card-foreground shadow-card transition-shadow duration-300 ease-soft;
-}
-.card:hover {
-  @apply shadow-card-hover;
-}
-
-.card-hover {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
-
-.shadow-elevated {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
-}
-
-.glass-card {
-  @apply card;
-}
-
-/* Botón base */
-.btn-base {
-  @apply inline-flex h-12 items-center justify-center gap-2 rounded-xl px-5 text-base font-semibold transition-all duration-200 ease-soft shadow-sm;
-}
-.btn-base:hover {
-  @apply shadow-md;
-}
-.btn-base:active {
-  transform: translateY(1px);
-}
-
-.glass-btn {
-  @apply btn-base border border-border bg-muted text-foreground;
-}
-.glass-btn:hover {
-  @apply bg-muted/80;
-}
-.glass-btn.primary {
-  @apply bg-primary text-primary-foreground shadow-card;
-}
-.glass-btn.danger {
-  @apply bg-danger text-danger-foreground;
-}
-.glass-btn.neon {
-  @apply bg-secondary text-secondary-foreground shadow-card;
-}
-
-/* Inputs */
-.input {
-  @apply w-full rounded-xl border border-border bg-muted px-4 py-3 text-base text-foreground transition-shadow duration-200 ease-soft;
-}
-.input::placeholder {
-  color: hsl(var(--muted-fg));
-  opacity: 0.7;
-}
-.input:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
-}
-
-/* Badge */
-.badge{
-  @apply inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground;
-}
-
-/* ====== Tokens accesibles (AA) ====== */
-:root {
-  /* Mantén los que ya tengas; estos solo refuerzan contraste */
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(224 71% 4%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(224 71% 4%);
-  --muted: hsl(220 14% 97%);
-  --muted-foreground: hsl(220 8% 45%);
-
-  /* Primario con buen contraste (≈#2563eb) */
-  --primary: hsl(221 83% 53%);
-  --primary-foreground: hsl(0 0% 100%);
-
-  /* Estados */
-  --success: hsl(142 72% 29%); /* verde oscuro */
-  --error: hsl(0 72% 45%);     /* rojo con AA */
-  --warning: hsl(38 92% 50%);
-
-  --border: hsl(220 14% 90%);
-  --input: hsl(220 14% 90%);
-}
-
-.dark {
-  --background: hsl(222 47% 11%);       /* #0b1220 aprox */
-  --foreground: hsl(210 40% 98%);
-  --card: hsl(222 47% 12%);
-  --card-foreground: hsl(210 40% 98%);
-  --muted: hsl(215 25% 20%);
-  --muted-foreground: hsl(215 20% 72%);
-
-  /* Primario legible sobre dark */
-  --primary: hsl(213 94% 68%);          /* ~#60a5fa */
-  --primary-foreground: hsl(222 47% 12%);
-
-  --border: hsl(217 19% 24%);
-  --input: hsl(217 19% 24%);
-}
-
-/* ====== Focus visibles y accesibles ====== */
-:where(a, button, [role="button"], input, select, textarea) {
-  outline: none;
-}
-:where(a, button, [role="button"], input, select, textarea):focus-visible {
-  box-shadow: 0 0 0 3px hsl(0 0% 100%) inset, 0 0 0 3px color-mix(in oklab, var(--primary) 85%, transparent);
-  outline: 2px solid color-mix(in oklab, var(--primary) 85%, transparent);
-  outline-offset: 2px;
-  border-radius: 10px;
-}
-
-/* ====== Tipografía y emojis un poco más grandes (coherente con lote previo) ====== */
-html { font-size: 17px; }          /* Body 16–17px */
-h1 { font-size: 1.375rem; }        /* ~22px */
-h2 { font-size: 1.125rem; }        /* ~18px */
-.emoji { font-size: 1.2em; line-height: 1; }
-
-/* ====== Tablas Pro: header sticky, altura de fila, hover ====== */
-.pro-table table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-.pro-table thead th {
-  position: sticky;
-  top: 0;
-  background: var(--card);
-  z-index: 2;
-  box-shadow: 0 1px 0 var(--border);
-}
-.pro-table tbody tr {
-  height: 56px; /* 52–56px */
-}
-.pro-table tbody tr:hover {
-  background: color-mix(in oklab, var(--muted) 65%, transparent);
-}
-.pro-table th, .pro-table td {
-  padding: 12px 16px; /* grid 8px: 16–24px coherente */
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-/* ====== Chips de filtro ====== */
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 34px; padding: 0 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--background);
-  color: var(--foreground);
-  transition: background .15s ease, border-color .15s ease, transform .1s ease;
-}
-.chip[data-active="true"] {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
-}
-.chip:active { transform: scale(.98); }
-
-/* ====== Skeleton / Loader ====== */
-.skeleton {
-  background: linear-gradient(90deg, var(--muted) 25%, color-mix(in oklab, var(--muted) 90%, white) 37%, var(--muted) 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.2s infinite;
-  border-radius: 8px;
-}
+/* ===== Animaciones ===== */
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
+/* === Tailwind v4 color mapping para tokens estilo shadcn === */
+@theme {
+  --color-background: hsl(var(--bg));
+  --color-foreground: hsl(var(--fg));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-fg));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-fg));
+  --color-border: hsl(var(--border));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-fg));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-fg));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-fg));
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-fg));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-fg));
+}
+
+/* Aliases de compatibilidad para secciones CSS que usan --background/--foreground */
+:root { --background: hsl(var(--bg)); --foreground: hsl(var(--fg)); }
+.dark  { --background: hsl(var(--bg)); --foreground: hsl(var(--fg)); }
+
+/* === Utilidades personalizadas (Tailwind v4) === */
+@utility ease-soft {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); /* “soft” ease-out */
+}
