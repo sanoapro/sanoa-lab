@@ -168,54 +168,55 @@ export default function PatientAutocomplete({
     return "";
   }, [orgId, query, loading, hasResults]);
 
+  const minQuery = query.trim().length >= 2;
+  const showDropdown = open && (hasResults || (!loading && minQuery));
+
   return (
     <div className="space-y-1 relative" ref={boxRef}>
       <input
         aria-autocomplete="list"
         aria-expanded={open}
-        className="border rounded px-3 py-2 w-full"
+        className="glass-input w-full"
+        type="search"
         placeholder={placeholder}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
-          setOpen(false);
+          setOpen(true);
           if (!e.target.value.trim()) onSelect?.(null);
         }}
-        disabled={!orgId}
-        onFocus={() => query.trim().length >= 2 && hasResults && setOpen(true)}
+        onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         autoComplete="off"
+        tabIndex={0}
       />
 
       {helpText && <p className="text-xs text-slate-500">{helpText}</p>}
 
-      {open && hasResults && (
-        <ul
-          role="listbox"
-          className="absolute z-10 bg-white border rounded mt-1 max-h-64 overflow-auto w-full shadow divide-y"
-        >
-          {items.map((it) => (
-            <li key={it.id} role="option">
-              <button
-                type="button"
-                className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                onMouseDown={(e) => {
-                  e.preventDefault(); // evita blur antes de click
-                  onSelect?.(it);
-                  setQuery(it.label);
-                  setOpen(false);
-                }}
-              >
-                {it.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {open && !hasResults && !loading && (
-        <div className="absolute z-10 bg-white border rounded mt-1 w-full px-3 py-2 text-sm text-slate-500">
-          Sin resultados
+      {showDropdown && (
+        <div className="absolute left-0 right-0 mt-1 z-50 pointer-events-auto glass-card p-0">
+          {hasResults ? (
+            <ul role="listbox" className="max-h-64 overflow-auto divide-y">
+              {items.map((it) => (
+                <li key={it.id} role="option">
+                  <button
+                    type="button"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // evita blur antes de click
+                      onSelect?.(it);
+                      setQuery(it.label);
+                      setOpen(false);
+                    }}
+                  >
+                    {it.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-3 py-2 text-sm text-slate-500">Sin resultados</div>
+          )}
         </div>
       )}
     </div>
