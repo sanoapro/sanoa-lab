@@ -1,7 +1,10 @@
+```tsx
+// app/(app)/banco/page.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import AccentHeader from "@/components/ui/AccentHeader";
 import ColorEmoji from "@/components/ColorEmoji";
 import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
@@ -43,20 +46,98 @@ function cents(n: number) {
 export default function BancoPage() {
   const { orgId, isLoading } = useBankActiveOrg();
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [modulesStatus, setModulesStatus] = useState<ModulesStatus>({
     active: false,
     modules: {},
   });
   const [loadingModules, setLoadingModules] = useState(false);
+
+  // Stripe customer portal
   const [loadingPortal, setLoadingPortal] = useState(false);
+
+  // Checkout flow (query-driven)
+  const [checkoutMessage, setCheckoutMessage] = useState<string | null>(null);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [checkoutModule, setCheckoutModule] = useState<string | null>(null);
+  const checkoutSignatureRef = useRef<string | null>(null);
 
   const hasModulesInfo = useMemo(
     () => Object.keys(modulesStatus.modules).length > 0,
     [modulesStatus.modules],
   );
 
-  const customerId = ""; // TODO: trae de tu org (p. ej. orgs.customer_id)
+  const customerId = ""; // TODO: traer de tu org (p. ej. orgs.customer_id)
 
+  // Handle deep-link to checkout
+  useEffect(() => {
+    if (!orgId) return;
+
+    const checkoutToken = searchParams.get("checkout");
+    const orgFromQuery = searchParams.get("org_id");
+    if (!checkoutToken || !orgFromQuery) return;
+
+    const signature = `${checkoutToken}-${orgFromQuery}`;
+    if (checkoutSignatureRef.current === signature) return; // already handled
+    checkoutSignatureRef.current = signature;
+
+    const moduleLabel =
+      MODULE_DEFS.find((m) => m.key === checkoutToken)?.label ?? checkoutToken;
+    setCheckoutModule(moduleLabel);
+
+    if (orgFromQuery !== orgId) {
+      const message = "Selecciona la organización correspondiente para continuar con el checkout.";
+      setIsCheckoutLoading(false);
+      setCheckoutMessage(message);
+      toast({
+        variant: "error",
+        title: "No se pudo iniciar checkout",
+        description: message,
+      });
+      router.replace("/banco");
+      return;
+    }
+
+    setCheckoutMessage(null);
+    setIsCheckoutLoading(true);
+
+    (async () => {
+      try {
+        const res = await fetch("/api/bank/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ org_id: orgFromQuery, feature: checkoutToken }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json?.url) {
+          throw new Error(json?.error ?? "No se pudo iniciar checkout");
+        }
+        window.location.href = json.url as string;
+      } catch (error: any) {
+        const message = error?.message ?? "No se pudo iniciar checkout";
+        setCheckoutMessage(message);
+        setIsCheckoutLoading(false);
+        toast({
+          variant: "error",
+          title: "No se pudo iniciar checkout",
+          description: message,
+        });
+        router.replace("/banco");
+      }
+    })();
+  }, [orgId, router, searchParams, toast]);
+
+  // Reset checkout UI when query is gone
+  useEffect(() => {
+    if (!searchParams.get("checkout")) {
+      checkoutSignatureRef.current = null;
+      setCheckoutModule(null);
+    }
+  }, [searchParams]);
+
+  // Load modules status
   useEffect(() => {
     if (!orgId) {
       setModulesStatus({ active: false, modules: {} });
@@ -164,17 +245,45 @@ export default function BancoPage() {
         emojiToken="banco"
       />
 
+      {/* Customer portal manage button */}
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           className="glass-btn"
           disabled={loadingPortal || !customerId}
-          onClick={() => {
-            void handleManageSubscription();
-          }}
+          onClick={() => void handleManageSubscription()}
         >
           <span className="emoji">⚙️</span> {loadingPortal ? "Abriendo…" : "Gestionar suscripción"}
         </button>
       </div>
+
+      {/* Checkout status panel */}
+      {(isCheckoutLoading || checkoutMessage) && (
+        <section
+          className={`glass-card p-5 space-y-2 border ${
+            checkoutMessage
+              ? "border-amber-200 bg-amber-50/80 text-amber-800"
+              : "border-white/60 bg-white/70"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-2xl" aria-hidden>
+              {checkoutMessage ? "⚠️" : "⏳"}
+            </span>
+            <div className="space-y-1">
+              <p className="font-semibold">
+                {isCheckoutLoading ? "Iniciando checkout" : "Checkout no disponible"}
+              </p>
+              <p className="text-sm text-[var(--color-brand-bluegray)]">
+                {isCheckoutLoading
+                  ? `Estamos preparando tu checkout${
+                      checkoutModule ? ` para ${checkoutModule}` : ""
+                    }. Te redirigiremos en unos segundos.`
+                  : checkoutMessage}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/banco/tx" className="glass-card p-6 transition hover:shadow-lg">
@@ -321,3 +430,4 @@ export default function BancoPage() {
     </main>
   );
 }
+```
