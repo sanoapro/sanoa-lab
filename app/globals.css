@@ -172,3 +172,115 @@ body {
 .badge{
   @apply inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground;
 }
+
+/* ====== Tokens accesibles (AA) ====== */
+:root {
+  /* Mantén los que ya tengas; estos solo refuerzan contraste */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(224 71% 4%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(224 71% 4%);
+  --muted: hsl(220 14% 97%);
+  --muted-foreground: hsl(220 8% 45%);
+
+  /* Primario con buen contraste (≈#2563eb) */
+  --primary: hsl(221 83% 53%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  /* Estados */
+  --success: hsl(142 72% 29%); /* verde oscuro */
+  --error: hsl(0 72% 45%);     /* rojo con AA */
+  --warning: hsl(38 92% 50%);
+
+  --border: hsl(220 14% 90%);
+  --input: hsl(220 14% 90%);
+}
+
+.dark {
+  --background: hsl(222 47% 11%);       /* #0b1220 aprox */
+  --foreground: hsl(210 40% 98%);
+  --card: hsl(222 47% 12%);
+  --card-foreground: hsl(210 40% 98%);
+  --muted: hsl(215 25% 20%);
+  --muted-foreground: hsl(215 20% 72%);
+
+  /* Primario legible sobre dark */
+  --primary: hsl(213 94% 68%);          /* ~#60a5fa */
+  --primary-foreground: hsl(222 47% 12%);
+
+  --border: hsl(217 19% 24%);
+  --input: hsl(217 19% 24%);
+}
+
+/* ====== Focus visibles y accesibles ====== */
+:where(a, button, [role="button"], input, select, textarea) {
+  outline: none;
+}
+:where(a, button, [role="button"], input, select, textarea):focus-visible {
+  box-shadow: 0 0 0 3px hsl(0 0% 100%) inset, 0 0 0 3px color-mix(in oklab, var(--primary) 85%, transparent);
+  outline: 2px solid color-mix(in oklab, var(--primary) 85%, transparent);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* ====== Tipografía y emojis un poco más grandes (coherente con lote previo) ====== */
+html { font-size: 17px; }          /* Body 16–17px */
+h1 { font-size: 1.375rem; }        /* ~22px */
+h2 { font-size: 1.125rem; }        /* ~18px */
+.emoji { font-size: 1.2em; line-height: 1; }
+
+/* ====== Tablas Pro: header sticky, altura de fila, hover ====== */
+.pro-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.pro-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--border);
+}
+.pro-table tbody tr {
+  height: 56px; /* 52–56px */
+}
+.pro-table tbody tr:hover {
+  background: color-mix(in oklab, var(--muted) 65%, transparent);
+}
+.pro-table th, .pro-table td {
+  padding: 12px 16px; /* grid 8px: 16–24px coherente */
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+/* ====== Chips de filtro ====== */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--foreground);
+  transition: background .15s ease, border-color .15s ease, transform .1s ease;
+}
+.chip[data-active="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+.chip:active { transform: scale(.98); }
+
+/* ====== Skeleton / Loader ====== */
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, color-mix(in oklab, var(--muted) 90%, white) 37%, var(--muted) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
