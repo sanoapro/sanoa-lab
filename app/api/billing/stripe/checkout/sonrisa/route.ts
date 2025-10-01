@@ -12,7 +12,12 @@ export async function POST(req: Request) {
     if (!price)
       return NextResponse.json({ error: "Falta STRIPE_PRICE_SONRISA_PRO" }, { status: 400 });
 
-    const session = await stripe.checkout.sessions.create({
+    const client = stripe;
+    if (!client) {
+      return NextResponse.json({ error: "Stripe no está configurado" }, { status: 500 });
+    }
+
+    const session = await client.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price, quantity: qty }],
       success_url: `${getBaseUrl()}/ajustes/plan?checkout=success`,

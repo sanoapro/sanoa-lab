@@ -1,4 +1,5 @@
 // eslint.config.mjs
+
 import { existsSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join, dirname } from "node:path";
@@ -9,16 +10,14 @@ import tseslint from "typescript-eslint";
 
 const require = createRequire(import.meta.url);
 
+/** Helpers to make Flat Config work nicely with pnpm */
 const loadFromPnpm = (specifier) => {
   try {
     return require(specifier);
   } catch (initialError) {
     const baseDir = dirname(fileURLToPath(import.meta.url));
     const pnpmDir = join(baseDir, "node_modules", ".pnpm");
-
-    if (!existsSync(pnpmDir)) {
-      throw initialError;
-    }
+    if (!existsSync(pnpmDir)) throw initialError;
 
     const parts = specifier.split("/");
     const prefix = specifier.startsWith("@")
@@ -28,10 +27,7 @@ const loadFromPnpm = (specifier) => {
     const matchedEntry = readdirSync(pnpmDir).find((entry) =>
       entry.startsWith(prefix),
     );
-
-    if (!matchedEntry) {
-      throw initialError;
-    }
+    if (!matchedEntry) throw initialError;
 
     const packagePath = join(pnpmDir, matchedEntry, "node_modules", ...parts);
     return require(packagePath);
@@ -44,10 +40,7 @@ const resolveFromPnpm = (specifier) => {
   } catch (initialError) {
     const baseDir = dirname(fileURLToPath(import.meta.url));
     const pnpmDir = join(baseDir, "node_modules", ".pnpm");
-
-    if (!existsSync(pnpmDir)) {
-      throw initialError;
-    }
+    if (!existsSync(pnpmDir)) throw initialError;
 
     const parts = specifier.split("/");
     const prefix = specifier.startsWith("@")
@@ -57,10 +50,7 @@ const resolveFromPnpm = (specifier) => {
     const matchedEntry = readdirSync(pnpmDir).find((entry) =>
       entry.startsWith(prefix),
     );
-
-    if (!matchedEntry) {
-      throw initialError;
-    }
+    if (!matchedEntry) throw initialError;
 
     return join(pnpmDir, matchedEntry, "node_modules", ...parts);
   }
@@ -73,6 +63,7 @@ const reactPlugin = loadFromPnpm("eslint-plugin-react");
 const reactHooksPlugin = loadFromPnpm("eslint-plugin-react-hooks");
 const jsxA11yPlugin = loadFromPnpm("eslint-plugin-jsx-a11y");
 const nextPlugin = loadFromPnpm("@next/eslint-plugin-next");
+
 const tsParserPath = resolveFromPnpm("@typescript-eslint/parser");
 const importResolverNodePath = resolveFromPnpm("eslint-import-resolver-node");
 const importResolverTsPath = resolveFromPnpm("eslint-import-resolver-typescript");
@@ -109,9 +100,7 @@ export default [
       "@next/next": nextPlugin,
     },
     settings: {
-      react: {
-        version: "detect",
-      },
+      react: { version: "detect" },
       "import/parsers": {
         [tsParserPath]: [".ts", ".mts", ".cts", ".tsx", ".d.ts"],
       },
@@ -126,10 +115,7 @@ export default [
       },
     },
     rules: {
-      "no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-      ],
+      "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "react-hooks/exhaustive-deps": "off",
       "import/no-anonymous-default-export": "warn",
       "react/no-unknown-property": "off",
