@@ -1,5 +1,6 @@
 "use client";
 
+import "../sentry.client.config"; // <-- relativo a /app/providers.tsx (sube un nivel)
 import type { ReactNode } from "react";
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -113,7 +114,9 @@ function QueryParamsBridge() {
   return null;
 }
 
-export default function Providers({ children }: { children: ReactNode }) {
+type ProvidersProps = { children: ReactNode };
+
+export default function Providers({ children }: ProvidersProps) {
   return (
     <ToastProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -122,7 +125,7 @@ export default function Providers({ children }: { children: ReactNode }) {
         </Suspense>
         {children}
       </ThemeProvider>
-      <Toaster />
+      <Toaster /> {/* portal/contenedor de toasts */}
     </ToastProvider>
   );
 }
