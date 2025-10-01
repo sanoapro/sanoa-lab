@@ -9,7 +9,9 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => <div ref={ref} className={cn("mb-3", className)} {...props} />,
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("mb-3", className)} {...props} />
+  ),
 );
 CardHeader.displayName = "CardHeader";
 
@@ -30,7 +32,9 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTML
 CardTitle.displayName = "CardTitle";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => <div ref={ref} className={cn("mt-4", className)} {...props} />,
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("mt-4", className)} {...props} />
+  ),
 );
 CardFooter.displayName = "CardFooter";
 
