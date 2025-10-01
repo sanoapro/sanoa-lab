@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import AccentHeader from "@/components/ui/AccentHeader";
@@ -11,6 +11,7 @@ import ColorEmoji from "@/components/ColorEmoji";
 import SavedViewsBar from "@/components/saved-views/SavedViewsBar";
 import RemindersFilters from "@/components/reminders/Filters";
 import RemindersTable from "@/components/reminders/Table";
+import { TableLoader } from "@/components/ui/states";
 import { getActiveOrg } from "@/lib/org-local";
 
 export default function RecordatoriosPage() {
@@ -110,7 +111,9 @@ export default function RecordatoriosPage() {
           </div>
 
           <RemindersFilters />
-          <RemindersTable orgId={orgId} />
+          <Suspense fallback={<TableLoader />}>
+            <RemindersTable orgId={orgId} />
+          </Suspense>
         </section>
       )}
     </main>
