@@ -10,29 +10,38 @@ type SubscriptionStatus = {
   };
 };
 
-export function useModuleAccess(featureKey: string) {
+type ModulesMap = Record<string, boolean>;
+
+export function useModuleAccess(featureKey?: string) {
   const [loading, setLoading] = React.useState(true);
   const [active, setActive] = React.useState(false);
   const [enabled, setEnabled] = React.useState(false);
   const [bankReady, setBankReady] = React.useState(true);
+  const [features, setFeatures] = React.useState<ModulesMap>({});
+  const [orgId, setOrgId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const orgId =
+        const storageOrgId =
           typeof window !== "undefined" ? window.localStorage.getItem("org_id") : null;
 
-        if (!orgId) {
+        if (!cancelled) {
+          setOrgId(storageOrgId);
+        }
+
+        if (!storageOrgId) {
           if (!cancelled) {
             setBankReady(false);
             setActive(false);
             setEnabled(false);
+            setFeatures({});
           }
           return;
         }
 
-        const params = new URLSearchParams({ org_id: orgId });
+        const params = new URLSearchParams({ org_id: storageOrgId });
         const r = await fetch(`/api/billing/subscription/status?${params.toString()}`, {
           cache: "no-store",
         });
@@ -41,6 +50,7 @@ export function useModuleAccess(featureKey: string) {
             setBankReady(false);
             setActive(false);
             setEnabled(false);
+            setFeatures({});
           }
           return;
         }
@@ -50,12 +60,14 @@ export function useModuleAccess(featureKey: string) {
           setBankReady(ok);
           if (ok) {
             const subActive = !!j?.data?.active;
-            const modules = j?.data?.modules || {};
+            const modules = (j?.data?.modules || {}) as ModulesMap;
             setActive(subActive);
-            setEnabled(!!modules[featureKey]);
+            setFeatures(modules);
+            setEnabled(featureKey ? !!modules[featureKey] : false);
           } else {
             setActive(false);
             setEnabled(false);
+            setFeatures({});
           }
         }
       } catch {
@@ -63,6 +75,7 @@ export function useModuleAccess(featureKey: string) {
           setBankReady(false);
           setActive(false);
           setEnabled(false);
+          setFeatures({});
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -73,6 +86,6 @@ export function useModuleAccess(featureKey: string) {
     };
   }, [featureKey]);
 
-  const locked = !(active && enabled);
-  return { loading, locked, active, enabled, bankReady };
+  const locked = featureKey ? !(active && enabled) : !active;
+  return { loading, locked, active, enabled, bankReady, features, orgId };
 }
