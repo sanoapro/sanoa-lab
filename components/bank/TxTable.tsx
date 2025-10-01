@@ -1,7 +1,9 @@
+Aquí tienes el archivo unificado y sin conflictos, conservando lo más completo de ambas versiones: usamos el `EmptyState` que exporta por defecto (`@/components/ui/EmptyState`) y mantenemos el esqueleto de carga detallado con múltiples filas.
+
+```tsx
 // components/bank/TxTable.tsx
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -122,11 +124,12 @@ export default function TxTable({ orgId }: { orgId: string }) {
 
       {isEmpty ? (
         <EmptyState
-          emoji="🧾"
           title="Sin transacciones"
-          hint="Conecta tu banco o importa movimientos CSV para verlos aquí."
-          ctaText="Conectar banco"
-          onCta={() => window.location.assign("/banco/ajustes")}
+          description="Conecta tu banco o importa movimientos CSV para verlos aquí."
+          action={{
+            label: "Conectar banco",
+            onClick: () => window.location.assign("/banco/ajustes"),
+          }}
         />
       ) : (
         <>
@@ -241,3 +244,4 @@ export default function TxTable({ orgId }: { orgId: string }) {
     </div>
   );
 }
+```

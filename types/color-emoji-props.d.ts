@@ -6,7 +6,8 @@ declare module "@/components/ColorEmoji" {
   export type Props = {
     emoji?: string;
     token?: string;
-    size?: number;
+    label?: string;
+    size?: number | "sm" | "md" | "lg";
     mode?: EmojiMode;
     color?: string;
     accentColor?: string;

@@ -1,5 +1,7 @@
 "use client";
 import { useCallback } from "react";
+import Emoji from "@/components/Emoji";
+import { Button } from "@/components/ui/button";
 import GlassModal from "@/components/ui/GlassModal";
 import { useAutosave } from "@/hooks/useAutosave";
 
@@ -59,23 +61,23 @@ export default function TemplateEditorModal({ open, onClose, initial, onSaved }:
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <span className="emoji">🧪</span> Editar plantilla
+          <Emoji size="lg">🧪</Emoji> Editar plantilla
         </div>
       }
       footer={
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-contrast/70">
+          <div className="text-sm text-muted-foreground">
             {status === "saving" && "Guardando…"}
             {status === "saved" && "Guardado ✓"}
             {status === "error" && "Error al guardar"}
           </div>
           <div className="flex gap-2">
-            <button className="glass-btn" onClick={() => void flush()}>
+            <Button type="button" variant="secondary" onClick={() => void flush()}>
               💾 Guardar ahora
-            </button>
-            <button className="glass-btn danger" onClick={onClose}>
+            </Button>
+            <Button type="button" variant="ghost" onClick={onClose}>
               Cerrar
-            </button>
+            </Button>
           </div>
         </div>
       }

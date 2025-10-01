@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
-import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import { useToast } from "@/components/Toast";
 import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
+import OrgInspector from "@/components/shared/OrgInspector";
 
 const MODULES: Array<{
   key: string;
@@ -183,22 +182,14 @@ export default function BancoAjustesPage() {
 
   if (!orgId) {
     return (
-      <main className="p-6 md:p-10">
-        <div className="glass-card p-6 max-w-lg space-y-4">
-          <div>
-            <h1 className="text-3xl font-semibold text-[var(--color-brand-text)]">Sanoa Bank · Ajustes</h1>
-            <p className="text-sm text-[var(--color-brand-text)]/70">
-              Activa módulos y gestiona alertas una vez que selecciones una organización.
-            </p>
-          </div>
-          <OrgSwitcherBadge variant="inline" />
-          <Link
-            href="/organizaciones"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm"
-          >
-            <span className="emoji">👥</span> Administrar organizaciones
-          </Link>
-        </div>
+      <main className="p-6 md:p-10 space-y-8">
+        <header className="space-y-2">
+          <h1 className="text-3xl font-semibold text-[var(--color-brand-text)]">Sanoa Bank · Ajustes</h1>
+          <p className="text-sm text-[var(--color-brand-text)]/70">
+            Activa módulos y gestiona alertas una vez que selecciones una organización.
+          </p>
+        </header>
+        <OrgInspector ctaHref="/organizaciones" />
       </main>
     );
   }

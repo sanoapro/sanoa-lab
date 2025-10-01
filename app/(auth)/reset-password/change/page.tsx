@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
+import { Field, Input } from "@/components/ui/field";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export default function ChangePasswordPage() {
@@ -50,18 +51,16 @@ export default function ChangePasswordPage() {
           Ingresa tu nueva contraseña para continuar.
         </p>
 
-        {err && (
-          <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {err}
-          </div>
-        )}
-
         <form onSubmit={onSubmit} className="mt-5 space-y-4">
-          <label className="block" htmlFor="password">
-            <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
-              Nueva contraseña
-            </span>
-            <input
+          <Field
+            label="Nueva contraseña"
+            htmlFor="password"
+            required
+            hint="Mínimo 8 caracteres"
+            error={err ?? undefined}
+            errorId={err ? "change-password-error" : undefined}
+          >
+            <Input
               id="password"
               name="password"
               type="password"
@@ -69,10 +68,11 @@ export default function ChangePasswordPage() {
               minLength={8}
               value={pass}
               onChange={(e) => setPass(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
               placeholder="••••••••"
+              invalid={Boolean(err)}
+              aria-describedby={err ? "change-password-error" : undefined}
             />
-          </label>
+          </Field>
 
           <button
             type="submit"
