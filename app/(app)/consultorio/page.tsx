@@ -1,7 +1,8 @@
+// app/(app)/consultorio/page.tsx
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
+import Link from "next/link";
 import PatientAutocomplete from "@/components/patients/PatientAutocomplete";
 import { getActiveOrg } from "@/lib/org-local";
 
@@ -38,7 +39,6 @@ export default function Page() {
               scope="org"
               placeholder="Escribe nombre del paciente…"
               onSelect={(hit) => {
-                // Soporta ambos: hit.id o hit.patient_id según el componente
                 const pid = (hit as any)?.id ?? (hit as any)?.patient_id;
                 if (pid) window.location.href = `/pacientes/${pid}`;
               }}
