@@ -1,86 +1,76 @@
-import Link from "next/link";
+export const metadata = { title: "Especialidades Pro" };
 
 type FeatureKey = "mente" | "pulso" | "equilibrio" | "sonrisa";
 
-type FeaturesResponse = {
-  org_id?: string;
-} & Partial<Record<FeatureKey, boolean>>;
-
-async function getFeatures(): Promise<FeaturesResponse> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-  const res = await fetch(`${base}/api/org/features`, { cache: "no-store" });
-  if (!res.ok) return {};
-  return (await res.json()) as FeaturesResponse;
-}
+type FeaturesResponse = Partial<Record<FeatureKey, boolean>>;
 
 const CARDS: ReadonlyArray<{
   key: FeatureKey;
   title: string;
-  desc: string;
   emoji: string;
+  desc: string;
 }> = [
-  { key: "mente", title: "Mente Pro", desc: "Evaluaciones, escalas y planes de apoyo.", emoji: "🧠" },
-  { key: "pulso", title: "Pulso Pro", desc: "Indicadores clínicos, semáforos y riesgo CV.", emoji: "❤️" },
-  { key: "equilibrio", title: "Equilibrio Pro", desc: "Planes de hábitos y seguimiento.", emoji: "🧘" },
-  { key: "sonrisa", title: "Sonrisa Pro", desc: "Odontograma, presupuestos y firma.", emoji: "😄" },
+  { key: "mente", title: "Mente Pro", emoji: "🧠", desc: "Evaluaciones, escalas y planes de apoyo." },
+  { key: "pulso", title: "Pulso Pro", emoji: "❤️‍🔥", desc: "Indicadores clínicos, semáforos y riesgo CV." },
+  { key: "equilibrio", title: "Equilibrio Pro", emoji: "🧘", desc: "Planes de hábitos y seguimiento." },
+  { key: "sonrisa", title: "Sonrisa Pro", emoji: "🦷", desc: "Odontograma, presupuestos y firma." },
 ];
 
+async function getFeatures(): Promise<FeaturesResponse> {
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/org/features`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) return {};
+  return (await res.json()) as FeaturesResponse;
+}
+
 export default async function Page() {
-  const f = await getFeatures();
-  const org_id = f?.org_id ?? "";
+  const features = await getFeatures();
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-semibold">
-        <span className="emoji">🧩</span> Especialidades
-      </h1>
-      <p className="text-contrast">
+    <div className="space-y-3">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">
+          <span className="emoji">🧩</span> Especialidades
+        </h1>
+        <a className="glass-btn" href="/banco">
+          <span className="emoji">🏦</span> Sanoa Bank
+        </a>
+      </header>
+
+      <p className="text-contrast/80">
         Especialidades con herramientas avanzadas. Desbloquéalas desde Sanoa Bank.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {CARDS.map((c) => {
-          const active = Boolean(f?.[c.key]);
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {CARDS.map((card) => {
+          const active = Boolean(features?.[card.key]);
           return (
-            <div key={c.key} className="glass-card bubble space-y-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold">
-                    <span className="emoji">{c.emoji}</span> {c.title}
-                  </h3>
-                  <p className="text-sm text-contrast">{c.desc}</p>
-                  <p
-                    className={`mt-1 text-xs ${
-                      active ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
-                    }`}
-                  >
-                    {active ? "Activo ✅" : "Por activar 🔒"}
-                  </p>
+            <div key={card.key} className="glass-card bubble space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="emoji text-2xl">{card.emoji}</span>
+                  <div className="font-semibold">{card.title}</div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <Link href={`/modulos/${c.key}`} className="glass-btn">
-                    <span className="emoji">🔗</span> Ver módulo
-                  </Link>
-                  {!active && (
-                    <Link
-                      className="glass-btn neon"
-                      href={`/banco?checkout=${c.key}${org_id ? `&org_id=${org_id}` : ""}`}
-                    >
-                      <span className="emoji">💳</span> Desbloquear
-                    </Link>
-                  )}
-                </div>
+                <span className={`badge ${active ? "badge-active" : "badge-inactive"}`}>
+                  <span className="emoji">{active ? "🟢" : "🔒"}</span>
+                  {active ? "Activo" : "Por activar"}
+                </span>
+              </div>
+              <p className="text-sm text-contrast/80">{card.desc}</p>
+              <div className="flex gap-2">
+                <a className="glass-btn" href={`/modulos/${card.key}`}>
+                  <span className="emoji">👀</span> Ver módulo
+                </a>
+                {!active && (
+                  <a className="glass-btn" href={`/banco?unlock=${card.key}`}>
+                    <span className="emoji">💎</span> Desbloquear
+                  </a>
+                )}
               </div>
             </div>
           );
         })}
       </div>
-
-      {!org_id && (
-        <div className="glass-card">
-          <p>Selecciona una organización activa para poder desbloquear una especialidad.</p>
-        </div>
-      )}
     </div>
   );
 }
