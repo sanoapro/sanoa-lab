@@ -4,6 +4,7 @@
 
 /* === Design tokens (AA+) === */
 :root {
+  --font-scale: 1.02;
   --bg: 210 40% 98%;
   --fg: 222 47% 12%;
   --card: 0 0% 100%;
@@ -48,7 +49,7 @@
 }
 
 /* Base */
-html { font-size: 16px; }
+html { font-size: calc(16px * var(--font-scale)); }
 body {
   background: hsl(var(--bg));
   color: hsl(var(--fg));
@@ -93,9 +94,8 @@ body {
 /* Emojis consistentes */
 .emoji {
   display: inline-block;
-  font-size: 1.35em;
+  font-size: 1.2em;
   line-height: 1;
-  transform: translateY(2px);
 }
 
 /* Navbar */
@@ -118,10 +118,15 @@ body {
 }
 
 .card-hover {
-  @apply transition-shadow duration-300 ease-soft;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .card-hover:hover {
-  @apply shadow-card-hover;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-elevated {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
 }
 
 .glass-card {
