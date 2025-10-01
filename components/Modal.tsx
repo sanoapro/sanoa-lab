@@ -1,71 +1,55 @@
+// components/Modal.tsx
 "use client";
-import { ReactNode, useEffect } from "react";
-
-type Props = {
-  open: boolean;
-  onClose?: () => void;
-  /** Alias compatible con Radix/shadcn. */
-  onOpenChange?: (open: boolean) => void;
-  title?: string;
-  children: ReactNode;
-  footer?: ReactNode;
-  widthClass?: string; // ej. "max-w-lg"
-};
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 export default function Modal({
   open,
   onClose,
-  onOpenChange,
   title,
   children,
   footer,
-  widthClass = "max-w-lg",
-}: Props) {
-  const close = () => {
-    onClose?.();
-    onOpenChange?.(false);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    window.addEventListener("keydown", onEsc);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onEsc);
-      document.body.style.overflow = prev;
-    };
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  size = "md",
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: React.ReactNode;
+  children?: React.ReactNode;
+  footer?: React.ReactNode;
+  size?: "sm" | "md" | "lg" | "xl";
+}) {
   if (!open) return null;
+
+  const sizes = {
+    sm: "max-w-md",
+    md: "max-w-2xl",
+    lg: "max-w-3xl",
+    xl: "max-w-5xl",
+  };
 
   return (
     <div
-      className="fixed inset-0 z-[100]"
-      role="dialog"
+      className="fixed inset-0 z-[60] grid place-items-center p-4"
       aria-modal="true"
-      aria-label={title || "Diálogo"}
+      role="dialog"
+      onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} aria-hidden />
-      <div className="absolute inset-0 grid place-items-center p-4">
-        <div
-          className={`surface-light w-full ${widthClass} rounded-2xl border border-[var(--color-brand-border)] bg-white shadow-xl`}
-        >
-          {title && (
-            <div className="px-5 py-4 border-b border-[var(--color-brand-border)]">
-              <h3 className="text-[var(--color-brand-text)] font-semibold">{title}</h3>
-            </div>
-          )}
-          <div className="px-5 py-4">{children}</div>
-          {footer && (
-            <div className="px-5 py-3 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-background)]">
-              <div className="flex justify-end gap-2">{footer}</div>
-            </div>
-          )}
-        </div>
+      <div className="absolute inset-0 bg-black/50" />
+      <div
+        className={cn(
+          "relative w-full rounded-xl bg-card text-card-foreground shadow-elevated border border-border",
+          sizes[size]
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {(title || onClose) && (
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            <h3 className="text-lg font-bold">{title}</h3>
+            <button aria-label="Cerrar" onClick={onClose} className="btn-base ghost">✕</button>
+          </div>
+        )}
+        <div className="p-4">{children}</div>
+        {footer && <div className="p-4 border-t border-border flex gap-2 justify-end">{footer}</div>}
       </div>
     </div>
   );

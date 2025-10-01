@@ -328,7 +328,7 @@ export default function AgendaPage() {
       </div>
 
       {/* Modal NUEVA CITA */}
-      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Agregar cita">
+      <Modal open={openNew} onClose={() => setOpenNew(false)} title="Agregar cita">
         <div className="space-y-4">
           <div>
             <label className="text-sm block mb-1">Paciente</label>

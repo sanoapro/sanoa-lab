@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { getActiveOrg } from "@/lib/org-local";
 import PatientAutocomplete from "@/components/patients/PatientAutocomplete";
 import TemplatePicker from "./TemplatePicker";
-import type { RxTemplate } from "./TemplateEditorModal";
+
+type RxTemplate = { id?: string };
 
 type Item = {
   drug: string;
