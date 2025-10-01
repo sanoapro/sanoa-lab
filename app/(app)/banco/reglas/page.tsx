@@ -53,7 +53,14 @@ export default function BankRulesPage() {
 
   return (
     <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <h1 className="mb-3 text-3xl font-semibold tracking-tight">Banco · Reglas</h1>
+      <div className="glass-card">
+        <p className="text-contrast">Selecciona una organización activa para continuar.</p>
+        <div className="mt-2">
+          <OrgSwitcherBadge />
+        </div>
+      </div>
+
+      <h1 className="mt-6 mb-3 text-3xl font-semibold tracking-tight">Banco · Reglas</h1>
       <RulesEditor />
     </div>
   );
