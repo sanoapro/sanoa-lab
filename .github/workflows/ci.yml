@@ -9,18 +9,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Sentry (ponlos en Settings > Secrets and variables > Actions)
+      # Sentry (Settings > Secrets and variables > Actions)
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-      # Marca esta compilación como release con el SHA (opcional pero recomendado)
       SENTRY_RELEASE: ${{ github.sha }}
-      # Entorno de Sentry (puedes ajustar: staging, dev, prod,...)
       NEXT_PUBLIC_SENTRY_ENV: production
-      # Evita que Next intente telemetry en CI
+
+      # App vars
       NEXT_TELEMETRY_DISABLED: "1"
-      # Tu URL pública si la usas en build (opcional)
       NEXT_PUBLIC_SITE_URL: https://example.com
+
+      # DSN (elige una de las dos líneas; comenta la otra)
+      # NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+      NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
 
     steps:
       - name: Checkout
@@ -29,31 +31,34 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "pnpm"
+          node-version: '20'   # Node 20.x
+          cache: 'pnpm'        # habilita caché para pnpm (requiere pnpm instalado)
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
+      # **Clave**: activar Corepack y la versión de pnpm del packageManager
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Use repo's pnpm version
+        run: corepack prepare pnpm@10.17.1 --activate
+
+      - name: Show versions
+        run: |
+          node -v
+          pnpm -v
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      # (Opcional) Typecheck si tienes TS
       - name: Typecheck
-        run: pnpm exec tsc --noEmit || true
+        run: pnpm exec tsc --noEmit
 
-      # (Opcional) Lint si tienes script
       - name: Lint
-        run: pnpm run lint || true
+        run: pnpm run lint
 
-      # Build: con withSentryConfig y SENTRY_* definidos, sube sourcemaps ocultos
       - name: Build
         run: pnpm run build
 
-      # Publica artefacto de build para debug (opcional)
-      - name: Upload .next artifact
+      - name: Upload .next artifact (optional)
         if: always()
         uses: actions/upload-artifact@v4
         with:
