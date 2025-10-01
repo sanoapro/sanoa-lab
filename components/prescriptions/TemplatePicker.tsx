@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { SEED_TEMPLATES } from "@/lib/templates.seed";
 
 type Template = { id: string; name: string; active?: boolean | null };
 
@@ -13,6 +14,7 @@ export default function TemplatePicker({ orgId, mine = false, onChoose }: Props)
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   async function load() {
     if (!orgId) {
@@ -44,6 +46,35 @@ export default function TemplatePicker({ orgId, mine = false, onChoose }: Props)
     }
   }
 
+  async function importSeed() {
+    if (!orgId || importing) return;
+    setImporting(true);
+    try {
+      const payload = SEED_TEMPLATES.map((tpl) => ({
+        ...tpl,
+        org_id: orgId,
+      }));
+      const r = await fetch("/api/prescriptions/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j?.ok) {
+        const message = j?.error?.message ?? "Error al importar plantillas";
+        console.error(message);
+        alert(message);
+        return;
+      }
+      await load();
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo importar la base de plantillas");
+    } finally {
+      setImporting(false);
+    }
+  }
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,6 +91,13 @@ export default function TemplatePicker({ orgId, mine = false, onChoose }: Props)
         />
         <button className="border rounded px-3 py-2" onClick={load} disabled={loading}>
           {loading ? "Cargando..." : "Buscar"}
+        </button>
+        <button
+          className="glass-btn"
+          onClick={() => void importSeed()}
+          disabled={!orgId || loading || importing}
+        >
+          {importing ? "Importando..." : "📦 Importar base"}
         </button>
       </div>
       <div className="rounded border overflow-auto max-h-72">
