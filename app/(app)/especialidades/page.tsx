@@ -31,7 +31,7 @@ export default function Page() {
                 <Link href={`/modules/${it.key}/overview`}>Ver módulo</Link>
               </Button>
               <Button asChild variant="ghost">
-                <Link href="/banco">Desbloquear con Sanoa Bank</Link>
+                <Link href="/banco/checkout">Desbloquear con Sanoa Bank</Link>
               </Button>
             </CardContent>
           </Card>
