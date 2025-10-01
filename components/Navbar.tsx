@@ -58,7 +58,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 px-3 py-4 sm:px-5">
       <div className="mx-auto max-w-6xl">
-        <div className="glass bubble relative flex items-center gap-3 px-5 py-4">
+        <div className="glass-card bubble relative flex items-center gap-3 px-5 py-4">
           {/* Brand */}
           <Link
             href="/dashboard"
