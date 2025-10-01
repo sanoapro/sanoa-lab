@@ -1,5 +1,3 @@
-```tsx
-// components/RequireAuth.tsx
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
@@ -54,4 +52,3 @@ export function RequireAuth({ children }: Props) {
 }
 
 export default RequireAuth;
-```
