@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 import { getActiveOrg } from "@/lib/org-local";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { Field } from "@/components/ui/field";
 
 type Rule = {
   id: string;
@@ -123,8 +124,7 @@ export default function RulesEditor() {
 
       <form className="glass-card bubble space-y-3" onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <label className="space-y-1" htmlFor={containsTextId}>
-            <span className="text-sm">Contiene texto</span>
+          <Field label={<span className="text-sm">Contiene texto</span>} htmlFor={containsTextId} required>
             <input
               id={containsTextId}
               className="glass-input"
@@ -133,9 +133,8 @@ export default function RulesEditor() {
               onChange={(e) => setForm((f) => ({ ...f, if_text_like: e.target.value }))}
               required
             />
-          </label>
-          <label className="space-y-1" htmlFor={categoryId}>
-            <span className="text-sm">Categoría</span>
+          </Field>
+          <Field label={<span className="text-sm">Categoría</span>} htmlFor={categoryId}>
             <select
               id={categoryId}
               className="glass-input"
@@ -149,9 +148,8 @@ export default function RulesEditor() {
                 </option>
               ))}
             </select>
-          </label>
-          <label className="space-y-1" htmlFor={tagsId}>
-            <span className="text-sm">Etiquetas (separadas por coma)</span>
+          </Field>
+          <Field label={<span className="text-sm">Etiquetas (separadas por coma)</span>} htmlFor={tagsId}>
             <input
               id={tagsId}
               className="glass-input"
@@ -159,9 +157,8 @@ export default function RulesEditor() {
               value={form.set_tags}
               onChange={(e) => setForm((f) => ({ ...f, set_tags: e.target.value }))}
             />
-          </label>
-          <label className="space-y-1" htmlFor={priorityId}>
-            <span className="text-sm">Prioridad</span>
+          </Field>
+          <Field label={<span className="text-sm">Prioridad</span>} htmlFor={priorityId}>
             <input
               id={priorityId}
               type="number"
@@ -172,7 +169,7 @@ export default function RulesEditor() {
               }
               min={1}
             />
-          </label>
+          </Field>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

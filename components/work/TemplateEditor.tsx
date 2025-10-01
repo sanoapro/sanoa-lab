@@ -10,6 +10,7 @@ import {
 } from "@/lib/work/templates";
 import { getActiveOrg } from "@/lib/org-local";
 import ColorEmoji from "@/components/ColorEmoji";
+import { Field, Input, Textarea } from "@/components/ui/field";
 
 const MODULES = ["general", "mente", "equilibrio", "sonrisa", "pulso"] as const;
 
@@ -78,8 +79,7 @@ export default function TemplateEditor() {
           <ColorEmoji token="carpeta" /> Nueva plantilla
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-sm text-slate-500">Módulo</span>
+          <Field label={<span className="text-slate-500">Módulo</span>}>
             <select
               value={module}
               onChange={(e) => setModule(e.target.value as any)}
@@ -91,33 +91,30 @@ export default function TemplateEditor() {
                 </option>
               ))}
             </select>
-          </label>
-          <label className="flex flex-col gap-1 md:col-span-2">
-            <span className="text-sm text-slate-500">Título</span>
-            <input
+          </Field>
+          <Field label={<span className="text-slate-500">Título</span>} className="md:col-span-2">
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+              className="bg-white dark:bg-slate-900"
             />
-          </label>
-          <label className="flex flex-col gap-1 md:col-span-3">
-            <span className="text-sm text-slate-500">Contenido (JSON)</span>
-            <textarea
+          </Field>
+          <Field label={<span className="text-slate-500">Contenido (JSON)</span>} className="md:col-span-3">
+            <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={6}
-              className="rounded-xl border px-3 py-2 font-mono text-xs bg-white dark:bg-slate-900"
+              className="font-mono text-xs bg-white dark:bg-slate-900"
             />
-          </label>
-          <label className="flex flex-col gap-1 md:col-span-3">
-            <span className="text-sm text-slate-500">Tags (coma)</span>
-            <input
+          </Field>
+          <Field label={<span className="text-slate-500">Tags (coma)</span>} className="md:col-span-3">
+            <Input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+              className="bg-white dark:bg-slate-900"
             />
-          </label>
+          </Field>
         </div>
         <div className="flex gap-2">
           <button className="px-4 py-2 rounded-xl bg-blue-600 text-white">Guardar plantilla</button>
