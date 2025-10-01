@@ -1,57 +1,52 @@
-// MODE: session (user-scoped, cookies)
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServer } from "@/lib/supabase/server";
-import {
-  jsonOk,
-  jsonError,
-  parseJson,
-  parseOrError,
-  readOrgIdFromQuery,
-} from "@/lib/http/validate";
+import { createServiceClient, getSupabaseServer } from "@/lib/supabase/server";
+import { jsonOk } from "@/lib/api/responses";
 
-const UpsertSchema = z.object({
+const RxTemplate = z.object({
   id: z.string().uuid().optional(),
-  org_id: z.string().uuid(),
-  name: z.string().min(1),
-  content: z.any(), // JSON de receta
-  is_active: z.boolean().default(true),
+  org_id: z.string().uuid().nullable().optional(),
+  specialty: z.string().min(1),
+  title: z.string().min(1),
+  body: z.string().min(1),
+  notes: z.string().optional().nullable(),
+  is_reference: z.boolean().optional(),
 });
-const BulkUpsertSchema = z.union([UpsertSchema, z.array(UpsertSchema)]);
+const RxTemplateArray = z.array(RxTemplate);
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
-  const q = readOrgIdFromQuery(req);
-  if (!q.ok) return jsonError(q.error.code, q.error.message, 400);
+  const { searchParams } = new URL(req.url);
+  const q = searchParams.get("q")?.trim() || "";
+  const org_id = searchParams.get("org_id") || null;
 
-  const { data, error } = await supa
-    .from("prescription_templates")
-    .select("*")
-    .eq("org_id", q.org_id)
-    .order("name", { ascending: true });
-
-  if (error) return jsonError("DB_ERROR", error.message, 400);
-  return jsonOk(data);
+  let query = supa.from("rx_templates").select("*").order("updated_at", { ascending: false });
+  if (org_id) query = query.eq("org_id", org_id);
+  if (q) {
+    // filtra por título/especialidad/cuerpo básico
+    query = query.or(`title.ilike.%${q}%,specialty.ilike.%${q}%`);
+  }
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return jsonOk({ items: data ?? [] });
 }
 
 export async function POST(req: NextRequest) {
-  const supa = await getSupabaseServer();
-  const body = await parseJson(req);
-  const parsed = parseOrError(BulkUpsertSchema, body);
-  if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
+  const body = await req.json();
+  const parseSingle = () => RxTemplate.parse(body);
+  const parseMany = () => RxTemplateArray.parse(body);
 
-  const records = Array.isArray(parsed.data) ? parsed.data : [parsed.data];
+  const svc = createServiceClient();
+  const rows = Array.isArray(body) ? parseMany() : [parseSingle()];
 
-  const { data, error } = await supa
-    .from("prescription_templates")
-    .upsert(records, { onConflict: "id" })
-    .select("id");
+  // Genera IDs si faltan (lado cliente opcional)
+  const withIds = rows.map((r) => ({ ...r, id: r.id ?? crypto.randomUUID() }));
 
-  if (error) return jsonError("DB_ERROR", error.message, 400);
-  const payload = !data
-    ? []
-    : data.length === 1
-      ? data[0]
-      : data;
-  return jsonOk(payload);
+  const { data, error } = await svc
+    .from("rx_templates")
+    .upsert(withIds, { onConflict: "id" })
+    .select("*");
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return jsonOk({ items: data });
 }

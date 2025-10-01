@@ -1,17 +1,15 @@
-// components/templates/TemplatePicker.tsx
+// components/prescriptions/TemplatePicker.tsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TemplateEditorModal, { RxTemplate } from "./TemplateEditorModal";
 import TemplateLibraryModal from "@/components/templates/TemplateLibraryModal";
+import { useActiveOrg } from "@/hooks/useActiveOrg";
 import { SEED_TEMPLATES } from "@/lib/templates.seed";
 
 type Props = {
-  orgId?: string;
   mine?: boolean;
   onSelect?: (_tpl: RxTemplate) => void;
-  /** @deprecated usa onSelect */
-  onChoose?: (_tpl: RxTemplate) => void;
 };
 
 type ApiTemplate = Partial<RxTemplate> & {
@@ -44,75 +42,71 @@ function normalizeTemplate(raw: ApiTemplate): RxTemplate {
   };
 }
 
-export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose }: Props) {
+export default function TemplatePicker({ mine = false, onSelect }: Props) {
+  const { org } = useActiveOrg();
   const [q, setQ] = useState("");
   const [templates, setTemplates] = useState<RxTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Modales
   const [openEditor, setOpenEditor] = useState(false);
   const [current, setCurrent] = useState<RxTemplate | null>(null);
   const [openLibrary, setOpenLibrary] = useState(false);
 
-  const hasOrg = Boolean(orgId);
+  const activeOrgId = useMemo(() => org?.id ?? null, [org?.id]);
 
-  const fetchUrl = useMemo(() => {
-    const params = new URLSearchParams();
-    if (orgId) params.set("org_id", orgId);
-    if (mine) params.set("mine", "1");
-    if (q.trim()) params.set("q", q.trim());
-    const query = params.toString();
-    return query ? `/api/prescriptions/templates?${query}` : "/api/prescriptions/templates";
-  }, [orgId, mine, q]);
+  const load = useCallback(
+    async (search?: string) => {
+      const params = new URLSearchParams();
+      if (activeOrgId) params.set("org_id", activeOrgId);
+      if (mine) params.set("mine", "1");
+      const trimmed = (search ?? q).trim();
+      if (trimmed) params.set("q", trimmed);
+      const qs = params.toString();
+      const url = qs ? `/api/prescriptions/templates?${qs}` : "/api/prescriptions/templates";
 
-  const load = useCallback(async () => {
-    if (!hasOrg) {
-      setTemplates([]);
+      setLoading(true);
       setError(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(fetchUrl, { cache: "no-store" });
-      const json = (await res.json().catch(() => null)) as
-        | { ok?: boolean; data?: ApiTemplate[]; items?: ApiTemplate[]; error?: { message?: string } }
-        | ApiTemplate[]
-        | null;
-      if (!res.ok) {
-        const message =
-          (json && "error" in json && json.error?.message) ||
-          json?.toString() ||
-          "No se pudieron cargar las plantillas";
-        throw new Error(message);
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        const json = (await res.json().catch(() => null)) as
+          | { ok?: boolean; data?: ApiTemplate[]; items?: ApiTemplate[]; error?: { message?: string } }
+          | ApiTemplate[]
+          | null;
+        if (!res.ok) {
+          const message =
+            (json && "error" in json && json.error?.message) ||
+            json?.toString() ||
+            "No se pudieron cargar las plantillas";
+          throw new Error(message);
+        }
+        const list: ApiTemplate[] = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.items)
+          ? (json?.items as ApiTemplate[])
+          : Array.isArray(json?.data)
+          ? (json?.data as ApiTemplate[])
+          : [];
+        setTemplates(list.map((item) => normalizeTemplate(item)));
+      } catch (err) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : "Error inesperado");
+        setTemplates([]);
+      } finally {
+        setLoading(false);
       }
-      const list: ApiTemplate[] = Array.isArray(json)
-        ? json
-        : Array.isArray(json?.data)
-        ? (json?.data as ApiTemplate[])
-        : Array.isArray(json?.items)
-        ? (json?.items as ApiTemplate[])
-        : [];
-      setTemplates(list.map((item) => normalizeTemplate(item)));
-    } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : "Error inesperado");
-      setTemplates([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchUrl, hasOrg]);
+    },
+    [activeOrgId, mine, q],
+  );
 
   async function importSeed() {
-    if (!orgId || importing) return;
+    if (!activeOrgId || importing) return;
     setImporting(true);
     try {
       const payload = SEED_TEMPLATES.map((tpl) => ({
         ...tpl,
-        org_id: orgId,
+        org_id: activeOrgId,
       }));
       const r = await fetch("/api/prescriptions/templates", {
         method: "POST",
@@ -120,7 +114,8 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
         body: JSON.stringify(payload),
       });
       const j = await r.json().catch(() => null);
-      if (!r.ok || !j?.ok) {
+      const ok = r.ok && (j?.ok !== false || Array.isArray(j?.items));
+      if (!ok) {
         const message = j?.error?.message ?? "Error al importar plantillas";
         console.error(message);
         alert(message);
@@ -136,21 +131,19 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
   }
 
   useEffect(() => {
-    if (!hasOrg) return;
     void load();
-  }, [hasOrg, load]);
+  }, [load]);
 
   const handleSelect = useCallback(
     (tpl: RxTemplate) => {
       onSelect?.(tpl);
-      onChoose?.(tpl);
     },
-    [onChoose, onSelect],
+    [onSelect],
   );
 
   const handleCreate = () => {
     setCurrent({
-      org_id: orgId ?? null,
+      org_id: activeOrgId ?? null,
       specialty: "",
       title: "",
       body: "",
@@ -201,31 +194,33 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && hasOrg) void load();
+                if (e.key === "Enter") void load(e.currentTarget.value);
               }}
-              disabled={!hasOrg}
             />
-            <button className="glass-btn" onClick={load} disabled={loading || !hasOrg}>
-              {loading ? "Cargando..." : "Buscar"}
+            <button className="glass-btn" onClick={() => void load()} disabled={loading}>
+              {loading ? "⏳ Cargando..." : "🔎 Buscar"}
             </button>
           </div>
         </div>
 
         {/* Acciones */}
         <div className="flex gap-2 self-end sm:self-auto">
-          <button className="glass-btn" onClick={() => setOpenLibrary(true)} disabled={!hasOrg}>
+          <button className="glass-btn" onClick={() => setOpenLibrary(true)}>
             📚 Biblioteca
           </button>
-          <button className="glass-btn" onClick={() => void importSeed()} disabled={!orgId || loading || importing}>
-            {importing ? "Importando..." : "📦 Importar base"}
+          <button
+            className="glass-btn"
+            onClick={() => void importSeed()}
+            disabled={!activeOrgId || loading || importing}
+          >
+            {importing ? "⏳ Importando..." : "📦 Importar base"}
           </button>
-          <button className="glass-btn primary" onClick={handleCreate} disabled={!hasOrg}>
+          <button className="glass-btn primary" onClick={handleCreate}>
             ➕ Nueva
           </button>
         </div>
       </div>
 
-      {!hasOrg ? <div className="text-sm text-contrast/60">Selecciona una organización para ver o crear plantillas.</div> : null}
       {error ? <div className="text-sm text-red-500">{error}</div> : null}
 
       {/* Grid */}
@@ -251,7 +246,7 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
             {tpl.notes ? <div className="mt-2 text-sm text-contrast/70">⚠️ {tpl.notes}</div> : null}
           </div>
         ))}
-        {!templates.length && !loading && !error && hasOrg ? (
+        {!templates.length && !loading && !error ? (
           <div className="rounded border border-dashed border-contrast/30 p-6 text-center text-sm text-contrast/70">
             Sin plantillas
           </div>
@@ -272,7 +267,7 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
       {/* Biblioteca / Administración */}
       <TemplateLibraryModal
         kind="prescription"
-        orgId={orgId ?? ""}
+        orgId={activeOrgId ?? ""}
         open={openLibrary}
         onClose={() => {
           setOpenLibrary(false);
@@ -281,7 +276,7 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
         onUse={(tpl) => {
           handleSelect({
             id: tpl.id,
-            org_id: orgId ?? null,
+            org_id: activeOrgId ?? null,
             specialty: (tpl as any)?.specialty ?? "",
             title: tpl.name ?? "",
             body: (tpl as any)?.body ?? "",
