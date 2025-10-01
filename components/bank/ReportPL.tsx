@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Row = { kind: "income" | "expense" | null; category: string | null; total_cents: number };
@@ -28,7 +29,23 @@ export default function ReportPL({ orgId, from, to }: { orgId: string; from: str
   }, [orgId, from, to]);
 
   if (loading) return <p className="text-sm text-slate-500">Cargando…</p>;
-  if (!rows.length) return <p className="text-sm text-slate-500">Sin datos en el rango.</p>;
+  if (!rows.length)
+    return (
+      <div className="mx-auto max-w-lg space-y-3 rounded-2xl border border-dashed border-white/60 bg-white/60 p-4 text-center text-sm text-contrast/80">
+        <p className="font-medium text-contrast">Aún no hay P&amp;L para el rango seleccionado.</p>
+        <p>
+          Importa transacciones y clasifícalas para obtener reportes de ingresos y gastos por categoría.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-medium">
+          <Link href="/banco/tx" className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80">
+            <span className="emoji">👀</span> Ver movimientos
+          </Link>
+          <Link href="/banco/reglas" className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80">
+            <span className="emoji">⚙️</span> Configurar reglas
+          </Link>
+        </div>
+      </div>
+    );
 
   const income = rows.filter((r) => r.kind === "income");
   const expense = rows.filter((r) => r.kind === "expense");
