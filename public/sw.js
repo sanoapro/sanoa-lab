@@ -1,5 +1,6 @@
+/* eslint-env serviceworker */
 /* Sanoa SW v3 — Workbox + Background Sync + app events */
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js');
+self.importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js');
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
@@ -12,8 +13,8 @@ async function postAll(message) {
 }
 
 if (self.workbox) {
-  const {routing, strategies, expiration, backgroundSync, precaching} = workbox;
-  workbox.setConfig({debug:false});
+  const { routing, strategies, expiration, backgroundSync, precaching } = self.workbox;
+  self.workbox.setConfig({ debug: false });
 
   const PRECACHE_URLS = ['/', '/dashboard', '/pacientes', '/perfil', '/offline.html', '/favicon.ico'];
   precaching.precacheAndRoute(PRECACHE_URLS.map(u => ({url: u, revision: null})));

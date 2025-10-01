@@ -14,10 +14,15 @@ export const stripe = stripeSecret
 // Base URL seguras para callback/redirect
 export function getBaseUrl() {
   // En producción usa la variable pública si existe; local cae al localhost
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    process.env.VERCEL_URL?.startsWith("http")
-    ? process.env.VERCEL_URL!
-    : `https://${process.env.VERCEL_URL}` || "http://localhost:3000";
+  const publicUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  if (publicUrl) return publicUrl;
+
+  const vercelUrl = process.env.VERCEL_URL;
+  if (!vercelUrl) return "http://localhost:3000";
+
+  return vercelUrl.startsWith("http")
+    ? vercelUrl
+    : `https://${vercelUrl}`;
 }
 
 // Mapas de precios -> features (si ya lo tienes, puedes conservar el tuyo)

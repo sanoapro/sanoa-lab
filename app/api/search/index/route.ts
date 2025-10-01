@@ -7,8 +7,8 @@ const OAI_MODEL = "text-embedding-3-small"; // 1536 dims
 const GEM_MODEL = "models/text-embedding-004"; // 768 dims
 const DIM = 1536;
 
-const useGemini = () => !!process.env.GEMINI_API_KEY;
-const useOpenAI = () => !!process.env.OPENAI_API_KEY;
+const hasGemini = () => !!process.env.GEMINI_API_KEY;
+const hasOpenAI = () => !!process.env.OPENAI_API_KEY;
 
 function toDim(vec: number[], dim = DIM) {
   if (vec.length === dim) return vec;
@@ -74,8 +74,8 @@ async function embedBatchOpenAI(
 }
 
 async function embedBatch(texts: string[]) {
-  if (useGemini()) return embedBatchGemini(texts);
-  if (useOpenAI()) return embedBatchOpenAI(texts);
+  if (hasGemini()) return embedBatchGemini(texts);
+  if (hasOpenAI()) return embedBatchOpenAI(texts);
   // Sin claves: devolvemos vectores vacíos (serán NULL en BD)
   return texts.map(() => ({
     vec: Array(DIM).fill(0),
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       indexed: total,
-      provider: useGemini() ? "gemini" : useOpenAI() ? "openai" : "none",
+      provider: hasGemini() ? "gemini" : hasOpenAI() ? "openai" : "none",
       dim: DIM,
     });
   }
@@ -200,7 +200,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       indexed: total,
-      provider: useGemini() ? "gemini" : useOpenAI() ? "openai" : "none",
+      provider: hasGemini() ? "gemini" : hasOpenAI() ? "openai" : "none",
       dim: DIM,
     });
   }
