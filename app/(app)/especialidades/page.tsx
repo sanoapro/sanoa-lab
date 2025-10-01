@@ -1,62 +1,52 @@
-"use client";
-
 import Link from "next/link";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useModuleAccess } from "@/components/modules/useModuleAccess";
 
-const MODS = [
-  { slug: "mente", title: "Mente", desc: "Evaluaciones, escalas y planes de apoyo." },
-  { slug: "pulso", title: "Pulso", desc: "Indicadores clínicos, semáforos y riesgo CV." },
-  { slug: "equilibrio", title: "Equilibrio", desc: "Planes de hábitos y seguimiento." },
-  { slug: "sonrisa", title: "Sonrisa", desc: "Odontograma, presupuestos y firma." },
-] as const;
+const items = [
+  { key: "mente", title: "Mente Pro", desc: "Evaluaciones, escalas y planes de apoyo." },
+  { key: "pulso", title: "Pulso Pro", desc: "Indicadores clínicos, semáforos y riesgo CV." },
+  { key: "equilibrio", title: "Equilibrio Pro", desc: "Planes de hábitos y seguimiento." },
+  { key: "sonrisa", title: "Sonrisa Pro", desc: "Odontograma, presupuestos y firma." },
+];
 
-export default function EspecialidadesPage() {
-  const { features, orgId } = useModuleAccess();
-
+export default function Page() {
   return (
-    <div className="space-y-4">
-      <h1 className="font-semibold flex items-center gap-2 text-2xl">
-        <span className="emoji">🧩</span> Especialidades
-      </h1>
-      <p className="text-contrast/80 text-sm">
-        Módulos profesionales con herramientas avanzadas. Desbloquéalas desde <strong>Sanoa Bank</strong>.
-      </p>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {MODS.map((m) => {
-          const active = !!features?.[m.slug as keyof typeof features];
-          const checkoutUrl = orgId
-            ? `/banco?checkout=${m.slug}&org_id=${orgId}`
-            : `/banco?checkout=${m.slug}`;
-
-          return (
-            <Card key={m.slug} className="bubble">
-              <CardHeader className="space-y-1">
-                <CardTitle className="font-semibold text-[1.05rem]">{m.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-contrast/85 text-[0.95rem]">{m.desc}</p>
-              </CardContent>
-              <CardFooter className="flex items-center justify-between gap-2">
-                <Button asChild variant="outline">
-                  <Link href={`/modulos/${m.slug}`}>Ver módulo</Link>
-                </Button>
-                {active ? (
-                  <Button asChild variant="default">
-                    <Link href="/banco">Activo · Gestionar</Link>
-                  </Button>
-                ) : (
-                  <Button asChild variant="default">
-                    <Link href={checkoutUrl}>Desbloquear</Link>
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-          );
-        })}
+    <main className="container py-6 space-y-6">
+      <div>
+        <h1 className="text-xl font-bold">Especialidades</h1>
+        <p className="text-sm text-muted-foreground">
+          Especialidades con herramientas avanzadas. Desbloquea desde Sanoa Bank.
+        </p>
       </div>
-    </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {items.map((it) => (
+          <Card key={it.key} className="card-hover">
+            <CardHeader>
+              <CardTitle>{it.title}</CardTitle>
+              <CardDescription>{it.desc}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-2">
+              <Button asChild variant="outline">
+                <Link href={`/modules/${it.key}/overview`}>Ver módulo</Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href="/banco">Desbloquear con Sanoa Bank</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <section className="space-y-2">
+        <h2 className="text-[1rem] font-semibold">Suscripciones</h2>
+        <ul className="text-sm text-muted-foreground grid gap-1">
+          <li>🔹 Mente — activo / por activar</li>
+          <li>🔹 Pulso — activo / por activar</li>
+          <li>🔹 Sonrisa — activo / por activar</li>
+          <li>🔹 Equilibrio — activo / por activar</li>
+        </ul>
+      </section>
+    </main>
   );
 }

@@ -17,25 +17,26 @@ jobs:
       NEXT_PUBLIC_SENTRY_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_SITE_URL: https://example.com
-      # NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
       NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+      # Si prefieres secret en vez de vars:
+      # NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1) PNPM primero (exponer binario en PATH)
-      - name: Setup PNPM
+      # 1) Habilita Corepack y PNPM (lee la versión desde package.json: "packageManager")
+      - name: Setup PNPM (from packageManager)
         uses: pnpm/action-setup@v4
         with:
-          version: 10.17.1
           run_install: false
+          # opcional: package_json_path: ./package.json
 
-      # 2) Node + caché nativa de pnpm (ya existe pnpm)
+      # 2) Node DESPUÉS de pnpm para que funcione el cache: 'pnpm'
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
 
@@ -44,6 +45,7 @@ jobs:
           node -v
           pnpm -v
           which pnpm
+          corepack -v || true
 
       - name: Install deps
         run: pnpm install --frozen-lockfile

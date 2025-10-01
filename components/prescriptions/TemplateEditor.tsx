@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAutosave } from "@/hooks/useAutosave";
 
+/** ===== Tipos ===== */
 export type RxTemplate = {
   id?: string;
   org_id?: string | null;
@@ -26,6 +27,7 @@ type UpsertResponse = {
   error?: { message?: string };
 };
 
+/** ===== Persistencia en servidor ===== */
 async function upsertTemplate(tpl: RxTemplate) {
   const res = await fetch("/api/prescriptions/templates", {
     method: "POST",
@@ -42,7 +44,9 @@ async function upsertTemplate(tpl: RxTemplate) {
   return next;
 }
 
+/** ===== Editor ===== */
 export default function TemplateEditor({ initial, onSaved }: Props) {
+  /** Guardado en servidor (autosave) */
   const saveFn = useCallback(
     async (draft: RxTemplate) => {
       const saved = await upsertTemplate({
@@ -57,8 +61,56 @@ export default function TemplateEditor({ initial, onSaved }: Props) {
 
   const { data, setData, status, flush } = useAutosave(initial, saveFn);
 
+  /** ===== Borrador local (localStorage) ===== */
+  const storageKey = useMemo(
+    () => `rx-template:draft:${data.id ?? "new"}`,
+    [data.id],
+  );
+  const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Carga el borrador local si existe (solo una vez al montar)
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(storageKey);
+      if (cached) {
+        const v = JSON.parse(cached) as Partial<RxTemplate>;
+        setData({ ...data, ...v });
+      }
+    } catch {
+      /* noop */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intencionalmente sólo al montar
+
+  // Guarda borrador local con debounce cuando cambia el draft
+  useEffect(() => {
+    if (writeTimer.current) clearTimeout(writeTimer.current);
+    writeTimer.current = setTimeout(() => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(data));
+      } catch {
+        /* noop */
+      }
+    }, 500);
+    return () => {
+      if (writeTimer.current) clearTimeout(writeTimer.current);
+    };
+  }, [data, storageKey]);
+
+  function discardLocalDraft() {
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      /* noop */
+    }
+    // Volver al estado inicial del componente (lo más predecible)
+    setData(initial);
+  }
+
+  /** ===== UI ===== */
   return (
     <div className="space-y-4">
+      {/* Barra de estado + acciones rápidas */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
           {status === "saving" && "Guardando…"}
@@ -66,20 +118,33 @@ export default function TemplateEditor({ initial, onSaved }: Props) {
           {status === "error" && "Error al guardar"}
           {status === "idle" && "Los cambios se guardarán automáticamente"}
         </div>
-        <Button type="button" variant="secondary" onClick={() => void flush()}>
-          Guardar ahora
-        </Button>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" onClick={discardLocalDraft}>
+            Descartar borrador
+          </Button>
+          <Button type="button" variant="secondary" onClick={() => void flush()}>
+            Guardar ahora
+          </Button>
+        </div>
       </div>
 
+      {/* Campos */}
       <div className="grid gap-3">
         <div className="grid gap-1">
           <label className="text-sm text-contrast/80">Especialidad</label>
-          <input
-            className="input"
+          {/* Select con opciones comunes (puedes ajustar/añadir libremente) */}
+          <select
+            className="input h-11"
             value={data.specialty}
             onChange={(e) => setData({ ...data, specialty: e.target.value })}
-            placeholder="Ej. Medicina familiar, Cardiología, Odontología…"
-          />
+          >
+            <option value="">— Selecciona —</option>
+            <option value="mente">Mente</option>
+            <option value="pulso">Pulso</option>
+            <option value="equilibrio">Equilibrio</option>
+            <option value="sonrisa">Sonrisa</option>
+            <option value="general">General</option>
+          </select>
         </div>
 
         <div className="grid gap-1">
