@@ -17,27 +17,28 @@ jobs:
       NEXT_PUBLIC_SENTRY_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_SITE_URL: https://example.com
-      # NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+      # Si usas vars de org:
       NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+      # O si prefieres secret, comenta la de arriba y descomenta esta:
+      # NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1) PNPM primero (exponer binario en PATH)
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.17.1
-          run_install: false
-
-      # 2) Node + caché nativa de pnpm (ya existe pnpm)
+      # Node primero (caché pnpm nativa)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'                # Alineado con tu entorno local
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
+
+      # pnpm sin "version": usa package.json: "packageManager": "pnpm@10.17.1"
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
 
       - name: Show versions
         run: |
