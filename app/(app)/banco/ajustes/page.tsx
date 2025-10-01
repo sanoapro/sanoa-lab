@@ -211,7 +211,7 @@ export default function BancoAjustesPage() {
           Sanoa Bank · Ajustes
         </h1>
         <p className="text-sm text-[var(--color-brand-text)]/80">
-          Configura alertas de saldo bajo y el canal de notificación.
+          Configura alertas de saldo. (Próximamente: chequeo automático)
         </p>
       </header>
 
