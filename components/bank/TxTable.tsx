@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import EmptyState from "@/components/ui/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
 
 type Tx = {
   id: string;
@@ -64,6 +65,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
   const [rows, setRows] = useState<Tx[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const skeletonRows = Array.from({ length: 6 });
 
   const page = Math.max(1, Number(search.get("page") ?? "1"));
   const pageSize = Math.max(1, Math.min(200, Number(search.get("pageSize") ?? "50")));
@@ -129,7 +131,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
       ) : (
         <>
           <div className="rounded border overflow-hidden">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" aria-busy={loading}>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left px-3 py-2">Fecha</th>
@@ -140,13 +142,30 @@ export default function TxTable({ orgId }: { orgId: string }) {
                 </tr>
               </thead>
               <tbody>
-                {loading && (
-                  <tr>
-                    <td className="px-3 py-6 text-center" colSpan={5}>
-                      Cargando…
-                    </td>
-                  </tr>
-                )}
+                {loading &&
+                  skeletonRows.map((_, idx) => (
+                    <tr key={`tx-skeleton-${idx}`} className={idx === 0 ? undefined : "border-t"}>
+                      <td className="px-3 py-3">
+                        <Skeleton
+                          className="h-4 w-24"
+                          label="Cargando transacciones"
+                          ariaHidden={idx > 0}
+                        />
+                      </td>
+                      <td className="px-3 py-3">
+                        <Skeleton className="h-4 w-40" ariaHidden />
+                      </td>
+                      <td className="px-3 py-3">
+                        <Skeleton className="ml-auto h-4 w-20" ariaHidden />
+                      </td>
+                      <td className="px-3 py-3">
+                        <Skeleton className="h-4 w-24" ariaHidden />
+                      </td>
+                      <td className="px-3 py-3">
+                        <Skeleton className="h-4 w-24" ariaHidden />
+                      </td>
+                    </tr>
+                  ))}
                 {!loading && rows.length === 0 && (
                   <tr>
                     <td className="px-3 py-6 text-center" colSpan={5}>
