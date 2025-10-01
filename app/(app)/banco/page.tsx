@@ -68,8 +68,6 @@ export default function BancoPage() {
     [modulesStatus.modules],
   );
 
-  const customerId = ""; // TODO: traer de tu org (p. ej. orgs.customer_id)
-
   // Handle deep-link to checkout
   useEffect(() => {
     if (!orgId) return;
@@ -213,35 +211,6 @@ export default function BancoPage() {
     );
   }
 
-  async function handleManageSubscription() {
-    if (!customerId) {
-      alert("Aún no hay customer_id vinculado.");
-      return;
-    }
-
-    try {
-      setLoadingPortal(true);
-      const res = await fetch("/api/bank/customer-portal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer_id: customerId }),
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok || !json?.url) {
-        throw new Error(json?.error ?? "No se pudo abrir el portal del cliente.");
-      }
-      window.location.href = json.url as string;
-    } catch (error: any) {
-      toast({
-        variant: "error",
-        title: "No se pudo abrir la suscripción",
-        description: error?.message ?? "Intenta nuevamente más tarde.",
-      });
-    } finally {
-      setLoadingPortal(false);
-    }
-  }
-
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
@@ -254,10 +223,38 @@ export default function BancoPage() {
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           className="glass-btn"
-          disabled={loadingPortal || !customerId}
-          onClick={() => void handleManageSubscription()}
+          title="Administrar suscripciones"
+          disabled={loadingPortal || !orgId}
+          onClick={async () => {
+            if (loadingPortal) {
+              return;
+            }
+            const org_id = orgId;
+            if (!org_id) return;
+            try {
+              setLoadingPortal(true);
+              const r = await fetch("/api/bank/portal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ org_id, return_path: "/banco" }),
+              });
+              const j = await r.json().catch(() => null);
+              if (!r.ok || !j?.url) {
+                throw new Error(j?.error ?? "No se pudo abrir el portal del cliente.");
+              }
+              window.location.href = j.url as string;
+            } catch (error: any) {
+              toast({
+                variant: "error",
+                title: "No se pudo abrir la suscripción",
+                description: error?.message ?? "Intenta nuevamente más tarde.",
+              });
+            } finally {
+              setLoadingPortal(false);
+            }
+          }}
         >
-          <span className="emoji">⚙️</span> {loadingPortal ? "Abriendo…" : "Gestionar suscripción"}
+          <span className="emoji">🧰</span> {loadingPortal ? "Abriendo…" : "Portal de suscripción"}
         </button>
       </div>
 
