@@ -2,8 +2,17 @@
 // POST /api/reminders/templates/preview
 // Body: { body, variables?: string[], payload?: Record<string,any>, target?: string }
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { interpolateTemplate, isE164, normalizeE164 } from "@/lib/templates";
+import { parseOrError } from "@/lib/http/validate";
+
+const PreviewSchema = z.object({
+  body: z.string().min(1, "body requerido"),
+  variables: z.array(z.string()).optional(),
+  payload: z.record(z.any()).optional(),
+  target: z.string().optional(),
+});
 
 export async function POST(req: NextRequest) {
   // MODE: session
@@ -17,19 +26,19 @@ export async function POST(req: NextRequest) {
       );
 
     const body = await req.json().catch(() => ({}));
-    const tpl: string = String(body?.body ?? "");
-    const allowed: string[] = Array.isArray(body?.variables) ? body.variables : [];
-    const payload: Record<string, any> = body?.payload ?? {};
-    const targetRaw: string | undefined = body?.target;
-    const target = targetRaw ? normalizeE164(String(targetRaw)) : undefined;
-
-    if (!tpl)
+    const parsed = parseOrError(PreviewSchema, body);
+    if (!parsed.ok)
       return NextResponse.json(
-        { ok: false, error: { code: "BAD_REQUEST", message: "body requerido" } },
+        { ok: false, error: { code: "VALIDATION_ERROR", message: parsed.error.message } },
         { status: 400 },
       );
 
-    const { text, missing, extra } = interpolateTemplate(tpl, payload, allowed);
+    const payload = parsed.data.payload ?? {};
+    const allowed = parsed.data.variables ?? [];
+    const targetRaw = parsed.data.target ?? undefined;
+    const target = targetRaw ? normalizeE164(String(targetRaw)) : undefined;
+
+    const { text, missing, extra } = interpolateTemplate(parsed.data.body, payload, allowed);
     if (target && !isE164(target)) {
       return NextResponse.json(
         {

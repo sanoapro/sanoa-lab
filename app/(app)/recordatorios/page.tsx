@@ -35,7 +35,7 @@ export default function RecordatoriosPage() {
       />
 
       {/* === TU SECCIÓN ORIGINAL (no se toca) === */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
           href="/reportes/confirmaciones"
           className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] p-6 hover:shadow-lg transition"
@@ -65,6 +65,23 @@ export default function RecordatoriosPage() {
               <h3 className="text-lg font-semibold">Ajustes</h3>
               <p className="text-[var(--color-brand-bluegray)] mt-1">
                 Plantillas y canales (SMS/WhatsApp/Email).
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/recordatorios/plantillas"
+          className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] p-6 hover:shadow-lg transition"
+        >
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl p-4 border bg-[var(--color-brand-background)]">
+              <ColorEmoji token="plantilla" size={28} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">Plantillas</h3>
+              <p className="text-[var(--color-brand-bluegray)] mt-1">
+                Edita textos por especialidad y haz pruebas antes de enviar.
               </p>
             </div>
           </div>
