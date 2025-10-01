@@ -1,6 +1,10 @@
+// components/templates/TemplatePicker.tsx
 "use client";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TemplateEditorModal, { RxTemplate } from "./TemplateEditorModal";
+import TemplateLibraryModal from "@/components/templates/TemplateLibraryModal";
+import { SEED_TEMPLATES } from "@/lib/templates.seed";
 
 type Props = {
   orgId?: string;
@@ -44,9 +48,14 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
   const [q, setQ] = useState("");
   const [templates, setTemplates] = useState<RxTemplate[]>([]);
   const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+
+  // Modales
+  const [openEditor, setOpenEditor] = useState(false);
   const [current, setCurrent] = useState<RxTemplate | null>(null);
+  const [openLibrary, setOpenLibrary] = useState(false);
+
   const hasOrg = Boolean(orgId);
 
   const fetchUrl = useMemo(() => {
@@ -75,7 +84,9 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
         | null;
       if (!res.ok) {
         const message =
-          (json && "error" in json && json.error?.message) || json?.toString() || "No se pudieron cargar las plantillas";
+          (json && "error" in json && json.error?.message) ||
+          json?.toString() ||
+          "No se pudieron cargar las plantillas";
         throw new Error(message);
       }
       const list: ApiTemplate[] = Array.isArray(json)
@@ -94,6 +105,35 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
       setLoading(false);
     }
   }, [fetchUrl, hasOrg]);
+
+  async function importSeed() {
+    if (!orgId || importing) return;
+    setImporting(true);
+    try {
+      const payload = SEED_TEMPLATES.map((tpl) => ({
+        ...tpl,
+        org_id: orgId,
+      }));
+      const r = await fetch("/api/prescriptions/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j?.ok) {
+        const message = j?.error?.message ?? "Error al importar plantillas";
+        console.error(message);
+        alert(message);
+        return;
+      }
+      await load();
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo importar la base de plantillas");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   useEffect(() => {
     if (!hasOrg) return;
@@ -117,12 +157,12 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
       notes: "",
       is_reference: false,
     });
-    setOpen(true);
+    setOpenEditor(true);
   };
 
   const handleEdit = (tpl: RxTemplate) => {
     setCurrent(tpl);
-    setOpen(true);
+    setOpenEditor(true);
   };
 
   const handleSaved = useCallback(
@@ -146,8 +186,9 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
   );
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Buscador */}
         <div className="flex w-full flex-col gap-2 sm:max-w-xl">
           <label className="text-sm text-contrast/70" htmlFor="template-search">
             Buscar plantilla
@@ -169,19 +210,25 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
             </button>
           </div>
         </div>
-        <button className="glass-btn primary self-end sm:self-auto" onClick={handleCreate} disabled={!hasOrg}>
-          ➕ Nueva
-        </button>
+
+        {/* Acciones */}
+        <div className="flex gap-2 self-end sm:self-auto">
+          <button className="glass-btn" onClick={() => setOpenLibrary(true)} disabled={!hasOrg}>
+            📚 Biblioteca
+          </button>
+          <button className="glass-btn" onClick={() => void importSeed()} disabled={!orgId || loading || importing}>
+            {importing ? "Importando..." : "📦 Importar base"}
+          </button>
+          <button className="glass-btn primary" onClick={handleCreate} disabled={!hasOrg}>
+            ➕ Nueva
+          </button>
+        </div>
       </div>
 
-      {!hasOrg ? (
-        <div className="text-sm text-contrast/60">Selecciona una organización para ver o crear plantillas.</div>
-      ) : null}
+      {!hasOrg ? <div className="text-sm text-contrast/60">Selecciona una organización para ver o crear plantillas.</div> : null}
+      {error ? <div className="text-sm text-red-500">{error}</div> : null}
 
-      {error ? (
-        <div className="text-sm text-red-500">{error}</div>
-      ) : null}
-
+      {/* Grid */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {templates.map((tpl) => (
           <div key={tpl.id ?? tpl.title} className="glass-card bubble text-contrast">
@@ -189,9 +236,7 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
               <div>
                 <div className="text-sm text-contrast/70">{tpl.specialty || "General"}</div>
                 <div className="font-semibold">{tpl.title || "Sin título"}</div>
-                <div className="badge mt-1">
-                  {tpl.is_reference ? "📝 Referencia" : "💊 Receta"}
-                </div>
+                <div className="badge mt-1">{tpl.is_reference ? "📝 Referencia" : "💊 Receta"}</div>
               </div>
               <div className="flex flex-col gap-2">
                 <button className="glass-btn" onClick={() => handleSelect(tpl)} disabled={!tpl.id}>
@@ -213,15 +258,39 @@ export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose
         ) : null}
       </div>
 
+      {/* Editor */}
       {current ? (
         <TemplateEditorModal
           key={current.id ?? "new"}
-          open={open}
-          onClose={() => setOpen(false)}
+          open={openEditor}
+          onClose={() => setOpenEditor(false)}
           initial={current}
           onSaved={handleSaved}
         />
       ) : null}
-    </div>
+
+      {/* Biblioteca / Administración */}
+      <TemplateLibraryModal
+        kind="prescription"
+        orgId={orgId ?? ""}
+        open={openLibrary}
+        onClose={() => {
+          setOpenLibrary(false);
+          void load();
+        }}
+        onUse={(tpl) => {
+          handleSelect({
+            id: tpl.id,
+            org_id: orgId ?? null,
+            specialty: (tpl as any)?.specialty ?? "",
+            title: tpl.name ?? "",
+            body: (tpl as any)?.body ?? "",
+            notes: null,
+            is_reference: false,
+          });
+          setOpenLibrary(false);
+        }}
+      />
+    </section>
   );
 }

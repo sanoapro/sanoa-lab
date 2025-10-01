@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Row = { month: string; income_cents: number; expense_cents: number; net_cents: number };
@@ -36,7 +37,26 @@ export default function ReportFlow({
   }, [orgId, from, to]);
 
   if (loading) return <p className="text-sm text-slate-500">Cargando…</p>;
-  if (!rows.length) return <p className="text-sm text-slate-500">Sin datos en el rango.</p>;
+  if (!rows.length)
+    return (
+      <div className="mx-auto max-w-lg space-y-3 rounded-2xl border border-dashed border-white/60 bg-white/60 p-4 text-center text-sm text-contrast/80">
+        <p className="font-medium text-contrast">Sin datos en el rango seleccionado.</p>
+        <p>
+          Ajusta las fechas o importa nuevos movimientos para analizar el flujo mensual de tu organización.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-medium">
+          <Link href="/banco/tx" className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80">
+            <span className="emoji">👀</span> Revisar transacciones
+          </Link>
+          <Link
+            href="/banco/depositar"
+            className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80"
+          >
+            <span className="emoji">➕</span> Registrar depósito
+          </Link>
+        </div>
+      </div>
+    );
 
   // Simple bar chart SVG (net by month)
   const max = Math.max(...rows.map((r) => Math.abs(r.net_cents)));
