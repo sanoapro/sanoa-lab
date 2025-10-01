@@ -1,144 +1,55 @@
-// components/Navbar.tsx
 "use client";
-
-import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import OrgSwitcher from "@/components/OrgSwitcher";
-import DensityToggle from "./DensityToggle";
-import ActiveOrgInspector from "@/components/organizations/ActiveOrgInspector";
-import { cn } from "@/lib/utils";
-import { getSupabaseBrowser } from "@/lib/supabase-browser";
-
-type NavItem = { href: string; label: string; emoji: string };
-
-const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", emoji: "🏠" },
-  { href: "/agenda", label: "Agenda", emoji: "📅" },
-  { href: "/pacientes", label: "Pacientes", emoji: "🧑‍⚕️" },
-  { href: "/consultorio", label: "Consultorio", emoji: "🏥" },
-  { href: "/especialidades", label: "Especialidades", emoji: "🧩" },
-  { href: "/banco", label: "Banco", emoji: "🏦" },
-];
-
-const QUICK_LINKS: NavItem[] = [
-  { href: "/recordatorios", label: "Recordatorios", emoji: "⏰" },
-  { href: "/perfil", label: "Perfil", emoji: "👤" },
-  { href: "/ajustes", label: "Ajustes", emoji: "⚙️" },
-];
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import OrgSwitcherBadge from "./OrgSwitcherBadge";
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [signingOut, setSigningOut] = React.useState(false);
-
-  async function handleSignOut() {
-    try {
-      setSigningOut(true);
-      const supa = getSupabaseBrowser();
-      await supa.auth.signOut();
-      router.push("/login");
-      router.refresh();
-    } catch {
-      // opcional: podrías mostrar un toast si tienes un sistema de notificaciones
-    } finally {
-      setSigningOut(false);
-    }
-  }
+  const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-40 glass-card bubble nav-lg !rounded-2xl mx-2 mt-2">
-      <div className="flex flex-wrap items-center gap-3 px-2 md:px-3">
-        {/* Brand + Org */}
-        <div className="flex items-center gap-3 min-w-0">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight"
-            aria-label="Ir al dashboard"
-          >
-            <span className="emoji" aria-hidden>✨</span>
-            <span>Sanoa</span>
+    <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm">
+      <nav className="container h-[64px] flex items-center gap-3">
+        <div className="flex items-center gap-3">
+          <OrgSwitcherBadge />
+          <Link href="/" className="font-bold text-lg" aria-label="Inicio Sanoa">
+            Sanoa
           </Link>
-
-          <OrgSwitcher />
         </div>
 
-        {/* Main nav */}
-        <nav
-          className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap"
-          aria-label="Secciones principales"
+        <div className="ml-auto hidden md:flex items-center gap-6">
+          <Link href="/consultorio" className="text-sm hover:opacity-80">Consultorio</Link>
+          <Link href="/pacientes" className="text-sm hover:opacity-80">Pacientes</Link>
+          <Link href="/especialidades" className="text-sm hover:opacity-80">Especialidades</Link>
+          <Link href="/banco" className="text-sm hover:opacity-80">Banco</Link>
+          <Button asChild variant="primary" size="md" className="font-bold">
+            <Link href="/signup">Crear cuenta</Link>
+          </Button>
+        </div>
+
+        {/* Mobile */}
+        <button
+          className="md:hidden btn-base ghost"
+          aria-label="Menú"
+          onClick={() => setOpen((s) => !s)}
         >
-          {NAV.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href + "/"));
+          ☰
+        </button>
+      </nav>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "glass-btn bubble text-sm md:text-base font-semibold transition-colors",
-                  isActive
-                    ? "neon bg-white/85 text-slate-900 dark:bg-slate-900/70 dark:text-white"
-                    : "bg-white/60 hover:bg-white/75 dark:bg-slate-950/40 dark:hover:bg-slate-950/55",
-                )}
-                title={item.label}
-              >
-                <span className="emoji mr-1" aria-hidden>{item.emoji}</span>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Quick links + tools */}
-        <div className="ml-auto flex items-center gap-2">
-          <div
-            className="hidden sm:flex flex-wrap items-center justify-end gap-2"
-            aria-label="Accesos rápidos"
-          >
-            {QUICK_LINKS.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href + "/"));
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "glass-btn bubble text-sm md:text-base font-semibold transition-colors",
-                    isActive
-                      ? "neon bg-white/85 text-slate-900 dark:bg-slate-900/70 dark:text-white"
-                      : "bg-white/60 hover:bg-white/75 dark:bg-slate-950/40 dark:hover:bg-slate-950/55",
-                  )}
-                  title={item.label}
-                >
-                  <span className="emoji mr-1" aria-hidden>{item.emoji}</span>
-                  {item.label}
-                </Link>
-              );
-            })}
+      {open && (
+        <div className="md:hidden border-t border-border bg-background">
+          <div className="container py-3 flex flex-col gap-2">
+            <Link href="/consultorio" className="py-2">Consultorio</Link>
+            <Link href="/pacientes" className="py-2">Pacientes</Link>
+            <Link href="/especialidades" className="py-2">Especialidades</Link>
+            <Link href="/banco" className="py-2">Banco</Link>
+            <Button asChild variant="primary" className="mt-1">
+              <Link href="/signup">Crear cuenta</Link>
+            </Button>
           </div>
-
-          <ActiveOrgInspector />
-
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="glass-btn neon inline-flex shrink-0 items-center gap-2 text-sm md:text-base text-rose-600 transition-colors hover:bg-white/75 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-rose-200 dark:hover:bg-slate-950/55 dark:focus-visible:ring-offset-slate-900"
-            aria-busy={signingOut}
-          >
-            <span className="emoji" aria-hidden>🔓</span>
-            {signingOut ? "Cerrando…" : "Cerrar sesión"}
-          </button>
-
-          <DensityToggle />
         </div>
-      </div>
-    </nav>
+      )}
+    </header>
   );
 }
