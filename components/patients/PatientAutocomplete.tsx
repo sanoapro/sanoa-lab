@@ -1,226 +1,93 @@
 // components/patients/PatientAutocomplete.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
-type OptionRaw = {
-  id: string;
-  name?: string | null;
-  title?: string | null;
-  label?: string | null;
-  text?: string | null;
-  dob?: string | null;
-  gender?: string | null;
-  patient_id?: string | null;
-  value?: string | null;
-};
-
-export type PatientOption = { id: string; label: string };
-
-type Props = {
-  orgId: string;
-  /** Ámbito de búsqueda. Acepta "mine" | "org" u otros valores si el backend los soporta. */
-  scope?: string;
-  placeholder?: string;
-  onSelect?: (option: PatientOption | null) => void;
-};
+type Item = { id: string; name: string; doc?: string };
 
 export default function PatientAutocomplete({
-  orgId,
-  scope = "mine",
-  placeholder = "Buscar paciente…",
   onSelect,
-}: Props) {
-  const [query, setQuery] = useState("");
-  const [items, setItems] = useState<PatientOption[]>([]);
-  const [loading, setLoading] = useState(false);
+  placeholder = "Buscar paciente",
+  className,
+}: {
+  onSelect?: (p: Item) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<Item[]>([]);
+  const boxRef = useRef<HTMLDivElement>(null);
 
-  const boxRef = useRef<HTMLDivElement | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const ctrlRef = useRef<AbortController | null>(null);
-
-  // Cerrar el desplegable al hacer click fuera
   useEffect(() => {
-    function onClick(e: MouseEvent) {
+    function onDoc(e: MouseEvent) {
       if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  // Debounce de búsqueda (mínimo 2 caracteres) con múltiples fallbacks
   useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
-    ctrlRef.current?.abort();
-
-    if (!orgId) {
-      setItems([]);
-      return;
-    }
-    const q = query.trim();
-    if (q.length < 2) {
-      setItems([]);
-      return;
-    }
-
-    const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
-
-    timer.current = setTimeout(async () => {
+    const t = setTimeout(async () => {
+      if (!q) {
+        setItems([]);
+        return;
+      }
       setLoading(true);
       try {
-        // 1) Endpoint autocomplete (rápido)
-        const p1 = new URLSearchParams({ org_id: orgId, q });
-        if (scope) p1.set("scope", String(scope));
-        const r1 = await fetch(`/api/patients/autocomplete?${p1.toString()}`, {
-          cache: "no-store",
-          signal: ctrl.signal,
-        });
-
-        if (r1.ok) {
-          const j1 = await r1.json();
-          const arr: PatientOption[] = j1?.ok
-            ? (j1.data ?? []).map((x: any) => ({
-                id: String(x.id),
-                label: String(x.label ?? x.name ?? x.title ?? x.text ?? "Paciente"),
-              }))
-            : [];
-          setItems(arr);
-          setOpen(true);
-          return;
-        }
-
-        // 2) Fallback a /patients/search
-        const p2 = new URLSearchParams({ org_id: orgId, q, pageSize: "10" });
-        if (scope) p2.set("scope", String(scope));
-        const r2 = await fetch(`/api/patients/search?${p2.toString()}`, { signal: ctrl.signal });
-        if (r2.ok) {
-          const j2 = await r2.json();
-          const rows: OptionRaw[] = j2?.ok ? (j2.data ?? []) : [];
-          const mapped: PatientOption[] = rows.map((r) => {
-            const base = r.label ?? r.name ?? r.title ?? r.text ?? "Paciente sin nombre";
-            const extra = [r.gender, r.dob ? new Date(r.dob).toLocaleDateString() : null]
-              .filter(Boolean)
-              .join(" · ");
-            return {
-              id: String(r.id ?? r.patient_id ?? r.value ?? base),
-              label: extra ? `${base} — ${extra}` : String(base),
-            };
-          });
-          setItems(mapped);
-          setOpen(true);
-          return;
-        }
-
-        // 3) Fallback a buscador genérico
-        const p3 = new URLSearchParams({
-          scope: "patients",
-          org_id: orgId,
-          q,
-          mine: scope === "mine" ? "1" : "0",
-          limit: "10",
-        });
-        const r3 = await fetch(`/api/search/query?${p3.toString()}`, {
-          cache: "no-store",
-          signal: ctrl.signal,
-        });
-        if (r3.ok) {
-          const j3 = await r3.json();
-          const arr: PatientOption[] = Array.isArray(j3?.data)
-            ? j3.data.map((x: any) => ({
-                id: String(x.id || x.patient_id || x.value || x.uid || q),
-                label: String(x.label || x.name || x.title || x.text || "Paciente"),
-              }))
-            : [];
-          setItems(arr.slice(0, 10));
-          setOpen(true);
-          return;
-        }
-
-        // Si todo falla
+        const r = await fetch(`/api/patients/suggest?q=${encodeURIComponent(q)}`);
+        const data = await r.json();
+        setItems((data?.items ?? []).slice(0, 8));
+      } catch {
         setItems([]);
-        setOpen(false);
-      } catch (err: any) {
-        if (err?.name !== "AbortError") {
-          console.error("PatientAutocomplete", err);
-          setItems([]);
-          setOpen(false);
-        }
       } finally {
-        if (!ctrl.signal.aborted) setLoading(false);
+        setLoading(false);
+        setOpen(true);
       }
     }, 200);
-
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-      ctrl.abort();
-    };
-  }, [orgId, query, scope]);
-
-  const hasResults = items.length > 0;
-  const trimmedQuery = query.trim();
-
-  const helpText = useMemo(() => {
-    if (!orgId) return "Selecciona una organización";
-    if (trimmedQuery.length < 2) return "Escribe al menos 2 caracteres";
-    if (loading) return "Buscando…";
-    return "";
-  }, [orgId, trimmedQuery, loading]);
-
-  const minQuery = trimmedQuery.length >= 2;
-  const showDropdown = open && hasResults;
-  const showNoMatchesFeedback =
-    Boolean(orgId) && minQuery && !loading && !hasResults && Boolean(trimmedQuery);
+    return () => clearTimeout(t);
+  }, [q]);
 
   return (
-    <div className="space-y-1 relative" ref={boxRef}>
+    <div ref={boxRef} className={cn("relative w-full", className)}>
       <input
-        aria-autocomplete="list"
-        aria-expanded={open}
-        className="glass-input w-full"
-        type="search"
+        className={cn(
+          "w-full h-11 rounded-lg border border-border bg-background px-3 text-base",
+          "focus:outline-none focus:ring-2 focus:ring-primary/60",
+          "relative z-[1] pointer-events-auto"
+        )}
         placeholder={placeholder}
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-          if (!e.target.value.trim()) onSelect?.(null);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 120)}
-        autoComplete="off"
-        tabIndex={0}
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        onFocus={() => q && setOpen(true)}
       />
-
-      {helpText && <p className="text-xs text-slate-500">{helpText}</p>}
-
-      {showNoMatchesFeedback && (
-        <p className="text-sm text-contrast/70 mt-1">
-          <span className="emoji">🧐</span> Sin coincidencias.
-        </p>
-      )}
-
-      {showDropdown && (
-        <div className="absolute left-0 right-0 mt-1 z-50 pointer-events-auto glass-card p-0">
-          <ul role="listbox" className="max-h-64 overflow-auto divide-y">
-            {items.map((it) => (
-              <li key={it.id} role="option">
-                <button
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                  onMouseDown={(e) => {
-                    e.preventDefault(); // evita blur antes de click
-                    onSelect?.(it);
-                    setQuery(it.label);
-                    setOpen(false);
-                  }}
-                >
-                  {it.label}
-                </button>
-              </li>
+      {open && (
+        <div
+          className="absolute left-0 right-0 top-full mt-1 rounded-lg border border-border bg-card text-card-foreground shadow-elevated overflow-hidden z-50"
+          role="listbox"
+        >
+          {loading && <div className="px-3 py-2 text-sm">Buscando…</div>}
+          {!loading && items.length === 0 && (
+            <div className="px-3 py-2 text-sm text-muted-foreground">Sin resultados</div>
+          )}
+          {!loading &&
+            items.map((it) => (
+              <button
+                key={it.id}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                onClick={() => {
+                  onSelect?.(it);
+                  setQ(it.name);
+                  setOpen(false);
+                }}
+                role="option"
+              >
+                <div className="font-medium">{it.name}</div>
+                {it.doc && <div className="text-xs text-muted-foreground">{it.doc}</div>}
+              </button>
             ))}
-          </ul>
         </div>
       )}
     </div>
