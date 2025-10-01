@@ -198,7 +198,7 @@ export default function ModulosHubPage() {
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
-        title="Especialidades Pro"
+        title="Especialidades"
         subtitle="Explora los módulos clínicos avanzados, revisa qué incluye cada uno y abre su vista previa."
         emojiToken="carpeta"
       />
