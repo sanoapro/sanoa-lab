@@ -84,8 +84,9 @@ body {
 
 /* Accesibilidad (focus visible) */
 *:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
+  outline: 3px solid rgb(var(--ring));
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgb(var(--ring) / 0.25);
 }
 
 /* ===== UI helpers ===== */
