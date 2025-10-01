@@ -1,10 +1,8 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { z } from "zod";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
+import { stripe as stripeClient } from "@/lib/billing/stripe";
 
 const Body = z.object({
   org_id: z.string().uuid(),
@@ -25,18 +23,35 @@ export async function POST(req: NextRequest) {
     const price = PRICE_ENV[product];
     if (!price) return NextResponse.json({ error: `Falta PRICE para ${product}` }, { status: 400 });
 
-    const base = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
+    const client = stripeClient;
+    if (!client) {
+      return NextResponse.json({ error: "Stripe no está configurado" }, { status: 501 });
+    }
 
-    const session = await stripe.checkout.sessions.create({
+    const envBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+    const base = (envBase && envBase.length > 0 ? envBase : req.nextUrl.origin).replace(/\/$/, "");
+    const normalizedPath = return_path.startsWith("/") ? return_path : `/${return_path}`;
+    const successUrl = new URL(normalizedPath, `${base}/`);
+    successUrl.searchParams.set("success", "1");
+    const cancelUrl = new URL(normalizedPath, `${base}/`);
+    cancelUrl.searchParams.set("canceled", "1");
+
+    const session = await client.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price, quantity: 1 }],
-      success_url: `${base}${return_path}?success=1`,
-      cancel_url: `${base}${return_path}?canceled=1`,
+      success_url: successUrl.toString(),
+      cancel_url: cancelUrl.toString(),
       metadata: { org_id, product },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (e: any) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: e.issues?.[0]?.message ?? "Parámetros inválidos" },
+        { status: 400 },
+      );
+    }
     return NextResponse.json({ error: e?.message ?? "server_error" }, { status: 500 });
   }
 }
