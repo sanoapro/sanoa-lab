@@ -1,16 +1,25 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import AccentHeader from "@/components/ui/AccentHeader";
 import ModuleGate from "@/components/modules/ModuleGate";
+import StatusBadge from "@/components/modules/StatusBadge";
+import { useModuleAccess } from "@/components/modules/useModuleAccess";
 import StarterTips from "@/components/modules/StarterTips";
 
 export default function EquilibrioPage() {
+  const { active, enabled } = useModuleAccess("equilibrio");
+  const isActive = active && enabled;
+
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
-        title="Equilibrio"
+        title={
+          <span className="flex items-center gap-2">
+            Equilibrio Pro
+            <StatusBadge active={isActive} />
+          </span>
+        }
         subtitle="Planes de hábitos, tareas y seguimiento."
         emojiToken="equilibrio"
       />
