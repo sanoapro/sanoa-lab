@@ -204,7 +204,7 @@ export default function BancoPage() {
             href="/organizaciones"
             className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm"
           >
-            Administrar organizaciones
+            <span className="emoji">👥</span> Administrar organizaciones
           </Link>
         </div>
       </main>

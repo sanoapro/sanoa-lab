@@ -1,3 +1,6 @@
+// app/(app)/especialidades/page.tsx
+"use client";
+
 import ModuleCard from "@/components/ModuleCard";
 import { useModuleAccess } from "@/components/modules/useModuleAccess";
 
@@ -50,6 +53,9 @@ export default function Page() {
                     <span className="emoji">🔓</span> Desbloquear
                   </a>
                 )}
+                <a className="glass-btn" href={`/modulos/${item.key}`}>
+                  <span className="emoji">👀</span> Ver módulo
+                </a>
               </div>
             </ModuleCard>
           );

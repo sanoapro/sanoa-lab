@@ -89,6 +89,7 @@ export default function OrgSwitcherBadge({ variant = "fixed" }: OrgSwitcherBadge
     <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
       <div className="rounded-full border border-[var(--color-brand-border)] bg-white shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-3 py-1.5">
         <button
+          data-org-switcher=""
           onClick={() => setOpen((v) => !v)}
           className="inline-flex items-center gap-2 text-sm"
         >
