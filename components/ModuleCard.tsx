@@ -1,15 +1,17 @@
 import Link from "next/link";
+import { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
 type ModuleCardProps = {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   ctas?: { label: string; href: string }[];
   className?: string;
+  children?: ReactNode;
 };
 
-export default function ModuleCard({ title, description, ctas, className }: ModuleCardProps) {
+export default function ModuleCard({ title, description, ctas, className, children }: ModuleCardProps) {
   return (
     <div
       className={cn(
@@ -22,9 +24,11 @@ export default function ModuleCard({ title, description, ctas, className }: Modu
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
           {description ? (
-            <p className="text-sm text-slate-600 dark:text-slate-200/80">{description}</p>
+            <div className="text-sm text-slate-600 dark:text-slate-200/80">{description}</div>
           ) : null}
         </div>
+
+        {children}
 
         {ctas && ctas.length > 0 ? (
           <div className="flex flex-wrap gap-2">
