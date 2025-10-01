@@ -2,45 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ====== Variables de tema (claro/oscuro) ====== */
-:root{
-  --bg: 246 246 249;         /* #F6F6F9 */
-  --ink: 20 23 31;           /* texto base */
-  --muted: 90 95 110;
-  --surface: 255 255 255;    /* capas */
-  --contrast: 20 23 31;      /* para text-contrast */
+/* === Tokens de color (AA+) === */
+:root {
+  --bg: 0 0% 100%;
+  --fg: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-fg: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-fg: 215.4 16.3% 35%;
+  --border: 214.3 31.8% 91.4%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-fg: 210 40% 98%;
+  --secondary: 262 83% 58%;
+  --secondary-fg: 210 40% 98%;
+  --success: 142.1 70% 42%;
+  --success-fg: 210 40% 98%;
+  --danger: 0 72% 50%;
+  --danger-fg: 210 40% 98%;
+  --warning: 45 93% 47%;
+  --warning-fg: 20 14% 5%;
+  --contrast: 15 23 42;
   --glass-bg: 255 255 255;
   --glass-alpha: 0.14;
   --glass-border: 255 255 255;
-  --ring: 59 130 246;        /* azul ring */
+  --ring: 37 99 235;
 }
 
-.dark{
-  --bg: 10 12 16;            /* #0A0C10 */
-  --ink: 234 238 247;
-  --muted: 170 175 189;
-  --surface: 20 24 32;
-  --contrast: 234 238 247;
+[data-theme="dark"], .dark {
+  --bg: 222.2 84% 5%;
+  --fg: 210 40% 98%;
+  --card: 222.2 47% 12%;
+  --card-fg: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-fg: 215 20% 75%;
+  --border: 217 33% 22%;
+  --primary: 217.2 91% 60%;
+  --primary-fg: 222.2 47% 12%;
+  --secondary: 262 83% 62%;
+  --secondary-fg: 222.2 47% 12%;
+  --success: 142.1 70% 48%;
+  --success-fg: 210 40% 98%;
+  --danger: 0 72% 55%;
+  --danger-fg: 210 40% 98%;
+  --warning: 48 96% 55%;
+  --warning-fg: 222 47% 12%;
+  --contrast: 248 250 252;
   --glass-bg: 18 22 28;
-  --glass-alpha: 0.28;       /* más opaco en dark para contraste */
+  --glass-alpha: 0.28;
   --glass-border: 255 255 255;
-  --ring: 99 102 241;        /* indigo ring */
+  --ring: 60 131 246;
 }
 
-html, body {
-  @apply bg-[rgb(var(--bg))] text-[rgb(var(--ink))];
-  font-feature-settings: "ss01","ss02","cv01","cv02";
+html { font-size: 16px; }
+body {
+  background: hsl(var(--bg));
+  color: hsl(var(--fg));
+  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", Roboto);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* ====== Tipografía global ====== */
-@layer base {
-  h1 { @apply text-2xl font-semibold leading-tight; }
-  h2 { @apply text-xl font-semibold leading-snug; }
-  h3 { @apply text-lg font-semibold leading-snug; }
-  p  { @apply leading-relaxed; }
-  small { @apply text-sm; }
+/* Accesibilidad y estados de foco */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
+/* Tarjetas y helpers */
+.card { @apply rounded-xl bg-card text-card-foreground shadow-card border border-border; }
+.card-hover:hover { @apply shadow-card-hover; }
+
+/* Botón base por si se usa sin componente */
+.btn-base {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition ease-soft;
+  @apply h-11 px-4; /* 44px de alto */
+}
+
+/* Emojis un poco más grandes y consistentes */
+.emoji { font-size: 1.25em; line-height: 1; vertical-align: -2px; }
 /* ====== Helpers ====== */
 .text-contrast { color: rgb(var(--contrast)); }
 .text-contrast\/80 { color: rgb(var(--contrast) / 0.8); }
