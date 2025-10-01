@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
+import { Field, Input } from "@/components/ui/field";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export default function ResetPasswordPage() {
@@ -54,18 +55,9 @@ export default function ResetPasswordPage() {
             {msg}
           </div>
         )}
-        {err && (
-          <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {err}
-          </div>
-        )}
-
         <form onSubmit={onSubmit} className="mt-5 space-y-4" noValidate>
-          <label className="block" htmlFor="email">
-            <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
-              Correo
-            </span>
-            <input
+          <Field label="Correo" htmlFor="email" required error={err ?? undefined} errorId={err ? "reset-email-error" : undefined}>
+            <Input
               id="email"
               name="email"
               type="email"
@@ -74,10 +66,11 @@ export default function ResetPasswordPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
               placeholder="tucorreo@ejemplo.com"
+              invalid={Boolean(err)}
+              aria-describedby={err ? "reset-email-error" : undefined}
             />
-          </label>
+          </Field>
 
           <button
             type="submit"
