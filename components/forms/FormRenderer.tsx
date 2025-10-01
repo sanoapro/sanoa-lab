@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Field, Input } from "@/components/ui/field";
 import type { FormField, FormSchema } from "@/types/forms";
 
 type Props = {
@@ -57,28 +58,26 @@ export default function FormRenderer({ schema, onSubmit, submitting }: Props) {
       {schema.fields.map((f) => {
         if (f.type === "text") {
           return (
-            <div key={f.key} className="space-y-2">
-              <label className="font-medium">{f.label}</label>
-              <input
+            <Field key={f.key} label={f.label} htmlFor={f.key}>
+              <Input
+                id={f.key}
                 type="text"
-                className="w-full rounded border p-2"
                 value={(answers[f.key] as string) || ""}
                 onChange={(e) => setVal(f.key, e.target.value)}
               />
-            </div>
+            </Field>
           );
         }
         if (f.type === "date") {
           return (
-            <div key={f.key} className="space-y-2">
-              <label className="font-medium">{f.label}</label>
-              <input
+            <Field key={f.key} label={f.label} htmlFor={f.key}>
+              <Input
+                id={f.key}
                 type="date"
-                className="w-full rounded border p-2"
                 value={(answers[f.key] as string) || ""}
                 onChange={(e) => setVal(f.key, e.target.value)}
               />
-            </div>
+            </Field>
           );
         }
         if (f.type === "checkbox") {

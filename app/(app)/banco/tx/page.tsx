@@ -4,9 +4,9 @@
 import TxFilters from "@/components/bank/TxFilters";
 import TxTable from "@/components/bank/TxTable";
 import SavedViewsBar from "@/components/saved-views/SavedViewsBar";
+import OrgInspector from "@/components/shared/OrgInspector";
 import { useSearchParams } from "next/navigation";
 import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
-import SelectActiveOrgCard from "@/components/bank/SelectActiveOrgCard";
 
 export default function BankTxPage() {
   const { orgId, isLoading } = useBankActiveOrg();
@@ -21,27 +21,27 @@ export default function BankTxPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl p-4 md:p-6">
+      <main className="mx-auto max-w-6xl p-4 md:p-6">
         <div className="glass-card bubble text-contrast max-w-md p-6">
           <h1 className="mb-3 text-2xl font-semibold">
             <span className="emoji">🏦</span> Sanoa Bank
           </h1>
           <p className="text-base text-slate-600 dark:text-slate-200/90">Cargando organizaciones…</p>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (!orgId) {
     return (
-      <div className="mx-auto max-w-6xl p-4 md:p-6">
-        <SelectActiveOrgCard />
-      </div>
+      <main className="container py-6">
+        <OrgInspector />
+      </main>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl p-4 md:p-6">
+    <main className="mx-auto max-w-6xl p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Banco · Transacciones</h1>
         <a
@@ -65,6 +65,6 @@ export default function BankTxPage() {
       </div>
 
       <TxTable orgId={orgId} />
-    </div>
+    </main>
   );
 }

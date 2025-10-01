@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Field, Input } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
 export default function RegisterPage() {
@@ -53,8 +52,7 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Correo</Label>
+            <Field label="Correo" htmlFor="email" required>
               <Input
                 id="email"
                 type="email"
@@ -64,9 +62,8 @@ export default function RegisterPage() {
                 required
                 autoComplete="email"
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Contraseña</Label>
+            </Field>
+            <Field label="Contraseña" htmlFor="password" required hint="Mínimo 8 caracteres">
               <Input
                 id="password"
                 type="password"
@@ -77,7 +74,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="new-password"
               />
-            </div>
+            </Field>
             <Button
               type="submit"
               disabled={loading}

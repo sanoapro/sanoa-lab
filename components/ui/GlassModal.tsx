@@ -1,8 +1,10 @@
 // components/ui/GlassModal.tsx
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { Card } from "./card";
 
 type Size = "sm" | "md" | "lg" | "xl";
 
@@ -36,10 +38,10 @@ export default function GlassModal({
   size = "md",
   className,
 }: Props) {
-  const close = () => {
+  const close = useCallback(() => {
     onClose?.();
     onOpenChange?.(false);
-  };
+  }, [onClose, onOpenChange]);
 
   useEffect(() => {
     if (!open) return;
@@ -56,7 +58,7 @@ export default function GlassModal({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [close, open]);
 
   if (!open) return null;
 
@@ -76,29 +78,32 @@ export default function GlassModal({
         aria-label={typeof title === "string" ? title : undefined}
         className="relative z-[121] flex w-full justify-center"
       >
-        <div className={cn("glass-card bubble w-full border border-white/20", sizeMap[size], className)}>
+        <Card className={cn("w-full space-y-0", sizeMap[size], className)}>
           {/* Header */}
           {(title || onClose) ? (
-            <div className="flex items-center justify-between border-b border-white/20 px-5 py-4 text-contrast">
-              {title ? <div className="text-lg font-semibold">{title}</div> : <span />}
+            <header className="flex items-center justify-between border-b border-border/60 px-6 py-4">
+              {title ? <div className="text-lg font-semibold leading-tight">{title}</div> : <span />}
               {onClose ? (
-                <button type="button" className="glass-btn" onClick={close} aria-label="Cerrar">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full"
+                  onClick={close}
+                  aria-label="Cerrar"
+                >
                   ✖
-                </button>
+                </Button>
               ) : null}
-            </div>
+            </header>
           ) : null}
 
           {/* Body */}
-          <div className="px-5 py-4 space-y-4 text-contrast">{children}</div>
+          <div className="px-6 py-5 text-foreground">{children}</div>
 
           {/* Footer */}
-          {footer ? (
-            <div className="border-t border-white/20 bg-white/40 px-5 py-3 backdrop-blur text-contrast">
-              {footer}
-            </div>
-          ) : null}
-        </div>
+          {footer ? <footer className="border-t border-border/60 px-6 py-4">{footer}</footer> : null}
+        </Card>
       </div>
     </div>
   );

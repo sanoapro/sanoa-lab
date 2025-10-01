@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
+import { Field, Input } from "@/components/ui/field";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 /** Icono oficial de Google “G” (inline, sin archivos extra) */
@@ -158,6 +159,8 @@ function Inner() {
   }
 
   const errId = "login-error";
+  const emailError = err && /credenciales/i.test(err) ? err : undefined;
+  const emailErrorId = emailError ? "login-email-error" : undefined;
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center px-4 py-10">
@@ -177,7 +180,7 @@ function Inner() {
         </div>
 
         <div className="px-6 py-5">
-          {err && (
+          {err && !emailError && (
             <div
               id={errId}
               className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
@@ -189,13 +192,18 @@ function Inner() {
           )}
 
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
-            <label className="block" htmlFor="email">
-              <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
-                <span className="inline-flex items-center gap-2">
+            <Field
+              htmlFor="email"
+              required
+              label={
+                <span className="inline-flex items-center gap-2 text-[var(--color-brand-text)]">
                   <ColorEmoji token="email" size={16} /> Correo electrónico
                 </span>
-              </span>
-              <input
+              }
+              error={emailError}
+              errorId={emailErrorId}
+            >
+              <Input
                 id="email"
                 name="email"
                 type="email"
@@ -203,22 +211,25 @@ function Inner() {
                 autoComplete="email"
                 required
                 aria-required="true"
-                aria-invalid={/credenciales/i.test(err || "") ? true : undefined}
-                aria-describedby={err ? errId : undefined}
+                aria-invalid={emailError ? true : undefined}
+                aria-describedby={emailErrorId ?? (err ? errId : undefined)}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
                 placeholder="tucorreo@ejemplo.com"
+                invalid={Boolean(emailError)}
               />
-            </label>
+            </Field>
 
-            <label className="block" htmlFor="password">
-              <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
-                <span className="inline-flex items-center gap-2">
+            <Field
+              htmlFor="password"
+              required
+              label={
+                <span className="inline-flex items-center gap-2 text-[var(--color-brand-text)]">
                   <ColorEmoji emoji="🔑" size={16} /> Contraseña
                 </span>
-              </span>
-              <input
+              }
+            >
+              <Input
                 id="password"
                 name="password"
                 type="password"
@@ -227,10 +238,10 @@ function Inner() {
                 aria-required="true"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
                 placeholder="••••••••"
+                aria-describedby={err && !emailError ? errId : undefined}
               />
-            </label>
+            </Field>
 
             <button
               type="submit"

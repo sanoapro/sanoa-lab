@@ -7,6 +7,7 @@ import Autocomplete from "@/components/patients/Autocomplete";
 import { listTemplates, type WorkTemplate } from "@/lib/work/templates";
 import { assignWork } from "@/lib/work/assignments";
 import ColorEmoji from "@/components/ColorEmoji";
+import { Field, Input, Textarea } from "@/components/ui/field";
 
 const MODULES = ["general", "mente", "equilibrio", "sonrisa", "pulso"] as const;
 type Module = (typeof MODULES)[number];
@@ -104,21 +105,24 @@ export default function AssignForm() {
           {patient && <p className="text-xs text-slate-500 mt-1">Paciente: {patient.name}</p>}
         </div>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-slate-500">Fecha límite (opcional)</span>
-          <input
+        <Field
+          label={<span className="text-slate-500">Fecha límite (opcional)</span>}
+          htmlFor="assign-due-at"
+          className="md:col-span-1"
+        >
+          <Input
+            id="assign-due-at"
             type="datetime-local"
             value={dueAt}
             onChange={(e) => setDueAt(e.target.value)}
-            className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+            className="bg-white dark:bg-slate-900"
           />
-        </label>
+        </Field>
       </div>
 
       {/* Configuración de la tarea */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-slate-500">Módulo</span>
+        <Field label={<span className="text-slate-500">Módulo</span>} className="md:col-span-1">
           <select
             value={module}
             onChange={(e) => setModule(e.target.value as Module)}
@@ -130,10 +134,9 @@ export default function AssignForm() {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label className="flex flex-col gap-1 md:col-span-2">
-          <span className="text-sm text-slate-500">Plantilla (opcional)</span>
+        <Field label={<span className="text-slate-500">Plantilla (opcional)</span>} className="md:col-span-2">
           <select
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={templateId}
@@ -146,35 +149,32 @@ export default function AssignForm() {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
         {/* Campos sólo si NO hay plantilla */}
         {!templateId && (
           <>
-            <label className="flex flex-col gap-1 md:col-span-3">
-              <span className="text-sm text-slate-500">Título (si no usas plantilla)</span>
-              <input
-                className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+            <Field label={<span className="text-slate-500">Título (si no usas plantilla)</span>} className="md:col-span-3">
+              <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="p.ej., Caminar 20 min diarios"
+                className="bg-white dark:bg-slate-900"
               />
-            </label>
+            </Field>
 
-            <label className="flex flex-col gap-1 md:col-span-3">
-              <span className="text-sm text-slate-500">Contenido (JSON)</span>
-              <textarea
+            <Field label={<span className="text-slate-500">Contenido (JSON)</span>} className="md:col-span-3">
+              <Textarea
                 rows={5}
-                className="rounded-xl border px-3 py-2 font-mono text-xs bg-white dark:bg-slate-900"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                className="font-mono text-xs bg-white dark:bg-slate-900"
               />
-            </label>
+            </Field>
           </>
         )}
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-slate-500">Frecuencia</span>
+        <Field label={<span className="text-slate-500">Frecuencia</span>}>
           <select
             value={frequency}
             onChange={(e) => setFrequency(e.target.value as any)}
@@ -185,19 +185,18 @@ export default function AssignForm() {
             <option value="weekly">Semanal</option>
             <option value="monthly">Mensual</option>
           </select>
-        </label>
+        </Field>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm text-slate-500">Ocurrencias (opcional)</span>
-          <input
+        <Field label={<span className="text-slate-500">Ocurrencias (opcional)</span>}>
+          <Input
             type="number"
             min={1}
             max={100}
             value={occ}
             onChange={(e) => setOcc(e.target.value ? Number(e.target.value) : "")}
-            className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
+            className="bg-white dark:bg-slate-900"
           />
-        </label>
+        </Field>
       </div>
 
       <div className="flex gap-2">

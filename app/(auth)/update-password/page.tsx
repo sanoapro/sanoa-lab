@@ -6,6 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import ColorEmoji from "@/components/ColorEmoji";
+import { Field, Input } from "@/components/ui/field";
 import { showToast } from "@/components/Toaster";
 import { toSpanishError } from "@/lib/i18n-errors";
 
@@ -92,6 +93,10 @@ function UpdatePasswordClient() {
     }
   }
 
+  const lengthError = err && /al menos 8/i.test(err) ? err : undefined;
+  const matchError = err && /no coinciden/i.test(err) ? err : undefined;
+  const generalError = err && !lengthError && !matchError ? err : null;
+
   if (ready === "checking") {
     return (
       <main className="min-h-[100dvh] grid place-items-center p-6 text-[var(--color-brand-bluegray)]">
@@ -128,44 +133,55 @@ function UpdatePasswordClient() {
           </h1>
         </header>
 
-        {err && (
+        {generalError && (
           <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {err}
+            {generalError}
           </div>
         )}
 
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
-              <span className="inline-flex items-center gap-2">
+          <Field
+            label={
+              <span className="inline-flex items-center gap-2 text-[var(--color-brand-text)]">
                 <ColorEmoji token="llave" size={16} /> Nueva contraseña
               </span>
-            </span>
-            <input
+            }
+            required
+            error={lengthError}
+            errorId={lengthError ? "update-password-length" : undefined}
+            hint="Mínimo 8 caracteres"
+          >
+            <Input
               type="password"
               value={p1}
               onChange={(e) => setP1(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-brand-border)] px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
               placeholder="••••••••"
               required
+              invalid={Boolean(lengthError)}
+              aria-describedby={lengthError ? "update-password-length" : undefined}
             />
-          </label>
+          </Field>
 
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-[var(--color-brand-text)]">
-              <span className="inline-flex items-center gap-2">
+          <Field
+            label={
+              <span className="inline-flex items-center gap-2 text-[var(--color-brand-text)]">
                 <ColorEmoji token="llave" size={16} /> Confirmar contraseña
               </span>
-            </span>
-            <input
+            }
+            required
+            error={matchError}
+            errorId={matchError ? "update-password-match" : undefined}
+          >
+            <Input
               type="password"
               value={p2}
               onChange={(e) => setP2(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-brand-border)] px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-bluegray)]"
               placeholder="••••••••"
               required
+              invalid={Boolean(matchError)}
+              aria-describedby={matchError ? "update-password-match" : undefined}
             />
-          </label>
+          </Field>
 
           <button
             type="submit"
