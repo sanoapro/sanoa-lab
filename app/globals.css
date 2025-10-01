@@ -37,13 +37,13 @@
   --shadow-soft: 0 10px 25px 0 rgba(34, 25, 23, 0.06);
   --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
 
-  /* Fuentes (inyectadas por next/font en layout.tsx) */
+  /* Fuentes */
   --font-heading:
-    var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-body:
-    var(--font-lato), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    "Lato", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
   /* ===== Tokens que requieren componentes shadcn (Tailwind v4) ===== */
   --color-background: var(--color-surface);
@@ -492,9 +492,9 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
     gap: 0.5rem;
   }
 
@@ -507,8 +507,8 @@ button {
   }
 
   .glass-btn:focus-visible {
-    outline: 2px solid rgba(14, 165, 233, 0.5);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4);
   }
 
   .glass-btn:disabled {
@@ -523,12 +523,20 @@ button {
 
 @layer utilities {
   .text-contrast {
-    color: rgb(var(--text-contrast));
+    @apply text-slate-700 dark:text-slate-200;
   }
 
   .emoji {
-    font-size: 1.35em;
+    font-size: 1.2em;
     line-height: 1;
+    display: inline-block;
+    transform: translateY(1px);
+  }
+
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
   }
 
   .backdrop-blur {
@@ -555,4 +563,28 @@ button {
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
   }
+}
+
+/* Burbuja: más blur y sombra suave */
+.bubble {
+  border-radius: 1rem;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--glass-shadow);
+  background: rgba(var(--glass-bg));
+  border: 1px solid rgba(var(--glass-stroke));
+}
+
+/* Neón suave: resalta acciones primarias */
+.neon {
+  position: relative;
+}
+
+.neon::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.1rem;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
 }

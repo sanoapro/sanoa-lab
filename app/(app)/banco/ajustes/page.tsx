@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import ColorEmoji from "@/components/ColorEmoji";
+import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
+import { useToast } from "@/components/Toast";
+import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
 
 const MODULES: Array<{
   key: string;
@@ -34,9 +38,8 @@ const MODULES: Array<{
 ];
 
 export default function BancoAjustesPage() {
-  const [orgId] = useState<string>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("org_id") || "" : "",
-  );
+  const { orgId, isLoading: loadingOrg } = useBankActiveOrg();
+  const { toast } = useToast();
   const [threshold, setTh] = useState<string>("0");
   const [channel, setCh] = useState<"whatsapp" | "sms" | "email">("whatsapp");
   const [to, setTo] = useState<string>("");
@@ -48,7 +51,10 @@ export default function BancoAjustesPage() {
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   async function load() {
-    if (!orgId) return;
+    if (!orgId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const r = await fetch(`/api/bank/settings?org_id=${orgId}`);
@@ -64,6 +70,8 @@ export default function BancoAjustesPage() {
 
   async function loadModules() {
     if (!orgId) {
+      setModulesMap({});
+      setModulesActive(false);
       setLoadingModules(false);
       return;
     }
@@ -82,12 +90,22 @@ export default function BancoAjustesPage() {
     }
   }
   useEffect(() => {
-    load();
-    loadModules();
+    if (!orgId) {
+      setLoading(false);
+      setModulesMap({});
+      setModulesActive(false);
+      return;
+    }
+    void load();
+    void loadModules();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
   async function save() {
-    if (!orgId) return alert("Falta org_id");
+    if (!orgId) {
+      toast({ variant: "error", title: "Selecciona una organización" });
+      return;
+    }
     setSaving(true);
     try {
       const cents = Math.max(0, Math.round(Number(threshold || 0) * 100));
@@ -102,8 +120,15 @@ export default function BancoAjustesPage() {
         }),
       });
       const j = await r.json();
-      if (!r.ok) return alert(j?.error || "No se pudo guardar");
-      alert("Ajustes guardados");
+      if (!r.ok) {
+        toast({
+          variant: "error",
+          title: "No se pudo guardar",
+          description: j?.error || "Revisa la conexión e intenta de nuevo",
+        });
+        return;
+      }
+      toast({ variant: "success", title: "Ajustes guardados" });
     } finally {
       setSaving(false);
     }
@@ -111,7 +136,7 @@ export default function BancoAjustesPage() {
 
   async function goToCheckout(moduleKey: string) {
     if (!orgId) {
-      alert("Selecciona una organización activa");
+      toast({ variant: "error", title: "Selecciona una organización activa" });
       return;
     }
     const def = MODULES.find((m) => m.key === moduleKey);
@@ -131,13 +156,51 @@ export default function BancoAjustesPage() {
       });
       const j = await res.json().catch(() => null);
       if (!res.ok || !j?.url) {
-        alert(j?.error || "No se pudo iniciar el checkout");
+        toast({
+          variant: "error",
+          title: "No se pudo iniciar el checkout",
+          description: j?.error ?? "Reintenta en unos minutos",
+        });
         return;
       }
       window.location.href = j.url as string;
     } finally {
       setCheckoutLoading(null);
     }
+  }
+
+  if (loadingOrg) {
+    return (
+      <main className="p-6 md:p-10">
+        <div className="glass-card p-6 max-w-md space-y-2">
+          <div className="h-6 w-48 rounded bg-white/50" />
+          <div className="h-4 w-64 rounded bg-white/40" />
+          <div className="h-4 w-40 rounded bg-white/40" />
+        </div>
+      </main>
+    );
+  }
+
+  if (!orgId) {
+    return (
+      <main className="p-6 md:p-10">
+        <div className="glass-card p-6 max-w-lg space-y-4">
+          <div>
+            <h1 className="text-3xl font-semibold text-[var(--color-brand-text)]">Sanoa Bank · Ajustes</h1>
+            <p className="text-sm text-[var(--color-brand-text)]/70">
+              Activa módulos y gestiona alertas una vez que selecciones una organización.
+            </p>
+          </div>
+          <OrgSwitcherBadge variant="inline" />
+          <Link
+            href="/organizaciones"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm"
+          >
+            Administrar organizaciones
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -152,7 +215,7 @@ export default function BancoAjustesPage() {
         </p>
       </header>
 
-      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 max-w-xl">
+      <section className="glass-card p-6 max-w-xl">
         {loading ? (
           <div className="opacity-70 text-sm">Cargando…</div>
         ) : (
@@ -165,7 +228,7 @@ export default function BancoAjustesPage() {
                 step={10}
                 value={threshold}
                 onChange={(e) => setTh(e.target.value)}
-                className="border rounded-xl p-2 w-full"
+                className="glass-input w-full"
               />
               <div className="text-xs opacity-70">
                 Se alertará cuando el saldo total sea menor a este monto.
@@ -176,7 +239,7 @@ export default function BancoAjustesPage() {
               <select
                 value={channel}
                 onChange={(e) => setCh(e.target.value as any)}
-                className="border rounded-xl p-2 w-full"
+                className="glass-input w-full"
               >
                 <option value="whatsapp">WhatsApp</option>
                 <option value="sms">SMS</option>
@@ -188,7 +251,7 @@ export default function BancoAjustesPage() {
               <input
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="border rounded-xl p-2 w-full"
+                className="glass-input w-full"
                 placeholder="+52..."
               />
             </label>
@@ -203,7 +266,7 @@ export default function BancoAjustesPage() {
         )}
       </section>
 
-      <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] p-6 space-y-4">
+      <section className="glass-card p-6 space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-2xl font-semibold text-[var(--color-brand-text)]">Módulos conectados</h2>

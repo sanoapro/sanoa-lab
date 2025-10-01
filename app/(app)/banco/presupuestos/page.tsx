@@ -1,21 +1,45 @@
 "use client";
 
-import { useMemo } from "react";
-import { getActiveOrg } from "@/lib/org-local";
+import Link from "next/link";
+import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import BudgetsGrid from "@/components/bank/BudgetsGrid";
+import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
 
 export default function BankBudgetsPage() {
-  const org = useMemo(() => getActiveOrg(), []);
-  const orgId = org?.id || "";
+  const { orgId, isLoading } = useBankActiveOrg();
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        <div className="glass-card p-6 max-w-md space-y-2">
+          <div className="h-6 w-48 rounded bg-white/50" />
+          <div className="h-4 w-64 rounded bg-white/40" />
+          <div className="h-4 w-40 rounded bg-white/40" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-2">Banco · Presupuestos</h1>
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+      <h1 className="text-2xl font-semibold">Banco · Presupuestos</h1>
       {!orgId && (
-        <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 mb-4">
-          Selecciona una organización activa para continuar.
-        </p>
+        <div className="glass-card p-6 max-w-lg space-y-4">
+          <div>
+            <p className="text-sm text-[var(--color-brand-text)]/70">
+              Selecciona una organización activa para continuar.
+            </p>
+          </div>
+          <OrgSwitcherBadge variant="inline" />
+          <Link
+            href="/organizaciones"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm"
+          >
+            Administrar organizaciones
+          </Link>
+        </div>
       )}
-      {orgId && <BudgetsGrid />}
+      {orgId && <BudgetsGrid orgId={orgId} />}
     </div>
   );
 }
