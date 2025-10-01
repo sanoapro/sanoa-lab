@@ -206,8 +206,8 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
             }}
           />
           <p className="text-xs text-slate-500 mt-1">
-            window_days, threshold (0–1), min_n, scope ("org"|"resource"|"patient"), resource_ids[],
-            message
+            window_days, threshold (0–1), min_n, scope (&quot;org&quot;|&quot;resource&quot;|&quot;patient&quot;),
+            resource_ids[], message
           </p>
         </div>
 

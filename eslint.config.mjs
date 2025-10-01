@@ -116,6 +116,17 @@ export default [
     },
     rules: {
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/triple-slash-reference": "off",
+      "prefer-const": "off",
+      "prefer-rest-params": "off",
+      "no-empty": "off",
       "react-hooks/exhaustive-deps": "off",
       "import/no-anonymous-default-export": "warn",
       "react/no-unknown-property": "off",

@@ -20,7 +20,11 @@ export default function RiesgoCVD() {
     <Gate
       orgId={orgId}
       featureId="pulso.riesgo.cvd"
-      fallback={<div>Activa "Riesgo cardiovascular" para usar esta calculadora.</div>}
+      fallback={
+        <div>
+          Activa &quot;Riesgo cardiovascular&quot; para usar esta calculadora.
+        </div>
+      }
     >
       <div className="p-6 space-y-4">
         <AccentHeader emoji="🩺">Riesgo cardiovascular (demo)</AccentHeader>

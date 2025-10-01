@@ -12,12 +12,14 @@ export default function SegmentLoader() {
     if ((window as any).analytics) return;
 
     // Snippet Analytics.js (Segment)
-    !(function () {
+    const initSegment = () => {
       const analytics: any = ((window as any).analytics = (window as any).analytics || []);
       if (!analytics.initialize)
-        if (analytics.invoked)
-          window.console && console.error && console.error("Segment snippet included twice.");
-        else {
+        if (analytics.invoked) {
+          if (window.console && console.error) {
+            console.error("Segment snippet included twice.");
+          }
+        } else {
           analytics.invoked = true;
           analytics.methods = [
             "trackSubmit",
@@ -65,7 +67,9 @@ export default function SegmentLoader() {
           analytics.load(writeKey!);
           analytics.page();
         }
-    })();
+    };
+
+    initSegment();
   }, [writeKey]);
 
   return null;
