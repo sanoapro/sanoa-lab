@@ -4,60 +4,47 @@
 
 /* === Design tokens (AA+) === */
 :root {
-  --bg: 0 0% 100%;
-  --fg: 222.2 47.4% 11.2%;
+  --bg: 210 40% 98%;
+  --fg: 222 47% 12%;
   --card: 0 0% 100%;
-  --card-fg: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-fg: 215.4 16.3% 35%;
-  --border: 214.3 31.8% 91.4%;
-  --primary: 221.2 83.2% 53.3%;
+  --card-fg: 222 43% 14%;
+  --muted: 215 32% 94%;
+  --muted-fg: 215 18% 36%;
+  --border: 214 30% 88%;
+  --primary: 221 84% 56%;
   --primary-fg: 210 40% 98%;
-  --secondary: 262 83% 58%;
+  --secondary: 265 82% 61%;
   --secondary-fg: 210 40% 98%;
-  --success: 142.1 70% 42%;
+  --success: 142 72% 40%;
   --success-fg: 210 40% 98%;
   --danger: 0 72% 50%;
   --danger-fg: 210 40% 98%;
-  --warning: 45 93% 47%;
+  --warning: 45 94% 50%;
   --warning-fg: 20 14% 5%;
-  /* rgb triplets (no %): usar con rgb(var(--contrast)) */
   --contrast: 15 23 42;
-
-  /* Glass defaults */
-  --glass-bg: 255 255 255;
-  --glass-alpha: 0.14;
-  --glass-border: 255 255 255;
-
-  /* Ring color (rgb) */
-  --ring: 37 99 235;
+  --ring: 60 130 246;
 }
 
 [data-theme="dark"], .dark {
-  --bg: 222.2 84% 5%;
-  --fg: 210 40% 98%;
-  --card: 222.2 47% 12%;
-  --card-fg: 210 40% 98%;
-  --muted: 217 33% 17%;
-  --muted-fg: 215 20% 75%;
-  --border: 217 33% 22%;
-  --primary: 217.2 91% 60%;
-  --primary-fg: 222.2 47% 12%;
-  --secondary: 262 83% 62%;
-  --secondary-fg: 222.2 47% 12%;
-  --success: 142.1 70% 48%;
+  --bg: 222 47% 6%;
+  --fg: 210 40% 96%;
+  --card: 222 47% 11%;
+  --card-fg: 214 32% 96%;
+  --muted: 220 30% 18%;
+  --muted-fg: 220 18% 72%;
+  --border: 220 26% 28%;
+  --primary: 220 82% 66%;
+  --primary-fg: 222 47% 12%;
+  --secondary: 266 76% 68%;
+  --secondary-fg: 222 47% 12%;
+  --success: 143 72% 52%;
   --success-fg: 210 40% 98%;
   --danger: 0 72% 55%;
   --danger-fg: 210 40% 98%;
-  --warning: 48 96% 55%;
+  --warning: 48 96% 58%;
   --warning-fg: 222 47% 12%;
   --contrast: 248 250 252;
-
-  --glass-bg: 18 22 28;
-  --glass-alpha: 0.28;
-  --glass-border: 255 255 255;
-
-  --ring: 60 131 246;
+  --ring: 86 128 255;
 }
 
 /* Base */
@@ -83,10 +70,10 @@ body {
 
 /* ====== Tipografía global ====== */
 @layer base {
-  body { @apply text-[15px] leading-relaxed; }
-  h1 { @apply text-[22px] font-semibold leading-tight; }
-  h2 { @apply text-[20px] font-semibold leading-snug; }
-  h3 { @apply text-lg font-semibold leading-snug; }
+  body { @apply text-base leading-relaxed; }
+  h1 { @apply text-3xl font-semibold leading-tight; }
+  h2 { @apply text-2xl font-semibold leading-snug; }
+  h3 { @apply text-xl font-semibold leading-snug; }
   p  { @apply leading-relaxed; }
   small { @apply text-xs sm:text-sm; }
 }
@@ -105,94 +92,82 @@ body {
 /* Emojis consistentes */
 .emoji {
   display: inline-block;
-  font-size: 1.3em;         /* (antes 1.25em) */
+  font-size: 1.35em;
   line-height: 1;
   transform: translateY(2px);
 }
 
-/* Navbar vidrio */
+/* Navbar */
 .navbar{
   position: sticky;
   top: 0;
   z-index: 40;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: hsl(var(--bg) / 0.88);
+  border-bottom: 1px solid hsl(var(--border));
 }
 
-/* Cards genéricas (Tailwind + custom) */
-.card { @apply rounded-xl bg-card text-card-foreground shadow border border-border; }
-.card-hover:hover { @apply shadow-lg; }
-
-/* Glass card */
-.glass-card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
-  border: 1px solid rgba(255,255,255,0.14);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
-  border-radius: 1rem;
-  padding: 1rem;
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+/* Cards genéricas */
+.card {
+  @apply rounded-2xl border border-border bg-card text-card-foreground shadow-card transition-shadow duration-300 ease-soft;
 }
-.glass-card.bubble{
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18);
+.card:hover {
+  @apply shadow-card-hover;
+}
+
+.card-hover {
+  @apply transition-shadow duration-300 ease-soft;
+}
+.card-hover:hover {
+  @apply shadow-card-hover;
+}
+
+.glass-card {
+  @apply card;
 }
 
 /* Botón base */
 .btn-base {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition;
-  @apply h-11 px-4;
+  @apply inline-flex h-12 items-center justify-center gap-2 rounded-xl px-5 text-base font-semibold transition-all duration-200 ease-soft shadow-sm;
+}
+.btn-base:hover {
+  @apply shadow-md;
+}
+.btn-base:active {
+  transform: translateY(1px);
 }
 
-/* Glass button */
-.glass-btn{
-  background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06));
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
-  color: inherit;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
+.glass-btn {
+  @apply btn-base border border-border bg-muted text-foreground;
 }
-.glass-btn:hover{
-  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
+.glass-btn:hover {
+  @apply bg-muted/80;
 }
-.glass-btn.primary{ outline: 1px solid rgba(86,156,214,0.40); } /* usa “acento frío” del branch alterno */
-.glass-btn.danger{ outline: 1px solid rgba(244,63,94,0.45); }
-
-button, .glass-btn { font-size: 0.98rem; }
+.glass-btn.primary {
+  @apply bg-primary text-primary-foreground shadow-card;
+}
+.glass-btn.danger {
+  @apply bg-danger text-danger-foreground;
+}
+.glass-btn.neon {
+  @apply bg-secondary text-secondary-foreground shadow-card;
+}
 
 /* Inputs */
-.input{
-  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
-  border: 1px solid rgba(255,255,255,0.16);
-  width: 100%;
-  border-radius: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.97rem;
-  color: inherit;
+.input {
+  @apply w-full rounded-xl border border-border bg-muted px-4 py-3 text-base text-foreground transition-shadow duration-200 ease-soft;
 }
-.input::placeholder{ color: rgba(255,255,255,0.5); }
-.input:focus{
-  outline: 2px solid rgba(86,156,214,0.6);
-  box-shadow: 0 0 0 4px rgba(86,156,214,0.18);
+.input::placeholder {
+  color: hsl(var(--muted-fg));
+  opacity: 0.7;
+}
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
 }
 
 /* Badge */
 .badge{
-  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
-  border: 1px solid rgba(255,255,255,0.18);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.65rem;
-  font-size: 0.75rem;
-  color: inherit;
+  @apply inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground;
 }
