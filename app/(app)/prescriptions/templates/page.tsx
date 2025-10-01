@@ -1,17 +1,20 @@
 import TemplatePicker from "@/components/prescriptions/TemplatePicker";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export default function RxTemplatesPage() {
+export const metadata = { title: "Plantillas de Recetas" };
+
+export default function Page() {
   return (
-    <main className="container py-6">
-      <Card className="card-hover">
-        <CardHeader>
-          <CardTitle className="font-bold">Plantillas de Recetas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TemplatePicker />
-        </CardContent>
-      </Card>
+    <main className="container py-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold">Plantillas</h1>
+          <p className="text-sm text-muted-foreground">
+            Crea y edita plantillas. Se guardan automáticamente.
+          </p>
+        </div>
+      </div>
+
+      <TemplatePicker />
     </main>
   );
 }
