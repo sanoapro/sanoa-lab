@@ -163,6 +163,215 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
       notes: "Precaución en gastritis/úlcera; evitar en ERC avanzada.",
     },
   },
+
+  // ===== Top 20 por especialidad — Lote 1 =====
+  // ===== Mente (Psiquiatría/Psicología) =====
+  {
+    id: "b0b74294-d439-4d45-9143-a2c4f8f4d7c1",
+    name: "Mente — Sertralina 50–100 mg c/24 h",
+    specialty: "Psiquiatría / Psicología",
+    content: {
+      text:
+        "Sertralina 50–100 mg VO cada 24 horas. Ajustar dosis según respuesta clínica y tolerancia. Indicado para depresión y trastornos de ansiedad.",
+      notes: "Controlar síntomas y efectos adversos a las 4–6 semanas.",
+    },
+  },
+  {
+    id: "a934e669-76a4-4df6-a442-140a89458d6a",
+    name: "Mente — Fluoxetina 20 mg c/24 h",
+    specialty: "Psiquiatría / Psicología",
+    content: {
+      text:
+        "Fluoxetina 20 mg VO cada 24 horas. Administrar por la mañana. Primera línea para depresión mayor y trastorno de ansiedad generalizada.",
+      notes: "Evaluar riesgo de interacciones (inhibidor CYP2D6).",
+    },
+  },
+  {
+    id: "50a9d8f8-29d5-45b3-9dbf-2933cbe2ef0d",
+    name: "Mente — Quetiapina 25–100 mg nocte",
+    specialty: "Psiquiatría / Psicología",
+    content: {
+      text:
+        "Quetiapina 25–100 mg VO nocte. Titular según respuesta para insomnio asociado a ansiedad. Vigilar sedación y aumento de peso.",
+      notes: "Control metabólico cada 3–6 meses.",
+    },
+  },
+  {
+    id: "1fe0ad32-6305-4a50-a3b1-66459a612c80",
+    name: "Mente — Clonazepam 0.25–1 mg PRN",
+    specialty: "Psiquiatría / Psicología",
+    content: {
+      text:
+        "Clonazepam 0.25–1 mg VO según necesidad para crisis de ansiedad. Uso máximo 14 días. Evitar suspensión abrupta.",
+      notes: "Precaución en adultos mayores y depresión respiratoria.",
+    },
+  },
+  {
+    id: "ce62118a-f864-4b7d-b4d6-73368bd64e2f",
+    name: "Mente — Trazodona 50–100 mg nocte",
+    specialty: "Psiquiatría / Psicología",
+    content: {
+      text:
+        "Trazodona 50–100 mg VO nocte. Útil para insomnio asociado a depresión o ansiedad. Ajustar según respuesta y tolerancia.",
+      notes: "Advertir sobre hipotensión ortostática y priapismo.",
+    },
+  },
+
+  // ===== Pulso (Medicina Interna) =====
+  {
+    id: "e42fd32f-5d22-4a96-857d-4f0d3a1d1f90",
+    name: "Pulso — Losartán 50 mg c/24 h",
+    specialty: "Medicina Interna",
+    content: {
+      text:
+        "Losartán 50 mg VO cada 24 horas. Ajustar a 100 mg si no alcanza meta tensional. Monitorizar función renal y potasio.",
+      notes: "Suspender en embarazo o hiperpotasemia.",
+    },
+  },
+  {
+    id: "ef314814-efb8-4a75-84dc-8f5f2a13d910",
+    name: "Pulso — Metformina 850 mg c/12 h",
+    specialty: "Medicina Interna",
+    content: {
+      text:
+        "Metformina 850 mg VO cada 12 horas con alimentos. Indicado para diabetes tipo 2. Revisar función renal antes de iniciar y periódicamente.",
+      notes: "Suspender si TFG < 30 ml/min/1.73m².",
+    },
+  },
+  {
+    id: "8b274d22-94e9-4544-8655-bb6c15659950",
+    name: "Pulso — Atorvastatina 20 mg nocte",
+    specialty: "Medicina Interna",
+    content: {
+      text:
+        "Atorvastatina 20 mg VO nocte. Indicada para dislipidemia o prevención cardiovascular. Ajustar según metas de LDL.",
+      notes: "Controlar transaminasas al inicio y si hay síntomas musculares.",
+    },
+  },
+  {
+    id: "7263b173-c2cd-4a6c-bb5f-f1e3562092d6",
+    name: "Pulso — Furosemida 20 mg c/24–48 h PRN",
+    specialty: "Medicina Interna",
+    content: {
+      text:
+        "Furosemida 20 mg VO cada 24–48 horas según edema. Ajustar de acuerdo con respuesta y peso diario.",
+      notes: "Vigilar electrólitos y función renal.",
+    },
+  },
+  {
+    id: "4a6fb5bc-7bad-4d85-9142-63c02319a5f9",
+    name: "Pulso — Omeprazol 20 mg c/24 h",
+    specialty: "Medicina Interna",
+    content: {
+      text:
+        "Omeprazol 20 mg VO cada 24 horas durante 4–8 semanas. Administrar en ayunas. Reevaluar necesidad tras el ciclo inicial.",
+      notes: "Uso prolongado puede asociarse a hipomagnesemia y fracturas.",
+    },
+  },
+
+  // ===== Equilibrio (Hábitos y estilo de vida) =====
+  {
+    id: "9b2fd465-9f8e-46a3-8a7f-8fe7f5e315e0",
+    name: "Equilibrio — Plan de sueño",
+    specialty: "Hábitos y Bienestar",
+    content: {
+      text:
+        "Plan de sueño: objetivo 7–8 horas por noche. Implementar higiene digital (sin pantallas 60 min antes de dormir) y rutina fija de despertar y descanso.",
+      notes: "Registrar horario en agenda y revisar adherencia semanal.",
+    },
+  },
+  {
+    id: "cf4c23c0-28a9-4a86-98c2-5cb1b1f912c8",
+    name: "Equilibrio — Plan de ejercicio",
+    specialty: "Hábitos y Bienestar",
+    content: {
+      text:
+        "Plan de ejercicio: 150 minutos semanales de actividad aeróbica moderada + 2 sesiones de fuerza. Incluir calentamiento y enfriamiento.",
+      notes: "Revaluar intensidad cada 4 semanas.",
+    },
+  },
+  {
+    id: "0d661d63-7f0f-4041-8d0e-5dc74f951a26",
+    name: "Equilibrio — Plan de nutrición",
+    specialty: "Hábitos y Bienestar",
+    content: {
+      text:
+        "Plan de nutrición: aplicar plato saludable (½ vegetales, ¼ proteína, ¼ carbohidratos integrales), estrategia 80/20 y consumo de agua 2 L/día.",
+      notes: "Registrar diario de alimentos y reforzar educación nutricional.",
+    },
+  },
+  {
+    id: "d6f04014-c17c-4a3f-8083-eed96ec08c07",
+    name: "Equilibrio — Plan de respiración 4-7-8",
+    specialty: "Hábitos y Bienestar",
+    content: {
+      text:
+        "Plan de respiración: practicar técnica 4-7-8 durante 5–10 minutos al día. Inhalar 4 segundos, sostener 7 segundos y exhalar 8 segundos.",
+      notes: "Sugerir práctica en un ambiente tranquilo, preferiblemente al despertar y antes de dormir.",
+    },
+  },
+  {
+    id: "34546cfa-8f32-44e1-8afb-fb575f5e1fe1",
+    name: "Equilibrio — Plan de reducción de estrés",
+    specialty: "Hábitos y Bienestar",
+    content: {
+      text:
+        "Plan de reducción de estrés: incorporar micro-pausas conscientes tres veces al día. Realizar estiramientos suaves y respiraciones profundas.",
+      notes: "Configurar recordatorios automáticos para favorecer la adherencia.",
+    },
+  },
+
+  // ===== Sonrisa (Odontología) =====
+  {
+    id: "3df10493-4f16-4a0e-8cc2-2a3a9ab90063",
+    name: "Sonrisa — Amoxicilina 500 mg c/8 h",
+    specialty: "Odontología",
+    content: {
+      text:
+        "Amoxicilina 500 mg VO cada 8 horas por 5–7 días en infecciones odontogénicas, siempre que no existan alergias a penicilinas.",
+      notes: "Indicar completar el ciclo aun si hay mejoría temprana.",
+    },
+  },
+  {
+    id: "23ffbfab-eac8-4ed1-9b4d-775132f57f14",
+    name: "Sonrisa — Ibuprofeno 400 mg PRN",
+    specialty: "Odontología",
+    content: {
+      text:
+        "Ibuprofeno 400 mg VO cada 8 horas según dolor dental o inflamación. Tomar después de alimentos.",
+      notes: "Evitar en úlcera péptica activa o insuficiencia renal avanzada.",
+    },
+  },
+  {
+    id: "552d506a-7c02-4cc1-8e90-3aaf1406bfb9",
+    name: "Sonrisa — Clorhexidina 0.12% enjuague",
+    specialty: "Odontología",
+    content: {
+      text:
+        "Clorhexidina enjuague 0.12%: utilizar 15 ml sin diluir cada 12 horas durante 7–14 días. Mantener 30 segundos y no enjuagar con agua posterior.",
+      notes: "Advertir sobre posible tinción dental transitoria.",
+    },
+  },
+  {
+    id: "ee2cb2ed-bd98-49a9-8e2f-737e0f720c71",
+    name: "Sonrisa — Paracetamol 1 g PRN",
+    specialty: "Odontología",
+    content: {
+      text:
+        "Paracetamol 1 g VO cada 8 horas según dolor. Máximo 3 g al día salvo indicación distinta. Compatible con lactancia.",
+      notes: "Evitar exceder dosis diaria en hepatopatía.",
+    },
+  },
+  {
+    id: "0a55fba3-2f75-4ea1-9d97-4d17f0cbb2fb",
+    name: "Sonrisa — Naproxeno 500/250 mg",
+    specialty: "Odontología",
+    content: {
+      text:
+        "Naproxeno 500 mg VO dosis inicial, continuar con 250 mg VO cada 8–12 horas según dolor. Administrar con alimentos.",
+      notes: "Contraindicado en úlcera péptica activa o insuficiencia renal severa.",
+    },
+  },
   {
     id: "9e2c9e5b-9a8a-4e0b-9d6a-0f2c0a01a003",
     name: "Amoxicilina 500 mg VO c/8h × 7 días",
