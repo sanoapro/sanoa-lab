@@ -1,63 +1,33 @@
 // app/(app)/consultorio/page.tsx
-"use client";
-
-import * as React from "react";
-import Link from "next/link";
-
 import PatientAutocomplete from "@/components/patients/PatientAutocomplete";
-import { getActiveOrg } from "@/lib/org-local";
+import OrgInspector from "@/components/shared/OrgInspector";
 
-export default function Consultorio() {
-  const orgId = React.useMemo(() => getActiveOrg()?.id ?? "", []);
+export const metadata = { title: "Mi Consultorio" };
+
+export default function Page() {
+  // Si tuvieras un hook de organización, úsalo; aquí lo dejamos simple
+  const hasOrg = true; // sustituye por tu estado real
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">
-        <span className="emoji">🏥</span> Mi Consultorio
-      </h1>
-      <div className="text-contrast">
-        Tu centro operativo: agenda, pacientes, recetas, laboratorio, recordatorios.
-      </div>
-
-      <div className="glass-card bubble">
-        <label className="block mb-2 font-medium">Buscar paciente</label>
-        <div className="relative">
-          <div className="relative z-10 pointer-events-auto">
-            <PatientAutocomplete
-              orgId={orgId}
-              scope="org"
-              placeholder="Buscar paciente"
-              onSelect={(hit) => {
-                const pid = (hit as any)?.id ?? (hit as any)?.patient_id;
-                if (pid) window.location.href = `/pacientes/${pid}`;
-              }}
-            />
-          </div>
-        </div>
+    <main className="container py-6 space-y-6">
+      <div>
+        <h1 className="text-xl font-bold">Mi Consultorio</h1>
         <p className="text-sm text-muted-foreground">
-          Solo se muestran pacientes de tu organización.
+          Tu centro operativo: agenda, pacientes, recetas, laboratorio, recordatorios.
         </p>
-        {!orgId && (
-          <p className="text-xs text-contrast/70">
-            Conéctate a una organización para ver resultados.
-          </p>
-        )}
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        <Link href="/agenda" className="glass-btn">
-          <span className="emoji">🗓️</span> Agenda
-        </Link>
-        <Link href="/pacientes" className="glass-btn">
-          <span className="emoji">👤</span> Pacientes
-        </Link>
-        <Link href="/prescriptions/templates" className="glass-btn">
-          <span className="emoji">💊</span> Recetas
-        </Link>
-        <Link href="/laboratorio" className="glass-btn">
-          <span className="emoji">🧪</span> Laboratorio
-        </Link>
-      </div>
-    </div>
+      {!hasOrg ? (
+        <OrgInspector />
+      ) : (
+        <section className="space-y-2">
+          <label className="text-sm font-medium">Buscar paciente</label>
+          <PatientAutocomplete />
+          <p className="text-xs text-muted-foreground">
+            Solo se muestran pacientes de tu organización.
+          </p>
+        </section>
+      )}
+    </main>
   );
 }
