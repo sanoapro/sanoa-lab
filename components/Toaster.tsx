@@ -35,7 +35,7 @@ export function showToast(
   } catch {}
 }
 
-export default function Toaster() {
+export function Toaster() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
@@ -79,3 +79,5 @@ export default function Toaster() {
     </div>
   );
 }
+
+export default Toaster;

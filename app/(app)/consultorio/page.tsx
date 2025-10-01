@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import PatientAutocomplete from "@/components/patients/PatientAutocomplete";
 import { getActiveOrg } from "@/lib/org-local";
 
@@ -97,7 +98,7 @@ function CardLink({
   desc: string;
 }) {
   return (
-    <a href={href} className="rounded-2xl border p-4 hover:shadow-sm transition">
+    <Link href={href} className="glass-card p-4 hover:shadow-lg transition" prefetch>
       <div className="flex items-start gap-3">
         <div className="h-10 w-10 rounded-xl border inline-grid place-content-center">
           <span className="emoji">{/* opcional: ícono según token */}</span>
@@ -107,6 +108,6 @@ function CardLink({
           <p className="text-sm text-slate-600">{desc}</p>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
