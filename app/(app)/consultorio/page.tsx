@@ -1,3 +1,4 @@
+// app/(app)/consultorio/page.tsx
 "use client";
 
 import * as React from "react";
@@ -20,18 +21,25 @@ export default function Consultorio() {
 
       <div className="glass-card bubble">
         <label className="block mb-2 font-medium">Buscar paciente</label>
-        <PatientAutocomplete
-          orgId={orgId}
-          scope="org"
-          placeholder="Escribe nombre del paciente…"
-          onSelect={(hit) => {
-            const pid = (hit as any)?.id ?? (hit as any)?.patient_id;
-            if (pid) window.location.href = `/pacientes/${pid}`;
-          }}
-        />
-        <p className="mt-2 text-sm text-contrast">
-          Solo aparecen pacientes de tu organización.
-        </p>
+        <div className="relative">
+          <div className="relative z-10 pointer-events-auto">
+            <PatientAutocomplete
+              orgId={orgId}
+              scope="org"
+              placeholder="Buscar paciente"
+              onSelect={(hit) => {
+                const pid = (hit as any)?.id ?? (hit as any)?.patient_id;
+                if (pid) window.location.href = `/pacientes/${pid}`;
+              }}
+            />
+          </div>
+        </div>
+        <p className="mt-2 text-sm text-contrast">Solo aparecen pacientes de tu organización.</p>
+        {!orgId && (
+          <p className="text-xs text-contrast/70">
+            Conéctate a una organización para ver resultados.
+          </p>
+        )}
       </div>
 
       <div className="flex gap-2 flex-wrap">
