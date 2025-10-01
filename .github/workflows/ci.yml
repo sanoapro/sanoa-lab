@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: CI - Build & Sentry Sourcemaps
 
 on:
@@ -9,18 +10,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Sentry (Settings > Secrets and variables > Actions)
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
       SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
       SENTRY_RELEASE: ${{ github.sha }}
       NEXT_PUBLIC_SENTRY_ENV: production
-
-      # App vars
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_SITE_URL: https://example.com
-
-      # DSN (elige una de las dos líneas; comenta la otra)
       # NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
       NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
 
@@ -28,23 +24,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 1) PNPM primero (exponer binario en PATH)
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+
+      # 2) Node + caché nativa de pnpm (ya existe pnpm)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'   # Node 20.x
-          cache: 'pnpm'        # habilita caché para pnpm (requiere pnpm instalado)
-
-      # **Clave**: activar Corepack y la versión de pnpm del packageManager
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Use repo's pnpm version
-        run: corepack prepare pnpm@10.17.1 --activate
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Show versions
         run: |
           node -v
           pnpm -v
+          which pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
