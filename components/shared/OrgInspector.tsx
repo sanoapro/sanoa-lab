@@ -1,11 +1,15 @@
+Aquí está el archivo unificado, conservando todo lo útil de ambas ramas y resolviendo los conflictos de tipos/imports:
+
+```tsx
 // components/shared/OrgInspector.tsx
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 
 type Props = {
-  children?: React.ReactNode;
+  children?: ReactNode;
   title?: string;
   description?: string;
 };
@@ -49,3 +53,4 @@ export default function OrgInspector({
 
   return <>{children}</>;
 }
+```
