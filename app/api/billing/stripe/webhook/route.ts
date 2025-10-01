@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   if (!whsec) return NextResponse.json({ error: "Missing STRIPE_WEBHOOK_SECRET in env" }, { status: 500 });
 
   const client = stripe;
-  if (!client) return NextResponse.json({ error: "Stripe no está configurado" }, { status: 500 });
+  if (!client) return NextResponse.json({ error: "Stripe no está configurado" }, { status: 501 });
 
   const payload = await req.text();
   let event: Stripe.Event;
