@@ -1,5 +1,8 @@
 "use client";
 
+// Conserva compatibilidad: export por defecto del inspector existente
+export { default } from "@/components/organizations/ActiveOrgInspector";
+
 import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import {
   Card,
@@ -10,7 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function OrgInspector({ ctaHref = "/ajustes" }: { ctaHref?: string }) {
+// Export nombrado opcional con la UI en tarjeta
+export function OrgInspector({ ctaHref = "/ajustes" }: { ctaHref?: string }) {
   return (
     <Card className="card-hover">
       <CardHeader>
