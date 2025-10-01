@@ -1,6 +1,5 @@
 "use client";
 
-import "@/sentry.client.config";
 import type { ReactNode } from "react";
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -76,15 +75,32 @@ function ensureSegment(writeKey: string) {
   }
 }
 
+// ---- Sentry (opcional) ----
+let sentryAttempted = false;
+function tryLoadSentry() {
+  if (sentryAttempted) return;
+  sentryAttempted = true;
+
+  // Sólo intenta si hay DSN configurado
+  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
+  if (!dsn) return;
+
+  // Desde app/providers.tsx, el root está 1 nivel arriba
+  import("../sentry.client.config").catch(() => {
+    // Si no existe el archivo, no hacemos nada y evitamos romper el build
+  });
+}
+
 /** Hook bridge: usa hooks de navegación y dispara page() */
 function QueryParamsBridge() {
   const pathname = usePathname();
   const search = useSearchParams();
 
-  // Cargar Segment una vez
+  // Cargar Segment y (opcional) Sentry una vez
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY ?? "";
     ensureSegment(key);
+    tryLoadSentry();
   }, []);
 
   // Pageview en cada cambio de ruta o query
