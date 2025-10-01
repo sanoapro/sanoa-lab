@@ -1,3 +1,4 @@
+// app/(app)/consultorio/page.tsx
 "use client";
 
 import * as React from "react";
@@ -33,11 +34,11 @@ export default function Consultorio() {
             />
           </div>
         </div>
-        <p className="mt-2 text-sm text-contrast">
-          Solo aparecen pacientes de tu organización.
-        </p>
+        <p className="mt-2 text-sm text-contrast">Solo aparecen pacientes de tu organización.</p>
         {!orgId && (
-          <p className="text-xs text-contrast/70">Conéctate a una organización para ver resultados.</p>
+          <p className="text-xs text-contrast/70">
+            Conéctate a una organización para ver resultados.
+          </p>
         )}
       </div>
 
