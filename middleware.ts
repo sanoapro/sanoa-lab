@@ -28,34 +28,37 @@ function getIp(req: NextRequest) {
 }
 
 export function middleware(req: NextRequest) {
-  if (DISABLED) return NextResponse.next();
+  if (!DISABLED) {
+    const ip = getIp(req);
+    const key = `${ip}:${new URL(req.url).pathname}`;
+    const now = Date.now();
 
-  // Sólo corre para matcher (ver config abajo)
-  const ip = getIp(req);
-  const key = `${ip}:${new URL(req.url).pathname}`;
-  const now = Date.now();
-
-  const b = buckets.get(key);
-  if (!b || now > b.resetAt) {
-    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return NextResponse.next();
+    const bucket = buckets.get(key);
+    if (!bucket || now > bucket.resetAt) {
+      buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    } else if (bucket.count >= MAX_REQ) {
+      const res = NextResponse.json(
+        { ok: false, error: { code: "RATE_LIMITED", message: "Too Many Requests" } },
+        { status: 429 },
+      );
+      res.headers.set("Retry-After", String(Math.ceil((bucket.resetAt - now) / 1000)));
+      return res;
+    } else {
+      bucket.count += 1;
+      buckets.set(key, bucket);
+    }
   }
 
-  if (b.count >= MAX_REQ) {
-    const res = NextResponse.json(
-      { ok: false, error: { code: "RATE_LIMITED", message: "Too Many Requests" } },
-      { status: 429 },
-    );
-    res.headers.set("Retry-After", String(Math.ceil((b.resetAt - now) / 1000)));
-    return res;
+  const url = req.nextUrl.clone();
+  if (url.pathname === "/areas") {
+    url.pathname = "/especialidades";
+    return NextResponse.redirect(url);
   }
 
-  b.count += 1;
-  buckets.set(key, b);
   return NextResponse.next();
 }
 
 // Aplica sólo a rutas automatizadas / webhooks / notificaciones
 export const config = {
-  matcher: ["/api/integrations/:path*", "/api/jobs/:path*", "/api/notify/:path*"],
+  matcher: ["/api/integrations/:path*", "/api/jobs/:path*", "/api/notify/:path*", "/areas"],
 };
