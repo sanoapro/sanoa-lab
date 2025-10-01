@@ -2,168 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ====== Variables de tema (claro/oscuro) ====== */
 :root{
-  --bg: 246 246 249;         /* #F6F6F9 */
-  --ink: 20 23 31;           /* texto base */
-  --muted: 90 95 110;
-  --surface: 255 255 255;    /* capas */
-  --contrast: 20 23 31;      /* para text-contrast */
-  --glass-bg: 255 255 255;
-  --glass-alpha: 0.14;
-  --glass-border: 255 255 255;
-  --ring: 59 130 246;        /* azul ring */
+  --bg: 12 12 14;
+  --fg: 240 240 244;
+  --muted: 180 180 190;
+  --ac: 86 156 214; /* acento frío */
 }
 
-.dark{
-  --bg: 10 12 16;            /* #0A0C10 */
-  --ink: 234 238 247;
-  --muted: 170 175 189;
-  --surface: 20 24 32;
-  --contrast: 234 238 247;
-  --glass-bg: 18 22 28;
-  --glass-alpha: 0.28;       /* más opaco en dark para contraste */
-  --glass-border: 255 255 255;
-  --ring: 99 102 241;        /* indigo ring */
+html { font-size: 17px; }
+@media (min-width: 1024px){ html{ font-size: 18px; } }
+
+body{
+  color: rgb(var(--fg));
+  background:
+    radial-gradient(1200px 800px at 10% -20%, rgba(255,255,255,0.06), transparent 60%),
+    radial-gradient(900px 600px at 120% 20%, rgba(86,156,214,0.15), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15)),
+    rgb(var(--bg));
+  background-attachment: fixed;
+  margin: 0;
 }
 
-html, body {
-  @apply bg-[rgb(var(--bg))] text-[rgb(var(--ink))];
-  font-feature-settings: "ss01","ss02","cv01","cv02";
-}
-
-/* ====== Tipografía global ====== */
-@layer base {
-  h1 { @apply text-2xl font-semibold leading-tight; }
-  h2 { @apply text-xl font-semibold leading-snug; }
-  h3 { @apply text-lg font-semibold leading-snug; }
-  p  { @apply leading-relaxed; }
-  small { @apply text-sm; }
-}
-
-/* ====== Helpers ====== */
-.text-contrast { color: rgb(var(--contrast)); }
-.text-contrast\/80 { color: rgb(var(--contrast) / 0.8); }
-.text-contrast\/70 { color: rgb(var(--contrast) / 0.7); }
-
-/* ====== Emojis más grandes y nítidos ====== */
 .emoji {
-  font-size: 1.4em;          /* +40% */
-  line-height: 1;
-  transform: translateY(1px);
-  -webkit-text-size-adjust: 100%;
+  display: inline-block;
+  transform: translateY(2px);
+  font-size: 1.35em;
 }
 
-/* ====== Estilo “Cristal” reutilizable ====== */
-.glass-card {
-  background: color-mix(in oklab, rgb(var(--glass-bg)) calc(var(--glass-alpha) * 100%), transparent);
-  @apply backdrop-blur-md rounded-2xl border border-white/15 shadow-glass p-4;
+.navbar{
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-/* burbuja: borde suave y gradiente sutil */
-.bubble {
-  position: relative;
-  overflow: hidden;
-  @apply p-4;
-}
-.bubble::before{
-  content:"";
-  position:absolute; inset:0;
-  background: radial-gradient(1200px 200px at -10% -20%, rgba(255,255,255,0.18), transparent 45%),
-              linear-gradient(180deg, rgba(255,255,255,0.08), transparent 60%);
-  pointer-events:none;
+.glass-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  border-radius: 1rem;
+  padding: 1rem;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
 }
 
-/* ====== Botón cristal ====== */
-.glass-btn {
-  @apply inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/20 backdrop-blur-sm;
-  background: color-mix(in oklab, rgb(var(--glass-bg)) 22%, transparent);
-  transition: transform .06s ease, background .2s ease, border-color .2s ease;
-}
-.glass-btn:hover { transform: translateY(-1px); background: color-mix(in oklab, rgb(var(--glass-bg)) 30%, transparent); }
-.glass-btn:active { transform: translateY(0); }
-.glass-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(var(--ring), .45); }
-
-/* variantes rápidas */
-.glass-btn.primary {
-  @apply border-transparent;
-  background: linear-gradient(180deg, rgba(59,130,246,.22), rgba(59,130,246,.12));
-}
-.glass-btn.danger {
-  background: linear-gradient(180deg, rgba(244,63,94,.22), rgba(244,63,94,.12));
+.glass-card.bubble{
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18);
 }
 
-/* ====== Inputs / campos ====== */
-.input,
-input[type="text"],
-input[type="search"],
-textarea,
-select {
-  @apply w-full px-3 py-2 rounded-xl border border-white/15 bg-transparent backdrop-blur-sm;
-  color: rgb(var(--contrast));
-}
-.input::placeholder { color: rgb(var(--contrast) / .55); }
-.input:focus,
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none; box-shadow: 0 0 0 2px rgba(var(--ring), .45);
+.glass-btn{
+  background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+  color: rgb(var(--fg));
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
 }
 
-/* Input “cristal” simple */
-.glass-input{
-  @apply w-full rounded-xl border border-white/15;
-  background: color-mix(in oklab, rgb(var(--glass-bg)) 22%, transparent);
-  padding: 10px 12px;
-  color: rgb(var(--contrast));
-  outline: none;
-  backdrop-filter: blur(12px) saturate(140%);
+.glass-btn:hover{
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
 }
-.glass-input:focus{ box-shadow: 0 0 0 3px rgba(var(--ring), .45); }
 
-/* ====== Badges ====== */
+.glass-btn.primary{ outline: 1px solid rgba(var(--ac)/0.4); }
+.glass-btn.danger{ outline: 1px solid rgba(244,63,94,0.45); }
+
+.input{
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.16);
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.97rem;
+  color: rgba(255,255,255,0.9);
+}
+
+.input::placeholder{ color: rgba(255,255,255,0.5); }
+
+.input:focus{
+  outline: 2px solid rgba(var(--ac)/0.6);
+  box-shadow: 0 0 0 4px rgba(var(--ac)/0.18);
+}
+
 .badge{
-  @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm border border-white/15;
-  background: color-mix(in oklab, rgb(var(--glass-bg)) 30%, transparent);
-}
-.badge-active   { background: rgba(34,197,94,.18); }
-.badge-inactive { background: rgba(250,204,21,.18); }
-
-/* ====== Tablas dentro de glass ====== */
-table { @apply w-full; }
-th { @apply text-sm font-semibold text-contrast/80 py-2; }
-td { @apply py-2; }
-
-/* ====== Navbar / layout ====== */
-.navbar {
-  @apply h-14 px-4 flex items-center justify-between sticky top-0 z-40 border-b border-white/10 backdrop-blur-md;
-  background: color-mix(in oklab, rgb(var(--glass-bg)) 18%, transparent);
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
+  border: 1px solid rgba(255,255,255,0.18);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.65rem;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.9);
 }
 
-/* ====== Utilidades de backdrop personalizadas ====== */
-@layer utilities {
-  .backdrop-blur { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-  .backdrop-blur-md { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .backdrop-blur-\[1px\] { backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px); }
-  .backdrop-blur-\[2px\] { backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-}
+.text-contrast\/70{ color: rgba(255,255,255,0.70); }
+.text-contrast\/80{ color: rgba(255,255,255,0.80); }
 
-/* ====== Sidebar / pequeñas utilidades ====== */
-.sidebar{
-  position: sticky; top: 12px;
-  height: calc(100dvh - 24px);
-  padding: 12px;
-}
-.sidebar a{
-  display:flex; align-items:center; gap:10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border:1px solid rgba(var(--glass-border), .15);
-  background: color-mix(in oklab, rgb(var(--glass-bg)) 22%, transparent);
-  margin-bottom: 8px;
-  transition: transform .12s ease, box-shadow .12s ease;
-}
-.sidebar a:hover{ transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
-
-.hover-glow:hover{ box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+button, .glass-btn { font-size: 0.98rem; }
