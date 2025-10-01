@@ -355,6 +355,11 @@ export default function BancoAjustesPage() {
         </div>
       </section>
 
+      <section className="text-sm text-[var(--color-brand-text)]/70">
+        Para activar una especialidad, realiza el checkout en Banco → Reglas/Productos. Tras el pago, tu organización
+        verá la especialidad como activa.
+      </section>
+
       <section className="text-xs text-[var(--color-brand-text)]/60">
         Programa el chequeo automático (cron) en <code>/api/bank/alerts/run</code>.
       </section>

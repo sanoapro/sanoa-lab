@@ -18,11 +18,11 @@ export default function Page() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">
-        <span className="emoji">🧩</span> Especialidades
+      <h1 className="text-2xl font-bold">
+        <span className="emoji">🧭</span> Especialidades
       </h1>
       <p className="text-sm text-contrast/80">
-        Especialidades con herramientas avanzadas. Desbloquea desde Sanoa Bank.
+        Especialidades con herramientas avanzadas. Desbloquéalas desde <strong>Sanoa Bank</strong>.
       </p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -49,8 +49,8 @@ export default function Page() {
                     <span className="emoji">🟢</span> Activo
                   </span>
                 ) : (
-                  <a className="glass-btn neon" href={checkoutUrl} title="Desbloquear en Sanoa Bank">
-                    <span className="emoji">🔓</span> Desbloquear
+                  <a className="glass-btn primary" href={checkoutUrl} title="Desbloquear en Sanoa Bank">
+                    💳 Desbloquear en Sanoa Bank
                   </a>
                 )}
                 <a className="glass-btn" href={`/modulos/${item.key}`}>
