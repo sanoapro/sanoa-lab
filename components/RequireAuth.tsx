@@ -1,6 +1,8 @@
+```tsx
+// components/RequireAuth.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
@@ -9,9 +11,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
-type Props = { children: React.ReactNode };
+type Props = { children: ReactNode };
 
-export default function RequireAuth({ children }: Props) {
+export function RequireAuth({ children }: Props) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
 
@@ -51,4 +53,5 @@ export default function RequireAuth({ children }: Props) {
   return <>{children}</>;
 }
 
-export { RequireAuth };
+export default RequireAuth;
+```
