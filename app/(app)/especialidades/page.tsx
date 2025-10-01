@@ -1,65 +1,49 @@
-// app/(app)/especialidades/page.tsx
 "use client";
 
-import ModuleCard from "@/components/ModuleCard";
-import { useModuleAccess } from "@/components/modules/useModuleAccess";
+import Link from "next/link";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export const metadata = { title: "Especialidades" };
+const MODS = [
+  { slug: "mente", title: "Mente", desc: "Evaluaciones, escalas y planes de apoyo." },
+  { slug: "pulso", title: "Pulso", desc: "Indicadores clínicos, semáforos y riesgo CV." },
+  { slug: "equilibrio", title: "Equilibrio", desc: "Planes de hábitos y seguimiento." },
+  { slug: "sonrisa", title: "Sonrisa", desc: "Odontograma, presupuestos y firma." },
+];
 
-const ITEMS = [
-  { key: "mente", title: "Mente Pro", desc: "Evaluaciones, escalas y planes de apoyo.", emoji: "🧠" },
-  { key: "pulso", title: "Pulso Pro", desc: "Indicadores clínicos, semáforos y riesgo CV.", emoji: "🫀" },
-  { key: "equilibrio", title: "Equilibrio Pro", desc: "Planes de hábitos y seguimiento.", emoji: "⚖️" },
-  { key: "sonrisa", title: "Sonrisa Pro", desc: "Odontograma, presupuestos y firma.", emoji: "😁" },
-] as const;
-
-export default function Page() {
-  const { features, orgId } = useModuleAccess();
-
+export default function EspecialidadesPage() {
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">
+      <h1 className="font-semibold flex items-center gap-2" style={{ fontSize: "1.25rem" }}>
         <span className="emoji">🧩</span> Especialidades
       </h1>
-      <p className="text-sm text-contrast/80">
-        Especialidades con herramientas avanzadas. Desbloquea desde Sanoa Bank.
+      <p className="text-contrast/80" style={{ fontSize: "0.95rem" }}>
+        Módulos profesionales con herramientas avanzadas.
       </p>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {ITEMS.map((item) => {
-          const active = !!features?.[item.key];
-          const checkoutUrl = orgId
-            ? `/banco?checkout=${item.key}&org_id=${orgId}`
-            : `/banco?checkout=${item.key}`;
-
-          return (
-            <ModuleCard
-              key={item.key}
-              title={
-                <>
-                  <span className="emoji">{item.emoji}</span> {item.title}
-                </>
-              }
-              className="bubble space-y-2"
-            >
-              <p className="text-sm text-contrast/85">{item.desc}</p>
-              <div className="flex items-center gap-2">
-                {active ? (
-                  <span className="glass-btn">
-                    <span className="emoji">🟢</span> Activo
-                  </span>
-                ) : (
-                  <a className="glass-btn neon" href={checkoutUrl} title="Desbloquear en Sanoa Bank">
-                    <span className="emoji">🔓</span> Desbloquear
-                  </a>
-                )}
-                <a className="glass-btn" href={`/modulos/${item.key}`}>
-                  <span className="emoji">👀</span> Ver módulo
-                </a>
-              </div>
-            </ModuleCard>
-          );
-        })}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {MODS.map((m) => (
+          <Card key={m.slug} className="bubble">
+            <CardHeader className="space-y-1">
+              <CardTitle className="font-semibold" style={{ fontSize: "1.05rem" }}>
+                {m.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-contrast/85" style={{ fontSize: "0.95rem" }}>
+                {m.desc}
+              </p>
+            </CardContent>
+            <CardFooter className="flex items-center justify-between gap-2">
+              <Button asChild variant="outline">
+                <Link href={`/modulos/${m.slug}`}>Ver módulo</Link>
+              </Button>
+              <Button asChild variant="default">
+                <Link href={`/banco/checkout?product=${m.slug}`}>Desbloquear</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );
