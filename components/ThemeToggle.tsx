@@ -48,6 +48,7 @@ export default function ThemeToggle() {
         aria-pressed={theme === "light"}
         className={btn(theme === "light")}
         title="Modo claro"
+        aria-label="Activar modo claro"
       >
         ☀️ <span className="sr-only">Claro</span>
       </button>
@@ -57,6 +58,7 @@ export default function ThemeToggle() {
         aria-pressed={theme === "system"}
         className={btn(theme === "system")}
         title="Según el sistema"
+        aria-label="Usar tema del sistema"
       >
         🖥️ <span className="sr-only">Sistema</span>
       </button>
@@ -66,6 +68,7 @@ export default function ThemeToggle() {
         aria-pressed={theme === "dark"}
         className={btn(theme === "dark")}
         title="Modo oscuro"
+        aria-label="Activar modo oscuro"
       >
         🌙 <span className="sr-only">Oscuro</span>
       </button>
