@@ -34,7 +34,9 @@ export default function Consultorio() {
             />
           </div>
         </div>
-        <p className="mt-2 text-sm text-contrast">Solo aparecen pacientes de tu organización.</p>
+        <p className="text-sm text-muted-foreground">
+          Solo se muestran pacientes de tu organización.
+        </p>
         {!orgId && (
           <p className="text-xs text-contrast/70">
             Conéctate a una organización para ver resultados.
