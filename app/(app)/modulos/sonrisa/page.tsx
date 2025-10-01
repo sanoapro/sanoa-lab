@@ -1,16 +1,25 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import AccentHeader from "@/components/ui/AccentHeader";
 import ModuleGate from "@/components/modules/ModuleGate";
+import StatusBadge from "@/components/modules/StatusBadge";
+import { useModuleAccess } from "@/components/modules/useModuleAccess";
 import StarterTips from "@/components/modules/StarterTips";
 
 export default function SonrisaPage() {
+  const { active, enabled } = useModuleAccess("sonrisa");
+  const isActive = active && enabled;
+
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
-        title="Sonrisa"
+        title={
+          <span className="flex items-center gap-2">
+            Sonrisa Pro
+            <StatusBadge active={isActive} />
+          </span>
+        }
         subtitle="Odontograma, presupuestos y documentos con firma."
         emojiToken="sonrisa"
       />

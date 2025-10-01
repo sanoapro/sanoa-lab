@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useToast } from "@/components/Toast";
 
@@ -32,6 +33,7 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
     category_id: "",
     amount_cents: 0,
   });
+  const categoryRef = useRef<HTMLSelectElement | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -104,6 +106,7 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
               className="glass-input"
               value={row.category_id}
               onChange={(e) => setRow((r) => ({ ...r, category_id: e.target.value }))}
+              ref={categoryRef}
             >
               <option value="">Selecciona</option>
               {cats.map((c) => (
@@ -123,8 +126,11 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
             />
           </div>
           <div>
-            <button className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm hover:shadow-sm" onClick={upsertBudget}>
-              Guardar
+            <button
+              className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm hover:shadow-sm"
+              onClick={upsertBudget}
+            >
+              <span className="emoji">💾</span> Guardar presupuesto
             </button>
           </div>
         </div>
@@ -150,7 +156,27 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
             {!loading && budgets.length === 0 && (
               <tr>
                 <td className="px-3 py-6 text-center" colSpan={3}>
-                  Sin presupuestos para el mes.
+                  <div className="mx-auto max-w-md space-y-3 text-sm text-contrast/80">
+                    <p className="font-medium text-contrast">Sin presupuestos para este mes.</p>
+                    <p>
+                      Usa el formulario superior para definir límites por categoría y monitorear tus desvíos.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-medium">
+                      <button
+                        type="button"
+                        onClick={() => categoryRef.current?.focus()}
+                        className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80"
+                      >
+                        <span className="emoji">📝</span> Crear presupuesto
+                      </button>
+                      <Link
+                        href="/banco/reglas"
+                        className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80"
+                      >
+                        <span className="emoji">⚙️</span> Automatizar clasificaciones
+                      </Link>
+                    </div>
+                  </div>
                 </td>
               </tr>
             )}
