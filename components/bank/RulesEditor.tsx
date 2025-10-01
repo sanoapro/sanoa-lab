@@ -40,11 +40,11 @@ export default function RulesEditor() {
     let alive = true;
     async function run() {
       setLoading(true);
-      // reglas por API (RLS por sesión)
+      // reglas por API. Solo se muestran pacientes de tu organización.
       const r = await fetch(`/api/bank/rules?org_id=${orgId}`)
         .then((r) => r.json())
         .catch(() => ({ ok: false }));
-      // categorías desde Supabase browser client (RLS)
+      // categorías desde Supabase browser client. Solo se muestran pacientes de tu organización.
       const supa = getSupabaseBrowser();
       const { data: catData } = await supa
         .from("bank_categories")

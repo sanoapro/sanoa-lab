@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   try {
     const supa = await getSupabaseServer();
 
-    // Usuario autenticado (RLS)
+    // Usuario autenticado. Solo se muestran pacientes de tu organización.
     const { data: u } = await supa.auth.getUser();
     if (!u?.user) {
       return NextResponse.json(
