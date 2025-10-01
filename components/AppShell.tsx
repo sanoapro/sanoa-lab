@@ -1,22 +1,24 @@
-import type { ReactNode } from "react";
+"use client";
+import React, { useEffect } from "react";
 import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  // Aplica densidad persistente
+  useEffect(() => {
+    const d = (localStorage.getItem("ui:density") as "compact"|"comfortable"|null) ?? "comfortable";
+    document.documentElement.setAttribute("data-density", d);
+  }, []);
+
   return (
-    // Fondo global ya viene de globals.css (body → --app-bg)
-    <div className="min-h-svh text-[var(--color-brand-text)]">
+    <div className="min-h-dvh">
       <Navbar />
-      <main id="main" role="main" className="mx-auto max-w-6xl px-4 py-8">
-        {children}
-      </main>
-      <footer
-        role="contentinfo"
-        className="surface-light mt-12 border-t border-[var(--color-brand-border)] bg-white/70 backdrop-blur"
-      >
-        <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-[var(--color-brand-text)]/70">
-          Hecho con 🤍 para LATAM — Sanoa
-        </div>
-      </footer>
+      <div className="grid grid-cols-1 lg:grid-cols-[260px,1fr] gap-3 p-3">
+        <Sidebar />
+        <main className="space-y-3">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
