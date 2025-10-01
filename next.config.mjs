@@ -91,6 +91,12 @@ const nextConfig = {
 
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
+  },
+
+  async rewrites() {
+    return [
+      { source: "/api/acuerdos/:path*", destination: "/api/agreements/:path*" }
+    ];
   }
 };
 

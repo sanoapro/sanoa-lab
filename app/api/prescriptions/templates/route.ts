@@ -17,6 +17,7 @@ const UpsertSchema = z.object({
   content: z.any(), // JSON de receta
   is_active: z.boolean().default(true),
 });
+const BulkUpsertSchema = z.union([UpsertSchema, z.array(UpsertSchema)]);
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
@@ -36,15 +37,21 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
   const body = await parseJson(req);
-  const parsed = parseOrError(UpsertSchema, body);
+  const parsed = parseOrError(BulkUpsertSchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
+
+  const records = Array.isArray(parsed.data) ? parsed.data : [parsed.data];
 
   const { data, error } = await supa
     .from("prescription_templates")
-    .upsert(parsed.data, { onConflict: "id" })
-    .select("id")
-    .single();
+    .upsert(records, { onConflict: "id" })
+    .select("id");
 
   if (error) return jsonError("DB_ERROR", error.message, 400);
-  return jsonOk<{ id: string }>(data);
+  const payload = !data
+    ? []
+    : data.length === 1
+      ? data[0]
+      : data;
+  return jsonOk(payload);
 }

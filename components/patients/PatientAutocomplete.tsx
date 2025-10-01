@@ -159,17 +159,19 @@ export default function PatientAutocomplete({
   }, [orgId, query, scope]);
 
   const hasResults = items.length > 0;
+  const trimmedQuery = query.trim();
 
   const helpText = useMemo(() => {
     if (!orgId) return "Selecciona una organización";
-    if (query.trim().length < 2) return "Escribe al menos 2 caracteres";
+    if (trimmedQuery.length < 2) return "Escribe al menos 2 caracteres";
     if (loading) return "Buscando…";
-    if (!hasResults) return "Sin coincidencias";
     return "";
-  }, [orgId, query, loading, hasResults]);
+  }, [orgId, trimmedQuery, loading]);
 
-  const minQuery = query.trim().length >= 2;
-  const showDropdown = open && (hasResults || (!loading && minQuery));
+  const minQuery = trimmedQuery.length >= 2;
+  const showDropdown = open && hasResults;
+  const showNoMatchesFeedback =
+    Boolean(orgId) && minQuery && !loading && !hasResults && Boolean(trimmedQuery);
 
   return (
     <div className="space-y-1 relative" ref={boxRef}>
@@ -193,30 +195,32 @@ export default function PatientAutocomplete({
 
       {helpText && <p className="text-xs text-slate-500">{helpText}</p>}
 
+      {showNoMatchesFeedback && (
+        <p className="text-sm text-contrast/70 mt-1">
+          <span className="emoji">🧐</span> Sin coincidencias.
+        </p>
+      )}
+
       {showDropdown && (
         <div className="absolute left-0 right-0 mt-1 z-50 pointer-events-auto glass-card p-0">
-          {hasResults ? (
-            <ul role="listbox" className="max-h-64 overflow-auto divide-y">
-              {items.map((it) => (
-                <li key={it.id} role="option">
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // evita blur antes de click
-                      onSelect?.(it);
-                      setQuery(it.label);
-                      setOpen(false);
-                    }}
-                  >
-                    {it.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-3 py-2 text-sm text-slate-500">Sin resultados</div>
-          )}
+          <ul role="listbox" className="max-h-64 overflow-auto divide-y">
+            {items.map((it) => (
+              <li key={it.id} role="option">
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // evita blur antes de click
+                    onSelect?.(it);
+                    setQuery(it.label);
+                    setOpen(false);
+                  }}
+                >
+                  {it.label}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
