@@ -1,5 +1,5 @@
-import { permanentRedirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
-export default function AreasPage() {
-  permanentRedirect("/especialidades");
+export default function Page() {
+  redirect("/especialidades");
 }

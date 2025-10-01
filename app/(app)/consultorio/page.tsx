@@ -41,8 +41,8 @@ export default function Consultorio() {
             )}
           </div>
         </div>
-        <p className="mt-2 text-xs text-contrast">
-          * Se muestran pacientes de tu organización.
+        <p className="mt-2 text-sm text-contrast">
+          Solo aparecen pacientes de tu organización.
         </p>
       </div>
 

@@ -3,53 +3,36 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { z } from "zod";
-import { createServiceClient } from "@/lib/supabase/service";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
 
 const Body = z.object({
   org_id: z.string().uuid(),
-  feature: z.enum(["mente", "pulso", "sonrisa", "equilibrio"]),
-  mode: z.enum(["subscription"]).default("subscription"),
+  product: z.enum(["mente", "pulso", "sonrisa", "equilibrio"]),
+  return_path: z.string().default("/banco"),
 });
 
-function priceFor(feature: string) {
-  const map: Record<string, string | undefined> = {
-    mente: process.env.STRIPE_PRICE_MENTE,
-    pulso: process.env.STRIPE_PRICE_PULSO,
-    sonrisa: process.env.STRIPE_PRICE_SONRISA,
-    equilibrio: process.env.STRIPE_PRICE_EQUILIBRIO,
-  };
-  return map[feature];
-}
+const PRICE_ENV: Record<string, string | undefined> = {
+  mente: process.env.STRIPE_PRICE_MENTE,
+  pulso: process.env.STRIPE_PRICE_PULSO,
+  sonrisa: process.env.STRIPE_PRICE_SONRISA,
+  equilibrio: process.env.STRIPE_PRICE_EQUILIBRIO,
+};
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { org_id, feature } = Body.parse(body);
+    const { org_id, product, return_path } = Body.parse(await req.json());
+    const price = PRICE_ENV[product];
+    if (!price) return NextResponse.json({ error: `Falta PRICE para ${product}` }, { status: 400 });
 
-    const price = priceFor(feature);
-    if (!price) {
-      return NextResponse.json({ error: "Falta configurar PRICE para " + feature }, { status: 400 });
-    }
-
-    const supa = createServiceClient();
-    const { data: orgRow, error: orgErr } = await supa
-      .from("orgs")
-      .select("id")
-      .eq("id", org_id)
-      .maybeSingle();
-    if (orgErr) console.warn(orgErr);
-    if (!orgRow) return NextResponse.json({ error: "org_id inválido" }, { status: 400 });
-
-    const origin = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
+    const base = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price, quantity: 1 }],
-      success_url: `${origin}/banco?success=1&org_id=${org_id}&feature=${feature}`,
-      cancel_url: `${origin}/banco?canceled=1&org_id=${org_id}`,
-      metadata: { org_id, feature },
+      success_url: `${base}${return_path}?success=1`,
+      cancel_url: `${base}${return_path}?canceled=1`,
+      metadata: { org_id, product },
     });
 
     return NextResponse.json({ url: session.url });
