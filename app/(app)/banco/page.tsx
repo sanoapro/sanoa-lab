@@ -293,8 +293,8 @@ export default function BancoPage() {
           <p className="mt-2 text-sm text-[var(--color-brand-bluegray)]">
             Explora, filtra y exporta tus movimientos. Acciones masivas y conciliación.
           </p>
-          <span className="inline-flex mt-3 px-3 py-1.5 rounded-lg border text-sm bg-white/60">
-            Abrir tabla
+          <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-lg border text-sm bg-white/60">
+            <ColorEmoji token="tabla" size={16} /> Abrir tabla
           </span>
         </Link>
 
@@ -305,8 +305,8 @@ export default function BancoPage() {
           <p className="mt-2 text-sm text-[var(--color-brand-bluegray)]">
             Clasificación automática por texto, categoría y tags con prioridad.
           </p>
-          <span className="inline-flex mt-3 px-3 py-1.5 rounded-lg border text-sm bg-white/60">
-            Gestionar reglas
+          <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-lg border text-sm bg-white/60">
+            <ColorEmoji token="ajustes" size={16} /> Gestionar reglas
           </span>
         </Link>
 
@@ -317,8 +317,8 @@ export default function BancoPage() {
           <p className="mt-2 text-sm text-[var(--color-brand-bluegray)]">
             Define montos por categoría y mes para controlar desvíos.
           </p>
-          <span className="inline-flex mt-3 px-3 py-1.5 rounded-lg border text-sm bg-white/60">
-            Configurar mes
+          <span className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-lg border text-sm bg-white/60">
+            <ColorEmoji token="plan" size={16} /> Configurar mes
           </span>
         </Link>
       </section>
@@ -384,6 +384,7 @@ export default function BancoPage() {
             disabled={loadingModules}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-2 text-sm font-medium hover:bg-white/80 disabled:opacity-60"
           >
+            <ColorEmoji token="actualizar" size={16} />
             {loadingModules ? "Actualizando…" : "Actualizar estado"}
           </button>
           <div className="space-y-2 text-sm">
