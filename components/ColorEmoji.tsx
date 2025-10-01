@@ -3,6 +3,9 @@
 
 import * as React from "react";
 
+import Emoji from "./Emoji";
+import { cn } from "@/lib/utils";
+
 // Mapa de tokens usados en la app → emoji accesible
 const MAP: Record<string, { char: string; label: string }> = {
   logo: { char: "🫶", label: "Sanoa" },
@@ -42,25 +45,34 @@ const MAP: Record<string, { char: string; label: string }> = {
 
 export default function ColorEmoji({
   token,
+  emoji,
   label,
   className,
   title,
+  size = "md",
 }: {
-  token: string;
+  token?: string;
+  emoji?: string;
   label?: string;
   className?: string;
   title?: string;
+  size?: "sm" | "md" | "lg" | number;
 }) {
-  const e = MAP[token] || { char: "❓", label: token };
-  const aria = label || e.label || token;
+  const e = token ? MAP[token] : undefined;
+  const char = emoji || e?.char || "❓";
+  const aria = label || e?.label || emoji || token || "emoji";
+  const variant = typeof size === "number" ? "md" : size;
+  const style = typeof size === "number" ? { fontSize: `${size}px` } : undefined;
   return (
-    <span
+    <Emoji
       role="img"
       aria-label={aria}
       title={title || aria}
-      className={["inline-block leading-none select-none", className || ""].join(" ")}
+      className={cn("select-none", className)}
+      size={variant}
+      style={style}
     >
-      {e.char}
-    </span>
+      {char}
+    </Emoji>
   );
 }

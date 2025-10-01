@@ -12,9 +12,9 @@ const config: Config = {
     extend: {
       borderRadius: { lg: "12px", xl: "16px", "2xl": "20px" },
       boxShadow: {
-        card: "0 1px 2px rgba(0,0,0,.04), 0 10px 24px rgba(0,0,0,.10)",
-        "card-hover": "0 2px 6px rgba(0,0,0,.06), 0 12px 28px rgba(0,0,0,.14)",
-        elevated: "0 12px 32px rgba(0,0,0,.18)",
+        card: "0 24px 48px -28px rgba(15,23,42,0.45), 0 12px 24px -16px rgba(15,23,42,0.18)",
+        "card-hover": "0 32px 64px -24px rgba(15,23,42,0.55), 0 16px 28px -18px rgba(15,23,42,0.22)",
+        elevated: "0 40px 80px -36px rgba(30,41,59,0.55)",
       },
       colors: {
         background: "hsl(var(--bg))",

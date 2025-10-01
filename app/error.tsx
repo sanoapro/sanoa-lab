@@ -1,5 +1,11 @@
 "use client";
 
+import Link from "next/link";
+
+import Emoji from "@/components/Emoji";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
 type ErrorProps = {
   error: Error;
   reset: () => void;
@@ -7,20 +13,24 @@ type ErrorProps = {
 
 export default function Error({ error, reset }: ErrorProps) {
   return (
-    <div className="glass-card bubble max-w-xl mx-auto mt-10 text-center space-y-2">
-      <div className="text-5xl">
-        <span className="emoji">🛠️</span>
+    <Card className="mx-auto mt-12 max-w-xl space-y-4 text-center">
+      <div className="text-6xl">
+        <Emoji size="lg">🛠️</Emoji>
       </div>
-      <h1 className="text-xl font-semibold">Algo no salió bien</h1>
-      <p className="text-contrast/80">{error?.message ?? "Error inesperado."}</p>
-      <div className="flex justify-center gap-2 pt-2">
-        <button className="glass-btn" onClick={() => reset()}>
-          <span className="emoji">🔁</span> Reintentar
-        </button>
-        <a className="glass-btn" href="/dashboard">
-          <span className="emoji">📊</span> Ir al tablero
-        </a>
+      <h1>Algo no salió bien</h1>
+      <p className="text-muted-foreground">{error?.message ?? "Error inesperado."}</p>
+      <div className="flex justify-center gap-3 pt-2">
+        <Button type="button" variant="secondary" onClick={() => reset()}>
+          <Emoji size="lg" className="mr-1">🔁</Emoji>
+          Reintentar
+        </Button>
+        <Button asChild>
+          <Link href="/dashboard">
+            <Emoji size="lg" className="mr-1">📊</Emoji>
+            Ir al tablero
+          </Link>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

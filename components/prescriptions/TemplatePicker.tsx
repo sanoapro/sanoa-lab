@@ -2,6 +2,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import TemplateEditorModal, { RxTemplate } from "./TemplateEditorModal";
 import TemplateLibraryModal from "@/components/templates/TemplateLibraryModal";
 import { useActiveOrg } from "@/hooks/useActiveOrg";
@@ -186,7 +188,7 @@ export default function TemplatePicker({ mine = false, onSelect }: Props) {
           <label className="text-sm text-contrast/70" htmlFor="template-search">
             Buscar plantilla
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <input
               id="template-search"
               className="input flex-1"
@@ -197,54 +199,61 @@ export default function TemplatePicker({ mine = false, onSelect }: Props) {
                 if (e.key === "Enter") void load(e.currentTarget.value);
               }}
             />
-            <button className="glass-btn" onClick={() => void load()} disabled={loading}>
+            <Button type="button" variant="secondary" onClick={() => void load()} disabled={loading}>
               {loading ? "⏳ Cargando..." : "🔎 Buscar"}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Acciones */}
         <div className="flex gap-2 self-end sm:self-auto">
-          <button className="glass-btn" onClick={() => setOpenLibrary(true)}>
+          <Button type="button" variant="ghost" onClick={() => setOpenLibrary(true)}>
             📚 Biblioteca
-          </button>
-          <button
-            className="glass-btn"
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => void importSeed()}
             disabled={!activeOrgId || loading || importing}
           >
             {importing ? "⏳ Importando..." : "📦 Importar base"}
-          </button>
-          <button className="glass-btn primary" onClick={handleCreate}>
+          </Button>
+          <Button type="button" onClick={handleCreate}>
             ➕ Nueva
-          </button>
+          </Button>
         </div>
       </div>
 
       {error ? <div className="text-sm text-red-500">{error}</div> : null}
 
       {/* Grid */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {templates.map((tpl) => (
-          <div key={tpl.id ?? tpl.title} className="glass-card bubble text-contrast">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="text-sm text-contrast/70">{tpl.specialty || "General"}</div>
-                <div className="font-semibold">{tpl.title || "Sin título"}</div>
-                <div className="badge mt-1">{tpl.is_reference ? "📝 Referencia" : "💊 Receta"}</div>
+          <Card key={tpl.id ?? tpl.title} className="flex h-full flex-col gap-4 p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">{tpl.specialty || "General"}</div>
+                <div className="text-lg font-semibold leading-snug">{tpl.title || "Sin título"}</div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                  {tpl.is_reference ? "📝 Referencia" : "💊 Receta"}
+                </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button className="glass-btn" onClick={() => handleSelect(tpl)} disabled={!tpl.id}>
+                <Button variant="secondary" size="sm" onClick={() => handleSelect(tpl)} disabled={!tpl.id}>
                   📥 Usar
-                </button>
-                <button className="glass-btn" onClick={() => handleEdit(tpl)}>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(tpl)}>
                   ✏️ Editar
-                </button>
+                </Button>
               </div>
             </div>
-            <pre className="mt-3 whitespace-pre-wrap text-sm text-contrast/80">{tpl.body}</pre>
-            {tpl.notes ? <div className="mt-2 text-sm text-contrast/70">⚠️ {tpl.notes}</div> : null}
-          </div>
+            <pre className="flex-1 whitespace-pre-wrap rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
+              {tpl.body}
+            </pre>
+            {tpl.notes ? (
+              <div className="text-sm text-muted-foreground">⚠️ {tpl.notes}</div>
+            ) : null}
+          </Card>
         ))}
         {!templates.length && !loading && !error ? (
           <div className="rounded border border-dashed border-contrast/30 p-6 text-center text-sm text-contrast/70">
