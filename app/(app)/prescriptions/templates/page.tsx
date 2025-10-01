@@ -1,6 +1,6 @@
 "use client";
 
-import { RequireAuth } from "@/components/RequireAuth";
+import RequireAuth from "@/components/RequireAuth";
 import AccentHeader from "@/components/ui/AccentHeader";
 import PrescriptionEditor from "@/components/prescriptions/PrescriptionEditor";
 
