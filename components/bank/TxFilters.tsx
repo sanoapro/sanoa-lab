@@ -78,11 +78,14 @@ export default function TxFilters() {
       </div>
 
       <div className="flex gap-2">
-        <button className="rounded px-4 py-2 border" onClick={() => push({ q, from, to, status })}>
-          Aplicar
+        <button
+          className="inline-flex items-center gap-2 rounded px-4 py-2 border"
+          onClick={() => push({ q, from, to, status })}
+        >
+          <span className="emoji">🔎</span> Aplicar filtros
         </button>
         <button
-          className="rounded px-4 py-2 border"
+          className="inline-flex items-center gap-2 rounded px-4 py-2 border"
           onClick={() => {
             setQ("");
             setFrom("");
@@ -90,8 +93,9 @@ export default function TxFilters() {
             setStatus("");
             push({ q: undefined, from: undefined, to: undefined, status: undefined });
           }}
+          type="button"
         >
-          Limpiar
+          <span className="emoji">🧹</span> Limpiar
         </button>
       </div>
     </div>

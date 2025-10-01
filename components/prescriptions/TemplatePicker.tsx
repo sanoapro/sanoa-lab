@@ -1,105 +1,295 @@
+// components/templates/TemplatePicker.tsx
 "use client";
 
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import TemplateEditorModal, { RxTemplate } from "./TemplateEditorModal";
 import TemplateLibraryModal from "@/components/templates/TemplateLibraryModal";
-import { listPrescriptionTemplates } from "@/lib/prescriptions/templates";
-
-type TemplateSummary = { id: string; name: string; active?: boolean | null; specialty?: string | null };
+import { SEED_TEMPLATES } from "@/lib/templates.seed";
 
 type Props = {
-  orgId: string;
+  orgId?: string;
   mine?: boolean;
-  onChoose: (tpl: TemplateSummary) => void;
+  onSelect?: (_tpl: RxTemplate) => void;
+  /** @deprecated usa onSelect */
+  onChoose?: (_tpl: RxTemplate) => void;
 };
 
-export default function TemplatePicker({ orgId, onChoose }: Props) {
-  const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [rows, setRows] = React.useState<TemplateSummary[]>([]);
+type ApiTemplate = Partial<RxTemplate> & {
+  id?: string;
+  org_id?: string | null;
+  name?: string;
+  content?: unknown;
+  body?: string;
+  title?: string;
+  specialty?: string | null;
+  notes?: string | null;
+  is_reference?: boolean | null;
+};
 
-  const load = React.useCallback(async () => {
-    if (!orgId) {
-      setRows([]);
+function normalizeTemplate(raw: ApiTemplate): RxTemplate {
+  const content = (raw.content ?? {}) as Record<string, unknown>;
+  const specialty = (raw.specialty ?? content.specialty ?? "") as string;
+  const title = (raw.title ?? raw.name ?? (content.title as string) ?? "") as string;
+  const body = (raw.body ?? (content.body as string) ?? "") as string;
+  const notes = (raw.notes ?? (content.notes as string | null) ?? null) || null;
+  const isReference = (raw.is_reference ?? (content.is_reference as boolean | null) ?? false) || false;
+  return {
+    id: raw.id,
+    org_id: raw.org_id ?? (content.org_id as string | null) ?? null,
+    specialty,
+    title,
+    body,
+    notes,
+    is_reference: isReference,
+  };
+}
+
+export default function TemplatePicker({ orgId, mine = false, onSelect, onChoose }: Props) {
+  const [q, setQ] = useState("");
+  const [templates, setTemplates] = useState<RxTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modales
+  const [openEditor, setOpenEditor] = useState(false);
+  const [current, setCurrent] = useState<RxTemplate | null>(null);
+  const [openLibrary, setOpenLibrary] = useState(false);
+
+  const hasOrg = Boolean(orgId);
+
+  const fetchUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    if (orgId) params.set("org_id", orgId);
+    if (mine) params.set("mine", "1");
+    if (q.trim()) params.set("q", q.trim());
+    const query = params.toString();
+    return query ? `/api/prescriptions/templates?${query}` : "/api/prescriptions/templates";
+  }, [orgId, mine, q]);
+
+  const load = useCallback(async () => {
+    if (!hasOrg) {
+      setTemplates([]);
+      setError(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
+    setError(null);
     try {
-      const data = await listPrescriptionTemplates(orgId);
-      setRows(
-        data
-          .filter((tpl) => tpl.is_active !== false)
-          .map((tpl) => ({
-            id: tpl.id,
-            name: tpl.name,
-            active: tpl.is_active,
-            specialty: tpl.content?.meta?.specialty ?? null,
-          })),
-      );
+      const res = await fetch(fetchUrl, { cache: "no-store" });
+      const json = (await res.json().catch(() => null)) as
+        | { ok?: boolean; data?: ApiTemplate[]; items?: ApiTemplate[]; error?: { message?: string } }
+        | ApiTemplate[]
+        | null;
+      if (!res.ok) {
+        const message =
+          (json && "error" in json && json.error?.message) ||
+          json?.toString() ||
+          "No se pudieron cargar las plantillas";
+        throw new Error(message);
+      }
+      const list: ApiTemplate[] = Array.isArray(json)
+        ? json
+        : Array.isArray(json?.data)
+        ? (json?.data as ApiTemplate[])
+        : Array.isArray(json?.items)
+        ? (json?.items as ApiTemplate[])
+        : [];
+      setTemplates(list.map((item) => normalizeTemplate(item)));
     } catch (err) {
       console.error(err);
-      setRows([]);
+      setError(err instanceof Error ? err.message : "Error inesperado");
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
-  }, [orgId]);
+  }, [fetchUrl, hasOrg]);
 
-  React.useEffect(() => {
-    load();
-  }, [load]);
+  async function importSeed() {
+    if (!orgId || importing) return;
+    setImporting(true);
+    try {
+      const payload = SEED_TEMPLATES.map((tpl) => ({
+        ...tpl,
+        org_id: orgId,
+      }));
+      const r = await fetch("/api/prescriptions/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j?.ok) {
+        const message = j?.error?.message ?? "Error al importar plantillas";
+        console.error(message);
+        alert(message);
+        return;
+      }
+      await load();
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo importar la base de plantillas");
+    } finally {
+      setImporting(false);
+    }
+  }
 
-  const handleUse = React.useCallback(
-    (tpl: { id: string; name: string }) => {
-      onChoose({ id: tpl.id, name: tpl.name });
-      setOpen(false);
-      load();
+  useEffect(() => {
+    if (!hasOrg) return;
+    void load();
+  }, [hasOrg, load]);
+
+  const handleSelect = useCallback(
+    (tpl: RxTemplate) => {
+      onSelect?.(tpl);
+      onChoose?.(tpl);
     },
-    [onChoose, load],
+    [onChoose, onSelect],
+  );
+
+  const handleCreate = () => {
+    setCurrent({
+      org_id: orgId ?? null,
+      specialty: "",
+      title: "",
+      body: "",
+      notes: "",
+      is_reference: false,
+    });
+    setOpenEditor(true);
+  };
+
+  const handleEdit = (tpl: RxTemplate) => {
+    setCurrent(tpl);
+    setOpenEditor(true);
+  };
+
+  const handleSaved = useCallback(
+    (tpl: RxTemplate) => {
+      setTemplates((prev) => {
+        if (!tpl.id) {
+          void load();
+          return prev;
+        }
+        const idx = prev.findIndex((item) => item.id === tpl.id);
+        if (idx >= 0) {
+          const copy = [...prev];
+          copy[idx] = tpl;
+          return copy;
+        }
+        return [tpl, ...prev];
+      });
+      setCurrent(tpl);
+    },
+    [load],
   );
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h4 className="text-lg font-semibold">Plantillas disponibles</h4>
-          <p className="text-sm text-slate-500">Selecciona o administra tus plantillas de receta.</p>
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Buscador */}
+        <div className="flex w-full flex-col gap-2 sm:max-w-xl">
+          <label className="text-sm text-contrast/70" htmlFor="template-search">
+            Buscar plantilla
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="template-search"
+              className="input flex-1"
+              placeholder="Buscar plantilla..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && hasOrg) void load();
+              }}
+              disabled={!hasOrg}
+            />
+            <button className="glass-btn" onClick={load} disabled={loading || !hasOrg}>
+              {loading ? "Cargando..." : "Buscar"}
+            </button>
+          </div>
         </div>
-        <button className="glass-btn" onClick={() => setOpen(true)}>
-          📚 Administrar
-        </button>
+
+        {/* Acciones */}
+        <div className="flex gap-2 self-end sm:self-auto">
+          <button className="glass-btn" onClick={() => setOpenLibrary(true)} disabled={!hasOrg}>
+            📚 Biblioteca
+          </button>
+          <button className="glass-btn" onClick={() => void importSeed()} disabled={!orgId || loading || importing}>
+            {importing ? "Importando..." : "📦 Importar base"}
+          </button>
+          <button className="glass-btn primary" onClick={handleCreate} disabled={!hasOrg}>
+            ➕ Nueva
+          </button>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-white/30 bg-white/80 p-3 dark:bg-slate-950/40">
-        <ul className="space-y-2">
-          {rows.map((tpl) => (
-            <li key={tpl.id} className="flex items-center justify-between rounded-xl bg-white/90 px-3 py-2 text-sm shadow-sm dark:bg-slate-900/60">
+      {!hasOrg ? <div className="text-sm text-contrast/60">Selecciona una organización para ver o crear plantillas.</div> : null}
+      {error ? <div className="text-sm text-red-500">{error}</div> : null}
+
+      {/* Grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {templates.map((tpl) => (
+          <div key={tpl.id ?? tpl.title} className="glass-card bubble text-contrast">
+            <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="font-medium text-slate-700 dark:text-slate-100">{tpl.name}</div>
-                {tpl.specialty ? (
-                  <div className="text-xs text-slate-500">{tpl.specialty}</div>
-                ) : null}
+                <div className="text-sm text-contrast/70">{tpl.specialty || "General"}</div>
+                <div className="font-semibold">{tpl.title || "Sin título"}</div>
+                <div className="badge mt-1">{tpl.is_reference ? "📝 Referencia" : "💊 Receta"}</div>
               </div>
-              <button className="glass-btn text-xs" onClick={() => onChoose(tpl)}>
-                Usar
-              </button>
-            </li>
-          ))}
-          {!rows.length && (
-            <li className="rounded-xl bg-white/90 px-3 py-4 text-center text-sm text-slate-500 dark:bg-slate-900/60">
-              {loading ? "Cargando…" : "Aún no tienes plantillas activas"}
-            </li>
-          )}
-        </ul>
+              <div className="flex flex-col gap-2">
+                <button className="glass-btn" onClick={() => handleSelect(tpl)} disabled={!tpl.id}>
+                  📥 Usar
+                </button>
+                <button className="glass-btn" onClick={() => handleEdit(tpl)}>
+                  ✏️ Editar
+                </button>
+              </div>
+            </div>
+            <pre className="mt-3 whitespace-pre-wrap text-sm text-contrast/80">{tpl.body}</pre>
+            {tpl.notes ? <div className="mt-2 text-sm text-contrast/70">⚠️ {tpl.notes}</div> : null}
+          </div>
+        ))}
+        {!templates.length && !loading && !error && hasOrg ? (
+          <div className="rounded border border-dashed border-contrast/30 p-6 text-center text-sm text-contrast/70">
+            Sin plantillas
+          </div>
+        ) : null}
       </div>
 
+      {/* Editor */}
+      {current ? (
+        <TemplateEditorModal
+          key={current.id ?? "new"}
+          open={openEditor}
+          onClose={() => setOpenEditor(false)}
+          initial={current}
+          onSaved={handleSaved}
+        />
+      ) : null}
+
+      {/* Biblioteca / Administración */}
       <TemplateLibraryModal
         kind="prescription"
-        orgId={orgId}
-        open={open}
+        orgId={orgId ?? ""}
+        open={openLibrary}
         onClose={() => {
-          setOpen(false);
-          load();
+          setOpenLibrary(false);
+          void load();
         }}
-        onUse={handleUse}
+        onUse={(tpl) => {
+          handleSelect({
+            id: tpl.id,
+            org_id: orgId ?? null,
+            specialty: (tpl as any)?.specialty ?? "",
+            title: tpl.name ?? "",
+            body: (tpl as any)?.body ?? "",
+            notes: null,
+            is_reference: false,
+          });
+          setOpenLibrary(false);
+        }}
       />
     </section>
   );
