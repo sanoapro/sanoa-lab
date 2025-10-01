@@ -29,7 +29,7 @@ function buildCSP() {
       "script-src 'self'",
       !isProd && "'unsafe-eval'",
       "'wasm-unsafe-eval'",
-      "https://*.sentry.io"
+      "https://*.sentry.io",
     ]
       .filter(Boolean)
       .join(" "),
@@ -44,7 +44,7 @@ function buildCSP() {
       "https://unpkg.com",
       "https://cdnjs.cloudflare.com",
       "https://fonts.gstatic.com",
-      "https://*.sentry.io"
+      "https://*.sentry.io",
     ]
       .filter(Boolean)
       .join(" "),
@@ -53,18 +53,21 @@ function buildCSP() {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "upgrade-insecure-requests"
+    "upgrade-insecure-requests",
   ];
   return parts.join("; ");
 }
 
 const securityHeaders = (() => {
   const arr = [
-    isProd && { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
+    isProd && {
+      key: "Strict-Transport-Security",
+      value: "max-age=31536000; includeSubDomains; preload",
+    },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "X-Frame-Options", value: "DENY" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
+    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   ].filter(Boolean);
 
   if (!isProd) {
@@ -78,13 +81,25 @@ const securityHeaders = (() => {
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+
+  // ⬇️ Parche Turbopack (Next 15): permitir paquetes externos en runtime del server
+  experimental: {
+    // Evita los warnings de "can't be external" / "install it into the project dir"
+    // al explicitar qué paquetes se permiten como externals en el runtime del server.
+    serverComponentsExternalPackages: [
+      "require-in-the-middle",
+      "import-in-the-middle",
+    ],
+  },
+
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
-      { protocol: "http", hostname: "**" }
+      { protocol: "http", hostname: "**" },
     ],
-    dangerouslyAllowSVG: true
+    dangerouslyAllowSVG: true,
   },
+
   // ⚠️ Temporales — los quitamos al finalizar el refactor
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
@@ -94,10 +109,8 @@ const nextConfig = {
   },
 
   async rewrites() {
-    return [
-      { source: "/api/acuerdos/:path*", destination: "/api/agreements/:path*" }
-    ];
-  }
+    return [{ source: "/api/acuerdos/:path*", destination: "/api/agreements/:path*" }];
+  },
 };
 
 // ---- Envolvemos con Sentry ----
@@ -122,8 +135,8 @@ export default withSentryConfig(nextConfig, {
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
+  // Note: Check that the configured route will not match with your Next.js middleware,
+  // otherwise reporting of client-side errors will fail.
   tunnelRoute: "/monitoring",
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
@@ -133,5 +146,5 @@ export default withSentryConfig(nextConfig, {
   // See the following for more information:
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true
+  automaticVercelMonitors: true,
 });
