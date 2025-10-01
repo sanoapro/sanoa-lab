@@ -65,7 +65,14 @@ export default function BankTxPage() {
 
   return (
     <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="glass-card">
+        <p className="text-contrast">Selecciona una organización activa para continuar.</p>
+        <div className="mt-2">
+          <OrgSwitcherBadge />
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Banco · Transacciones</h1>
         <a
           href={exportHref}
