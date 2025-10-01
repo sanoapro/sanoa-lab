@@ -1,8 +1,7 @@
-```tsx
 // app/(app)/banco/page.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AccentHeader from "@/components/ui/AccentHeader";
@@ -75,16 +74,16 @@ export default function BancoPage() {
   useEffect(() => {
     if (!orgId) return;
 
-    const checkoutToken = searchParams.get("checkout");
+    const product = searchParams.get("checkout");
     const orgFromQuery = searchParams.get("org_id");
-    if (!checkoutToken || !orgFromQuery) return;
+    if (!product || !orgFromQuery) return;
 
-    const signature = `${checkoutToken}-${orgFromQuery}`;
+    const signature = `${product}-${orgFromQuery}`;
     if (checkoutSignatureRef.current === signature) return; // already handled
     checkoutSignatureRef.current = signature;
 
     const moduleLabel =
-      MODULE_DEFS.find((m) => m.key === checkoutToken)?.label ?? checkoutToken;
+      MODULE_DEFS.find((m) => m.key === product)?.label ?? product;
     setCheckoutModule(moduleLabel);
 
     if (orgFromQuery !== orgId) {
@@ -108,7 +107,11 @@ export default function BancoPage() {
         const res = await fetch("/api/bank/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ org_id: orgFromQuery, feature: checkoutToken }),
+          body: JSON.stringify({
+            product,
+            org_id: orgFromQuery,
+            return_path: "/banco",
+          }),
         });
         const json = await res.json().catch(() => null);
         if (!res.ok || !json?.url) {
@@ -137,18 +140,11 @@ export default function BancoPage() {
     }
   }, [searchParams]);
 
-  // Load modules status
-  useEffect(() => {
+  const refreshModules = useCallback(async () => {
     if (!orgId) {
       setModulesStatus({ active: false, modules: {} });
       return;
     }
-    void refreshModules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId]);
-
-  async function refreshModules() {
-    if (!orgId) return;
     setLoadingModules(true);
     try {
       const params = new URLSearchParams({ org_id: orgId });
@@ -172,7 +168,16 @@ export default function BancoPage() {
     } finally {
       setLoadingModules(false);
     }
-  }
+  }, [orgId, toast]);
+
+  // Load modules status
+  useEffect(() => {
+    if (!orgId) {
+      setModulesStatus({ active: false, modules: {} });
+      return;
+    }
+    void refreshModules();
+  }, [orgId, refreshModules]);
 
   if (isLoading) {
     return (
@@ -431,4 +436,3 @@ export default function BancoPage() {
     </main>
   );
 }
-```
