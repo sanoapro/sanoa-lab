@@ -17,7 +17,7 @@ import { listMyTags, type Tag } from "@/lib/tags";
 import { getActiveOrg } from "@/lib/org-local";
 import clsx from "clsx";
 
-// NUEVO: shadcn/ui + lucide para botones/inputs modernos
+// shadcn/ui
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -35,7 +35,7 @@ type SortCombo = "created_at:desc" | "created_at:asc" | "nombre:asc" | "nombre:d
 type GenderOpt = "ALL" | "F" | "M" | "O";
 
 export default function PacientesPage() {
-  // ===== Filtros y paginación (mantiene tu estructura visual) =====
+  // ===== Filtros y paginación =====
   const [filters, setFilters] = useState({
     q: "",
     genero: "ALL" as GenderOpt,
@@ -46,22 +46,20 @@ export default function PacientesPage() {
     orderBy: "created_at" as "created_at" | "nombre",
     orderDir: "desc" as "asc" | "desc",
     includeDeleted: false,
-    // nuevas capacidades
     onlyActiveOrg: true,
     useAllMode: false, // false = tagsAny; true = tagsAll
     tagsAny: [] as string[],
     tagsAll: [] as string[],
-    // paginación
     page: 1,
     pageSize: 10,
   });
 
   const [items, setItems] = useState<Patient[]>([]);
-  const [serverTotal, setServerTotal] = useState(0); // total que reporta la API (sin filtro de edad cliente)
+  const [serverTotal, setServerTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // Debounce para búsqueda por nombre (campo de entrada separado como en tu UI)
+  // Debounce para búsqueda por nombre
   const [qInput, setQInput] = useState("");
   const [qDebounced, setQDebounced] = useState("");
   useEffect(() => {
@@ -69,7 +67,18 @@ export default function PacientesPage() {
     return () => clearTimeout(t);
   }, [qInput]);
 
-  // Selector de orden simplificado (4 opciones)
+  // Fechas consistentes (MX)
+  const fmtDateTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es-MX", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "America/Mexico_City",
+      }),
+    []
+  );
+
+  // Selector de orden (4 opciones)
   const sortValue: SortCombo = `${filters.orderBy}:${filters.orderDir}` as SortCombo;
   function setSortFromCombo(v: SortCombo) {
     const [orderBy, orderDir] = v.split(":") as ["created_at" | "nombre", "asc" | "desc"];
@@ -77,12 +86,13 @@ export default function PacientesPage() {
     void doSearch(1, { orderBy, orderDir });
   }
 
-  // Paginación (se calcula con el total del servidor)
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(serverTotal / filters.pageSize));
-  }, [serverTotal, filters.pageSize]);
+  // Paginación (usa total del servidor)
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(serverTotal / filters.pageSize)),
+    [serverTotal, filters.pageSize]
+  );
 
-  // Aplica filtros de edad en cliente sobre la página actual
+  // Filtro de edad (cliente)
   const rows = useMemo(() => {
     return items.filter((p) => {
       if (filters.edadMin !== null && (p.edad ?? -Infinity) < filters.edadMin) return false;
@@ -113,7 +123,7 @@ export default function PacientesPage() {
 
       setItems(res.items);
       setServerTotal(res.total);
-      setFilters((f) => ({ ...f, page: res.page })); // sincroniza página mostrada
+      setFilters((f) => ({ ...f, page: res.page }));
     } catch (e) {
       setErr(toSpanishListError(e));
     } finally {
@@ -121,7 +131,7 @@ export default function PacientesPage() {
     }
   }
 
-  // primera carga + carga de etiquetas
+  // primera carga + etiquetas
   const [myTags, setMyTags] = useState<Tag[]>([]);
   useEffect(() => {
     void doSearch(1);
@@ -136,7 +146,7 @@ export default function PacientesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // dispara búsqueda cuando cambia el debounce de q
+  // Dispara búsqueda cuando cambia el debounce de q
   useEffect(() => {
     setFilters((f) => ({ ...f, q: qDebounced, page: 1 }));
     void doSearch(1, { q: qDebounced });
@@ -194,7 +204,7 @@ export default function PacientesPage() {
       setNombre("");
       setEdad("");
       setGeneroCrear("O");
-      await doSearch(1); // vuelve a la primera página con filtros actuales
+      await doSearch(1);
       showToast({ title: "Listo", description: "Paciente creado." });
     } catch (e: unknown) {
       showToast({
@@ -271,16 +281,17 @@ export default function PacientesPage() {
     if (filters.includeDeleted) sp.set("includeDeleted", "1");
     if (filters.useAllMode && filters.tagsAll.length) sp.set("tagsAll", filters.tagsAll.join(","));
     if (!filters.useAllMode && filters.tagsAny.length) sp.set("tagsAny", filters.tagsAny.join(","));
-    // Nota: export no fuerza org activa; se exporta todo lo permitido por RLS.
     return `/api/export/pacientes?${sp.toString()}`;
   }
 
-  const activeOrg = getActiveOrg();
+  const activeOrg = getActiveOrg() || ({} as any);
+
+  const genderLabel = (g?: string | null) =>
+    g === "F" ? "Femenino" : g === "M" ? "Masculino" : g === "O" ? "Otro" : "—";
 
   return (
     <main className="page-bg min-h-[100dvh] p-6 md:p-10 space-y-6">
       <header className="space-y-2">
-        {/* Conservador: solo cambiamos las clases del título y descripción */}
         <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
           <ColorEmoji token="pacientes" size={24} />
           Pacientes
@@ -291,10 +302,10 @@ export default function PacientesPage() {
         </p>
       </header>
 
-      {/* Barra de acciones (Export CSV + Nuevo paciente) */}
+      {/* Barra de acciones */}
       <div className="flex items-center justify-between">
         <a href={exportURL()} title="Exportar resultados a CSV">
-          <Button variant="secondary" className="inline-flex items-center gap-2">
+          <Button variant="secondary" className="inline-flex items-center gap-2" type="button">
             <span aria-hidden>📤</span>
             <span>Exportar CSV</span>
           </Button>
@@ -303,6 +314,7 @@ export default function PacientesPage() {
           type="button"
           onClick={() => setOpenCreate(true)}
           disabled={loading}
+          aria-busy={loading}
           className="inline-flex items-center gap-2"
         >
           <span aria-hidden>➕</span>
@@ -314,9 +326,9 @@ export default function PacientesPage() {
       <section className="rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="p-4 flex items-center justify-between">
           <div className="text-sm text-[var(--color-brand-text)]">
-            Org activa: <strong>{activeOrg.name ?? "—"}</strong>{" "}
+            Org activa: <strong>{activeOrg?.name ?? "—"}</strong>{" "}
             <span className="text-[var(--color-brand-bluegray)]">
-              ({activeOrg.id?.slice(0, 8) ?? "sin org"})
+              ({activeOrg?.id ? String(activeOrg.id).slice(0, 8) : "sin org"})
             </span>
           </div>
           <label className="text-sm flex items-center gap-2">
@@ -423,7 +435,7 @@ export default function PacientesPage() {
             </label>
           </div>
 
-          {/* Orden simplificado */}
+          {/* Orden */}
           <label className="md:col-span-2">
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Orden</span>
             <select
@@ -463,8 +475,10 @@ export default function PacientesPage() {
             >
               <ColorEmoji token="limpiar" size={16} /> Limpiar
             </Button>
-            <div className="text-sm text-[var(--color-brand-bluegray)] self-center ml-auto">
-              {/* Mostramos cuántos se ven en esta página tras filtro de edad, y total del servidor */}
+            <div
+              className="text-sm text-[var(--color-brand-bluegray)] self-center ml-auto"
+              aria-live="polite"
+            >
               {rows.length} mostrados · Total {serverTotal} · Página {filters.page} de {totalPages}
             </div>
           </div>
@@ -506,7 +520,7 @@ export default function PacientesPage() {
                     "px-3 py-1 rounded-full text-sm border",
                     active
                       ? "bg-[var(--color-brand-primary)] text-white border-[var(--color-brand-primary)]"
-                      : "bg-white text-[var(--color-brand-bluegray)] border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]",
+                      : "bg-white text-[var(--color-brand-bluegray)] border-[var(--color-brand-border)] hover:bg-[var(--color-brand-background)]"
                   )}
                 >
                   {t.name}
@@ -529,7 +543,7 @@ export default function PacientesPage() {
             <div
               className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
               role="alert"
-              aria-live="polite"
+              aria-live="assertive"
             >
               {err}
             </div>
@@ -572,43 +586,49 @@ export default function PacientesPage() {
                       >
                         <td className="py-2 pr-3 text-[var(--color-brand-text)]">
                           <span className={isDeleted ? "line-through text-gray-500" : ""}>
-                            {p.nombre}
+                            {p.nombre ?? "—"}
                           </span>
                           {isDeleted && (
                             <span className="ml-2 text-xs text-gray-500">(Eliminado)</span>
                           )}
                         </td>
-                        <td className="py-2 px-3">{p.edad}</td>
-                        <td className="py-2 px-3">{p.genero}</td>
-                        <td className="py-2 px-3">{new Date(p.created_at).toLocaleString()}</td>
-                        <td className="py-2 pl-3 flex gap-2">
-                          <Link
-                            href={`/pacientes/${p.id}`}
-                            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)]"
-                          >
-                            Ver <ColorEmoji token="siguiente" size={14} />
-                          </Link>
-                          {!isDeleted ? (
-                            <button
-                              type="button"
-                              onClick={() => void handleSoftDelete(p.id)}
-                              disabled={loading}
-                              className="inline-flex items-center gap-2 rounded-xl border border-red-300 text-red-700 px-3 py-1.5 hover:bg-red-50"
-                              title="Enviar a Eliminados"
-                            >
-                              <ColorEmoji token="eliminar" size={14} /> Eliminar
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => void handleRestore(p.id)}
-                              disabled={loading}
+                        <td className="py-2 px-3">{p.edad ?? "—"}</td>
+                        <td className="py-2 px-3">{genderLabel(p.genero)}</td>
+                        <td className="py-2 px-3">
+                          {p.created_at ? fmtDateTime.format(new Date(p.created_at)) : "—"}
+                        </td>
+                        <td className="py-2 pl-3">
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/pacientes/${p.id}`}
                               className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)]"
-                              title="Restaurar"
                             >
-                              <ColorEmoji token="refrescar" size={14} /> Restaurar
-                            </button>
-                          )}
+                              Ver <ColorEmoji token="siguiente" size={14} />
+                            </Link>
+                            {!isDeleted ? (
+                              <button
+                                type="button"
+                                onClick={() => void handleSoftDelete(p.id)}
+                                disabled={loading}
+                                aria-busy={loading}
+                                className="inline-flex items-center gap-2 rounded-xl border border-red-300 text-red-700 px-3 py-1.5 hover:bg-red-50"
+                                title="Enviar a Eliminados"
+                              >
+                                <ColorEmoji token="eliminar" size={14} /> Eliminar
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => void handleRestore(p.id)}
+                                disabled={loading}
+                                aria-busy={loading}
+                                className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)]"
+                                title="Restaurar"
+                              >
+                                <ColorEmoji token="refrescar" size={14} /> Restaurar
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -618,18 +638,19 @@ export default function PacientesPage() {
             </table>
           </div>
 
-          {/* Paginación (usa total del servidor) */}
+          {/* Paginación */}
           <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-[var(--color-brand-bluegray)]">
-              Mostrando {rows.length > 0 ? (filters.page - 1) * filters.pageSize + 1 : 0}
-              {" – "}
-              {rows.length > 0 ? (filters.page - 1) * filters.pageSize + rows.length : 0}
-              {" de "}
-              {serverTotal}
+            <div className="text-sm text-[var(--color-brand-bluegray)]" aria-live="polite">
+              {rows.length > 0
+                ? `Mostrando ${(filters.page - 1) * filters.pageSize + 1} – ${
+                    (filters.page - 1) * filters.pageSize + rows.length
+                  } de ${serverTotal}`
+                : `Mostrando 0 de ${serverTotal}`}
             </div>
 
             <div className="flex gap-2">
               <button
+                type="button"
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
                 disabled={loading || filters.page <= 1}
                 onClick={() => void doSearch(filters.page - 1)}
@@ -637,6 +658,7 @@ export default function PacientesPage() {
                 <ColorEmoji token="anterior" size={14} /> Anterior
               </button>
               <button
+                type="button"
                 className="rounded-xl border border-[var(--color-brand-border)] px-3 py-1.5 hover:bg-[var(--color-brand-background)] inline-flex items-center gap-2"
                 disabled={loading || filters.page >= totalPages}
                 onClick={() => void doSearch(filters.page + 1)}
@@ -694,6 +716,7 @@ export default function PacientesPage() {
               className="px-4"
               onClick={() => void handleCreate()}
               disabled={loading}
+              aria-busy={loading}
             >
               Crear
             </Button>
