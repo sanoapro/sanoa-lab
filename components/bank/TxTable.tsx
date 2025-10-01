@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import EmptyState from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/ui/empty-state";
+import Skeleton from "@/components/ui/Skeleton";
 
 type Tx = {
   id: string;
@@ -120,11 +121,12 @@ export default function TxTable({ orgId }: { orgId: string }) {
 
       {isEmpty ? (
         <EmptyState
-          emoji="🧾"
           title="Sin transacciones"
-          hint="Conecta tu banco o importa movimientos CSV para verlos aquí."
-          ctaText="Conectar banco"
-          onCta={() => window.location.assign("/banco/ajustes")}
+          description="Conecta tu banco o importa movimientos CSV para verlos aquí."
+          action={{
+            label: "Conectar banco",
+            onClick: () => window.location.assign("/banco/ajustes"),
+          }}
         />
       ) : (
         <>
@@ -142,9 +144,11 @@ export default function TxTable({ orgId }: { orgId: string }) {
               <tbody>
                 {loading && (
                   <tr>
-                    <td className="px-3 py-6 text-center" colSpan={5}>
-                      Cargando…
-                    </td>
+                    {[0, 1, 2, 3, 4].map((key) => (
+                      <td key={key} className="px-3 py-4">
+                        <Skeleton className="h-5 w-28" />
+                      </td>
+                    ))}
                   </tr>
                 )}
                 {!loading && rows.length === 0 && (
