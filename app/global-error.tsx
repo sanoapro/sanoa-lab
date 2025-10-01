@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import ColorEmoji from "@/components/ColorEmoji";
 
 export default function GlobalError({
@@ -11,8 +12,20 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Log en consola para desarrollo
     // eslint-disable-next-line no-console
     console.error("[GlobalError]", error);
+
+    // Reporta a Sentry
+    Sentry.captureException(error);
+
+    // (Opcional) Mostrar diálogo de reporte solo en producción
+    if (process.env.NODE_ENV === "production") {
+      // Puedes pasar datos del usuario si los tienes (email, name, etc.)
+      Sentry.showReportDialog({
+        // user: { email: "user@example.com", name: "Nombre" },
+      });
+    }
   }, [error]);
 
   return (
