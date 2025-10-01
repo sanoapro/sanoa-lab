@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { getActiveOrg } from "@/lib/org-local";
 import PatientAutocomplete from "@/components/patients/PatientAutocomplete";
 import TemplatePicker from "./TemplatePicker";
+import type { RxTemplate } from "./TemplateEditorModal";
 
 type Item = {
   drug: string;
@@ -12,8 +13,6 @@ type Item = {
   duration: string;
   instructions?: string;
 };
-
-type TemplateLite = { id: string };
 
 export default function PrescriptionEditor() {
   const org = useMemo(() => getActiveOrg(), []);
@@ -92,9 +91,13 @@ export default function PrescriptionEditor() {
     }
   }
 
-  async function useTemplate(tpl: TemplateLite) {
+  async function useTemplate(tpl: RxTemplate) {
     if (!orgId || !patient?.id) {
       alert("Elige paciente");
+      return;
+    }
+    if (!tpl.id) {
+      alert("La plantilla seleccionada no tiene identificador válido");
       return;
     }
     setSaving(true);
@@ -171,7 +174,7 @@ export default function PrescriptionEditor() {
         </div>
         <div className="md:col-span-2 border rounded-2xl p-4">
           <h3 className="font-semibold">Plantillas</h3>
-          {orgId && <TemplatePicker orgId={orgId} onChoose={useTemplate} />}
+          <TemplatePicker onSelect={useTemplate} />
         </div>
       </div>
 
