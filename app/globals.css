@@ -2,33 +2,115 @@
 @tailwind components;
 @tailwind utilities;
 
-:root{
-  --bg: 12 12 14;
-  --fg: 240 240 244;
-  --muted: 180 180 190;
-  --ac: 86 156 214; /* acento frío */
+/* === Design tokens (AA+) === */
+:root {
+  --bg: 0 0% 100%;
+  --fg: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-fg: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-fg: 215.4 16.3% 35%;
+  --border: 214.3 31.8% 91.4%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-fg: 210 40% 98%;
+  --secondary: 262 83% 58%;
+  --secondary-fg: 210 40% 98%;
+  --success: 142.1 70% 42%;
+  --success-fg: 210 40% 98%;
+  --danger: 0 72% 50%;
+  --danger-fg: 210 40% 98%;
+  --warning: 45 93% 47%;
+  --warning-fg: 20 14% 5%;
+  /* rgb triplets (no %): usar con rgb(var(--contrast)) */
+  --contrast: 15 23 42;
+
+  /* Glass defaults */
+  --glass-bg: 255 255 255;
+  --glass-alpha: 0.14;
+  --glass-border: 255 255 255;
+
+  /* Ring color (rgb) */
+  --ring: 37 99 235;
 }
 
-html { font-size: 17px; }
-@media (min-width: 1024px){ html{ font-size: 18px; } }
+[data-theme="dark"], .dark {
+  --bg: 222.2 84% 5%;
+  --fg: 210 40% 98%;
+  --card: 222.2 47% 12%;
+  --card-fg: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-fg: 215 20% 75%;
+  --border: 217 33% 22%;
+  --primary: 217.2 91% 60%;
+  --primary-fg: 222.2 47% 12%;
+  --secondary: 262 83% 62%;
+  --secondary-fg: 222.2 47% 12%;
+  --success: 142.1 70% 48%;
+  --success-fg: 210 40% 98%;
+  --danger: 0 72% 55%;
+  --danger-fg: 210 40% 98%;
+  --warning: 48 96% 55%;
+  --warning-fg: 222 47% 12%;
+  --contrast: 248 250 252;
 
-body{
-  color: rgb(var(--fg));
+  --glass-bg: 18 22 28;
+  --glass-alpha: 0.28;
+  --glass-border: 255 255 255;
+
+  --ring: 60 131 246;
+}
+
+/* Base */
+html { font-size: 16px; }
+body {
+  background: hsl(var(--bg));
+  color: hsl(var(--fg));
+  font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", Roboto);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+}
+
+/* Sutiles fondos “hero” en dark */
+.dark body {
   background:
     radial-gradient(1200px 800px at 10% -20%, rgba(255,255,255,0.06), transparent 60%),
     radial-gradient(900px 600px at 120% 20%, rgba(86,156,214,0.15), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15)),
-    rgb(var(--bg));
+    hsl(var(--bg));
   background-attachment: fixed;
-  margin: 0;
 }
 
+/* ====== Tipografía global ====== */
+@layer base {
+  body { @apply text-[15px] leading-relaxed; }
+  h1 { @apply text-[22px] font-semibold leading-tight; }
+  h2 { @apply text-[20px] font-semibold leading-snug; }
+  h3 { @apply text-lg font-semibold leading-snug; }
+  p  { @apply leading-relaxed; }
+  small { @apply text-xs sm:text-sm; }
+}
+
+/* Accesibilidad (focus visible) */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* ===== UI helpers ===== */
+.text-contrast { color: rgb(var(--contrast)); }
+.text-contrast\/80 { color: rgb(var(--contrast) / 0.8); }
+.text-contrast\/70 { color: rgb(var(--contrast) / 0.7); }
+
+/* Emojis consistentes */
 .emoji {
   display: inline-block;
+  font-size: 1.3em;         /* (antes 1.25em) */
+  line-height: 1;
   transform: translateY(2px);
-  font-size: 1.35em;
 }
 
+/* Navbar vidrio */
 .navbar{
   position: sticky;
   top: 0;
@@ -39,6 +121,11 @@ body{
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
+/* Cards genéricas (Tailwind + custom) */
+.card { @apply rounded-xl bg-card text-card-foreground shadow border border-border; }
+.card-hover:hover { @apply shadow-lg; }
+
+/* Glass card */
 .glass-card{
   background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
   border: 1px solid rgba(255,255,255,0.14);
@@ -48,16 +135,22 @@ body{
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
 }
-
 .glass-card.bubble{
   box-shadow: 0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18);
 }
 
+/* Botón base */
+.btn-base {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition;
+  @apply h-11 px-4;
+}
+
+/* Glass button */
 .glass-btn{
   background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06));
   border: 1px solid rgba(255,255,255,0.18);
   box-shadow: 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
-  color: rgb(var(--fg));
+  color: inherit;
   padding: 0.5rem 0.75rem;
   border-radius: 0.75rem;
   font-size: 0.875rem;
@@ -67,14 +160,15 @@ body{
   gap: 0.5rem;
   text-decoration: none;
 }
-
 .glass-btn:hover{
   background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
 }
-
-.glass-btn.primary{ outline: 1px solid rgba(var(--ac)/0.4); }
+.glass-btn.primary{ outline: 1px solid rgba(86,156,214,0.40); } /* usa “acento frío” del branch alterno */
 .glass-btn.danger{ outline: 1px solid rgba(244,63,94,0.45); }
 
+button, .glass-btn { font-size: 0.98rem; }
+
+/* Inputs */
 .input{
   background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
   border: 1px solid rgba(255,255,255,0.16);
@@ -82,16 +176,15 @@ body{
   border-radius: 0.75rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.97rem;
-  color: rgba(255,255,255,0.9);
+  color: inherit;
 }
-
 .input::placeholder{ color: rgba(255,255,255,0.5); }
-
 .input:focus{
-  outline: 2px solid rgba(var(--ac)/0.6);
-  box-shadow: 0 0 0 4px rgba(var(--ac)/0.18);
+  outline: 2px solid rgba(86,156,214,0.6);
+  box-shadow: 0 0 0 4px rgba(86,156,214,0.18);
 }
 
+/* Badge */
 .badge{
   background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
   border: 1px solid rgba(255,255,255,0.18);
@@ -101,10 +194,5 @@ body{
   padding: 0.25rem 0.5rem;
   border-radius: 0.65rem;
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.9);
+  color: inherit;
 }
-
-.text-contrast\/70{ color: rgba(255,255,255,0.70); }
-.text-contrast\/80{ color: rgba(255,255,255,0.80); }
-
-button, .glass-btn { font-size: 0.98rem; }

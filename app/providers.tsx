@@ -1,6 +1,5 @@
 "use client";
 
-import "../sentry.client.config"; // <-- relativo a /app/providers.tsx (sube un nivel)
 import type { ReactNode } from "react";
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -124,8 +123,8 @@ export default function Providers({ children }: ProvidersProps) {
           <QueryParamsBridge />
         </Suspense>
         {children}
+        <Toaster />
       </ThemeProvider>
-      <Toaster /> {/* portal/contenedor de toasts */}
     </ToastProvider>
   );
 }
