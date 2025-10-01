@@ -20,10 +20,13 @@ export async function POST(req: Request) {
   const whsec = process.env.STRIPE_WEBHOOK_SECRET;
   if (!whsec) return bad("Missing STRIPE_WEBHOOK_SECRET in env", 500);
 
+  const client = stripe;
+  if (!client) return bad("Stripe no está configurado", 500);
+
   const payload = await req.text();
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(payload, sig, whsec);
+    event = client.webhooks.constructEvent(payload, sig, whsec);
   } catch (err: any) {
     return bad(`Invalid signature: ${err.message}`);
   }
