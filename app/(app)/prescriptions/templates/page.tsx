@@ -1,22 +1,17 @@
 import TemplatePicker from "@/components/prescriptions/TemplatePicker";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export const dynamic = "force-dynamic";
-
-export default function TemplatesPage() {
+export default function RxTemplatesPage() {
   return (
-    <main className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">
-        <span className="emoji">📚</span> Plantillas
-      </h1>
-      <div className="glass-card bubble">
-        <TemplatePicker
-          onSelect={(tpl) => {
-            // Aquí puedes navegar al editor de receta, o inyectar en /prescriptions/create
-            // Ejemplo simple:
-            alert(`Usar plantilla: ${tpl.title}`);
-          }}
-        />
-      </div>
+    <main className="container py-6">
+      <Card className="card-hover">
+        <CardHeader>
+          <CardTitle className="font-bold">Plantillas de Recetas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TemplatePicker />
+        </CardContent>
+      </Card>
     </main>
   );
 }
