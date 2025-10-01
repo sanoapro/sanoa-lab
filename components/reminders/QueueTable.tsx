@@ -4,6 +4,8 @@
 import * as React from "react";
 import { getActiveOrg } from "@/lib/org-local";
 
+import Skeleton from "@/components/ui/Skeleton";
+
 type Item = {
   id: string;
   assignment_id: string | null;
@@ -23,6 +25,7 @@ export default function QueueTable() {
   const [items, setItems] = React.useState<Item[]>([]);
   const [status, setStatus] = React.useState<string>("");
   const [loading, setLoading] = React.useState(false);
+  const skeletonRows = React.useMemo(() => Array.from({ length: 5 }), []);
 
   async function load() {
     if (!org.id) {
@@ -81,7 +84,7 @@ export default function QueueTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" aria-busy={loading}>
           <thead>
             <tr className="border-t border-b bg-slate-50/60 dark:bg-slate-800/40">
               <th className="text-left p-2">Fecha</th>
@@ -94,6 +97,36 @@ export default function QueueTable() {
             </tr>
           </thead>
           <tbody>
+            {loading &&
+              skeletonRows.map((_, idx) => (
+                <tr key={`queue-skeleton-${idx}`} className={idx === 0 ? undefined : "border-b"}>
+                  <td className="p-2">
+                    <Skeleton
+                      className="h-4 w-36"
+                      label="Cargando cola de recordatorios"
+                      ariaHidden={idx > 0}
+                    />
+                  </td>
+                  <td className="p-2">
+                    <Skeleton className="h-4 w-20" ariaHidden />
+                  </td>
+                  <td className="p-2">
+                    <Skeleton className="h-4 w-16" ariaHidden />
+                  </td>
+                  <td className="p-2">
+                    <Skeleton className="h-4 w-32" ariaHidden />
+                  </td>
+                  <td className="p-2">
+                    <Skeleton className="h-4 w-12" ariaHidden />
+                  </td>
+                  <td className="p-2">
+                    <Skeleton className="h-4 w-36" ariaHidden />
+                  </td>
+                  <td className="p-2">
+                    <Skeleton className="h-4 w-full" ariaHidden />
+                  </td>
+                </tr>
+              ))}
             {items.map((i) => (
               <tr key={i.id} className="border-b">
                 <td className="p-2">{new Date(i.created_at).toLocaleString()}</td>
@@ -119,8 +152,6 @@ export default function QueueTable() {
           </tbody>
         </table>
       </div>
-
-      {loading && <div className="p-3 text-sm text-slate-500">Cargando…</div>}
     </div>
   );
 }
