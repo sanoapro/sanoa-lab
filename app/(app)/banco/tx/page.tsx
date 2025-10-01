@@ -1,13 +1,12 @@
 // app/(app)/bank/tx/page.tsx
 "use client";
 
-import EmptyState from "@/components/EmptyState";
 import TxFilters from "@/components/bank/TxFilters";
 import TxTable from "@/components/bank/TxTable";
 import SavedViewsBar from "@/components/saved-views/SavedViewsBar";
 import { useSearchParams } from "next/navigation";
-import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
+import SelectActiveOrgCard from "@/components/bank/SelectActiveOrgCard";
 
 export default function BankTxPage() {
   const { orgId, isLoading } = useBankActiveOrg();
@@ -36,22 +35,7 @@ export default function BankTxPage() {
   if (!orgId) {
     return (
       <div className="mx-auto max-w-6xl p-4 md:p-6">
-        <EmptyState
-          emoji="🏷️"
-          title="Selecciona una organización"
-          hint="Elige la organización activa para ver tus transacciones y reglas."
-          ctaText="Elegir organización"
-          onCta={() =>
-            document
-              .querySelector('[data-org-switcher]')
-              ?.dispatchEvent(new Event("click", { bubbles: true }))
-          }
-        >
-          <OrgSwitcherBadge variant="inline" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            También puedes cambiarla desde la esquina superior derecha.
-          </p>
-        </EmptyState>
+        <SelectActiveOrgCard />
       </div>
     );
   }
