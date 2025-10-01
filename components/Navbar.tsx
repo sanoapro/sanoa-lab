@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useToastSafe } from "@/components/Toast";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { cn } from "@/lib/utils";
+import ActiveOrgInspector from "@/components/organizations/ActiveOrgInspector";
 
 type NavItem = { href: string; label: string; emoji: string };
 
@@ -100,48 +101,50 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Quick links */}
-          <div
-            className="ml-auto hidden flex-wrap items-center justify-end gap-2 sm:flex"
-            aria-label="Accesos rápidos"
-          >
-            {QUICK_LINKS.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href + "/"));
+          <div className="ml-auto flex items-center gap-2">
+            <div
+              className="hidden flex-wrap items-center justify-end gap-2 sm:flex"
+              aria-label="Accesos rápidos"
+            >
+              {QUICK_LINKS.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(item.href + "/"));
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "glass-btn bubble text-base font-semibold text-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-100 dark:focus-visible:ring-offset-slate-900",
-                    isActive
-                      ? "neon bg-white/85 text-slate-900 dark:bg-slate-900/70 dark:text-white"
-                      : "bg-white/60 hover:bg-white/75 dark:bg-slate-950/40 dark:hover:bg-slate-950/55",
-                  )}
-                >
-                  <span className="emoji mr-1" aria-hidden>
-                    {item.emoji}
-                  </span>
-                  {item.label}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "glass-btn bubble text-base font-semibold text-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-100 dark:focus-visible:ring-offset-slate-900",
+                      isActive
+                        ? "neon bg-white/85 text-slate-900 dark:bg-slate-900/70 dark:text-white"
+                        : "bg-white/60 hover:bg-white/75 dark:bg-slate-950/40 dark:hover:bg-slate-950/55",
+                    )}
+                  >
+                    <span className="emoji mr-1" aria-hidden>
+                      {item.emoji}
+                    </span>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <ActiveOrgInspector />
+
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="glass-btn neon inline-flex shrink-0 items-center gap-2 text-base text-rose-600 transition-colors hover:bg-white/75 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-rose-200 dark:hover:bg-slate-950/55 dark:focus-visible:ring-offset-slate-900"
+              aria-busy={signingOut}
+            >
+              <span className="emoji" aria-hidden>
+                🔓
+              </span>
+              {signingOut ? "Cerrando…" : "Cerrar sesión"}
+            </button>
           </div>
-
-          {/* Sign out */}
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="glass-btn neon ml-3 inline-flex shrink-0 items-center gap-2 text-base text-rose-600 transition-colors hover:bg-white/75 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:ring-2 focus-visible:ring-rose-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-rose-200 dark:hover:bg-slate-950/55 dark:focus-visible:ring-offset-slate-900"
-            aria-busy={signingOut}
-          >
-            <span className="emoji" aria-hidden>
-              🔓
-            </span>
-            {signingOut ? "Cerrando…" : "Cerrar sesión"}
-          </button>
         </div>
       </div>
     </header>
