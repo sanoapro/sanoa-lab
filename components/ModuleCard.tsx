@@ -22,9 +22,9 @@ export default function ModuleCard({ title, description, ctas, className, childr
     >
       <div className="flex flex-col gap-3">
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white sm:text-xl">{title}</h3>
           {description ? (
-            <div className="text-sm text-slate-600 dark:text-slate-200/80">{description}</div>
+            <div className="text-[15px] text-slate-600 dark:text-slate-200/80 sm:text-base">{description}</div>
           ) : null}
         </div>
 
@@ -36,7 +36,7 @@ export default function ModuleCard({ title, description, ctas, className, childr
               <Link
                 key={cta.href}
                 href={cta.href}
-                className="glass-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-800 transition hover:bg-white/70 dark:text-slate-100 dark:hover:bg-slate-950/55"
+                className="glass-btn inline-flex items-center gap-2 px-3 py-1.5 text-[15px] font-medium text-slate-800 transition hover:bg-white/70 dark:text-slate-100 dark:hover:bg-slate-950/55 sm:text-base"
               >
                 <span className="emoji" aria-hidden>
                   🔗
