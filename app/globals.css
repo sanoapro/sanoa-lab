@@ -1,4 +1,3 @@
-```css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,6 +81,16 @@ body {
   background-attachment: fixed;
 }
 
+/* ====== Tipografía global ====== */
+@layer base {
+  body { @apply text-[15px] leading-relaxed; }
+  h1 { @apply text-[22px] font-semibold leading-tight; }
+  h2 { @apply text-[20px] font-semibold leading-snug; }
+  h3 { @apply text-lg font-semibold leading-snug; }
+  p  { @apply leading-relaxed; }
+  small { @apply text-xs sm:text-sm; }
+}
+
 /* Accesibilidad (focus visible) */
 *:focus-visible {
   outline: 2px solid hsl(var(--primary));
@@ -96,7 +105,7 @@ body {
 /* Emojis consistentes */
 .emoji {
   display: inline-block;
-  font-size: 1.3em;
+  font-size: 1.3em;         /* (antes 1.25em) */
   line-height: 1;
   transform: translateY(2px);
 }
@@ -187,4 +196,3 @@ button, .glass-btn { font-size: 0.98rem; }
   font-size: 0.75rem;
   color: inherit;
 }
-```
