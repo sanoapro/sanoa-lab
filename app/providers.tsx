@@ -113,7 +113,9 @@ function QueryParamsBridge() {
   return null;
 }
 
-export default function Providers({ children }: { children: ReactNode }) {
+type ProvidersProps = { children: ReactNode };
+
+export default function Providers({ children }: ProvidersProps) {
   return (
     <ToastProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
