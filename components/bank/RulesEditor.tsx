@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 import { getActiveOrg } from "@/lib/org-local";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
@@ -95,23 +95,50 @@ export default function RulesEditor() {
     if (j.ok) setRules((prev) => prev.filter((r) => r.id !== id));
   }
 
+  const containsTextId = useId();
+  const categoryId = useId();
+  const tagsId = useId();
+  const priorityId = useId();
+
+  const canSubmit = form.if_text_like.trim().length > 0;
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    addOrUpdateRule();
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="rounded border p-3">
-        <h2 className="font-semibold mb-2">Nueva regla</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-          <div>
-            <label className="block text-sm mb-1">Texto contiene</label>
+    <div className="space-y-3">
+      <div className="glass-card bubble">
+        <h2 className="text-lg font-semibold">
+          <span className="emoji" aria-hidden="true">
+            🧪
+          </span>{" "}
+          Reglas
+        </h2>
+        <p className="text-sm text-contrast/80">
+          Clasifica y etiqueta movimientos automáticamente.
+        </p>
+      </div>
+
+      <form className="glass-card bubble space-y-3" onSubmit={handleSubmit} noValidate>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <label className="space-y-1" htmlFor={containsTextId}>
+            <span className="text-sm">Contiene texto</span>
             <input
-              className="w-full rounded border px-3 py-2"
+              id={containsTextId}
+              className="glass-input"
+              placeholder="ej. Uber, Starbucks"
               value={form.if_text_like}
               onChange={(e) => setForm((f) => ({ ...f, if_text_like: e.target.value }))}
+              required
             />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Categoría</label>
+          </label>
+          <label className="space-y-1" htmlFor={categoryId}>
+            <span className="text-sm">Categoría</span>
             <select
-              className="w-full rounded border px-3 py-2"
+              id={categoryId}
+              className="glass-input"
               value={form.set_category_id}
               onChange={(e) => setForm((f) => ({ ...f, set_category_id: e.target.value }))}
             >
@@ -122,78 +149,103 @@ export default function RulesEditor() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Tags (coma)</label>
+          </label>
+          <label className="space-y-1" htmlFor={tagsId}>
+            <span className="text-sm">Etiquetas (separadas por coma)</span>
             <input
-              className="w-full rounded border px-3 py-2"
+              id={tagsId}
+              className="glass-input"
               placeholder="marketing, campaña"
               value={form.set_tags}
               onChange={(e) => setForm((f) => ({ ...f, set_tags: e.target.value }))}
             />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Prioridad</label>
+          </label>
+          <label className="space-y-1" htmlFor={priorityId}>
+            <span className="text-sm">Prioridad</span>
             <input
+              id={priorityId}
               type="number"
-              className="w-full rounded border px-3 py-2"
+              className="glass-input"
               value={form.priority}
-              onChange={(e) => setForm((f) => ({ ...f, priority: Number(e.target.value || 100) }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, priority: Number(e.target.value || 100) }))
+              }
+              min={1}
             />
-          </div>
+          </label>
         </div>
-        <div className="mt-2">
-          <button className="rounded px-4 py-2 border" onClick={addOrUpdateRule}>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="submit"
+            className="glass-btn"
+            disabled={!canSubmit}
+            aria-disabled={!canSubmit}
+          >
+            <span className="emoji" aria-hidden="true">
+              💾
+            </span>{" "}
             Guardar regla
           </button>
+          <button type="button" className="glass-btn" disabled title="Próximamente">
+            <span className="emoji" aria-hidden="true">
+              🧪
+            </span>{" "}
+            Probar
+          </button>
         </div>
-      </div>
+      </form>
 
-      <div className="rounded border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="text-left px-3 py-2">Prioridad</th>
-              <th className="text-left px-3 py-2">Contiene</th>
-              <th className="text-left px-3 py-2">Categoría</th>
-              <th className="text-left px-3 py-2">Tags</th>
-              <th className="text-left px-3 py-2">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td className="px-3 py-6 text-center" colSpan={5}>
-                  Cargando…
-                </td>
-              </tr>
-            )}
-            {!loading && rules.length === 0 && (
-              <tr>
-                <td className="px-3 py-6 text-center" colSpan={5}>
-                  Aún no hay reglas.
-                </td>
-              </tr>
-            )}
-            {!loading &&
-              rules.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="px-3 py-2">{r.priority}</td>
-                  <td className="px-3 py-2">{r.if_text_like}</td>
-                  <td className="px-3 py-2">
-                    {cats.find((c) => c.id === r.set_category_id)?.name ?? "—"}
-                  </td>
-                  <td className="px-3 py-2">{(r.set_tags ?? []).join(", ") || "—"}</td>
-                  <td className="px-3 py-2">
-                    <button className="rounded px-3 py-1 border" onClick={() => removeRule(r.id)}>
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+      <section className="glass-card bubble space-y-3" aria-live="polite">
+        <header className="flex items-center justify-between">
+          <h3 className="text-base font-semibold">Reglas existentes</h3>
+          <span className="text-sm text-contrast/70">
+            {loading ? "Cargando…" : `${rules.length} regla${rules.length === 1 ? "" : "s"}`}
+          </span>
+        </header>
+
+        {loading && (
+          <p className="text-sm text-contrast/80">Obteniendo reglas, por favor espera…</p>
+        )}
+
+        {!loading && rules.length === 0 && (
+          <p className="text-sm text-contrast/80">Aún no hay reglas configuradas.</p>
+        )}
+
+        {!loading && rules.length > 0 && (
+          <ul className="space-y-2">
+            {rules.map((r) => {
+              const category = cats.find((c) => c.id === r.set_category_id);
+              return (
+                <li key={r.id} className="rounded-lg border border-foreground/10 p-3">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-1 text-sm">
+                      <p className="font-medium text-contrast">
+                        Prioridad {r.priority} · <span className="text-contrast/80">{r.if_text_like}</span>
+                      </p>
+                      <p className="text-contrast/80">
+                        <span className="font-medium">Categoría:</span> {category?.name ?? "—"}
+                      </p>
+                      <p className="text-contrast/80">
+                        <span className="font-medium">Etiquetas:</span> {(r.set_tags ?? []).join(", ") || "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="glass-btn"
+                        onClick={() => removeRule(r.id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
