@@ -6,7 +6,7 @@ import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ThemeProvider } from "next-themes";
 import { ToastProvider } from "@/components/Toast";
-import Toaster from "@/components/Toaster";
+import { Toaster } from "@/components/Toaster";
 
 // ---- Segment Loader (analytics.js) ----
 declare global {
@@ -99,14 +99,14 @@ function QueryParamsBridge() {
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <ToastProvider>
+    <ToastProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <Suspense fallback={null}>
           <QueryParamsBridge />
         </Suspense>
         {children}
-        <Toaster />
-      </ToastProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+      <Toaster />
+    </ToastProvider>
   );
 }

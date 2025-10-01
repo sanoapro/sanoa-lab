@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getActiveOrg } from "@/lib/org-local";
+import { useEffect, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { useToast } from "@/components/Toast";
 
 type Category = { id: string; name: string; kind: "income" | "expense" };
 type Budget = {
@@ -22,9 +22,8 @@ function fmtMoney(cents: number, currency = "MXN") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format((cents || 0) / 100);
 }
 
-export default function BudgetsGrid() {
-  const org = useMemo(() => getActiveOrg(), []);
-  const orgId = org?.id || "";
+export default function BudgetsGrid({ orgId }: { orgId: string }) {
+  const { toast } = useToast();
   const [cats, setCats] = useState<Category[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [month, setMonth] = useState(ymFirst(new Date()));
@@ -68,25 +67,33 @@ export default function BudgetsGrid() {
       body: JSON.stringify(payload),
     });
     const j = await res.json();
-    if (j.ok) {
-      // refrescar lista
-      const r = await fetch(`/api/bank/budgets?org_id=${orgId}&month=${month}`).then((r) =>
-        r.json(),
-      );
-      if (r.ok) setBudgets(r.data);
-      setRow({ category_id: "", amount_cents: 0 });
+    if (!res.ok || !j.ok) {
+      toast({
+        variant: "error",
+        title: "No se pudo guardar el presupuesto",
+        description: j?.error ?? "Intenta nuevamente",
+      });
+      return;
     }
+    const r = await fetch(`/api/bank/budgets?org_id=${orgId}&month=${month}`).then((r) =>
+      r.json(),
+    );
+    if (r.ok) setBudgets(r.data);
+    setRow({ category_id: "", amount_cents: 0 });
+    toast({ variant: "success", title: "Presupuesto guardado" });
   }
+
+  if (!orgId) return null;
 
   return (
     <div className="space-y-4">
-      <div className="rounded border p-3">
+      <div className="glass-card p-4">
         <div className="flex flex-col md:flex-row gap-3 md:items-end">
           <div>
             <label className="block text-sm mb-1">Mes</label>
             <input
               type="month"
-              className="rounded border px-3 py-2"
+              className="glass-input"
               value={month.slice(0, 7)}
               onChange={(e) => setMonth(`${e.target.value}-01`)}
             />
@@ -94,7 +101,7 @@ export default function BudgetsGrid() {
           <div>
             <label className="block text-sm mb-1">Categoría</label>
             <select
-              className="rounded border px-3 py-2"
+              className="glass-input"
               value={row.category_id}
               onChange={(e) => setRow((r) => ({ ...r, category_id: e.target.value }))}
             >
@@ -110,20 +117,20 @@ export default function BudgetsGrid() {
             <label className="block text-sm mb-1">Monto</label>
             <input
               type="number"
-              className="rounded border px-3 py-2"
+              className="glass-input"
               value={row.amount_cents}
               onChange={(e) => setRow((r) => ({ ...r, amount_cents: Number(e.target.value || 0) }))}
             />
           </div>
           <div>
-            <button className="rounded px-4 py-2 border" onClick={upsertBudget}>
+            <button className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm hover:shadow-sm" onClick={upsertBudget}>
               Guardar
             </button>
           </div>
         </div>
       </div>
 
-      <div className="rounded border overflow-hidden">
+      <div className="glass-card p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
