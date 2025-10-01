@@ -11,7 +11,7 @@ const supabase = createClient(
 
 type Props = { children: React.ReactNode };
 
-export default function RequireAuth({ children }: Props) {
+export function RequireAuth({ children }: Props) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
 
@@ -50,3 +50,5 @@ export default function RequireAuth({ children }: Props) {
 
   return <>{children}</>;
 }
+
+export default RequireAuth;
