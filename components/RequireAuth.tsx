@@ -50,3 +50,5 @@ export default function RequireAuth({ children }: Props) {
 
   return <>{children}</>;
 }
+
+export { RequireAuth };

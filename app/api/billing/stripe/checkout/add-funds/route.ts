@@ -8,6 +8,11 @@ const CURRENCY = "mxn"; // ajusta si requieres otra
 export async function POST(req: Request) {
   const supa = createServiceClient();
   try {
+    const client = stripe;
+    if (!client) {
+      return NextResponse.json({ error: "Stripe no está configurado" }, { status: 500 });
+    }
+
     const { org_id, amount_cents } = await req.json();
     if (!org_id) return NextResponse.json({ error: "Falta org_id" }, { status: 400 });
     const amount = Number(amount_cents);
@@ -26,14 +31,14 @@ export async function POST(req: Request) {
     if (sub?.stripe_customer_id) {
       customerId = sub.stripe_customer_id;
     } else {
-      const c = await stripe.customers.create({ metadata: { org_id } });
+      const c = await client.customers.create({ metadata: { org_id } });
       customerId = c.id;
       await supa
         .from("org_subscriptions")
         .upsert({ org_id, stripe_customer_id: customerId }, { onConflict: "org_id" });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await client.checkout.sessions.create({
       mode: "payment",
       customer: customerId,
       success_url: `${getBaseUrl()}/banco?deposit=success`,
