@@ -1,3 +1,6 @@
+Aquí está el archivo unificado, conservando todo lo útil de ambas ramas y resolviendo los conflictos de tipos/imports:
+
+```tsx
 // components/shared/OrgInspector.tsx
 "use client";
 
@@ -29,7 +32,9 @@ export default function OrgInspector({
         if (!cancelled) setReady(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (ready === null) {
@@ -48,3 +53,4 @@ export default function OrgInspector({
 
   return <>{children}</>;
 }
+```
