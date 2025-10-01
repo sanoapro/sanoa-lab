@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { interpolateTemplate, isE164, normalizeE164 } from "@/lib/templates";
+import { useToast } from "@/components/Toast";
 
 type Tpl = {
   id: string;
@@ -16,7 +17,15 @@ type Tpl = {
   updated_at: string;
 };
 
+type PreviewState = {
+  text: string;
+  missing: string[];
+  extra: string[];
+  target?: string;
+} | null;
+
 export default function TemplatesEditor({ orgId }: { orgId: string }) {
+  const { toast } = useToast();
   const [list, setList] = useState<Tpl[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -35,12 +44,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
     body: "Hola {{paciente}}, te recordamos tu cita el {{fecha}} a las {{hora}} en {{clinica}}.",
     is_active: true,
   });
-  const [preview, setPreview] = useState<{
-    text: string;
-    missing: string[];
-    extra: string[];
-    target?: string;
-  } | null>(null);
+  const [preview, setPreview] = useState<PreviewState>(null);
   const [payload, setPayload] = useState<Record<string, string>>({
     paciente: "Juan Pérez",
     fecha: "5 Oct",
@@ -55,8 +59,21 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
     fetch(`/api/reminders/templates?${p.toString()}`)
       .then((r) => r.json())
       .then((j) => {
-        if (j.ok) setList(j.data);
+        if (j?.ok) setList(j.data);
+        else
+          toast({
+            variant: "error",
+            title: "No se pudieron cargar las plantillas",
+            description: j?.error?.message ?? "Intenta nuevamente",
+          });
       })
+      .catch(() =>
+        toast({
+          variant: "error",
+          title: "Error de red",
+          description: "No fue posible obtener las plantillas",
+        }),
+      )
       .finally(() => setLoading(false));
   }
 
@@ -87,11 +104,15 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
       body: JSON.stringify(body),
     });
     const j = await r.json();
-    if (j.ok) {
+    if (r.ok && j.ok) {
+      toast({ variant: "success", title: "Plantilla guardada" });
       load();
-      // limpiar solo el nombre si era nuevo
     } else {
-      alert(j.error?.message ?? "Error al guardar");
+      toast({
+        variant: "error",
+        title: "No se pudo guardar",
+        description: j?.error?.message ?? "Revisa los datos e intenta nuevamente",
+      });
     }
   }
 
@@ -107,8 +128,21 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
       }),
     });
     const j = await r.json();
-    if (j.ok) setPreview(j.data);
-    else setPreview(null);
+    if (r.ok && j.ok) {
+      setPreview({
+        text: j.data.preview ?? "",
+        missing: j.data.missing ?? [],
+        extra: j.data.extra ?? [],
+        target: j.data.target,
+      });
+    } else {
+      setPreview(null);
+      toast({
+        variant: "error",
+        title: "Error al previsualizar",
+        description: j?.error?.message ?? "Verifica el contenido de la plantilla",
+      });
+    }
   }
 
   const targetValid = isE164(normalizeE164(testTarget));
@@ -119,17 +153,17 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
       <div className="md:col-span-2 space-y-3">
         <div className="flex gap-2">
           <input
-            className="rounded border px-3 py-2 w-full"
+            className="glass-input w-full"
             placeholder="Buscar por nombre…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
-          <button className="rounded px-3 py-2 border" onClick={load}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm" onClick={load}>
             Buscar
           </button>
         </div>
 
-        <div className="rounded-2xl border overflow-hidden">
+        <div className="glass-card p-0 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
@@ -155,7 +189,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
                 </tr>
               )}
               {list.map((t) => (
-                <tr key={t.id} className="border-t hover:bg-gray-50">
+                <tr key={t.id} className="border-t hover:bg-white/70">
                   <td className="px-3 py-2">
                     <button
                       className="underline underline-offset-2"
@@ -189,7 +223,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <div>
             <label className="block text-sm mb-1">Nombre</label>
             <input
-              className="rounded border px-3 py-2 w-full"
+              className="glass-input w-full"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="recordatorio_cita"
@@ -198,7 +232,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <div>
             <label className="block text-sm mb-1">Especialidad</label>
             <input
-              className="rounded border px-3 py-2 w-full"
+              className="glass-input w-full"
               value={form.specialty}
               onChange={(e) => setForm({ ...form, specialty: e.target.value })}
               placeholder="odontología, psicología…"
@@ -207,7 +241,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <div>
             <label className="block text-sm mb-1">Canal</label>
             <select
-              className="rounded border px-3 py-2 w-full"
+              className="glass-input w-full"
               value={form.channel}
               onChange={(e) => setForm({ ...form, channel: e.target.value as any })}
             >
@@ -221,14 +255,14 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <div className="md:col-span-2">
             <label className="block text-sm mb-1">Variables permitidas (coma)</label>
             <input
-              className="rounded border px-3 py-2 w-full"
+              className="glass-input w-full"
               value={form.variables}
               onChange={(e) => setForm({ ...form, variables: e.target.value })}
             />
             <p className="text-xs text-slate-500 mt-1">Ej: paciente,fecha,hora,clinica</p>
           </div>
           <div className="flex items-end">
-            <button className="rounded px-4 py-2 border w-full" onClick={save}>
+            <button className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm hover:shadow-sm w-full" onClick={save}>
               Guardar plantilla
             </button>
           </div>
@@ -237,7 +271,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
         <div>
           <label className="block text-sm mb-1">Cuerpo</label>
           <textarea
-            className="rounded border px-3 py-2 w-full min-h-[160px]"
+            className="glass-input w-full min-h-[160px]"
             value={form.body}
             onChange={(e) => setForm({ ...form, body: e.target.value })}
           />
@@ -254,7 +288,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
                 <div key={k} className="flex items-center gap-2">
                   <span className="text-xs text-slate-500 w-20">{k}</span>
                   <input
-                    className="rounded border px-2 py-1 w-full"
+                    className="glass-input w-full"
                     value={payload[k]}
                     onChange={(e) => setPayload({ ...payload, [k]: e.target.value })}
                   />
@@ -265,7 +299,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <div>
             <label className="block text-sm mb-1">Destino prueba (E.164)</label>
             <input
-              className="rounded border px-3 py-2 w-full"
+              className="glass-input w-full"
               value={testTarget}
               onChange={(e) => setTestTarget(e.target.value)}
             />
@@ -276,13 +310,13 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="rounded px-4 py-2 border" onClick={doPreview}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm hover:shadow-sm" onClick={doPreview}>
             Previsualizar
           </button>
         </div>
 
         {preview && (
-          <div className="rounded-2xl border p-4">
+          <div className="glass-card p-4">
             <div className="text-sm text-slate-500 mb-1">Mensaje generado:</div>
             <pre className="whitespace-pre-wrap text-sm">{preview.text}</pre>
             {!!preview.missing?.length && (
