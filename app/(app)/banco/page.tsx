@@ -48,11 +48,14 @@ export default function BancoPage() {
     modules: {},
   });
   const [loadingModules, setLoadingModules] = useState(false);
+  const [loadingPortal, setLoadingPortal] = useState(false);
 
   const hasModulesInfo = useMemo(
     () => Object.keys(modulesStatus.modules).length > 0,
     [modulesStatus.modules],
   );
+
+  const customerId = ""; // TODO: trae de tu org (p. ej. orgs.customer_id)
 
   useEffect(() => {
     if (!orgId) {
@@ -124,6 +127,35 @@ export default function BancoPage() {
     );
   }
 
+  async function handleManageSubscription() {
+    if (!customerId) {
+      alert("Aún no hay customer_id vinculado.");
+      return;
+    }
+
+    try {
+      setLoadingPortal(true);
+      const res = await fetch("/api/bank/customer-portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer_id: customerId }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.url) {
+        throw new Error(json?.error ?? "No se pudo abrir el portal del cliente.");
+      }
+      window.location.href = json.url as string;
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "No se pudo abrir la suscripción",
+        description: error?.message ?? "Intenta nuevamente más tarde.",
+      });
+    } finally {
+      setLoadingPortal(false);
+    }
+  }
+
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
@@ -131,6 +163,18 @@ export default function BancoPage() {
         subtitle="Centraliza tu saldo, depósitos, pagos y activaciones de módulos."
         emojiToken="banco"
       />
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          className="glass-btn"
+          disabled={loadingPortal || !customerId}
+          onClick={() => {
+            void handleManageSubscription();
+          }}
+        >
+          <span className="emoji">⚙️</span> {loadingPortal ? "Abriendo…" : "Gestionar suscripción"}
+        </button>
+      </div>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/banco/tx" className="glass-card p-6 transition hover:shadow-lg">
