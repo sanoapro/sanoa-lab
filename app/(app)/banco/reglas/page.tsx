@@ -53,8 +53,10 @@ export default function BankRulesPage() {
 
   return (
     <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <div className="glass-card">
-        <p className="text-contrast">Selecciona una organización activa para continuar.</p>
+      <div className="glass-card bubble">
+        <p className="text-contrast">
+          <span className="emoji">🏷️</span> Selecciona una organización activa para continuar.
+        </p>
         <div className="mt-2">
           <OrgSwitcherBadge />
         </div>
