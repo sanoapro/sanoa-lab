@@ -1,9 +1,8 @@
 "use client";
 
-import EmptyState from "@/components/EmptyState";
-import OrgSwitcherBadge from "@/components/OrgSwitcherBadge";
 import RulesEditor from "@/components/bank/RulesEditor";
 import { useBankActiveOrg } from "@/hooks/useBankActiveOrg";
+import SelectActiveOrgCard from "@/components/bank/SelectActiveOrgCard";
 
 export default function BankRulesPage() {
   const { orgId, isLoading } = useBankActiveOrg();
@@ -24,22 +23,7 @@ export default function BankRulesPage() {
   if (!orgId) {
     return (
       <div className="mx-auto max-w-6xl p-4 md:p-6">
-        <EmptyState
-          emoji="🏷️"
-          title="Selecciona una organización"
-          hint="Elige la organización activa para ver tus transacciones y reglas."
-          ctaText="Elegir organización"
-          onCta={() =>
-            document
-              .querySelector('[data-org-switcher]')
-              ?.dispatchEvent(new Event("click", { bubbles: true }))
-          }
-        >
-          <OrgSwitcherBadge variant="inline" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            También puedes cambiarla desde la esquina superior derecha.
-          </p>
-        </EmptyState>
+        <SelectActiveOrgCard />
       </div>
     );
   }
