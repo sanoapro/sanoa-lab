@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+import { withSentryConfig } from "@sentry/nextjs";
 
 // === Seguridad + compat ===
 // - CSP estricta en prod, Report-Only en dev.
@@ -6,10 +7,11 @@
 // - Permisos para Supabase (HTTP/WS) y assets remotos.
 // - typescript.ignoreBuildErrors y eslint.ignoreDuringBuilds: ⚠️ temporales para no bloquearte.
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || ""; // ← NO mezclar con el ANON_KEY
 const supaHost = (() => {
   try {
-    return SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host : "";
+    return SUPABASE_URL ? new URL(SUPABASE_URL).host : "";
   } catch {
     return "";
   }
@@ -18,9 +20,19 @@ const supaWs = supaHost ? `wss://${supaHost}` : "";
 const isProd = process.env.NODE_ENV === "production";
 
 function buildCSP() {
+  // Añadimos dominios de Sentry:
+  //  - *.sentry.io (ingest de eventos y assets del SDK)
+  //  - si usas región US/EU dedicada, *.ingest.sentry.io también cubre
   const parts = [
     "default-src 'self'",
-    ["script-src 'self'", !isProd && "'unsafe-eval'", "'wasm-unsafe-eval'"].filter(Boolean).join(" "),
+    [
+      "script-src 'self'",
+      !isProd && "'unsafe-eval'",
+      "'wasm-unsafe-eval'",
+      "https://*.sentry.io"
+    ]
+      .filter(Boolean)
+      .join(" "),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     [
@@ -32,13 +44,16 @@ function buildCSP() {
       "https://unpkg.com",
       "https://cdnjs.cloudflare.com",
       "https://fonts.gstatic.com",
-    ].filter(Boolean).join(" "),
+      "https://*.sentry.io"
+    ]
+      .filter(Boolean)
+      .join(" "),
     "font-src 'self' https://fonts.gstatic.com data:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
+    "upgrade-insecure-requests"
   ];
   return parts.join("; ");
 }
@@ -49,7 +64,7 @@ const securityHeaders = (() => {
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "X-Frame-Options", value: "DENY" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
   ].filter(Boolean);
 
   if (!isProd) {
@@ -66,9 +81,9 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
-      { protocol: "http", hostname: "**" },
+      { protocol: "http", hostname: "**" }
     ],
-    dangerouslyAllowSVG: true,
+    dangerouslyAllowSVG: true
   },
   // ⚠️ Temporales — los quitamos al finalizar el refactor
   typescript: { ignoreBuildErrors: true },
@@ -76,7 +91,21 @@ const nextConfig = {
 
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
-  },
+  }
 };
 
-export default nextConfig;
+// ---- Envolvemos con Sentry ----
+// Con las variables de entorno que ya pasas en el workflow (SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT, SENTRY_RELEASE)
+// @sentry/nextjs subirá sourcemaps durante `pnpm run build`.
+export default withSentryConfig(nextConfig, {
+  // Opcional: si quieres forzar org/project aquí en lugar de variables:
+  // org: process.env.SENTRY_ORG,
+  // project: process.env.SENTRY_PROJECT,
+  // release: process.env.SENTRY_RELEASE,
+
+  // Subida silenciosa para CI más limpio
+  silent: true,
+
+  // Control fino de qué archivos se incluyen como sourcemaps
+  // widenClientFileUpload: true, // (opcional) subir bundles más anchos
+});
