@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient, User } from "@supabase/supabase-js";
+import { createClient, type User } from "@supabase/supabase-js";
 import ColorEmoji from "@/components/ColorEmoji";
 import { useToast } from "@/components/Toast";
 
@@ -24,52 +24,72 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      const u = data.user;
-      if (!u) {
-        router.push("/login");
-        return;
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        const u = data.user;
+        if (!u) {
+          router.push("/login");
+          return;
+        }
+        if (!mountedRef.current) return;
+        setUser(u);
+        setEmail(u.email ?? "");
+        setName(((u.user_metadata as any)?.full_name as string) ?? "");
+        const path = ((u.user_metadata as any)?.avatar_path as string | undefined) ?? null;
+        setAvatarPath(path);
+        await refreshSignedUrl(path);
+      } catch (err: any) {
+        toast({
+          variant: "error",
+          title: "No se pudo cargar tu perfil",
+          description: err?.message ?? "Intenta nuevamente.",
+        });
+      } finally {
+        if (mountedRef.current) setLoading(false);
       }
-      setUser(u);
-      setEmail(u.email ?? "");
-      setName((u.user_metadata as any)?.full_name ?? "");
-      const path = (u.user_metadata as any)?.avatar_path ?? null;
-      setAvatarPath(path);
-      if (path) {
-        const { data: signed } = await supabase.storage
-          .from("uploads")
-          .createSignedUrl(path, 60 * 60);
-        setAvatarUrl(signed?.signedUrl ?? null);
-      }
-      setLoading(false);
     })();
-  }, [router]);
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [router, toast]);
 
   async function refreshSignedUrl(path: string | null) {
-    if (!path) {
+    try {
+      if (!path) {
+        setAvatarUrl(null);
+        return;
+      }
+      const { data, error } = await supabase.storage.from("uploads").createSignedUrl(path, 60 * 60);
+      if (error) throw error;
+      // Evita caches agresivos del <img> añadiendo un nonce corto
+      const url = data?.signedUrl ? `${data.signedUrl}&_=${Date.now()}` : null;
+      setAvatarUrl(url);
+    } catch (err) {
       setAvatarUrl(null);
-      return;
     }
-    const { data } = await supabase.storage.from("uploads").createSignedUrl(path, 60 * 60);
-    setAvatarUrl(data?.signedUrl ?? null);
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({
-      data: { full_name: name, avatar_path: avatarPath ?? null },
-    });
-    setSaving(false);
-    if (error) {
-      toast({ variant: "error", title: "No se pudo guardar", description: error.message });
-      return;
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: name || null, avatar_path: avatarPath ?? null },
+      });
+      if (error) throw error;
+      toast({ variant: "success", title: "Perfil actualizado" });
+    } catch (err: any) {
+      toast({ variant: "error", title: "No se pudo guardar", description: err?.message });
+    } finally {
+      setSaving(false);
     }
-    toast({ variant: "success", title: "Perfil actualizado" });
   }
 
   function triggerPick() {
@@ -78,68 +98,77 @@ export default function PerfilPage() {
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
-    if (!f || !user) return;
+    try {
+      if (!f || !user) return;
 
-    if (!f.type.startsWith("image/")) {
+      if (!f.type.startsWith("image/")) {
+        throw new Error("Sube una imagen (PNG/JPG/WebP…).");
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        throw new Error("La imagen supera 5 MB.");
+      }
+
+      const ext = (f.name.split(".").pop() || "png").toLowerCase();
+      const path = `avatars/${user.id}_${Date.now()}.${ext}`.replace(/\s+/g, "_");
+
+      const { error: upErr } = await supabase.storage.from("uploads").upload(path, f, {
+        upsert: false,
+      });
+      if (upErr) throw upErr;
+
+      setAvatarPath(path);
+      await refreshSignedUrl(path);
+
+      // Persiste en metadata inmediatamente (UI responsiva)
+      await supabase.auth.updateUser({ data: { full_name: name || null, avatar_path: path } });
+
+      toast({ variant: "success", title: "Avatar actualizado" });
+    } catch (err: any) {
       toast({
         variant: "error",
-        title: "Archivo no válido",
-        description: "Sube una imagen (PNG/JPG/WebP…)",
+        title: "No se pudo subir el avatar",
+        description: err?.message ?? "Intenta nuevamente.",
       });
+    } finally {
+      // Limpia el input para permitir re-subir el mismo archivo si hace falta
       e.target.value = "";
-      return;
     }
-    if (f.size > 5 * 1024 * 1024) {
-      toast({ variant: "error", title: "Imagen muy pesada", description: "Máx. 5 MB" });
-      e.target.value = "";
-      return;
-    }
-
-    const ext = f.name.split(".").pop()?.toLowerCase() || "png";
-    const path = `avatars/${user.id}_${Date.now()}.${ext}`.replace(/\s+/g, "_");
-
-    const { error } = await supabase.storage.from("uploads").upload(path, f, {
-      upsert: false,
-    });
-    if (error) {
-      toast({ variant: "error", title: "No se pudo subir el avatar", description: error.message });
-      e.target.value = "";
-      return;
-    }
-
-    setAvatarPath(path);
-    await refreshSignedUrl(path);
-
-    // Guarda inmediatamente en metadata para que quede persistente
-    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: path } });
-
-    toast({ variant: "success", title: "Avatar actualizado" });
-    e.target.value = "";
   }
 
   async function removeAvatar() {
-    if (!avatarPath) return setAvatarUrl(null);
+    if (!avatarPath) {
+      setAvatarUrl(null);
+      return;
+    }
     const ok = window.confirm("¿Quitar avatar?");
     if (!ok) return;
 
-    // Intenta borrar el archivo (si falla, igual limpiamos metadata)
-    await supabase.storage.from("uploads").remove([avatarPath]);
-
-    setAvatarPath(null);
-    setAvatarUrl(null);
-    await supabase.auth.updateUser({ data: { full_name: name, avatar_path: null } });
-    toast({ variant: "success", title: "Avatar quitado" });
+    try {
+      // Borrar archivo (si falla, igualmente limpiamos metadata)
+      await supabase.storage.from("uploads").remove([avatarPath]);
+    } catch {
+      // Silencioso, no bloquea
+    } finally {
+      setAvatarPath(null);
+      setAvatarUrl(null);
+      await supabase.auth.updateUser({ data: { full_name: name || null, avatar_path: null } });
+      toast({ variant: "success", title: "Avatar quitado" });
+    }
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
-    router.push("/login");
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      router.push("/login");
+    }
   }
 
   const AvatarVisual = useMemo(() => {
     return (
       <div className="size-28 rounded-full overflow-hidden border border-[var(--color-brand-border)] bg-[var(--color-brand-background)] flex items-center justify-center">
         {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         ) : (
           <div className="text-4xl">
@@ -169,19 +198,12 @@ export default function PerfilPage() {
           <ColorEmoji token="usuario" size={30} />
           Perfil
         </h1>
-        <p className="text-[var(--color-brand-bluegray)]">
-          Actualiza tu información básica y tu avatar.
-        </p>
+        <p className="text-[var(--color-brand-bluegray)]">Actualiza tu información básica y tu avatar.</p>
       </header>
 
       {/* Card principal */}
-      <section
-        className="
-          w-full rounded-3xl bg-white/95 border border-[var(--color-brand-border)]
-          shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 md:px-8 py-7
-        "
-      >
-        <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6">
+      <section className="w-full rounded-3xl bg-white/95 border border-[var(--color-brand-border)] shadow-[0_10px_30px_rgba(0,0,0,0.06)] px-6 md:px-8 py-7">
+        <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-6" aria-busy={saving}>
           {/* Columna avatar */}
           <div className="flex flex-col items-start gap-4">
             {AvatarVisual}
@@ -203,47 +225,30 @@ export default function PerfilPage() {
                 Quitar
               </button>
             </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={onPick}
-            />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPick} />
           </div>
 
           {/* Columna formulario */}
           <div className="space-y-5">
             {/* Correo (solo lectura) */}
             <div>
-              <label className="block text-sm text-[var(--color-brand-bluegray)] mb-1">
-                Correo
-              </label>
+              <label className="block text-sm text-[var(--color-brand-bluegray)] mb-1">Correo</label>
               <input
                 value={email}
                 readOnly
-                className="
-                  w-full rounded-2xl border border-[var(--color-brand-border)]
-                  bg-[color-mix(in_oklab,#fff_92%,var(--color-brand-background)_8%)]
-                  px-5 py-3 text-[var(--color-brand-text)]
-                "
+                aria-readonly="true"
+                className="w-full rounded-2xl border border-[var(--color-brand-border)] bg-[color-mix(in_oklab,#fff_92%,var(--color-brand-background)_8%)] px-5 py-3 text-[var(--color-brand-text)]"
               />
             </div>
 
             {/* Nombre para mostrar */}
             <div>
-              <label className="block text-sm text-[var(--color-brand-bluegray)] mb-1">
-                Nombre para mostrar
-              </label>
+              <label className="block text-sm text-[var(--color-brand-bluegray)] mb-1">Nombre para mostrar</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Tu nombre"
-                className="
-                  w-full rounded-2xl border border-[var(--color-brand-border)]
-                  bg-white px-5 py-3 text-[var(--color-brand-text)]
-                  focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]
-                "
+                className="w-full rounded-2xl border border-[var(--color-brand-border)] bg-white px-5 py-3 text-[var(--color-brand-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]"
               />
             </div>
 
@@ -254,7 +259,7 @@ export default function PerfilPage() {
                 className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-[var(--color-brand-primary)] text-white hover:brightness-95 disabled:opacity-60"
               >
                 <ColorEmoji token="guardar" />
-                Guardar cambios
+                {saving ? "Guardando…" : "Guardar cambios"}
               </button>
 
               <button

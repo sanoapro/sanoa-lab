@@ -1,0 +1,29 @@
+
+> sanoa-lab@0.1.0 dev /workspaces/sanoa-lab
+> next dev --turbopack
+
+ ⚠ Invalid next.config.mjs options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverComponentsExternalPackages' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ `experimental.serverComponentsExternalPackages` has been moved to `serverExternalPackages`. Please update your next.config.mjs file accordingly.
+   ▲ Next.js 15.5.3 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.3.146:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · clientTraceMetadata
+     · serverComponentsExternalPackages
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ○ Compiling instrumentation Node.js ...
+ ✓ Compiled instrumentation Node.js in 4.2s
+ ○ Compiling instrumentation Edge ...
+ ✓ Compiled instrumentation Edge in 973ms
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 719ms
+ ✓ Ready in 9.2s
