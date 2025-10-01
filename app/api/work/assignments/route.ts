@@ -53,7 +53,17 @@ export async function GET(req: NextRequest) {
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 
-  const { org_id, patient_id, provider_id, module, status, from, to, limit, offset } = parsed.data;
+  const {
+    org_id,
+    patient_id,
+    provider_id,
+    module: moduleFilter,
+    status,
+    from,
+    to,
+    limit,
+    offset,
+  } = parsed.data;
 
   let sel = supa
     .from("work_assignments")
@@ -64,7 +74,7 @@ export async function GET(req: NextRequest) {
 
   if (patient_id) sel = sel.eq("patient_id", patient_id);
   if (provider_id) sel = sel.eq("provider_id", provider_id);
-  if (module) sel = sel.eq("module", module);
+  if (moduleFilter) sel = sel.eq("module", moduleFilter);
   if (status) sel = sel.eq("status", status);
   if (from) sel = sel.gte("due_at", from);
   if (to) sel = sel.lte("due_at", to);
@@ -91,7 +101,7 @@ export async function POST(req: NextRequest) {
   for (const it of p.data.items) {
     let title = it.title ?? null;
     let details = it.details ?? {};
-    let module = it.module ?? "general";
+    let taskModule = it.module ?? "general";
     let template_id = it.template_id ?? null;
 
     if (template_id) {
@@ -107,14 +117,14 @@ export async function POST(req: NextRequest) {
 
       title = title ?? tpl.title;
       details = Object.keys(details || {}).length ? details : (tpl.content ?? {});
-      module = (tpl.module as any) ?? module;
+      taskModule = (tpl.module as any) ?? taskModule;
     }
 
     out.push({
       org_id: p.data.org_id,
       patient_id: it.patient_id,
       provider_id,
-      module,
+      module: taskModule,
       template_id,
       title: title ?? "Tarea",
       details,

@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
     const arrayBuf = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuf);
 
-    const safeName = originalName.replace(/[^\w.\-]+/g, "_");
+    const safeName = originalName.replace(/[^\w.-]+/g, "_");
     const key = `${tokenRow.request_id}/${Date.now()}_${randomUUID().slice(0, 8)}_${safeName}`;
 
     const { error: uploadError } = await supa.storage.from(bucket).upload(key, buffer, {

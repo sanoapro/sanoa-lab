@@ -81,7 +81,7 @@ export default function UploadDemoPage() {
     setUploading(true);
     try {
       const safePrefix = prefix.replace(/^\/+|\/+$/g, ""); // quita slashes sobrantes
-      const base = `${Date.now()}-${file.name}`.replace(/[^\w.\-]+/g, "_");
+      const base = `${Date.now()}-${file.name}`.replace(/[^\w.-]+/g, "_");
       const path = safePrefix ? `${safePrefix}/${base}` : base;
 
       const { error } = await supabase.storage.from(BUCKET).upload(path, file, {

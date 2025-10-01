@@ -7,8 +7,8 @@ const OAI_MODEL = "text-embedding-3-small"; // 1536 dims
 const GEM_MODEL = "models/text-embedding-004"; // 768 dims
 const DIM = 1536;
 
-const useGemini = () => !!process.env.GEMINI_API_KEY;
-const useOpenAI = () => !!process.env.OPENAI_API_KEY;
+const hasGemini = () => !!process.env.GEMINI_API_KEY;
+const hasOpenAI = () => !!process.env.OPENAI_API_KEY;
 
 function toDim(vec: number[], dim = DIM) {
   if (vec.length === dim) return vec;
@@ -45,8 +45,8 @@ async function embedOneOpenAI(text: string): Promise<number[]> {
 }
 
 async function embedOne(text: string): Promise<number[]> {
-  if (useGemini()) return embedOneGemini(text);
-  if (useOpenAI()) return embedOneOpenAI(text);
+  if (hasGemini()) return embedOneGemini(text);
+  if (hasOpenAI()) return embedOneOpenAI(text);
   return Array(DIM).fill(0); // no keys → cae a keyword
 }
 
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
   if (!q.trim()) return NextResponse.json({ results: [] });
 
   // SEMÁNTICO si hay alguna key
-  if (useGemini() || useOpenAI()) {
+  if (hasGemini() || hasOpenAI()) {
     const vec = await embedOne(q);
     const { data, error } = await supabase.rpc("search_notes_files", {
       p_org: org,
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       results: data,
       mode: "semantic",
-      provider: useGemini() ? "gemini" : "openai",
+      provider: hasGemini() ? "gemini" : "openai",
       dim: DIM,
     });
   }
