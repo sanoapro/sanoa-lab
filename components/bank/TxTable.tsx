@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -93,6 +94,11 @@ export default function TxTable({ orgId }: { orgId: string }) {
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
 
+  const resetParams = new URLSearchParams();
+  resetParams.set("page", "1");
+  resetParams.set("pageSize", String(pageSize));
+  const resetHref = `?${resetParams.toString()}`;
+
   return (
     <div className="mt-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -131,7 +137,26 @@ export default function TxTable({ orgId }: { orgId: string }) {
             {!loading && rows.length === 0 && (
               <tr>
                 <td className="px-3 py-6 text-center" colSpan={5}>
-                  Sin resultados. Ajusta filtros o importa CSV.
+                  <div className="mx-auto max-w-xl space-y-3 text-sm text-contrast/80">
+                    <p className="font-medium text-contrast">Sin movimientos con los filtros aplicados.</p>
+                    <p>
+                      Ajusta tu búsqueda o registra nuevos movimientos para visualizar tus transacciones en el tablero.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-medium">
+                      <a
+                        className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80"
+                        href={resetHref}
+                      >
+                        <span className="emoji">🧹</span> Limpiar filtros
+                      </a>
+                      <Link
+                        href="/banco/depositar"
+                        className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 hover:bg-white/80"
+                      >
+                        <span className="emoji">➕</span> Registrar depósito
+                      </Link>
+                    </div>
+                  </div>
                 </td>
               </tr>
             )}
@@ -165,16 +190,16 @@ export default function TxTable({ orgId }: { orgId: string }) {
         </div>
         <div className="flex gap-2">
           <a
-            className={`px-3 py-1 rounded border ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+            className={`inline-flex items-center gap-2 rounded border px-3 py-1 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
             href={`?${new URLSearchParams({ ...Object.fromEntries(search.entries()), page: String(page - 1) }).toString()}`}
           >
-            Anterior
+            <span className="emoji">◀️</span> Anterior
           </a>
           <a
-            className={`px-3 py-1 rounded border ${page >= pages ? "pointer-events-none opacity-50" : ""}`}
+            className={`inline-flex items-center gap-2 rounded border px-3 py-1 ${page >= pages ? "pointer-events-none opacity-50" : ""}`}
             href={`?${new URLSearchParams({ ...Object.fromEntries(search.entries()), page: String(page + 1) }).toString()}`}
           >
-            Siguiente
+            <span className="emoji">▶️</span> Siguiente
           </a>
         </div>
       </nav>
