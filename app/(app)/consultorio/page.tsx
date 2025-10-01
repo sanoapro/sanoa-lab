@@ -20,27 +20,15 @@ export default function Consultorio() {
 
       <div className="glass-card bubble">
         <label className="block mb-2 font-medium">Buscar paciente</label>
-        <div className="relative">
-          <div className="relative z-10 pointer-events-auto">
-            {orgId ? (
-              <PatientAutocomplete
-                orgId={orgId}
-                scope="org"
-                placeholder="Escribe nombre del paciente…"
-                onSelect={(hit) => {
-                  const pid = (hit as any)?.id ?? (hit as any)?.patient_id;
-                  if (pid) window.location.href = `/pacientes/${pid}`;
-                }}
-              />
-            ) : (
-              <input
-                className="glass-input w-full"
-                disabled
-                placeholder="Selecciona una organización activa para buscar"
-              />
-            )}
-          </div>
-        </div>
+        <PatientAutocomplete
+          orgId={orgId}
+          scope="org"
+          placeholder="Escribe nombre del paciente…"
+          onSelect={(hit) => {
+            const pid = (hit as any)?.id ?? (hit as any)?.patient_id;
+            if (pid) window.location.href = `/pacientes/${pid}`;
+          }}
+        />
         <p className="mt-2 text-sm text-contrast">
           Solo aparecen pacientes de tu organización.
         </p>
