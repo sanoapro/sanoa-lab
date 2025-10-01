@@ -1,3 +1,5 @@
+```tsx
+// app/(app)/banco/page.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -46,11 +48,17 @@ export default function BancoPage() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [modulesStatus, setModulesStatus] = useState<ModulesStatus>({
     active: false,
     modules: {},
   });
   const [loadingModules, setLoadingModules] = useState(false);
+
+  // Stripe customer portal
+  const [loadingPortal, setLoadingPortal] = useState(false);
+
+  // Checkout flow (query-driven)
   const [checkoutMessage, setCheckoutMessage] = useState<string | null>(null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [checkoutModule, setCheckoutModule] = useState<string | null>(null);
@@ -61,20 +69,22 @@ export default function BancoPage() {
     [modulesStatus.modules],
   );
 
+  const customerId = ""; // TODO: traer de tu org (p. ej. orgs.customer_id)
+
+  // Handle deep-link to checkout
   useEffect(() => {
     if (!orgId) return;
 
     const checkoutToken = searchParams.get("checkout");
     const orgFromQuery = searchParams.get("org_id");
-
     if (!checkoutToken || !orgFromQuery) return;
 
     const signature = `${checkoutToken}-${orgFromQuery}`;
-    if (checkoutSignatureRef.current === signature) return;
-
+    if (checkoutSignatureRef.current === signature) return; // already handled
     checkoutSignatureRef.current = signature;
+
     const moduleLabel =
-      MODULE_DEFS.find((module) => module.key === checkoutToken)?.label ?? checkoutToken;
+      MODULE_DEFS.find((m) => m.key === checkoutToken)?.label ?? checkoutToken;
     setCheckoutModule(moduleLabel);
 
     if (orgFromQuery !== orgId) {
@@ -93,7 +103,7 @@ export default function BancoPage() {
     setCheckoutMessage(null);
     setIsCheckoutLoading(true);
 
-    void (async () => {
+    (async () => {
       try {
         const res = await fetch("/api/bank/checkout", {
           method: "POST",
@@ -119,6 +129,7 @@ export default function BancoPage() {
     })();
   }, [orgId, router, searchParams, toast]);
 
+  // Reset checkout UI when query is gone
   useEffect(() => {
     if (!searchParams.get("checkout")) {
       checkoutSignatureRef.current = null;
@@ -126,6 +137,7 @@ export default function BancoPage() {
     }
   }, [searchParams]);
 
+  // Load modules status
   useEffect(() => {
     if (!orgId) {
       setModulesStatus({ active: false, modules: {} });
@@ -196,6 +208,35 @@ export default function BancoPage() {
     );
   }
 
+  async function handleManageSubscription() {
+    if (!customerId) {
+      alert("Aún no hay customer_id vinculado.");
+      return;
+    }
+
+    try {
+      setLoadingPortal(true);
+      const res = await fetch("/api/bank/customer-portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer_id: customerId }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.url) {
+        throw new Error(json?.error ?? "No se pudo abrir el portal del cliente.");
+      }
+      window.location.href = json.url as string;
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "No se pudo abrir la suscripción",
+        description: error?.message ?? "Intenta nuevamente más tarde.",
+      });
+    } finally {
+      setLoadingPortal(false);
+    }
+  }
+
   return (
     <main className="p-6 md:p-10 space-y-8">
       <AccentHeader
@@ -204,6 +245,18 @@ export default function BancoPage() {
         emojiToken="banco"
       />
 
+      {/* Customer portal manage button */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          className="glass-btn"
+          disabled={loadingPortal || !customerId}
+          onClick={() => void handleManageSubscription()}
+        >
+          <span className="emoji">⚙️</span> {loadingPortal ? "Abriendo…" : "Gestionar suscripción"}
+        </button>
+      </div>
+
+      {/* Checkout status panel */}
       {(isCheckoutLoading || checkoutMessage) && (
         <section
           className={`glass-card p-5 space-y-2 border ${
@@ -377,3 +430,4 @@ export default function BancoPage() {
     </main>
   );
 }
+```
