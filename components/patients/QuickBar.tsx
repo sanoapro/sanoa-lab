@@ -14,12 +14,7 @@ type Props = {
   providerId?: string; // si quieres forzar scope por proveedor específico
 };
 
-export default function QuickBar({
-  placeholder = "Buscar paciente por nombre, teléfono o email…",
-  limit = 8,
-  scope = "mine",
-  providerId,
-}: Props) {
+export default function QuickBar({ placeholder = "Buscar paciente por nombre, teléfono o email…", limit = 8, scope = "mine", providerId }: Props) {
   const router = useRouter();
   const [value, setValue] = React.useState("");
   const [items, setItems] = React.useState<PatientSuggestion[]>([]);
@@ -104,13 +99,7 @@ export default function QuickBar({
   }
 
   return (
-    <div
-      className="relative w-full max-w-xl"
-      role="combobox"
-      aria-expanded={open}
-      aria-owns="patient-quickbar-list"
-      aria-haspopup="listbox"
-    >
+    <div className="relative w-full max-w-xl" role="combobox" aria-expanded={open} aria-owns="patient-quickbar-list" aria-haspopup="listbox">
       <div className="flex items-center gap-2 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white/95 dark:bg-slate-900/60 px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
         <span aria-hidden="true" className="inline-grid h-5 w-5 place-content-center opacity-80">
           <ColorEmoji token="buscador" />
@@ -118,9 +107,7 @@ export default function QuickBar({
         <input
           aria-autocomplete="list"
           aria-controls="patient-quickbar-list"
-          aria-activedescendant={
-            open && items[active]?.id ? `patient-opt-${items[active].id}` : undefined
-          }
+          aria-activedescendant={open && items[active]?.id ? `patient-opt-${items[active].id}` : undefined}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
@@ -146,12 +133,7 @@ export default function QuickBar({
 
       {open && value.trim().length > 0 && (
         <div className="absolute z-50 mt-2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
-          <ul
-            id="patient-quickbar-list"
-            ref={listRef}
-            role="listbox"
-            className="max-h-80 overflow-auto divide-y divide-slate-100 dark:divide-slate-800"
-          >
+          <ul id="patient-quickbar-list" ref={listRef} role="listbox" className="max-h-80 overflow-auto divide-y divide-slate-100 dark:divide-slate-800">
             {items.length === 0 && !loading ? (
               <li className="px-3 py-3 text-sm text-slate-500">Sin resultados</li>
             ) : (
@@ -169,9 +151,7 @@ export default function QuickBar({
                   ].join(" ")}
                 >
                   <div className="min-w-0">
-                    <div className="truncate font-medium text-slate-900 dark:text-slate-100">
-                      {it.full_name}
-                    </div>
+                    <div className="truncate font-medium text-slate-900 dark:text-slate-100">{it.full_name}</div>
                     {(it.phone || it.email) && (
                       <div className="truncate text-xs text-slate-500">
                         {it.phone ? `📞 ${it.phone}` : null}

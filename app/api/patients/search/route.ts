@@ -10,12 +10,9 @@ function toInt(v: string | null, def: number) {
 }
 
 function splitMulti(q: URLSearchParams, key: string): string[] | null {
-  const vals = q.getAll(key).flatMap((v) =>
-    v
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
-  );
+  const vals = q
+    .getAll(key)
+    .flatMap((v) => v.split(",").map((s) => s.trim()).filter(Boolean));
   return vals.length ? Array.from(new Set(vals)) : null;
 }
 
@@ -54,7 +51,7 @@ export async function GET(req: NextRequest) {
     if (!u?.user) {
       return NextResponse.json(
         { ok: false, error: { code: "UNAUTHORIZED", message: "No autenticado." } },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -63,7 +60,7 @@ export async function GET(req: NextRequest) {
     if (!orgId) {
       return NextResponse.json(
         { ok: false, error: { code: "BAD_REQUEST", message: "Falta org_id" } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -74,8 +71,7 @@ export async function GET(req: NextRequest) {
       const tagsAll = splitMulti(url.searchParams, "tagsAll");
       const from = url.searchParams.get("from");
       const to = url.searchParams.get("to");
-      const includeDeleted =
-        (url.searchParams.get("includeDeleted") ?? "false").toLowerCase() === "true";
+      const includeDeleted = (url.searchParams.get("includeDeleted") ?? "false").toLowerCase() === "true";
       const page = toInt(url.searchParams.get("page"), 1);
       const pageSize = Math.min(toInt(url.searchParams.get("pageSize"), 50), 200);
       const offset = (page - 1) * pageSize;
@@ -96,7 +92,7 @@ export async function GET(req: NextRequest) {
       if (error) {
         return NextResponse.json(
           { ok: false, error: { code: "DB_ERROR", message: error.message } },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -125,7 +121,7 @@ export async function GET(req: NextRequest) {
             message: formatZodError(parsed.error),
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -167,7 +163,7 @@ export async function GET(req: NextRequest) {
     if (error) {
       return NextResponse.json(
         { ok: false, error: { code: "DB_ERROR", message: error.message } },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -183,7 +179,7 @@ export async function GET(req: NextRequest) {
   } catch (e: any) {
     return NextResponse.json(
       { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
