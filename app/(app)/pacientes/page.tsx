@@ -295,8 +295,8 @@ export default function PacientesPage() {
       <div className="flex items-center justify-between">
         <a href={exportURL()} title="Exportar resultados a CSV">
           <Button variant="secondary" className="inline-flex items-center gap-2">
-            <span aria-hidden>📤</span>
-            <span>Exportar CSV</span>
+            <ColorEmoji token="exportar" size={16} />
+            Exportar CSV
           </Button>
         </a>
         <Button
@@ -305,8 +305,8 @@ export default function PacientesPage() {
           disabled={loading}
           className="inline-flex items-center gap-2"
         >
-          <span aria-hidden>➕</span>
-          <span>Nuevo paciente</span>
+          <ColorEmoji token="nuevo" size={16} />
+          Nuevo paciente
         </Button>
       </div>
 

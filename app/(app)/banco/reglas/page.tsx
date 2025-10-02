@@ -1,25 +1,20 @@
-// app/(app)/banco/reglas/page.tsx
+"use client";
 
-import OrgInspector from "@/components/shared/OrgInspector";
+import { useMemo } from "react";
+import { getActiveOrg } from "@/lib/org-local";
 import RulesEditor from "@/components/bank/RulesEditor";
+import ColorEmoji from "@/components/ColorEmoji";
+import ActiveOrgSelectorCard from "@/components/org/ActiveOrgSelectorCard";
 
-export const metadata = { title: "Banco · Reglas" };
-
-export default function Page() {
+export default function BankRulesPage() {
+  const org = useMemo(() => getActiveOrg(), []);
+  const orgId = org?.id || "";
   return (
-    <main className="container py-6 space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Banco · Reglas</h1>
-        <p className="text-sm text-muted-foreground">
-          Crea y ajusta reglas de categorización. Se aplican a futuras transacciones.
-        </p>
-      </div>
-
-      <OrgInspector>
-        <section className="rounded-lg border border-border bg-card p-4">
-          <RulesEditor />
-        </section>
-      </OrgInspector>
-    </main>
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-semibold mb-3 flex items-center gap-2">
+        <ColorEmoji token="banco" size={18} /> Banco · Reglas
+      </h1>
+      {!orgId ? <ActiveOrgSelectorCard /> : <div className="mt-4"><RulesEditor /></div>}
+    </div>
   );
 }

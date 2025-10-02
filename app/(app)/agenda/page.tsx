@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import clsx from "clsx";
 import { fetchBookings, type CalBooking } from "@/lib/cal";
 import { listPatients, type Patient } from "@/lib/patients";
 import { Input } from "@/components/ui/input";
@@ -77,16 +76,6 @@ export default function AgendaPage() {
     const beforeEnd = to ? new Date(to + "T23:59:59").toISOString() : undefined;
     return { afterStart, beforeEnd };
   }, [from, to]);
-
-  const exportUrl = useMemo(() => {
-    if (!org.id) return "";
-    const params = new URLSearchParams({ org_id: org.id });
-    if (range.afterStart) params.set("from", range.afterStart);
-    if (range.beforeEnd) params.set("to", range.beforeEnd);
-    if (status !== "all") params.set("status", status);
-    if (q.trim()) params.set("q", q.trim());
-    return `/api/export/agenda/xlsx?${params.toString()}`;
-  }, [org.id, range.afterStart, range.beforeEnd, status, q]);
 
   async function load() {
     setLoading(true);
@@ -226,33 +215,15 @@ export default function AgendaPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl md:text-3xl font-semibold flex items-center gap-2">
           <ColorEmoji token="agenda" />
           <span>Agenda</span>
         </h1>
-        <div className="flex items-center gap-2">
-          <a
-            href={exportUrl || undefined}
-            onClick={(e) => {
-              if (!exportUrl) e.preventDefault();
-            }}
-            className={clsx(
-              "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm transition",
-              "bg-white/80 hover:bg-white dark:bg-slate-900/60 dark:hover:bg-slate-900/80",
-              !exportUrl && "pointer-events-none opacity-50",
-            )}
-            aria-disabled={!exportUrl}
-            title={exportUrl ? "Exportar agenda en XLSX" : "Activa una organización para exportar"}
-          >
-            <span aria-hidden>📤</span>
-            <span>Exportar</span>
-          </a>
-          <Button onClick={() => setOpenNew(true)} className="gap-2">
-            <span aria-hidden>➕</span>
-            <span>Agregar cita</span>
-          </Button>
-        </div>
+        <Button onClick={() => setOpenNew(true)} className="inline-flex items-center gap-2">
+          <ColorEmoji token="nuevo" size={16} />
+          Nueva cita
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
@@ -328,7 +299,7 @@ export default function AgendaPage() {
       </div>
 
       {/* Modal NUEVA CITA */}
-      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Agregar cita">
+      <Modal open={openNew} onOpenChange={() => setOpenNew(false)} title="Nueva cita">
         <div className="space-y-4">
           <div>
             <label className="text-sm block mb-1">Paciente</label>
