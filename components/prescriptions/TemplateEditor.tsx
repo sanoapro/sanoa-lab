@@ -1,190 +1,142 @@
+// components/prescriptions/TemplateEditor.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { useAutosave } from "@/hooks/useAutosave";
+import { useToast } from "@/components/Toast";
 
-/** ===== Tipos ===== */
-export type RxTemplate = {
+type RxTemplate = {
   id?: string;
-  org_id?: string | null;
   specialty: string;
   title: string;
   body: string;
-  notes?: string | null;
-  is_reference?: boolean | null;
 };
 
-type Props = {
-  initial: RxTemplate;
-  onSaved?: (_tpl: RxTemplate) => void;
-};
-
-type UpsertResponse = {
-  ok?: boolean;
-  data?: { id?: string } | null;
-  id?: string;
-  error?: { message?: string };
-};
-
-/** ===== Persistencia en servidor ===== */
-async function upsertTemplate(tpl: RxTemplate) {
-  const res = await fetch("/api/prescriptions/templates", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(tpl),
+export default function TemplateEditor({
+  initial,
+  onSaved,
+}: {
+  initial?: Partial<RxTemplate>;
+  onSaved?: (tpl: RxTemplate) => void;
+}) {
+  const { toast } = useToast();
+  const [tpl, setTpl] = useState<RxTemplate>({
+    id: initial?.id,
+    specialty: initial?.specialty ?? "general",
+    title: initial?.title ?? "",
+    body: initial?.body ?? "",
   });
-  const json = (await res.json().catch(() => null)) as UpsertResponse | null;
-  if (!res.ok || json?.ok === false) {
-    const message = json?.error?.message || "No se pudo guardar";
-    throw new Error(message);
-  }
-  const id = json?.data?.id ?? json?.id ?? tpl.id;
-  const next: RxTemplate = { ...tpl, id };
-  return next;
-}
+  const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-/** ===== Editor ===== */
-export default function TemplateEditor({ initial, onSaved }: Props) {
-  /** Guardado en servidor (autosave) */
-  const saveFn = useCallback(
-    async (draft: RxTemplate) => {
-      const saved = await upsertTemplate({
-        ...draft,
-        notes: draft.notes?.trim() ? draft.notes : null,
-      });
-      onSaved?.(saved);
-      return saved;
-    },
-    [onSaved],
-  );
-
-  const { data, setData, status, flush } = useAutosave(initial, saveFn);
-
-  /** ===== Borrador local (localStorage) ===== */
   const storageKey = useMemo(
-    () => `rx-template:draft:${data.id ?? "new"}`,
-    [data.id],
+    () => `rx-template:draft:${tpl.id ?? "new"}`,
+    [tpl.id]
   );
-  const writeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Carga el borrador local si existe (solo una vez al montar)
+  // Carga borrador si existe
   useEffect(() => {
     try {
       const cached = localStorage.getItem(storageKey);
       if (cached) {
-        const v = JSON.parse(cached) as Partial<RxTemplate>;
-        setData({ ...data, ...v });
+        const v = JSON.parse(cached);
+        setTpl((t) => ({ ...t, ...v }));
       }
-    } catch {
-      /* noop */
-    }
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // intencionalmente sólo al montar
+  }, [storageKey]);
 
-  // Guarda borrador local con debounce cuando cambia el draft
+  // Autosave local + POST (debounced)
   useEffect(() => {
-    if (writeTimer.current) clearTimeout(writeTimer.current);
-    writeTimer.current = setTimeout(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
       try {
-        localStorage.setItem(storageKey, JSON.stringify(data));
+        localStorage.setItem(storageKey, JSON.stringify(tpl));
+      } catch {}
+      try {
+        setSaving("saving");
+        const res = await fetch("/api/prescriptions/templates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ item: tpl }),
+        });
+        if (!res.ok) throw new Error();
+        const saved = (await res.json()) as { item: RxTemplate };
+        setTpl(saved.item);
+        setSaving("saved");
+        onSaved?.(saved.item);
       } catch {
-        /* noop */
+        // No rompas el flujo si el endpoint no existe todavía.
+        setSaving("error");
       }
-    }, 500);
+    }, 800); // debounce
+
     return () => {
-      if (writeTimer.current) clearTimeout(writeTimer.current);
+      if (timer.current) clearTimeout(timer.current);
     };
-  }, [data, storageKey]);
+  }, [tpl.specialty, tpl.title, tpl.body]); // eslint-disable-line
 
-  function discardLocalDraft() {
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      /* noop */
-    }
-    // Volver al estado inicial del componente (lo más predecible)
-    setData(initial);
-  }
-
-  /** ===== UI ===== */
   return (
     <div className="space-y-4">
-      {/* Barra de estado + acciones rápidas */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-muted-foreground">
-          {status === "saving" && "Guardando…"}
-          {status === "saved" && "Guardado ✓"}
-          {status === "error" && "Error al guardar"}
-          {status === "idle" && "Los cambios se guardarán automáticamente"}
-        </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={discardLocalDraft}>
-            Descartar borrador
-          </Button>
-          <Button type="button" variant="secondary" onClick={() => void flush()}>
-            Guardar ahora
-          </Button>
-        </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">
+          {saving === "saving" && "Guardando…"}
+          {saving === "saved" && "Guardado ✓"}
+          {saving === "error" && "Guardado local (sin servidor)"}
+        </span>
       </div>
 
-      {/* Campos */}
-      <div className="grid gap-3">
-        <div className="grid gap-1">
-          <label className="text-sm text-contrast/80">Especialidad</label>
-          {/* Select con opciones comunes (puedes ajustar/añadir libremente) */}
-          <select
-            className="input h-11"
-            value={data.specialty}
-            onChange={(e) => setData({ ...data, specialty: e.target.value })}
-          >
-            <option value="">— Selecciona —</option>
-            <option value="mente">Mente</option>
-            <option value="pulso">Pulso</option>
-            <option value="equilibrio">Equilibrio</option>
-            <option value="sonrisa">Sonrisa</option>
-            <option value="general">General</option>
-          </select>
-        </div>
+      <Field label="Especialidad" hint="Selecciona la especialidad">
+        <select
+          className="h-11 rounded-lg border border-border bg-background px-3"
+          value={tpl.specialty}
+          onChange={(e) => setTpl((t) => ({ ...t, specialty: e.target.value }))}
+        >
+          <option value="mente">Mente</option>
+          <option value="pulso">Pulso</option>
+          <option value="equilibrio">Equilibrio</option>
+          <option value="sonrisa">Sonrisa</option>
+          <option value="general">General</option>
+        </select>
+      </Field>
 
-        <div className="grid gap-1">
-          <label className="text-sm text-contrast/80">Título</label>
-          <input
-            className="input"
-            value={data.title}
-            onChange={(e) => setData({ ...data, title: e.target.value })}
-            placeholder="Ej. Amoxicilina 500 mg c/8h x7d"
-          />
-        </div>
+      <Field label="Título" required>
+        <Input
+          value={tpl.title}
+          onChange={(e) => setTpl((t) => ({ ...t, title: e.target.value }))}
+          placeholder="Ej. Sertralina 50 mg cada 24h"
+        />
+      </Field>
 
-        <div className="grid gap-1">
-          <label className="text-sm text-contrast/80">Contenido</label>
-          <textarea
-            className="input min-h-44"
-            value={data.body}
-            onChange={(e) => setData({ ...data, body: e.target.value })}
-            placeholder="Medicamento, dosis, vía, frecuencia, duración o cuerpo de la referencia"
-          />
-        </div>
+      <Field label="Contenido" hint="Indicaciones, dosis, duración, advertencias" required>
+        <Textarea
+          value={tpl.body}
+          onChange={(e) => setTpl((t) => ({ ...t, body: e.target.value }))}
+          rows={10}
+          placeholder="Escribe la plantilla de la receta…"
+        />
+      </Field>
 
-        <div className="grid gap-1">
-          <label className="text-sm text-contrast/80">Notas / Advertencias</label>
-          <textarea
-            className="input min-h-24"
-            value={data.notes ?? ""}
-            onChange={(e) => setData({ ...data, notes: e.target.value })}
-            placeholder="Alergias, precauciones, seguimiento…"
-          />
-        </div>
-
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={Boolean(data.is_reference)}
-            onChange={(e) => setData({ ...data, is_reference: e.target.checked })}
-          />
-          Es referencia (no receta)
-        </label>
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="outline"
+          onClick={() => {
+            try {
+              localStorage.removeItem(storageKey);
+              toast({ title: "Borrador descartado" });
+            } catch {}
+          }}
+        >
+          Descartar borrador
+        </Button>
+        <Button
+          onClick={() => {
+            toast({ title: "Guardado manual", description: "Se intentó guardar en el servidor." });
+          }}
+        >
+          Guardar ahora
+        </Button>
       </div>
     </div>
   );

@@ -649,7 +649,7 @@ export default function PacientesPage() {
       </section>
 
       {/* Modal: Nuevo paciente */}
-      <Modal open={openCreate} onOpenChange={setOpenCreate} title="Nuevo paciente">
+      <Modal open={openCreate} onClose={() => setOpenCreate(false)} title="Nuevo paciente">
         <div className="space-y-3">
           <label className="block text-sm text-[var(--color-brand-text)]">Nombre *</label>
           <Input

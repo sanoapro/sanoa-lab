@@ -45,9 +45,7 @@ export default function Modal({
         {(title || onClose) && (
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="text-lg font-bold">{title}</h3>
-            <button aria-label="Cerrar" onClick={onClose} className="btn-base ghost">
-              ✕
-            </button>
+            <button aria-label="Cerrar" onClick={onClose} className="btn-base ghost">✕</button>
           </div>
         )}
         <div className="p-4">{children}</div>

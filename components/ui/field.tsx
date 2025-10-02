@@ -1,86 +1,44 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type Props = {
-  label: React.ReactNode;
-  htmlFor?: string;
-  hint?: string;
-  error?: string;
-  hintId?: string;
-  errorId?: string;
+export type FieldProps = {
+  label?: React.ReactNode;
+  hint?: React.ReactNode;
   required?: boolean;
-  className?: string;
   children: React.ReactNode;
+  className?: string;
 };
 
-export function Field({
-  label,
-  htmlFor,
-  hint,
-  error,
-  hintId,
-  errorId,
-  required,
-  className,
-  children,
-}: Props) {
+export function Field({ label, hint, required, children, className }: FieldProps) {
   return (
-    <div className={cn("space-y-1.5", className)}>
-      <label htmlFor={htmlFor} className="block text-sm font-medium">
-        {label} {required && <span className="text-danger">*</span>}
-      </label>
+    <label className={cn("grid gap-2", className)}>
+      {label && (
+        <span className="text-sm font-medium text-foreground/80">
+          {label}
+          {required ? <span className="text-destructive ml-1">*</span> : null}
+        </span>
+      )}
       {children}
-      {hint && !error && (
-        <p className="text-xs text-muted-foreground" id={hintId}>
-          {hint}
-        </p>
-      )}
-      {error && (
-        <p className="text-xs text-danger" id={errorId} role="alert" aria-live="polite">
-          {error}
-        </p>
-      )}
-    </div>
+      {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
+    </label>
   );
 }
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean };
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
-  { className, invalid, ...props },
-  ref
-) {
-  return (
-    <input
-      ref={ref}
-      className={cn(
-        "block w-full h-11 rounded-lg border bg-background px-3 text-base",
-        "placeholder:text-muted-foreground/70",
-        "focus:outline-none focus:ring-2 focus:ring-primary/60",
-        invalid ? "border-danger" : "border-border",
-        className
-      )}
-      {...props}
-    />
-  );
-});
+export { Input } from "./input";
 
-type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & { invalid?: boolean };
-export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { className, invalid, rows = 6, ...props },
-  ref
-) {
-  return (
+export const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"textarea">>(
+  ({ className, ...props }, ref) => (
     <textarea
       ref={ref}
-      rows={rows}
       className={cn(
-        "block w-full rounded-lg border bg-background px-3 py-2 text-base",
-        "placeholder:text-muted-foreground/70",
-        "focus:outline-none focus:ring-2 focus:ring-primary/60",
-        invalid ? "border-danger" : "border-border",
-        className
+        "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-colors",
+        "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        className,
       )}
       {...props}
     />
-  );
-});
+  )
+);
+Textarea.displayName = "Textarea";
