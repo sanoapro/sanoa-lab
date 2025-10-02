@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function AreasPage() {
+export default function Page() {
   redirect("/especialidades");
 }
