@@ -1,8 +1,0 @@
-components/Emoji.tsx(17,7): error TS2322: Type '{ emoji: string; size: any; mode: EmojiMode; color: string; accentColor: string; className: any; title: any; }' is not assignable to type 'IntrinsicAttributes & Props'.
-  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
-components/Navbar.tsx(81,29): error TS2322: Type '{ emoji: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
-  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
-components/Toast.tsx(122,25): error TS2322: Type '{ emoji: string; mode: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
-  Property 'emoji' does not exist on type 'IntrinsicAttributes & Props'.
-lib/patient-files.ts(126,86): error TS2339: Property 'path' does not exist on type 'PatientFile'.
-tsconfig.json(28,12): error TS18002: The 'files' list in config file '/workspaces/sanoa-lab/tsconfig.json' is empty.
