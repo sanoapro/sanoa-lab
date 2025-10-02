@@ -28,6 +28,12 @@ function getIp(req: NextRequest) {
 }
 
 export function middleware(req: NextRequest) {
+  const url = req.nextUrl.clone();
+  if (url.pathname === "/areas") {
+    url.pathname = "/especialidades";
+    return NextResponse.redirect(url);
+  }
+
   if (!DISABLED) {
     const ip = getIp(req);
     const key = `${ip}:${new URL(req.url).pathname}`;
@@ -47,12 +53,6 @@ export function middleware(req: NextRequest) {
       bucket.count += 1;
       buckets.set(key, bucket);
     }
-  }
-
-  const url = req.nextUrl.clone();
-  if (url.pathname === "/areas") {
-    url.pathname = "/especialidades";
-    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
