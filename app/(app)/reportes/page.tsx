@@ -114,10 +114,10 @@ export default function ReportsPage() {
     new Date(m).toLocaleDateString(undefined, { month: "short", year: "2-digit" });
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-6">
+    <div className="max-w-5xl mx-auto p-5 space-y-7">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Reportes</h1>
-        <div className="flex items-center gap-3">
+        <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Reportes</h1>
+        <div className="flex items-center gap-3 text-base">
           <label className="text-sm text-slate-600 dark:text-slate-200">
             Meses
             <Input
@@ -134,7 +134,7 @@ export default function ReportsPage() {
             />
           </label>
           <Button variant="secondary" onClick={() => void load()} disabled={loading}>
-            {loading ? "Actualizando…" : "Actualizar"}
+            {loading ? "⏳ Actualizando…" : "🔄 Actualizar"}
           </Button>
         </div>
       </div>
@@ -147,7 +147,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      <section className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <section className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card title="Pacientes totales" value={kv("patients_total")} loading={loading} />
         <Card title="Notas (30d)" value={kv("notes_30d")} loading={loading} />
         <Card title="Archivos (30d)" value={kv("files_30d")} loading={loading} />
@@ -183,9 +183,9 @@ export default function ReportsPage() {
 
 function Card({ title, value, loading }: { title: string; value: number; loading?: boolean }) {
   return (
-    <div className="p-4 glass rounded-xl">
-      <div className="text-sm text-slate-600 dark:text-slate-200">{title}</div>
-      <div className="text-2xl font-semibold text-slate-900 dark:text-white">
+    <div className="glass glass-card bubble text-contrast p-5 transition-transform duration-150 hover:translate-y-[-2px] hover:shadow-xl">
+      <div className="text-sm font-medium opacity-80">{title}</div>
+      <div className="mt-1 text-3xl font-semibold tracking-tight">
         {loading ? "…" : Number(value).toLocaleString()}
       </div>
     </div>
@@ -207,22 +207,22 @@ function Series({
 }) {
   return (
     <section className="space-y-2">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
-      <div className="glass rounded-xl divide-y divide-black/5 dark:divide-white/10">
+      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h2>
+      <div className="glass glass-card bubble text-contrast divide-y divide-black/5 dark:divide-white/10">
         {loading && rows.length === 0 && (
-          <div className="p-4 text-sm text-slate-600 dark:text-slate-300">Cargando…</div>
+          <div className="p-4 text-sm opacity-80">Cargando…</div>
         )}
         {rows.map((p) => (
           <div key={p.month_start} className="p-3">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-slate-600 dark:text-slate-300">{fmt(p.month_start)}</div>
-              <div className="text-sm text-slate-900 dark:text-white">{p.total}</div>
+              <div className="text-sm opacity-80">{fmt(p.month_start)}</div>
+              <div className="text-sm font-semibold">{p.total}</div>
             </div>
             <Bar value={p.total} max={max} />
           </div>
         ))}
         {!loading && rows.length === 0 && (
-          <div className="p-4 text-sm text-slate-600 dark:text-slate-300">Sin datos.</div>
+          <div className="p-4 text-sm opacity-80">Sin datos.</div>
         )}
       </div>
     </section>
@@ -257,12 +257,12 @@ function Cohorts() {
 
   return (
     <section className="space-y-2">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
         Cohortes (retención por mes de alta)
       </h2>
-      <div className="glass rounded-xl overflow-auto">
+      <div className="glass glass-card bubble overflow-auto text-contrast">
         <table className="min-w-[640px] w-full text-sm">
-          <thead className="bg-black/5 dark:bg-white/10">
+          <thead className="bg-black/5 dark:bg-white/10 text-contrast">
             <tr>
               <th className="text-left p-2">Cohorte</th>
               <th className="text-right p-2">Usuarios</th>
@@ -288,14 +288,14 @@ function Cohorts() {
             ))}
             {loading && (
               <tr>
-                <td colSpan={5} className="p-3 text-slate-600 dark:text-slate-300">
+                <td colSpan={5} className="p-3 text-sm opacity-80">
                   Cargando…
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-3 text-slate-600 dark:text-slate-300">
+                <td colSpan={5} className="p-3 text-sm opacity-80">
                   Sin datos.
                 </td>
               </tr>

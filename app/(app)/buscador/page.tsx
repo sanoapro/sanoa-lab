@@ -63,50 +63,50 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Buscador</h1>
-      <div className="glass rounded-xl p-4 space-y-3">
+    <div className="max-w-4xl mx-auto p-5 space-y-5">
+      <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Buscador</h1>
+      <div className="glass glass-card bubble p-5 space-y-4 text-contrast">
         <div className="flex gap-2">
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Ej: ansiedad, informe laboratorio, etc."
           />
-          <Button onClick={() => void run()} disabled={loading}>
-            Buscar
+          <Button onClick={() => void run()} disabled={loading} className="glass-btn neon">
+            {loading ? "🔍 Buscando…" : "🚀 Buscar"}
           </Button>
         </div>
-        <div className="text-xs text-slate-600 dark:text-slate-300">
-          <Button variant="secondary" onClick={() => void reindex("notes")} disabled={loading}>
-            Reindexar notas
+        <div className="text-xs text-slate-600 dark:text-slate-300 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" onClick={() => void reindex("notes")} disabled={loading} className="glass-btn">
+            📝 Reindexar notas
           </Button>
           <Button
             variant="secondary"
-            className="ml-2"
+            className="glass-btn"
             onClick={() => void reindex("files")}
             disabled={loading}
           >
-            Reindexar archivos
+            📁 Reindexar archivos
           </Button>
           {mode && (
-            <span className="ml-3">
+            <span className="ml-1 text-xs text-foreground/80">
               Modo: <strong>{mode}</strong>
             </span>
           )}
         </div>
       </div>
 
-      <div className="glass rounded-xl divide-y divide-black/5 dark:divide-white/10">
+      <div className="glass glass-card bubble text-contrast divide-y divide-black/5 dark:divide-white/10">
         {rows.length === 0 && (
-          <div className="p-4 text-sm text-slate-600 dark:text-slate-300">Sin resultados.</div>
+          <div className="p-4 text-sm opacity-80">Sin resultados.</div>
         )}
         {rows.map((r, i) => (
           <div key={i} className="p-3">
-            <div className="text-xs text-slate-600 dark:text-slate-300">
+            <div className="text-xs opacity-80">
               {r.kind === "note" ? "Nota" : "Archivo"} · Paciente {r.patient_id.slice(0, 8)}… ·
               score {r.score.toFixed(2)}
             </div>
-            <div className="text-slate-900 dark:text-white whitespace-pre-wrap">{r.snippet}</div>
+            <div className="whitespace-pre-wrap text-base leading-relaxed">{r.snippet}</div>
           </div>
         ))}
       </div>
