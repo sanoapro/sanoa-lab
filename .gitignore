@@ -44,3 +44,13 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+# ----- logs & artefactos -----
+logs/
+.safety/
+*.log
+*.tgz
+*.bak
+full_dump.sql
+schema_public.sql
+# si usas pnpm, ignora lock de npm
+package-lock.json
