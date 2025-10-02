@@ -36,15 +36,26 @@ export default function Page() {
 function PageInner() {
   const org = getActiveOrg();
   const prefillPatient = useQueryParam("patient") || "";
+
   const [items, setItems] = useState<WorkItem[]>([]);
   const [status, setStatus] = useState<WorkStatus | "all">("open");
   const [patientId, setPatientId] = useState(prefillPatient);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueAt, setDueAt] = useState(""); // datetime-local
+  const [dueAt, setDueAt] = useState(""); // datetime-local (string)
   const [loading, setLoading] = useState(false);
 
-  const canLoad = !!org.id;
+  const canLoad = !!org?.id;
+
+  const fmtDateTime = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es-MX", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "America/Mexico_City",
+      }),
+    [],
+  );
 
   async function load() {
     if (!canLoad) return;
@@ -64,11 +75,12 @@ function PageInner() {
   }
 
   useEffect(() => {
-    void load(); /* eslint-disable-next-line */
-  }, [org.id, status]);
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [org?.id, status]);
 
   async function create() {
-    if (!org.id) {
+    if (!org?.id) {
       showToast({ title: "Selecciona organización activa" });
       return;
     }
@@ -86,7 +98,8 @@ function PageInner() {
         dueAt: iso,
       });
       setTitle("");
-      setDescription(""); // no reseteo patient para crear varias seguidas
+      setDescription("");
+      // Conserva patientId para cargar varias al hilo
       showToast({ title: "Creada", description: "La tarea se agregó correctamente." });
       await load();
     } catch (e: any) {
@@ -107,7 +120,7 @@ function PageInner() {
     }
   }
 
-  async function remove(id: string) {
+  async function removeItem(id: string) {
     if (!confirm("¿Borrar tarea?")) return;
     try {
       await deleteWorkItem(id);
@@ -122,6 +135,8 @@ function PageInner() {
     if (status === "done") return "Tareas completadas";
     return "Todas las tareas";
   }, [status]);
+
+  const canCreate = !!org?.id && patientId.trim() && title.trim();
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -139,7 +154,7 @@ function PageInner() {
             <option value="all">Todas</option>
           </select>
           <Button variant="secondary" onClick={() => void load()} disabled={loading}>
-            Actualizar
+            {loading ? "Actualizando…" : "Actualizar"}
           </Button>
         </div>
       </div>
@@ -147,6 +162,14 @@ function PageInner() {
       {/* Crear */}
       <section className="bg-white border rounded-xl p-4 space-y-3">
         <div className="text-lg font-semibold">Nueva tarea</div>
+        {!org?.id && (
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+            role="alert"
+          >
+            Activa una organización para crear tareas.
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm text-gray-600 mb-1">patient_id (UUID)</label>
@@ -154,11 +177,18 @@ function PageInner() {
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
               placeholder="uuid del paciente"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void create();
+              }}
             />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Fecha límite</label>
-            <Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
+            <Input
+              type="datetime-local"
+              value={dueAt}
+              onChange={(e) => setDueAt(e.target.value)}
+            />
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm text-gray-600 mb-1">Título</label>
@@ -166,6 +196,9 @@ function PageInner() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="p. ej., Completar nota SOAP"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void create();
+              }}
             />
           </div>
           <div className="sm:col-span-2">
@@ -174,43 +207,72 @@ function PageInner() {
               className="w-full border rounded-md p-2 min-h-[80px]"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Detalles, enlaces, checklist…"
             />
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={() => void create()}>Crear tarea</Button>
+          <Button
+            type="button"
+            onClick={() => void create()}
+            disabled={!canCreate}
+            aria-busy={loading}
+            title={!canCreate ? "Completa patient_id y título" : "Crear tarea"}
+          >
+            Crear tarea
+          </Button>
         </div>
       </section>
 
       {/* Lista */}
       <section className="space-y-2">
         <div className="text-lg font-semibold">{header}</div>
-        <div className="border rounded-xl divide-y bg-white">
-          {items.length === 0 && (
+        <div
+          className="border rounded-xl divide-y bg-white"
+          aria-busy={loading}
+          aria-live="polite"
+        >
+          {items.length === 0 && !loading && (
             <div className="p-4 text-sm text-gray-600">
               No hay tareas para los filtros seleccionados.
             </div>
           )}
 
           {items.map((w) => (
-            <div key={w.id} className="p-3 flex items-center justify-between">
-              <div>
-                <div className="font-medium">{w.title}</div>
+            <div key={w.id} className="p-3 flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="font-medium break-words">{w.title}</div>
                 <div className="text-xs text-gray-600">
                   Paciente: {w.patient_id.slice(0, 8)}… · Estado: {w.status}
-                  {w.due_at ? ` · Vence ${new Date(w.due_at).toLocaleString()}` : " · Sin fecha"}
+                  {" · "}
+                  {w.due_at ? `Vence ${fmtDateTime.format(new Date(w.due_at))}` : "Sin fecha"}
                 </div>
-                {w.description && <div className="text-sm text-gray-700 mt-1">{w.description}</div>}
+                {w.description && (
+                  <div className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
+                    {w.description}
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="shrink-0 flex items-center gap-2">
                 {w.status === "open" ? (
-                  <Button onClick={() => void mark(w.id, true)}>Marcar como hecha</Button>
+                  <Button type="button" onClick={() => void mark(w.id, true)}>
+                    Marcar como hecha
+                  </Button>
                 ) : (
-                  <Button variant="secondary" onClick={() => void mark(w.id, false)}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void mark(w.id, false)}
+                  >
                     Reabrir
                   </Button>
                 )}
-                <Button variant="secondary" onClick={() => void remove(w.id)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => void removeItem(w.id)}
+                  title="Borrar tarea"
+                >
                   Borrar
                 </Button>
               </div>
