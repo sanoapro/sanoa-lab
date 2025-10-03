@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
   let score: { total?: number } | undefined;
   if (templateKey === "phq9" || templateKey === "gad7") {
     const keys = Object.keys(answers);
-    const total = keys.reduce((acc, k) => acc + (Number(answers[k]) || 0), 0);
+    const total = keys.reduce((acc: any, k: any) => acc + (Number(answers[k]) || 0), 0);
     score = { total };
   }
 

@@ -59,7 +59,7 @@ export default function BankReportsPage() {
               type="date"
               className="glass-input"
               value={from}
-              onChange={(e) => setFrom(e.target.value)}
+              onChange={(e: any) => setFrom(e.target.value)}
             />
           </div>
           <div>
@@ -68,7 +68,7 @@ export default function BankReportsPage() {
               type="date"
               className="glass-input"
               value={to}
-              onChange={(e) => setTo(e.target.value)}
+              onChange={(e: any) => setTo(e.target.value)}
             />
           </div>
         </div>

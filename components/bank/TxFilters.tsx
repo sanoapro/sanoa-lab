@@ -11,7 +11,7 @@ function useQSPush() {
   return useCallback(
     (patch: Record<string, string | undefined>) => {
       const q = new URLSearchParams(search.toString());
-      Object.entries(patch).forEach(([k, v]) => {
+      Object.entries(patch).forEach(([k, v]: any) => {
         if (v === undefined || v === "") q.delete(k);
         else q.set(k, v);
       });
@@ -40,8 +40,8 @@ export default function TxFilters() {
             className="w-full rounded border px-3 py-2"
             placeholder="Descripción (memo)…"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && push({ q })}
+            onChange={(e: any) => setQ(e.target.value)}
+            onKeyDown={(e: any) => e.key === "Enter" && push({ q })}
             aria-label="Buscar por descripción"
           />
         </div>
@@ -51,7 +51,7 @@ export default function TxFilters() {
             type="date"
             className="w-full rounded border px-3 py-2"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e: any) => setFrom(e.target.value)}
           />
         </div>
         <div>
@@ -60,7 +60,7 @@ export default function TxFilters() {
             type="date"
             className="w-full rounded border px-3 py-2"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e: any) => setTo(e.target.value)}
           />
         </div>
         <div>
@@ -68,7 +68,7 @@ export default function TxFilters() {
           <select
             className="w-full rounded border px-3 py-2"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e: any) => setStatus(e.target.value)}
           >
             <option value="">Todos</option>
             <option value="pending">Pendiente</option>

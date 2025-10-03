@@ -40,7 +40,7 @@ export default function CatalogPicker({
           className="border rounded px-3 py-2 flex-1"
           placeholder="Buscar tratamiento…"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e: any) => setQ(e.target.value)}
         />
         <button className="border rounded px-3 py-2" onClick={load}>
           Buscar
@@ -49,7 +49,7 @@ export default function CatalogPicker({
       <div className="rounded border overflow-auto max-h-72">
         <table className="w-full text-sm">
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r: any) => (
               <tr key={r.id} className="border-b">
                 <td className="px-3 py-2 w-24 text-xs text-slate-500">{r.code}</td>
                 <td className="px-3 py-2">{r.name}</td>

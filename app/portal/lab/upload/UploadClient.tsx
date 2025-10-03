@@ -83,7 +83,7 @@ export default function UploadClient() {
             <input
               type="file"
               accept=".pdf,image/*"
-              onChange={(e) => setFile(e.currentTarget.files?.[0] ?? null)}
+              onChange={(e: any) => setFile(e.currentTarget.files?.[0] ?? null)}
               className="block w-full rounded-xl border border-[var(--color-brand-border)] px-3 py-2"
               required
             />

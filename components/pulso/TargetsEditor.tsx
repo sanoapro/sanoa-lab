@@ -28,7 +28,7 @@ export default function TargetsEditor({ orgId, patientId }: { orgId: string; pat
     if (j?.ok) {
       const m: Record<string, { low?: string; high?: string }> = {};
       (j.data as any[]).forEach(
-        (t) =>
+        (t: any) =>
           (m[t.type] = {
             low: t.target_low == null ? "" : String(t.target_low),
             high: t.target_high == null ? "" : String(t.target_high),
@@ -44,7 +44,7 @@ export default function TargetsEditor({ orgId, patientId }: { orgId: string; pat
 
   async function save() {
     setSaving(true);
-    const items = TYPES.map((t) => ({
+    const items = TYPES.map((t: any) => ({
       type: t.key,
       low: vals[t.key]?.low ? Number(vals[t.key]?.low) : null,
       high: vals[t.key]?.high ? Number(vals[t.key]?.high) : null,
@@ -74,15 +74,15 @@ export default function TargetsEditor({ orgId, patientId }: { orgId: string; pat
             </tr>
           </thead>
           <tbody>
-            {TYPES.map((t) => (
+            {TYPES.map((t: any) => (
               <tr key={t.key} className="border-t">
                 <td className="px-3 py-2">{t.label}</td>
                 <td className="px-3 py-2">
                   <input
                     className="border rounded px-2 py-1 w-28"
                     value={vals[t.key]?.low ?? ""}
-                    onChange={(e) =>
-                      setVals((v) => ({
+                    onChange={(e: any) =>
+                      setVals((v: any) => ({
                         ...v,
                         [t.key]: { ...(v[t.key] || {}), low: e.target.value },
                       }))
@@ -93,8 +93,8 @@ export default function TargetsEditor({ orgId, patientId }: { orgId: string; pat
                   <input
                     className="border rounded px-2 py-1 w-28"
                     value={vals[t.key]?.high ?? ""}
-                    onChange={(e) =>
-                      setVals((v) => ({
+                    onChange={(e: any) =>
+                      setVals((v: any) => ({
                         ...v,
                         [t.key]: { ...(v[t.key] || {}), high: e.target.value },
                       }))

@@ -60,7 +60,7 @@ export default function PrefsForm() {
   }, [org.id]);
 
   function toggleDay(v: number) {
-    setP((prev) => {
+    setP((prev: any) => {
       const arr = new Set(prev.days_of_week ?? []);
       if (arr.has(v)) arr.delete(v);
       else arr.add(v);
@@ -89,7 +89,7 @@ export default function PrefsForm() {
           <input
             className="rounded-xl border px-3 py-2"
             value={p.tz ?? ""}
-            onChange={(e) => setP((prev) => ({ ...prev, tz: e.target.value }))}
+            onChange={(e: any) => setP((prev: any) => ({ ...prev, tz: e.target.value }))}
             placeholder="America/Mexico_City"
           />
         </label>
@@ -98,7 +98,7 @@ export default function PrefsForm() {
           <input
             className="rounded-xl border px-3 py-2"
             value={p.window_start ?? ""}
-            onChange={(e) => setP((prev) => ({ ...prev, window_start: e.target.value }))}
+            onChange={(e: any) => setP((prev: any) => ({ ...prev, window_start: e.target.value }))}
             placeholder="09:00"
           />
         </label>
@@ -107,14 +107,14 @@ export default function PrefsForm() {
           <input
             className="rounded-xl border px-3 py-2"
             value={p.window_end ?? ""}
-            onChange={(e) => setP((prev) => ({ ...prev, window_end: e.target.value }))}
+            onChange={(e: any) => setP((prev: any) => ({ ...prev, window_end: e.target.value }))}
             placeholder="20:00"
           />
         </label>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {DAYS.map((d) => (
+        {DAYS.map((d: any) => (
           <button
             key={d.v}
             type="button"
@@ -136,8 +136,8 @@ export default function PrefsForm() {
           <input
             type="checkbox"
             checked={(p.channels_priority ?? ["whatsapp", "sms"]).includes("whatsapp")}
-            onChange={(e) =>
-              setP((prev) => {
+            onChange={(e: any) =>
+              setP((prev: any) => {
                 const arr = new Set(prev.channels_priority ?? []);
                 if (e.target.checked) arr.add("whatsapp");
                 else arr.delete("whatsapp");
@@ -151,8 +151,8 @@ export default function PrefsForm() {
           <input
             type="checkbox"
             checked={(p.channels_priority ?? ["whatsapp", "sms"]).includes("sms")}
-            onChange={(e) =>
-              setP((prev) => {
+            onChange={(e: any) =>
+              setP((prev: any) => {
                 const arr = new Set(prev.channels_priority ?? []);
                 if (e.target.checked) arr.add("sms");
                 else arr.delete("sms");
@@ -170,7 +170,7 @@ export default function PrefsForm() {
             max={10}
             className="rounded-xl border px-3 py-2"
             value={p.max_retries ?? 3}
-            onChange={(e) => setP((prev) => ({ ...prev, max_retries: Number(e.target.value) }))}
+            onChange={(e: any) => setP((prev: any) => ({ ...prev, max_retries: Number(e.target.value) }))}
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -181,8 +181,8 @@ export default function PrefsForm() {
             max={240}
             className="rounded-xl border px-3 py-2"
             value={p.retry_backoff_min ?? 30}
-            onChange={(e) =>
-              setP((prev) => ({ ...prev, retry_backoff_min: Number(e.target.value) }))
+            onChange={(e: any) =>
+              setP((prev: any) => ({ ...prev, retry_backoff_min: Number(e.target.value) }))
             }
           />
         </label>

@@ -1,7 +1,7 @@
 // lib/notify/twilio.ts
 function formEncode(params: Record<string, string>) {
   return Object.entries(params)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .map(([k, v]: any) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join("&");
 }
 

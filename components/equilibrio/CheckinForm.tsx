@@ -48,7 +48,7 @@ export default function CheckinForm({ orgId, patientId }: { orgId: string; patie
 
   const due = useMemo(
     () =>
-      items.filter((it) => {
+      items.filter((it: any) => {
         return (
           (dow === 1 && it.mon) ||
           (dow === 2 && it.tue) ||
@@ -97,7 +97,7 @@ export default function CheckinForm({ orgId, patientId }: { orgId: string; patie
           type="date"
           className="border rounded px-3 py-2"
           value={today}
-          onChange={(e) => setToday(e.target.value)}
+          onChange={(e: any) => setToday(e.target.value)}
         />
       </div>
 
@@ -111,7 +111,7 @@ export default function CheckinForm({ orgId, patientId }: { orgId: string; patie
             </tr>
           </thead>
           <tbody>
-            {due.map((it) => (
+            {due.map((it: any) => (
               <tr key={it.id} className="border-t">
                 <td className="px-3 py-2">{it.library.title}</td>
                 <td className="px-3 py-2">{it.goal || "—"}</td>
@@ -149,7 +149,7 @@ export default function CheckinForm({ orgId, patientId }: { orgId: string; patie
         <input
           className="border rounded px-3 py-2 w-full"
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e: any) => setNote(e.target.value)}
         />
       </div>
     </section>

@@ -60,7 +60,7 @@ export default function PatientAutocomplete({
         )}
         placeholder={placeholder}
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={(e: any) => setQ(e.target.value)}
         onFocus={() => q && setOpen(true)}
       />
       {open && (
@@ -73,7 +73,7 @@ export default function PatientAutocomplete({
             <div className="px-3 py-2 text-sm text-muted-foreground">Sin resultados</div>
           )}
           {!loading &&
-            items.map((it) => (
+            items.map((it: any) => (
               <button
                 key={it.id}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-muted"

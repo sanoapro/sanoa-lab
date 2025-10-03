@@ -110,10 +110,10 @@ export default function PatientTasksPanel({
               id="tpl"
               className="border rounded px-3 py-2 w-full"
               value={selectedTemplate}
-              onChange={(e) => setSelectedTemplate(e.target.value)}
+              onChange={(e: any) => setSelectedTemplate(e.target.value)}
             >
               <option value="">Selecciona…</option>
-              {templates.map((t) => (
+              {templates.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.title}
                 </option>
@@ -123,7 +123,7 @@ export default function PatientTasksPanel({
               type="date"
               className="border rounded px-3 py-2"
               value={due}
-              onChange={(e) => setDue(e.target.value)}
+              onChange={(e: any) => setDue(e.target.value)}
             />
             <button
               className="border rounded px-3 py-2"
@@ -142,13 +142,13 @@ export default function PatientTasksPanel({
               className="border rounded px-3 py-2"
               placeholder="Título"
               value={customTitle}
-              onChange={(e) => setCustomTitle(e.target.value)}
+              onChange={(e: any) => setCustomTitle(e.target.value)}
             />
             <input
               className="border rounded px-3 py-2"
               placeholder="Contenido (JSON)"
               value={customContentInput}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 const value = e.target.value;
                 setCustomContentInput(value);
                 try {
@@ -164,7 +164,7 @@ export default function PatientTasksPanel({
               type="date"
               className="border rounded px-3 py-2"
               value={due}
-              onChange={(e) => setDue(e.target.value)}
+              onChange={(e: any) => setDue(e.target.value)}
             />
             <button className="border rounded px-3 py-2" onClick={assignCustom}>
               Asignar
@@ -185,7 +185,7 @@ export default function PatientTasksPanel({
             </tr>
           </thead>
           <tbody>
-            {tasks.map((t) => (
+            {tasks.map((t: any) => (
               <tr key={t.id} className="border-t">
                 <td className="px-3 py-2">{t.title}</td>
                 <td className="px-3 py-2">{t.status}</td>

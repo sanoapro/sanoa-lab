@@ -114,7 +114,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ["Tags", Array.isArray(patient.tags) && patient.tags.length ? patient.tags.join(", ") : "—"],
       ["ID", patient.id],
     ];
-    lines.forEach(([k, v], i) => {
+    lines.forEach(([k, v]: any, i: any) => {
       const y = y0 - i * (LH + 6);
       page.drawText(`${k}:`, { x: L, y, size: 12, font: fontBold });
       page.drawText(String(v), { x: L + 160, y, size: 12, font });
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     // ⚠️ Importante: envolver Uint8Array en Blob para evitar error de TS con Response
     const blob = new Blob([bytes], { type: "application/pdf" });
 
-    return new Response(blob, {
+    return new Response(new Blob([blob]), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,

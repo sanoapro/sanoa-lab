@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
 function splitMulti(q: URLSearchParams, key: string): string[] | null {
-  const vals = q.getAll(key).flatMap((v) =>
+  const vals = q.getAll(key).flatMap((v: any) =>
     v
       .split(",")
-      .map((s) => s.trim())
+      .map((s: any) => s.trim())
       .filter(Boolean),
   );
   return vals.length ? Array.from(new Set(vals)) : null;
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
     ].join("\n");
 
     const filename = `patients_${org_id}_${new Date().toISOString().slice(0, 10)}.csv`;
-    return new Response(csv, {
+    return new Response(new Blob([csv]), {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,

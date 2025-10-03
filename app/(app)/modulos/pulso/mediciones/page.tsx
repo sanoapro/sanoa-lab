@@ -49,7 +49,7 @@ export default function PulsoMedicionesPage() {
           <MeasurementForm
             orgId={orgId}
             patientId={patient.id}
-            onSaved={() => setRefresh((x) => x + 1)}
+            onSaved={() => setRefresh((x: any) => x + 1)}
           />
           <MeasurementTable orgId={orgId} patientId={patient.id} refreshToken={refresh} />
         </>

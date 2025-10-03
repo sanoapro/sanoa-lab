@@ -48,7 +48,7 @@ export default function DepositarPage() {
           min={50}
           step={10}
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e: any) => setAmount(e.target.value)}
           className="w-full border rounded-xl p-3"
           placeholder="500"
         />

@@ -21,7 +21,7 @@ type Tx = {
   created_at: string;
 };
 
-function fmtMoney(cents: number, currency = "MXN") {
+function fmtMoney(cents: number, currency: any = "MXN") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format(
     (cents || 0) / 100
   );
@@ -49,8 +49,8 @@ export default function TxTable({ orgId }: { orgId: string }) {
     let alive = true;
     setLoading(true);
     fetch(`/api/bank/tx?${qs}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) {
           setRows(j.data);
@@ -111,7 +111,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
               </thead>
               <tbody>
                 {loading &&
-                  skeletonRows.map((_, idx) => (
+                  skeletonRows.map((_: any, idx: any) => (
                     <tr key={`tx-skeleton-${idx}`} className={idx === 0 ? undefined : "border-t"}>
                       <td className="px-3 py-3">
                         <Skeleton
@@ -142,7 +142,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
                   </tr>
                 )}
                 {!loading &&
-                  rows.map((r) => (
+                  rows.map((r: any) => (
                     <tr key={r.id} className="border-t">
                       <td className="px-3 py-2">{r.date}</td>
                       <td className="px-3 py-2">{r.memo ?? "—"}</td>

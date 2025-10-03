@@ -32,7 +32,7 @@ export default function SendDialog() {
 
   async function createLink() {
     if (!org.id || !tplId) return alert("Elige una plantilla");
-    const tpl = tpls.find((t) => t.id === tplId);
+    const tpl = tpls.find((t: any) => t.id === tplId);
     if (!tpl) return alert("Plantilla inválida");
     if (tpl.type === "specialist_patient" && !patient) return alert("Selecciona paciente");
 
@@ -60,11 +60,11 @@ export default function SendDialog() {
           <span className="text-sm text-slate-500">Plantilla</span>
           <select
             value={tplId}
-            onChange={(e) => setTplId(e.target.value)}
+            onChange={(e: any) => setTplId(e.target.value)}
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
           >
             <option value="">— Seleccionar —</option>
-            {tpls.map((t) => (
+            {tpls.map((t: any) => (
               <option key={t.id} value={t.id}>
                 {t.title} ({t.type})
               </option>
@@ -77,7 +77,7 @@ export default function SendDialog() {
             type="number"
             className="rounded-xl border px-3 py-2"
             value={expires}
-            onChange={(e) => setExpires(parseInt(e.target.value || "168"))}
+            onChange={(e: any) => setExpires(parseInt(e.target.value || "168"))}
             min={1}
             max={720}
           />
@@ -86,7 +86,16 @@ export default function SendDialog() {
           <span className="text-sm text-slate-500">Paciente (si aplica)</span>
           <Autocomplete
             placeholder="Buscar paciente…"
-            onSelect={(s) => setPatient({ id: s.patient_id, name: s.display_name })}
+            onSelect={(hit: any) => {
+              const id: string | undefined = hit?.patient_id ?? hit?.id;
+              const name: string =
+                hit?.name ??
+                hit?.display_name ??
+                hit?.full_name ??
+                "";
+              if (!id) return;
+              setPatient({ id, name });
+            }}
           />
           {patient && <p className="text-xs text-slate-500 mt-1">Paciente: {patient.name}</p>}
         </div>

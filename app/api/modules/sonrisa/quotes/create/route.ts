@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const items = body.items.map((it) => ({
+  const items = body.items.map((it: any) => ({
     quote_id: quote!.id,
     treatment_id: it.treatment_id ?? null,
     description: String(it.description || "").slice(0, 300),

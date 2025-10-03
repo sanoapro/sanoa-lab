@@ -30,7 +30,7 @@ export default function SearchPage() {
     setLoading(true);
     try {
       const j = await fetch(`/api/search/query?q=${encodeURIComponent(q)}&org=${org.id}`).then(
-        (r) => r.json(),
+        (r: any) => r.json(),
       );
       setRows(j.results || []);
       setMode(j.mode || "");
@@ -49,7 +49,7 @@ export default function SearchPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ org_id: org.id, scope }),
-      }).then((r) => r.json());
+      }).then((r: any) => r.json());
       if (!j.ok) throw new Error(j.error || "Falló el indexado");
       showToast({
         title: "Indexado",
@@ -69,7 +69,7 @@ export default function SearchPage() {
         <div className="flex gap-2">
           <Input
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e: any) => setQ(e.target.value)}
             placeholder="Ej: ansiedad, informe laboratorio, etc."
           />
           <Button onClick={() => void run()} disabled={loading} className="glass-btn neon">
@@ -100,7 +100,7 @@ export default function SearchPage() {
         {rows.length === 0 && (
           <div className="p-4 text-sm opacity-80">Sin resultados.</div>
         )}
-        {rows.map((r, i) => (
+        {rows.map((r: any, i: any) => (
           <div key={i} className="p-3">
             <div className="text-xs opacity-80">
               {r.kind === "note" ? "Nota" : "Archivo"} · Paciente {r.patient_id.slice(0, 8)}… ·

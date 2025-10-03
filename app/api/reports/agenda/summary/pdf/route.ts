@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
       page.drawText(header[i], { x: colX[i], y, size: 11, font: bold });
     y -= 14;
 
-    function ensureSpace(rowH = 14) {
+    function ensureSpace(rowH: any = 14) {
       if (y < 60) {
         const p = pdf.addPage([595.28, 841.89]);
         y = p.getSize().height - 60;
@@ -192,7 +192,7 @@ export async function GET(req: NextRequest) {
     // ✅ Envolver Uint8Array en Blob para Response (TS feliz)
     const blob = new Blob([bytes], { type: "application/pdf" });
 
-    return new Response(blob, {
+    return new Response(new Blob([blob]), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,

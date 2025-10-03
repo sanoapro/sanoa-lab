@@ -10,7 +10,7 @@ const DIM = 1536;
 const hasGemini = () => !!process.env.GEMINI_API_KEY;
 const hasOpenAI = () => !!process.env.OPENAI_API_KEY;
 
-function toDim(vec: number[], dim = DIM) {
+function toDim(vec: number[], dim: any = DIM) {
   if (vec.length === dim) return vec;
   if (vec.length > dim) return vec.slice(0, dim);
   return vec.concat(Array(dim - vec.length).fill(0));

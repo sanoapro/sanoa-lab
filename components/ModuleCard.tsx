@@ -32,7 +32,7 @@ export default function ModuleCard({ title, description, ctas, className, childr
 
         {ctas && ctas.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {ctas.map((cta) => (
+            {ctas.map((cta: any) => (
               <Link
                 key={cta.href}
                 href={cta.href}

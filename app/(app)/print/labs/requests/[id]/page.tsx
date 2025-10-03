@@ -7,7 +7,7 @@ export default function PrintLabReq({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     (async () => {
-      const j = await fetch(`/api/labs/requests/${id}/json`).then((r) => r.json());
+      const j = await fetch(`/api/labs/requests/${id}/json`).then((r: any) => r.json());
       setData(j);
       setTimeout(() => window.print(), 400);
     })();

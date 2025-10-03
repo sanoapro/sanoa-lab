@@ -37,15 +37,15 @@ export function weeklyRatesByPatient(bookings: Booking[]) {
   const out = new Map<string, Array<{ week: string; rate: number }>>();
   for (const [pid, m] of map) {
     const arr = Array.from(m.entries())
-      .map(([week, v]) => ({ week, rate: v.t ? v.ns / v.t : 0 }))
-      .sort((a, b) => (a.week < b.week ? -1 : a.week > b.week ? 1 : 0));
+      .map(([week, v]: any) => ({ week, rate: v.t ? v.ns / v.t : 0 }))
+      .sort((a: any, b: any) => (a.week < b.week ? -1 : a.week > b.week ? 1 : 0));
     out.set(pid, arr);
   }
   return out;
 }
 
 /** Diferencia entre promedio reciente (N semanas) y previo (N semanas) */
-export function deltaRecent(series: Array<{ rate: number }>, recentWeeks = 4) {
+export function deltaRecent(series: Array<{ rate: number }>, recentWeeks: any = 4) {
   if (!series.length) return 0;
   const n = series.length;
   const lo = Math.max(0, n - recentWeeks * 2);
@@ -53,6 +53,6 @@ export function deltaRecent(series: Array<{ rate: number }>, recentWeeks = 4) {
   const prev = series.slice(lo, mid);
   const curr = series.slice(mid, n);
   const avg = (xs: typeof series) =>
-    xs.length ? xs.reduce((s, x) => s + x.rate, 0) / xs.length : 0;
+    xs.length ? xs.reduce((s: any, x: any) => s + x.rate, 0) / xs.length : 0;
   return avg(curr) - avg(prev);
 }

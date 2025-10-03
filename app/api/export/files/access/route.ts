@@ -31,14 +31,14 @@ export async function GET(req: Request) {
   const rows = (data || []) as any[];
   const csv = [
     "created_at,action,path,patient_id,by_user,ip,user_agent",
-    ...rows.map((r) =>
+    ...rows.map((r: any) =>
       [r.created_at, r.action, r.path, r.patient_id, r.by_user, r.ip, r.user_agent]
         .map(esc)
         .join(","),
     ),
   ].join("\n");
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Blob([csv]), {
     status: 200,
     headers: {
       "content-type": "text/csv; charset=utf-8",

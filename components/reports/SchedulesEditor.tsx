@@ -40,8 +40,8 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
   function load() {
     setLoading(true);
     fetch(`/api/reports/schedules?org_id=${orgId}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (j.ok) setList(j.data);
       })
       .finally(() => setLoading(false));
@@ -113,7 +113,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
                   </td>
                 </tr>
               )}
-              {list.map((it) => (
+              {list.map((it: any) => (
                 <tr key={it.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2">
                     <button className="underline underline-offset-2" onClick={() => setForm(it)}>
@@ -143,7 +143,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={form.name ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))}
           />
         </div>
 
@@ -152,7 +152,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
           <select
             className="rounded border px-3 py-2 w-full"
             value={form.report ?? "daily_summary"}
-            onChange={(e) => setForm((f) => ({ ...f, report: e.target.value }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, report: e.target.value }))}
           >
             <option value="daily_summary">Resumen diario</option>
           </select>
@@ -164,7 +164,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
             <select
               className="rounded border px-3 py-2 w-full"
               value={form.channel ?? "whatsapp"}
-              onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value as any }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, channel: e.target.value as any }))}
             >
               <option value="whatsapp">WhatsApp</option>
               <option value="sms">SMS</option>
@@ -177,7 +177,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
               className="rounded border px-3 py-2 w-full"
               placeholder="+52... o correo"
               value={form.target ?? ""}
-              onChange={(e) => setForm((f) => ({ ...f, target: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, target: e.target.value }))}
             />
             {/* Feedback de validación */}
             <p
@@ -211,7 +211,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
           <select
             className="rounded border px-3 py-2 w-full"
             value={form.frequency ?? "daily"}
-            onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as any }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, frequency: e.target.value as any }))}
           >
             <option value="daily">Diaria</option>
             <option value="weekly">Semanal</option>
@@ -225,12 +225,12 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
               className="rounded border px-3 py-2 w-full"
               placeholder="Ej: 1,2,3,4,5"
               value={(form.dow ?? []).join(",")}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 const arr = e.target.value
                   .split(",")
-                  .map((s) => parseInt(s, 10))
-                  .filter((n) => Number.isFinite(n) && n >= 0 && n <= 6);
-                setForm((f) => ({ ...f, dow: arr }));
+                  .map((s: any) => parseInt(s, 10))
+                  .filter((n: any) => Number.isFinite(n) && n >= 0 && n <= 6);
+                setForm((f: any) => ({ ...f, dow: arr }));
               }}
             />
           </div>
@@ -245,8 +245,8 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
               max={23}
               className="rounded border px-3 py-2 w-full"
               value={form.at_hour ?? 9}
-              onChange={(e) =>
-                setForm((f) => ({
+              onChange={(e: any) =>
+                setForm((f: any) => ({
                   ...f,
                   at_hour: Math.max(0, Math.min(23, parseInt(e.target.value || "0", 10))),
                 }))
@@ -261,8 +261,8 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
               max={59}
               className="rounded border px-3 py-2 w-full"
               value={form.at_minute ?? 0}
-              onChange={(e) =>
-                setForm((f) => ({
+              onChange={(e: any) =>
+                setForm((f: any) => ({
                   ...f,
                   at_minute: Math.max(0, Math.min(59, parseInt(e.target.value || "0", 10))),
                 }))
@@ -274,7 +274,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
             <input
               className="rounded border px-3 py-2 w-full"
               value={form.tz ?? "America/Mexico_City"}
-              onChange={(e) => setForm((f) => ({ ...f, tz: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, tz: e.target.value }))}
             />
           </div>
         </div>
@@ -285,7 +285,7 @@ export default function SchedulesEditor({ orgId }: { orgId: string }) {
               type="checkbox"
               className="mr-2"
               checked={!!form.is_active}
-              onChange={(e) => setForm((f) => ({ ...f, is_active: e.target.checked }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, is_active: e.target.checked }))}
             />
             Activo
           </label>

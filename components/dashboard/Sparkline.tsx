@@ -24,7 +24,7 @@ export default function Sparkline({
   const stepX = data.length > 1 ? w / (data.length - 1) : w;
 
   const d = data
-    .map((v, i) => {
+    .map((v: any, i: any) => {
       const x = i * stepX;
       const y = h - ((v - min) / span) * h;
       return `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;

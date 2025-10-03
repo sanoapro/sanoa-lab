@@ -43,7 +43,7 @@ export function Field({
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"textarea">>(
-  ({ className, ...props }, ref) => (
+  ({ className, ...props }: any, ref: any) => (
     <textarea
       ref={ref}
       className={cn(

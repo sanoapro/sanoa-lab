@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const payload = items.map((i) => ({
+    const payload = items.map((i: any) => ({
       org_id,
       category_id: i.category_id,
       month: i.month,

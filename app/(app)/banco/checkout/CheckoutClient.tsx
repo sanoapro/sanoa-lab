@@ -52,10 +52,10 @@ export default function CheckoutClient() {
           <label className="text-sm font-medium">Plan</label>
           <select
             value={plan}
-            onChange={(e) => setPlan(e.target.value)}
+            onChange={(e: any) => setPlan(e.target.value)}
             className="h-11 w-full rounded-md border border-input bg-background px-3"
           >
-            {plans.map((p) => (
+            {plans.map((p: any) => (
               <option key={p.id} value={p.id}>
                 {p.label}
               </option>

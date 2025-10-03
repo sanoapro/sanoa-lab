@@ -85,7 +85,7 @@ export default function MeasurementTable({
               </td>
             </tr>
           )}
-          {rows.map((r) => {
+          {rows.map((r: any) => {
             const b = band(r.value, targets[r.type]);
             const cls =
               b === "high"

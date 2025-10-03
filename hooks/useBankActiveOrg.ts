@@ -49,7 +49,7 @@ export function useBankActiveOrg(): ActiveOrgState {
           try {
             const storedId = window.localStorage.getItem(NEW_STORAGE_KEY);
             if (storedId) {
-              const match = list.find((item) => item.id === storedId);
+              const match = list.find((item: any) => item.id === storedId);
               if (match) {
                 setActiveOrg(match.id, match.name);
                 if (!mounted) return;
@@ -90,7 +90,7 @@ export function useBankActiveOrg(): ActiveOrgState {
         }
       }
 
-      const match = list.find((item) => item.id === nextId);
+      const match = list.find((item: any) => item.id === nextId);
       setActiveOrg(nextId, match?.name);
       setOrgId(nextId);
     };

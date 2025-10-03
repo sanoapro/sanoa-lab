@@ -27,14 +27,14 @@ export default function HASClassifier() {
           placeholder="Sistólica (mmHg)"
           inputMode="numeric"
           value={sys}
-          onChange={(e) => setSys(e.target.value)}
+          onChange={(e: any) => setSys(e.target.value)}
         />
         <input
           className="border rounded px-3 py-2"
           placeholder="Diastólica (mmHg)"
           inputMode="numeric"
           value={dia}
-          onChange={(e) => setDia(e.target.value)}
+          onChange={(e: any) => setDia(e.target.value)}
         />
       </div>
       <div className="text-sm">

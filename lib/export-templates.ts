@@ -13,7 +13,7 @@ export interface ExportTemplate {
   created_at: string;
 }
 
-export async function listExportTemplates(includeOrg = true): Promise<ExportTemplate[]> {
+export async function listExportTemplates(includeOrg: any = true): Promise<ExportTemplate[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();
   let q = supabase.from("export_templates").select("*").order("created_at", { ascending: false });

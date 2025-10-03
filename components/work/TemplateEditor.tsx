@@ -53,7 +53,7 @@ export default function TemplateEditor() {
       content: json,
       tags: tags
         .split(",")
-        .map((s) => s.trim())
+        .map((s: any) => s.trim())
         .filter(Boolean),
       is_active: true,
     });
@@ -83,10 +83,10 @@ export default function TemplateEditor() {
           <Field label={<span className="text-slate-500">Módulo</span>}>
             <select
               value={module}
-              onChange={(e) => setModule(e.target.value as any)}
+              onChange={(e: any) => setModule(e.target.value as any)}
               className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             >
-              {MODULES.map((m) => (
+              {MODULES.map((m: any) => (
                 <option key={m} value={m}>
                   {m}
                 </option>
@@ -96,7 +96,7 @@ export default function TemplateEditor() {
           <Field label={<span className="text-slate-500">Título</span>} className="md:col-span-2">
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: any) => setTitle(e.target.value)}
               required
               className="bg-white dark:bg-slate-900"
             />
@@ -104,7 +104,7 @@ export default function TemplateEditor() {
           <Field label={<span className="text-slate-500">Contenido (JSON)</span>} className="md:col-span-3">
             <Textarea
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e: any) => setContent(e.target.value)}
               rows={6}
               className="font-mono text-xs bg-white dark:bg-slate-900"
             />
@@ -112,7 +112,7 @@ export default function TemplateEditor() {
           <Field label={<span className="text-slate-500">Tags (coma)</span>} className="md:col-span-3">
             <Input
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={(e: any) => setTags(e.target.value)}
               className="bg-white dark:bg-slate-900"
             />
           </Field>
@@ -130,7 +130,7 @@ export default function TemplateEditor() {
           {loading && <span className="text-sm text-slate-500">Cargando…</span>}
         </div>
         <ul className="divide-y">
-          {list.map((t) => (
+          {list.map((t: any) => (
             <li key={t.id} className="p-4 flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <div className="font-medium truncate">{t.title}</div>

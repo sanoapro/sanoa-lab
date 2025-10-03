@@ -56,7 +56,7 @@ export default function Odontograma({
       <div ref={rootRef} className="space-y-3">
         {/* Fila superior */}
         <div className="grid [grid-template-columns:repeat(16,minmax(0,1fr))] gap-1">
-          {topRow.map((n) => {
+          {topRow.map((n: any) => {
             const st = (chart[String(n)]?.status || "sano") as ToothStatus;
             return (
               <button
@@ -72,7 +72,7 @@ export default function Odontograma({
         </div>
         {/* Fila inferior */}
         <div className="grid [grid-template-columns:repeat(16,minmax(0,1fr))] gap-1">
-          {bottomRow.map((n) => {
+          {bottomRow.map((n: any) => {
             const st = (chart[String(n)]?.status || "sano") as ToothStatus;
             return (
               <button

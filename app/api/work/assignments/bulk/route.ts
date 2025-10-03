@@ -13,7 +13,7 @@ const PatchBody = z.object({
       due_at: z.string().datetime().optional(),
       last_done_at: z.string().datetime().optional(),
     })
-    .refine((obj) => Object.keys(obj).length > 0, { message: "Nada que actualizar" }),
+    .refine((obj: any) => Object.keys(obj).length > 0, { message: "Nada que actualizar" }),
 });
 
 export async function PATCH(req: NextRequest) {

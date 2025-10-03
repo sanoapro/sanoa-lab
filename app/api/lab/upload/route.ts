@@ -9,9 +9,9 @@ export const maxDuration = 60;
 
 const bucket = process.env.LAB_RESULTS_BUCKET || "lab-results";
 const MAX_MB = Number(process.env.NEXT_PUBLIC_UPLOAD_MAX_MB || 10);
-const ALLOWED = String(process.env.NEXT_PUBLIC_UPLOAD_ALLOWED || "pdf,jpg,png")
+const ALLOWED = (process.env.NEXT_PUBLIC_UPLOAD_ALLOWED ?? "pdf,jpg,png")
   .split(",")
-  .map((s) => s.trim().toLowerCase())
+  .map((s: string) => s.trim().toLowerCase())
   .filter(Boolean);
 
 function supaAdmin() {
@@ -21,7 +21,9 @@ function supaAdmin() {
 async function ensureBucket() {
   const supa = supaAdmin();
   const { data: list } = await supa.storage.listBuckets();
-  if (!list?.some((b) => b.name === bucket)) {
+  const buckets = (list ?? []) as Array<{ name: string }>;
+  const exists = buckets.some((b) => b.name === bucket);
+  if (!exists) {
     await supa.storage
       .createBucket(bucket, {
         public: false,
@@ -60,7 +62,7 @@ export async function OPTIONS() {
 }
 
 export async function HEAD() {
-  return cors(new NextResponse(null, { status: 200 }));
+  return cors(new NextResponse(new Blob([null]), { status: 200 }));
 }
 
 export async function GET(req: NextRequest) {
@@ -121,7 +123,7 @@ export async function POST(req: NextRequest) {
       return cors(jsonError("FILE_TOO_LARGE", `Máximo ${MAX_MB}MB`, 413));
     }
 
-    const originalName = (file as any).name || "archivo";
+    const originalName = (file as unknown as { name?: string }).name || "archivo";
     const incomingMime = file.type || inferMimeFromName(originalName);
     if (!mimeAllowed(incomingMime, originalName)) {
       return cors(
@@ -186,11 +188,8 @@ export async function POST(req: NextRequest) {
       .catch(() => {});
 
     return cors(ok({ request_id: tokenRow.request_id, path: key }));
-  } catch (err: any) {
-    return cors(
-      serverError("No se pudo subir el archivo", {
-        details: { message: err?.message || String(err) },
-      }),
-    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return cors(serverError("No se pudo subir el archivo", { details: { message } }));
   }
 }

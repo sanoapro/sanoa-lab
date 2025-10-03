@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
 function splitMulti(q: URLSearchParams, key: string): string[] | null {
-  const vals = q.getAll(key).flatMap((v) =>
+  const vals = q.getAll(key).flatMap((v: any) =>
     v
       .split(",")
-      .map((s) => s.trim())
+      .map((s: any) => s.trim())
       .filter(Boolean),
   );
   return vals.length ? Array.from(new Set(vals)) : null;

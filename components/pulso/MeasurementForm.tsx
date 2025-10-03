@@ -100,14 +100,14 @@ export default function MeasurementForm({
               placeholder="Sistólica"
               inputMode="numeric"
               value={sys}
-              onChange={(e) => setSys(e.target.value)}
+              onChange={(e: any) => setSys(e.target.value)}
             />
             <input
               className="border rounded px-3 py-2"
               placeholder="Diastólica"
               inputMode="numeric"
               value={dia}
-              onChange={(e) => setDia(e.target.value)}
+              onChange={(e: any) => setDia(e.target.value)}
             />
           </div>
           <div className="text-xs text-slate-500">mmHg</div>
@@ -120,7 +120,7 @@ export default function MeasurementForm({
             placeholder="lpm"
             inputMode="numeric"
             value={hr}
-            onChange={(e) => setHr(e.target.value)}
+            onChange={(e: any) => setHr(e.target.value)}
           />
         </div>
 
@@ -130,13 +130,13 @@ export default function MeasurementForm({
             className="border rounded px-3 py-2 w-full"
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e: any) => setDate(e.target.value)}
           />
           <input
             className="border rounded px-3 py-2 w-full"
             placeholder="Nota (opcional)"
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e: any) => setNote(e.target.value)}
           />
         </div>
       </div>
@@ -149,14 +149,14 @@ export default function MeasurementForm({
             placeholder="Glucosa (mg/dL)"
             inputMode="numeric"
             value={gluc}
-            onChange={(e) => setGluc(e.target.value)}
+            onChange={(e: any) => setGluc(e.target.value)}
           />
           <input
             className="border rounded px-3 py-2 w-full"
             placeholder="HbA1c (%)"
             inputMode="decimal"
             value={hba1c}
-            onChange={(e) => setHba1c(e.target.value)}
+            onChange={(e: any) => setHba1c(e.target.value)}
           />
         </div>
 
@@ -167,26 +167,26 @@ export default function MeasurementForm({
             placeholder="LDL (mg/dL)"
             inputMode="numeric"
             value={ldl}
-            onChange={(e) => setLdl(e.target.value)}
+            onChange={(e: any) => setLdl(e.target.value)}
           />
           <input
             className="border rounded px-3 py-2 w-full"
             placeholder="HDL (mg/dL)"
             inputMode="numeric"
             value={hdl}
-            onChange={(e) => setHdl(e.target.value)}
+            onChange={(e: any) => setHdl(e.target.value)}
           />
           <input
             className="border rounded px-3 py-2 w-full"
             placeholder="TG (mg/dL)"
             inputMode="numeric"
             value={tg}
-            onChange={(e) => setTg(e.target.value)}
+            onChange={(e: any) => setTg(e.target.value)}
           />
         </div>
 
         <div className="space-y-3">
-          <CalcBMI onEmit={(_val) => setHba1c(hba1c) /* no-op */} />
+          <CalcBMI onEmit={(_val: any) => setHba1c(hba1c) /* no-op */} />
           <HASClassifier />
         </div>
       </div>
@@ -200,14 +200,14 @@ export default function MeasurementForm({
               placeholder="Peso (kg)"
               inputMode="decimal"
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={(e: any) => setWeight(e.target.value)}
             />
             <input
               className="border rounded px-3 py-2"
               placeholder="Talla (cm)"
               inputMode="decimal"
               value={height}
-              onChange={(e) => setHeight(e.target.value)}
+              onChange={(e: any) => setHeight(e.target.value)}
             />
           </div>
           {/* IMC: calculamos al guardar si ambos presentes */}

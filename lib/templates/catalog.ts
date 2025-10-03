@@ -616,5 +616,5 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 export function getCatalogByType(type: CatalogTemplate["type"]) {
-  return CATALOG_TEMPLATES.filter((tpl) => tpl.type === type);
+  return CATALOG_TEMPLATES.filter((tpl: any) => tpl.type === type);
 }

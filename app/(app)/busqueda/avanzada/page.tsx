@@ -60,8 +60,8 @@ export default function AdvancedSearchPage() {
 
   function toggleTag(id: string) {
     if (useAll)
-      setTagsAll((arr) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]));
-    else setTagsAny((arr) => (arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id]));
+      setTagsAll((arr: any) => (arr.includes(id) ? arr.filter((x: any) => x !== id) : [...arr, id]));
+    else setTagsAny((arr: any) => (arr.includes(id) ? arr.filter((x: any) => x !== id) : [...arr, id]));
   }
 
   async function save() {
@@ -127,30 +127,30 @@ export default function AdvancedSearchPage() {
             className="sm:col-span-3"
             placeholder="Texto a buscar (pacientes + notas)…"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={(e: any) => setQ(e.target.value)}
+            onKeyDown={(e: any) => {
               if (e.key === "Enter") void run();
             }}
           />
           <select
             className="border rounded-md px-3 py-2"
             value={genero}
-            onChange={(e) => setGenero(e.target.value as Gender)}
+            onChange={(e: any) => setGenero(e.target.value as Gender)}
           >
             <option value="ALL">Género (todos)</option>
             <option value="F">Femenino</option>
             <option value="M">Masculino</option>
             <option value="O">Otro/No especifica</option>
           </select>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <Input type="date" value={from} onChange={(e: any) => setFrom(e.target.value)} />
+          <Input type="date" value={to} onChange={(e: any) => setTo(e.target.value)} />
         </div>
         <div className="flex items-center justify-between">
           <label className="text-sm flex items-center gap-2">
             <input
               type="checkbox"
               checked={onlyOrg}
-              onChange={(e) => setOnlyOrg(e.target.checked)}
+              onChange={(e: any) => setOnlyOrg(e.target.checked)}
             />
             Sólo org activa
           </label>
@@ -158,7 +158,7 @@ export default function AdvancedSearchPage() {
             <input
               type="checkbox"
               checked={useAll}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setUseAll(e.target.checked);
                 setTagsAll([]);
                 setTagsAny([]);
@@ -168,7 +168,7 @@ export default function AdvancedSearchPage() {
           </label>
         </div>
         <div className="flex flex-wrap gap-2">
-          {tags.map((t) => (
+          {tags.map((t: any) => (
             <button
               key={t.id}
               onClick={() => toggleTag(t.id)}
@@ -200,12 +200,12 @@ export default function AdvancedSearchPage() {
             className="flex-1"
             placeholder="Nombre (ej. 'Notas ansiedad 2025 Q3')"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: any) => setName(e.target.value)}
           />
           <select
             className="border rounded-md px-3 py-2"
             value={scope}
-            onChange={(e) => setScope(e.target.value as any)}
+            onChange={(e: any) => setScope(e.target.value as any)}
           >
             <option value="personal">Personal</option>
             <option value="org">Organización activa</option>
@@ -216,7 +216,7 @@ export default function AdvancedSearchPage() {
           {saved.length === 0 && (
             <div className="p-3 text-sm text-gray-600">Aún no tienes búsquedas guardadas.</div>
           )}
-          {saved.map((s) => (
+          {saved.map((s: any) => (
             <div key={s.id} className="p-3 flex items-center justify-between">
               <div>
                 <div className="font-medium">{s.name}</div>
@@ -232,7 +232,7 @@ export default function AdvancedSearchPage() {
                   variant="destructive"
                   onClick={async () => {
                     await deleteSavedSearch(s.id);
-                    setSaved(saved.filter((x) => x.id !== s.id));
+                    setSaved(saved.filter((x: any) => x.id !== s.id));
                   }}
                 >
                   Borrar
@@ -249,7 +249,7 @@ export default function AdvancedSearchPage() {
             {loading ? "Buscando…" : "Sin resultados."}
           </div>
         )}
-        {items.map((it, idx) => (
+        {items.map((it: any, idx: any) => (
           <div key={idx} className="p-4 flex items-center justify-between">
             <div className="flex-1">
               <div className="text-xs uppercase tracking-wide text-gray-500">

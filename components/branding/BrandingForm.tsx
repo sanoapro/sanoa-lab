@@ -71,12 +71,12 @@ export default function BrandingForm() {
     }
     // Usamos rutas de proxy existentes para servir (coinciden con bucket)
     const url = `/api/${kind === "letterheads" ? "storage/letterheads" : "storage/signatures"}/${org.id}/${meId}/${encodeURIComponent(file.name)}`;
-    if (kind === "letterheads") setForm((prev) => ({ ...prev, letterhead_url: url }));
-    else setForm((prev) => ({ ...prev, signature_url: url }));
+    if (kind === "letterheads") setForm((prev: any) => ({ ...prev, letterhead_url: url }));
+    else setForm((prev: any) => ({ ...prev, signature_url: url }));
   }
 
   function onChange<K extends keyof Branding>(k: K, v: Branding[K]) {
-    setForm((prev) => ({ ...prev, [k]: v }));
+    setForm((prev: any) => ({ ...prev, [k]: v }));
   }
 
   const previewHref =
@@ -92,7 +92,7 @@ export default function BrandingForm() {
           <input
             type="file"
             accept="image/png,image/jpeg"
-            onChange={(e) => e.target.files?.[0] && uploadFile("letterheads", e.target.files[0])}
+            onChange={(e: any) => e.target.files?.[0] && uploadFile("letterheads", e.target.files[0])}
           />
           {uploading === "letterhead" && <div className="text-sm text-slate-500">Subiendo…</div>}
           {form.letterhead_url && (
@@ -114,7 +114,7 @@ export default function BrandingForm() {
           <input
             type="file"
             accept="image/png,image/jpeg"
-            onChange={(e) => e.target.files?.[0] && uploadFile("signatures", e.target.files[0])}
+            onChange={(e: any) => e.target.files?.[0] && uploadFile("signatures", e.target.files[0])}
           />
           {uploading === "signature" && <div className="text-sm text-slate-500">Subiendo…</div>}
           {form.signature_url && (
@@ -136,7 +136,7 @@ export default function BrandingForm() {
           <input
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={form.signature_name ?? ""}
-            onChange={(e) => onChange("signature_name", e.target.value)}
+            onChange={(e: any) => onChange("signature_name", e.target.value)}
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -144,7 +144,7 @@ export default function BrandingForm() {
           <input
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={form.clinic_name ?? ""}
-            onChange={(e) => onChange("clinic_name", e.target.value)}
+            onChange={(e: any) => onChange("clinic_name", e.target.value)}
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -152,7 +152,7 @@ export default function BrandingForm() {
           <input
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={form.license_number ?? ""}
-            onChange={(e) => onChange("license_number", e.target.value)}
+            onChange={(e: any) => onChange("license_number", e.target.value)}
           />
         </label>
       </section>

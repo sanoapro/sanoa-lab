@@ -35,7 +35,7 @@ export default function PatientDocs({ params }: { params: { id: string } }) {
   const [query, setQuery] = useState("");
 
   const load = async () => {
-    const j = await fetch(`/api/patients/${patientId}/docs/list`).then((r) => r.json());
+    const j = await fetch(`/api/patients/${patientId}/docs/list`).then((r: any) => r.json());
     setItems(j.items || []);
   };
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function PatientDocs({ params }: { params: { id: string } }) {
   const filtered = useMemo(
     () =>
       (items || []).filter(
-        (it) =>
+        (it: any) =>
           (filter.length ? filter.includes(it.type) : true) &&
           (query
             ? (TYPE_LABEL[it.type] || "").toLowerCase().includes(query.toLowerCase()) ||
@@ -79,17 +79,17 @@ export default function PatientDocs({ params }: { params: { id: string } }) {
           className="border rounded p-2"
           placeholder="Buscar por tipo o folio"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e: any) => setQuery(e.target.value)}
         />
         <div className="ml-auto flex gap-2 text-sm">
-          {Object.keys(TYPE_LABEL).map((t) => (
+          {Object.keys(TYPE_LABEL).map((t: any) => (
             <button
               key={t}
               className={
                 "px-3 py-1 border rounded " + (filter.includes(t) ? "bg-black text-white" : "")
               }
               onClick={() =>
-                setFilter((s) => (s.includes(t) ? s.filter((x) => x !== t) : [...s, t]))
+                setFilter((s: any) => (s.includes(t) ? s.filter((x: any) => x !== t) : [...s, t]))
               }
             >
               {TYPE_LABEL[t]}
@@ -108,7 +108,7 @@ export default function PatientDocs({ params }: { params: { id: string } }) {
           <div>Verificación</div>
         </div>
 
-        {filtered.map((it) => (
+        {filtered.map((it: any) => (
           <div
             key={`${it.type}-${it.id}`}
             className="grid grid-cols-7 items-center p-2 border-t text-sm"

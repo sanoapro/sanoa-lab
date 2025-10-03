@@ -63,7 +63,7 @@ export default function AppointmentForm() {
               className="border rounded px-3 py-2 w-full"
               placeholder="uuid del profesional"
               value={providerId}
-              onChange={(e) => setProviderId(e.target.value)}
+              onChange={(e: any) => setProviderId(e.target.value)}
             />
             <p className="text-xs text-slate-500 mt-1">
               En siguiente lote conectamos selector visual por profesional.
@@ -75,7 +75,7 @@ export default function AppointmentForm() {
               type="date"
               className="border rounded px-3 py-2 w-full"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e: any) => setDate(e.target.value)}
             />
           </div>
           <div>
@@ -83,7 +83,7 @@ export default function AppointmentForm() {
             <input
               className="border rounded px-3 py-2 w-full"
               value={tz}
-              onChange={(e) => setTz(e.target.value)}
+              onChange={(e: any) => setTz(e.target.value)}
             />
           </div>
           <div>
@@ -94,7 +94,7 @@ export default function AppointmentForm() {
               max={240}
               className="border rounded px-3 py-2 w-full"
               value={duration}
-              onChange={(e) => setDuration(Number(e.target.value || 30))}
+              onChange={(e: any) => setDuration(Number(e.target.value || 30))}
             />
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function AppointmentForm() {
         tz={tz}
         duration={duration}
         patientId={patient?.id || null}
-        onPick={(s) => setPendingIso(s.start_iso)}
+        onPick={(s: any) => setPendingIso(s.start_iso)}
       />
 
       <div className="border rounded-2xl p-4 space-y-3">
@@ -139,7 +139,7 @@ export default function AppointmentForm() {
             <input
               className="border rounded px-3 py-2 w-full"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e: any) => setLocation(e.target.value)}
               placeholder="Consultorio / Teleconsulta"
             />
           </div>
@@ -148,7 +148,7 @@ export default function AppointmentForm() {
             <input
               className="border rounded px-3 py-2 w-full"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e: any) => setNotes(e.target.value)}
             />
           </div>
         </div>

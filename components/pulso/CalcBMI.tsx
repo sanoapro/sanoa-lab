@@ -24,14 +24,14 @@ export default function CalcBMI({ onEmit }: { onEmit?: (bmi: number) => void }) 
           placeholder="Peso (kg)"
           inputMode="decimal"
           value={weight}
-          onChange={(e) => setWeight(e.target.value)}
+          onChange={(e: any) => setWeight(e.target.value)}
         />
         <input
           className="border rounded px-3 py-2"
           placeholder="Talla (cm)"
           inputMode="decimal"
           value={height}
-          onChange={(e) => setHeight(e.target.value)}
+          onChange={(e: any) => setHeight(e.target.value)}
         />
       </div>
       <div className="text-sm">

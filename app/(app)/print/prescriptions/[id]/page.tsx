@@ -70,7 +70,7 @@ export default async function PrintPrescriptionPage({ params }: { params: { id: 
 
           <h2>Indicaciones</h2>
           {p.items?.length ? (
-            p.items.map((it, i) => (
+            p.items.map((it: any, i: any) => (
               <div className="item" key={i}>
                 <div>
                   <strong>{it.name}</strong>

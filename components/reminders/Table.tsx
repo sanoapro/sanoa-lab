@@ -42,8 +42,8 @@ export default function RemindersTable({ orgId }: { orgId: string }) {
       pageSize: String(pageSize),
     });
     fetch(`/api/reminders/logs?${params.toString()}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) {
           setRows(j.data);
@@ -74,7 +74,7 @@ export default function RemindersTable({ orgId }: { orgId: string }) {
         </thead>
         <tbody>
           {loading &&
-            skeletonRows.map((_, idx) => (
+            skeletonRows.map((_: any, idx: any) => (
               <tr key={`reminders-skeleton-${idx}`} className={idx === 0 ? undefined : "border-t"}>
                 <td className="px-3 py-3">
                   <Skeleton
@@ -104,7 +104,7 @@ export default function RemindersTable({ orgId }: { orgId: string }) {
               </tr>
             ))}
           {!loading &&
-            rows.map((r) => (
+            rows.map((r: any) => (
               <tr key={r.id} className="border-t">
                 <td className="px-3 py-2">{r.channel ?? "—"}</td>
                 <td className="px-3 py-2">{r.status ?? "—"}</td>

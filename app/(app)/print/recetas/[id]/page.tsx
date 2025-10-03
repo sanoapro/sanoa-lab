@@ -1,7 +1,31 @@
 // app/(app)/print/recetas/[id]/page.tsx
 import { getSupabaseServer } from "@/lib/supabase/server";
 
-export default async function PrintRecetaPage({ params }: { params: { id: string } }) {
+type PrescriptionRecord = {
+  id: string;
+  org_id: string;
+  patient_id: string;
+  clinician_id: string;
+  letterhead_path: string | null;
+  signature_path: string | null;
+  notes: string | null;
+  issued_at: string | null;
+};
+
+type PrescriptionItem = {
+  drug: string;
+  dose: string | null;
+  route: string | null;
+  frequency: string | null;
+  duration: string | null;
+  instructions: string | null;
+};
+
+export default async function PrintRecetaPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supa = await getSupabaseServer();
 
   // Verifica sesión
@@ -12,21 +36,24 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
 
   const id = params.id;
 
-  // Trae cabecera de la receta (campos garantizados)
+  // Cabecera de la receta
   const { data: rec } = await supa
     .from("prescriptions")
     .select(
       "id, org_id, patient_id, clinician_id, letterhead_path, signature_path, notes, issued_at",
     )
     .eq("id", id)
-    .single();
+    .maybeSingle<PrescriptionRecord>();
 
-  // Trae items de la receta
+  // Items de la receta
   const { data: items } = await supa
     .from("prescription_items")
-    .select("drug, dose, route, frequency, duration, instructions")
+    .select(
+      "drug, dose, route, frequency, duration, instructions",
+    )
     .eq("prescription_id", id)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .returns<PrescriptionItem[]>();
 
   if (!rec) {
     return <div className="p-6 text-rose-700">No se encontró la receta.</div>;
@@ -34,7 +61,7 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
 
   return (
     <main className="p-6 print:p-0 text-slate-900">
-      <section className="max-w-[800px] mx-auto space-y-4">
+      <section className="mx-auto max-w-[800px] space-y-4">
         {rec.letterhead_path ? (
           <img
             src={`/api/storage/letterheads/${encodeURIComponent(rec.letterhead_path)}`}
@@ -47,9 +74,12 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
           <div>
             <h1 className="text-xl font-semibold">Receta</h1>
             <p className="text-sm text-slate-500">
-              Emitida: {rec.issued_at ? new Date(rec.issued_at).toLocaleString() : "—"}
+              Emitida:{" "}
+              {rec.issued_at ? new Date(rec.issued_at).toLocaleString() : "—"}
             </p>
-            {rec.notes ? <p className="text-sm text-slate-600 mt-1">Notas: {rec.notes}</p> : null}
+            {rec.notes ? (
+              <p className="mt-1 text-sm text-slate-600">Notas: {rec.notes}</p>
+            ) : null}
           </div>
           <div className="text-right">
             {rec.signature_path ? (
@@ -57,35 +87,41 @@ export default async function PrintRecetaPage({ params }: { params: { id: string
                 <img
                   src={`/api/storage/signatures/${encodeURIComponent(rec.signature_path)}`}
                   alt="Firma"
-                  className="h-20 inline-block"
+                  className="inline-block h-20"
                 />
-                <div className="text-xs text-slate-500">Firma del especialista</div>
+                <div className="text-xs text-slate-500">
+                  Firma del especialista
+                </div>
               </>
             ) : null}
           </div>
         </header>
 
-        <section className="rounded-2xl border overflow-hidden">
+        <section className="overflow-hidden rounded-2xl border">
           <table className="w-full text-sm">
             <thead className="bg-slate-50">
               <tr>
-                <th className="text-left px-3 py-2 w-1/4">Fármaco</th>
-                <th className="text-left px-3 py-2 w-1/4">Dosis / Vía</th>
-                <th className="text-left px-3 py-2 w-1/4">Frecuencia / Duración</th>
-                <th className="text-left px-3 py-2 w-1/4">Indicaciones</th>
+                <th className="w-1/4 px-3 py-2 text-left">Fármaco</th>
+                <th className="w-1/4 px-3 py-2 text-left">Dosis / Vía</th>
+                <th className="w-1/4 px-3 py-2 text-left">
+                  Frecuencia / Duración
+                </th>
+                <th className="w-1/4 px-3 py-2 text-left">Indicaciones</th>
               </tr>
             </thead>
             <tbody>
-              {(items || []).map((it, i) => (
+              {(items ?? []).map((it: PrescriptionItem, i: number) => (
                 <tr key={i} className="border-t">
                   <td className="px-3 py-2">
                     <strong>{it.drug}</strong>
                   </td>
-                  <td className="px-3 py-2">{[it.dose, it.route].filter(Boolean).join(" / ")}</td>
+                  <td className="px-3 py-2">
+                    {[it.dose, it.route].filter(Boolean).join(" / ")}
+                  </td>
                   <td className="px-3 py-2">
                     {[it.frequency, it.duration].filter(Boolean).join(" / ")}
                   </td>
-                  <td className="px-3 py-2">{it.instructions || ""}</td>
+                  <td className="px-3 py-2">{it.instructions ?? ""}</td>
                 </tr>
               ))}
             </tbody>

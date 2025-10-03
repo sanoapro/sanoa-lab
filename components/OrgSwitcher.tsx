@@ -90,7 +90,7 @@ export default function OrgSwitcher() {
       <button
         type="button"
         className="glass-btn inline-flex items-center gap-2"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((value: any) => !value)}
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={loading && !org}
@@ -114,7 +114,7 @@ export default function OrgSwitcher() {
             <div className="px-2 py-1 text-contrast/70">No se encontraron organizaciones</div>
           )}
           <ul className="max-h-64 overflow-auto" role="listbox">
-            {items.map((item) => {
+            {items.map((item: any) => {
               const isActive = org?.id === item.id;
               return (
                 <li key={item.id}>

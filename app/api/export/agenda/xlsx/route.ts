@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import * as XLSX from "xlsx";
 
-function flatten(obj: any, prefix = "", out: Record<string, any> = {}) {
+function flatten(obj: any, prefix: any = "", out: Record<string, any> = {}) {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
     for (const [k, v] of Object.entries(obj)) {
       flatten(v, prefix ? `${prefix}.${k}` : k, out);
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
   const params = new URLSearchParams();
   params.set("org_id", org_id);
-  ["from", "to", "status", "resource", "page", "pageSize"].forEach((k) => {
+  ["from", "to", "status", "resource", "page", "pageSize"].forEach((k: any) => {
     const v = url.searchParams.get(k);
     if (v) params.set(k, v);
   });
@@ -45,14 +45,14 @@ export async function GET(req: NextRequest) {
   const j = await r.json().catch(() => null);
 
   const raw = Array.isArray(j) ? j : (j?.data ?? []);
-  const rows = (raw as any[]).map((x) => flatten(x));
+  const rows = (raw as any[]).map((x: any) => flatten(x));
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, "agenda");
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
 
   const filename = `agenda_${org_id}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  return new Response(buf, {
+  return new Response(new Blob([buf]), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,

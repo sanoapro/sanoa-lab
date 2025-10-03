@@ -132,7 +132,7 @@ function RequestsPanel() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {rows.map((r: any) => {
               const hasFile = !!r.lab_results?.[0]?.path;
               return (
                 <tr
@@ -197,9 +197,9 @@ function TemplatesPanel() {
     () =>
       itemsText
         .split("\n")
-        .map((s) => s.trim())
+        .map((s: any) => s.trim())
         .filter(Boolean)
-        .map((name) => ({ name })),
+        .map((name: any) => ({ name })),
     [itemsText],
   );
 
@@ -259,7 +259,7 @@ function TemplatesPanel() {
     setTplId(t.id);
     setName(t.name);
     setNotes(t.notes || "");
-    setItemsText(t.items.map((i) => i.name).join("\n"));
+    setItemsText(t.items.map((i: any) => i.name).join("\n"));
     setActive(!!t.is_active);
   }
 
@@ -332,7 +332,7 @@ function TemplatesPanel() {
             <span className="text-sm font-medium">Nombre</span>
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e: any) => setName(e.target.value)}
               required
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               placeholder="Biometría hemática + Química sanguínea"
@@ -344,7 +344,7 @@ function TemplatesPanel() {
             </span>
             <textarea
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e: any) => setNotes(e.target.value)}
               rows={3}
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
               placeholder="Dr(a). Nombre Apellido — Cédula XXXX… Ayuno 8–12 h."
@@ -354,7 +354,7 @@ function TemplatesPanel() {
             <span className="text-sm font-medium">Estudios (uno por línea)</span>
             <textarea
               value={itemsText}
-              onChange={(e) => setItemsText(e.target.value)}
+              onChange={(e: any) => setItemsText(e.target.value)}
               rows={6}
               className="w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2 font-mono text-xs"
               placeholder={"Biometría hemática\nQuímica sanguínea 6 elementos\nPerfil lipídico"}
@@ -366,7 +366,7 @@ function TemplatesPanel() {
               <input
                 type="checkbox"
                 checked={active}
-                onChange={(e) => setActive(e.target.checked)}
+                onChange={(e: any) => setActive(e.target.checked)}
               />
               Activa
             </label>
@@ -406,7 +406,7 @@ function TemplatesPanel() {
         </div>
 
         <div className="space-y-3">
-          {rows.map((t) => (
+          {rows.map((t: any) => (
             <div
               key={t.id}
               className="rounded-xl border border-[var(--color-brand-border)] p-3 flex items-start justify-between gap-3"

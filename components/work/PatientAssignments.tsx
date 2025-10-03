@@ -47,7 +47,7 @@ export default function PatientAssignments({ patientId }: { patientId: string })
         {loading && <span className="text-sm text-slate-500">Cargando…</span>}
       </div>
       <ul className="divide-y">
-        {items.map((a) => (
+        {items.map((a: any) => (
           <li key={a.id} className="p-4 flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="font-medium truncate">{a.title}</div>

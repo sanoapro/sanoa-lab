@@ -155,7 +155,7 @@ function UpdatePasswordClient() {
             <Input
               type="password"
               value={p1}
-              onChange={(e) => setP1(e.target.value)}
+              onChange={(e: any) => setP1(e.target.value)}
               placeholder="••••••••"
               required
               invalid={Boolean(lengthError)}
@@ -176,7 +176,7 @@ function UpdatePasswordClient() {
             <Input
               type="password"
               value={p2}
-              onChange={(e) => setP2(e.target.value)}
+              onChange={(e: any) => setP2(e.target.value)}
               placeholder="••••••••"
               required
               invalid={Boolean(matchError)}

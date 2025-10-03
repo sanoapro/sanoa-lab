@@ -63,7 +63,7 @@ export default function Navbar() {
 
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-1.5 text-[1.05rem]">
-          {NAV.map((item) => {
+          {NAV.map((item: any) => {
             const isActive =
               pathname === item.href ||
               (item.href !== "/consultorio" && pathname.startsWith(item.href + "/"));

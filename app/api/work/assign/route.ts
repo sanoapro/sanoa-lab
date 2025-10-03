@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     tplContent = tplContent ?? tpl?.content ?? {};
   }
 
-  const rows = parsed.data.patient_ids.map((pid) => ({
+  const rows = parsed.data.patient_ids.map((pid: any) => ({
     org_id: parsed.data.org_id,
     patient_id: pid,
     provider_id: provider,
@@ -60,5 +60,5 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supa.from("work_assignments").insert(rows).select("id");
 
   if (error) return jsonError("DB_ERROR", error.message, 400);
-  return jsonOk({ created: data?.length ?? 0, ids: data?.map((r) => r.id) });
+  return jsonOk({ created: data?.length ?? 0, ids: data?.map((r: any) => r.id) });
 }

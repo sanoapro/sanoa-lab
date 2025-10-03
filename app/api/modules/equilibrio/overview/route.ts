@@ -3,6 +3,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
+type PlanItem = {
+  id: string;
+  mon?: boolean | null;
+  tue?: boolean | null;
+  wed?: boolean | null;
+  thu?: boolean | null;
+  fri?: boolean | null;
+  sat?: boolean | null;
+  sun?: boolean | null;
+  library?: { title?: string | null } | null;
+};
+
+type Checkin = {
+  id: string;
+  item_id: string;
+  day: string; // YYYY-MM-DD
+  status: string; // "done" | other
+  created_at: string;
+};
+
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: auth } = await supa.auth.getUser();
@@ -40,7 +60,7 @@ export async function GET(req: NextRequest) {
   if (!plan)
     return NextResponse.json({
       ok: true,
-      data: { adherence_pct: 0, totals: { done: 0, skipped: 0 }, recent: [] },
+      data: { adherence_pct: 0, totals: { done: 0, skipped: 0 }, recent: [] as Checkin[] },
     });
 
   const { data: items } = await supa
@@ -60,9 +80,9 @@ export async function GET(req: NextRequest) {
     .limit(2000);
 
   // Calcular totales/rendimiento sencillo
-  const recent = (chks || []).slice(-20).reverse();
+  const recent: Checkin[] = (chks ?? []).slice(-20).reverse();
   const totals = { done: 0, skipped: 0 };
-  (chks || []).forEach((c) => {
+  (chks ?? []).forEach((c: Checkin) => {
     if (c.status === "done") totals.done++;
     else totals.skipped++;
   });
@@ -85,17 +105,18 @@ export async function GET(req: NextRequest) {
       dates.push(new Date(t).toISOString().slice(0, 10));
     }
   }
-  (items || []).forEach((it) => {
-    dates.forEach((d) => {
+
+  (items ?? []).forEach((it: PlanItem) => {
+    dates.forEach((d: string) => {
       const dow = dayOfWeekISO(d);
       const active =
-        (dow === 1 && it.mon) ||
-        (dow === 2 && it.tue) ||
-        (dow === 3 && it.wed) ||
-        (dow === 4 && it.thu) ||
-        (dow === 5 && it.fri) ||
-        (dow === 6 && it.sat) ||
-        (dow === 7 && it.sun);
+        (dow === 1 && !!it.mon) ||
+        (dow === 2 && !!it.tue) ||
+        (dow === 3 && !!it.wed) ||
+        (dow === 4 && !!it.thu) ||
+        (dow === 5 && !!it.fri) ||
+        (dow === 6 && !!it.sat) ||
+        (dow === 7 && !!it.sun);
       if (active) expected++;
     });
   });

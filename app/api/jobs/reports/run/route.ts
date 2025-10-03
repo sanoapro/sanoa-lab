@@ -4,6 +4,31 @@ import { NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { jsonOk, jsonError, requireHeader } from "@/lib/http/validate";
 
+type ScheduleKind = "daily" | "weekly" | "monthly";
+type ReportScope = "bank_flow" | "bank_pl" | (string & {});
+type ReportChannel = "email" | "webhook" | (string & {});
+
+type ReportSchedule = {
+  id: string;
+  org_id: string;
+  is_active: boolean;
+  tz?: string | null;
+  at_hour?: number | null;
+  at_minute?: number | null;
+  schedule_kind?: ScheduleKind | null;
+  /** Días de la semana 0..6 (Sun..Sat) */
+  dow?: number[] | null;
+  last_sent_at?: string | null;
+  scope: ReportScope;
+  channel?: ReportChannel | null;
+  target?: string | null;
+  params?: { from?: string; to?: string } | null;
+};
+
+type RunPayload =
+  | { type: "bank_flow"; from: string; to: string; data: unknown }
+  | { type: "bank_pl"; from: string; to: string; data: unknown };
+
 function nowInTZ(tz: string) {
   const fmt = new Intl.DateTimeFormat("en-CA", {
     timeZone: tz,
@@ -14,40 +39,44 @@ function nowInTZ(tz: string) {
     minute: "2-digit",
     hour12: false,
   });
-  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
+  const parts = Object.fromEntries(
+    fmt.formatToParts(new Date()).map((p: Intl.DateTimeFormatPart) => [p.type, p.value]),
+  );
   const y = Number(parts.year);
   const m = Number(parts.month);
   const d = Number(parts.day);
   const hh = Number(parts.hour);
   const mm = Number(parts.minute);
   const date = new Date(Date.UTC(y, m - 1, d, hh, mm));
-  // weekday 0=Sunday in local tz
+
+  // weekday 0=Sunday en tz local solicitado
   const wdFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).formatToParts(
     new Date(),
   );
-  const wdShort = wdFmt.find((p) => p.type === "weekday")?.value ?? "Sun";
+  const wdShort =
+    wdFmt.find((p: Intl.DateTimeFormatPart) => p.type === "weekday")?.value ?? "Sun";
   const map: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const dow = map[wdShort] ?? 0;
+
   return { date, y, m, d, hh, mm, dow };
 }
 
-function shouldRun(item: any, nowTZ: ReturnType<typeof nowInTZ>) {
+function shouldRun(item: ReportSchedule, nowTZ: ReturnType<typeof nowInTZ>): boolean {
   if (!item.is_active) return false;
-  const tz = item.tz || "America/Mexico_City";
+  // tz se usa para calcular nowTZ afuera (grouping); aquí sólo usamos la hora/min/config
   const atHour = item.at_hour ?? 9;
   const atMinute = item.at_minute ?? 0;
-  const kind = item.schedule_kind ?? "daily";
+  const kind = (item.schedule_kind ?? "daily") as ScheduleKind;
   const dow: number[] = Array.isArray(item.dow) ? item.dow : [];
 
-  // scheduled datetime (today in tz)
+  // fecha programada (hoy en tz)
   const sched = new Date(Date.UTC(nowTZ.y, nowTZ.m - 1, nowTZ.d, atHour, atMinute));
-  const windowMinutes = 30; // ventana de 30 min
+  const windowMinutes = 30;
   const windowStart = new Date(sched.getTime() - windowMinutes * 60 * 1000);
   const windowEnd = new Date(sched.getTime() + windowMinutes * 60 * 1000);
 
   const last = item.last_sent_at ? new Date(item.last_sent_at) : undefined;
-  const alreadyToday = last && last >= windowStart && last <= windowEnd;
-
+  const alreadyToday = !!(last && last >= windowStart && last <= windowEnd);
   if (alreadyToday) return false;
 
   switch (kind) {
@@ -57,7 +86,7 @@ function shouldRun(item: any, nowTZ: ReturnType<typeof nowInTZ>) {
       if (!dow.includes(nowTZ.dow)) return false;
       return nowTZ.date >= windowStart && nowTZ.date <= windowEnd;
     case "monthly":
-      if (nowTZ.d !== 1) return false; // primer día de mes
+      if (nowTZ.d !== 1) return false; // primer día del mes
       return nowTZ.date >= windowStart && nowTZ.date <= windowEnd;
     default:
       return false;
@@ -91,16 +120,24 @@ export async function POST(req: NextRequest) {
       return jsonError("DB_ERROR", error.message, 400);
     }
 
-    const due: any[] = [];
-    const results: any[] = [];
+    const due: ReportSchedule[] = [];
+    const results: Array<{
+      id: string;
+      scope: ReportScope;
+      channel: ReportChannel | null | undefined;
+      target: string | null | undefined;
+      from: string;
+      to: string;
+    }> = [];
 
-    const tzGroups: Record<string, any[]> = {};
-    (schedules ?? []).forEach((sc) => {
+    // Agrupar por tz para calcular "ahora" una sola vez por zona
+    const tzGroups: Record<string, ReportSchedule[]> = {};
+    (schedules ?? []).forEach((sc: ReportSchedule) => {
       const tz = sc.tz || "America/Mexico_City";
       (tzGroups[tz] ||= []).push(sc);
     });
 
-    for (const [tz, items] of Object.entries(tzGroups)) {
+    for (const [tz, items] of Object.entries(tzGroups) as Array<[string, ReportSchedule[]]>) {
       const nowTZ = nowInTZ(tz);
       for (const sc of items) {
         if (shouldRun(sc, nowTZ)) {
@@ -110,11 +147,13 @@ export async function POST(req: NextRequest) {
     }
 
     for (const sc of due) {
-      let payload: any = null;
+      let payload: RunPayload | null = null;
 
-      const to = (sc.params?.to as string) ?? new Date().toISOString().slice(0, 10);
+      const to =
+        (sc.params?.to as string | undefined) ??
+        new Date().toISOString().slice(0, 10);
       const from =
-        (sc.params?.from as string) ??
+        (sc.params?.from as string | undefined) ??
         new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
       if (sc.scope === "bank_flow") {
@@ -150,7 +189,8 @@ export async function POST(req: NextRequest) {
     }
 
     return jsonOk({ data: { processed: results.length, results } });
-  } catch (e: any) {
-    return jsonError("SERVER_ERROR", e?.message ?? "Error", 500);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error";
+    return jsonError("SERVER_ERROR", msg, 500);
   }
 }

@@ -68,7 +68,7 @@ export default function ChangePasswordPage() {
               required
               minLength={8}
               value={pass}
-              onChange={(e) => setPass(e.target.value)}
+              onChange={(e: any) => setPass(e.target.value)}
               placeholder="••••••••"
               invalid={Boolean(err)}
               aria-describedby={err ? "change-password-error" : undefined}

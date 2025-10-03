@@ -25,8 +25,8 @@ export default function RiskBoardPage() {
   useEffect(() => {
     if (!orgId) return;
     fetch(`/api/patients/labels/summary?org_id=${orgId}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (j.ok) setSummary(j.data);
       });
   }, [orgId]);
@@ -35,8 +35,8 @@ export default function RiskBoardPage() {
     if (!orgId || !label) return;
     const p = new URLSearchParams({ org_id: orgId, label, page: "1", pageSize: "50" });
     fetch(`/api/patients/labels/search?${p.toString()}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (j.ok) {
           setRows(j.data);
           setTotal(j.meta.total);
@@ -61,8 +61,8 @@ export default function RiskBoardPage() {
       {orgId && (
         <>
           <section className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {["Riesgo", "Embarazo", "Prioridad"].map((lab) => {
-              const n = summary.find((s) => s.label === lab)?.total ?? 0;
+            {["Riesgo", "Embarazo", "Prioridad"].map((lab: any) => {
+              const n = summary.find((s: any) => s.label === lab)?.total ?? 0;
               const active = label === lab;
               return (
                 <button
@@ -80,7 +80,7 @@ export default function RiskBoardPage() {
             <div className="rounded-2xl border p-4">
               <div className="text-sm text-slate-500">Otros (todas las etiquetas)</div>
               <div className="text-3xl font-semibold mt-1">
-                {summary.reduce((a, b) => a + (b.total || 0), 0)}
+                {summary.reduce((a: any, b: any) => a + (b.total || 0), 0)}
               </div>
             </div>
           </section>
@@ -107,7 +107,7 @@ export default function RiskBoardPage() {
                     </td>
                   </tr>
                 )}
-                {rows.map((r) => (
+                {rows.map((r: any) => (
                   <tr key={r.id} className="border-t">
                     <td className="px-3 py-2">
                       <Link href={`/pacientes/${r.id}`} className="underline underline-offset-2">

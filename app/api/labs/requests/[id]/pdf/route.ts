@@ -205,7 +205,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     // 👇 Envolvemos Uint8Array en un Blob para que TS/Fetch lo acepte sin queja
     const blob = new Blob([bytes], { type: "application/pdf" });
 
-    return new NextResponse(blob, {
+    return new NextResponse(new Blob([blob]), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

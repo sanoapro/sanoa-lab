@@ -12,7 +12,7 @@ export type AuditEntry = {
   created_at: string;
 };
 
-export async function listAudit(patientId: string, limit = 200): Promise<AuditEntry[]> {
+export async function listAudit(patientId: string, limit: any = 200): Promise<AuditEntry[]> {
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("audit_log")

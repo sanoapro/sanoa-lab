@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 /** Llama a onChange (debounced) ante insert/update/delete en public.patients del usuario actual. */
-export function usePatientsRealtime(onChange: () => void, debounceMs = 250) {
+export function usePatientsRealtime(onChange: () => void, debounceMs: any = 250) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {

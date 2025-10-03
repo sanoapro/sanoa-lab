@@ -13,7 +13,7 @@ async function fetchAllWithCookies(origin: string, path: string, params: URLSear
   const cookieStore = await nextCookies();
   const cookieHeader = cookieStore
     .getAll()
-    .map((c) => `${c.name}=${c.value}`)
+    .map((c: any) => `${c.name}=${c.value}`)
     .join("; ");
   while (page <= 20) {
     params.set("page", String(page));
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
     // rate actual = promedio últimas 4 semanas (robusto al ruido)
     const n = series.length;
     const recent = series.slice(Math.max(0, n - 4));
-    const avgRecent = recent.length ? recent.reduce((s, x) => s + x.rate, 0) / recent.length : 0;
+    const avgRecent = recent.length ? recent.reduce((s: any, x: any) => s + x.rate, 0) / recent.length : 0;
     const d30 = deltaRecent(series, 4); // aprox 4 semanas
     const predicted = Math.max(0, Math.min(1, avgRecent + 0.5 * d30));
     const band: Row["predicted_band"] =
@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
 
     // aplicar min_n usando el recuento total en la ventana
     const total = bookings.filter(
-      (b) => (b.patient_id || b.patient || "NA").toString() === pid,
+      (b: any) => (b.patient_id || b.patient || "NA").toString() === pid,
     ).length;
     if (total < min_n) continue;
 
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const sorted = out.sort((a, b) => b.predicted_score - a.predicted_score);
+  const sorted = out.sort((a: any, b: any) => b.predicted_score - a.predicted_score);
   return NextResponse.json({
     ok: true,
     data: sorted.slice(0, top),

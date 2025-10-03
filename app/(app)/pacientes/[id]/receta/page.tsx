@@ -22,7 +22,7 @@ export default function RxEditor({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     (async () => {
-      const t = await fetch("/api/prescriptions/templates").then((r) => r.json());
+      const t = await fetch("/api/prescriptions/templates").then((r: any) => r.json());
       setTemplates(t.items || []);
     })();
   }, []);
@@ -35,7 +35,7 @@ export default function RxEditor({ params }: { params: { id: string } }) {
   };
 
   const addDrug = (name: string) => {
-    setItems((s) => [
+    setItems((s: any) => [
       ...s,
       { drug: name, dose: "", route: "VO", frequency: "", duration: "", instructions: "" },
     ]);
@@ -55,7 +55,7 @@ export default function RxEditor({ params }: { params: { id: string } }) {
       duration: it.duration || "",
       instructions: it.instructions || "",
     }));
-    setItems((s) => [...s, ...extra]);
+    setItems((s: any) => [...s, ...extra]);
   };
 
   const checkInteractions = async () => {
@@ -91,8 +91,8 @@ export default function RxEditor({ params }: { params: { id: string } }) {
           <label className="text-sm">Buscar fármaco</label>
           <input
             value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && search()}
+            onChange={(e: any) => setQ(e.target.value)}
+            onKeyDown={(e: any) => e.key === "Enter" && search()}
             className="w-full border rounded p-2"
             placeholder="Paracetamol, Ibuprofeno…"
           />
@@ -121,7 +121,7 @@ export default function RxEditor({ params }: { params: { id: string } }) {
         <select
           className="border rounded p-2"
           value={tplSel}
-          onChange={(e) => setTplSel(e.target.value)}
+          onChange={(e: any) => setTplSel(e.target.value)}
         >
           <option value="">Plantilla…</option>
           {templates.map((t: any) => (
@@ -139,15 +139,15 @@ export default function RxEditor({ params }: { params: { id: string } }) {
       <div className="border rounded p-3">
         <div className="font-medium mb-2">Prescripción</div>
         <div className="space-y-2">
-          {items.map((it, i) => (
+          {items.map((it: any, i: any) => (
             <div key={i} className="grid grid-cols-6 gap-2 text-sm items-center">
               <div className="col-span-2">
                 <input
                   className="w-full border rounded p-2"
                   value={it.drug}
-                  onChange={(e) =>
-                    setItems((s) =>
-                      s.map((x, idx) => (idx === i ? { ...x, drug: e.target.value } : x)),
+                  onChange={(e: any) =>
+                    setItems((s: any) =>
+                      s.map((x: any, idx: any) => (idx === i ? { ...x, drug: e.target.value } : x)),
                     )
                   }
                 />
@@ -156,9 +156,9 @@ export default function RxEditor({ params }: { params: { id: string } }) {
                 className="border rounded p-2"
                 placeholder="Dosis"
                 value={it.dose}
-                onChange={(e) =>
-                  setItems((s) =>
-                    s.map((x, idx) => (idx === i ? { ...x, dose: e.target.value } : x)),
+                onChange={(e: any) =>
+                  setItems((s: any) =>
+                    s.map((x: any, idx: any) => (idx === i ? { ...x, dose: e.target.value } : x)),
                   )
                 }
               />
@@ -166,9 +166,9 @@ export default function RxEditor({ params }: { params: { id: string } }) {
                 className="border rounded p-2"
                 placeholder="Vía"
                 value={it.route}
-                onChange={(e) =>
-                  setItems((s) =>
-                    s.map((x, idx) => (idx === i ? { ...x, route: e.target.value } : x)),
+                onChange={(e: any) =>
+                  setItems((s: any) =>
+                    s.map((x: any, idx: any) => (idx === i ? { ...x, route: e.target.value } : x)),
                   )
                 }
               />
@@ -176,9 +176,9 @@ export default function RxEditor({ params }: { params: { id: string } }) {
                 className="border rounded p-2"
                 placeholder="Frecuencia"
                 value={it.frequency}
-                onChange={(e) =>
-                  setItems((s) =>
-                    s.map((x, idx) => (idx === i ? { ...x, frequency: e.target.value } : x)),
+                onChange={(e: any) =>
+                  setItems((s: any) =>
+                    s.map((x: any, idx: any) => (idx === i ? { ...x, frequency: e.target.value } : x)),
                   )
                 }
               />
@@ -186,9 +186,9 @@ export default function RxEditor({ params }: { params: { id: string } }) {
                 className="border rounded p-2"
                 placeholder="Duración"
                 value={it.duration}
-                onChange={(e) =>
-                  setItems((s) =>
-                    s.map((x, idx) => (idx === i ? { ...x, duration: e.target.value } : x)),
+                onChange={(e: any) =>
+                  setItems((s: any) =>
+                    s.map((x: any, idx: any) => (idx === i ? { ...x, duration: e.target.value } : x)),
                   )
                 }
               />
@@ -197,9 +197,9 @@ export default function RxEditor({ params }: { params: { id: string } }) {
                   className="w-full border rounded p-2"
                   placeholder="Instrucciones"
                   value={it.instructions || ""}
-                  onChange={(e) =>
-                    setItems((s) =>
-                      s.map((x, idx) => (idx === i ? { ...x, instructions: e.target.value } : x)),
+                  onChange={(e: any) =>
+                    setItems((s: any) =>
+                      s.map((x: any, idx: any) => (idx === i ? { ...x, instructions: e.target.value } : x)),
                     )
                   }
                 />
@@ -215,7 +215,7 @@ export default function RxEditor({ params }: { params: { id: string } }) {
           className="w-full border rounded p-2"
           rows={2}
           value={diagnosis}
-          onChange={(e) => setDiagnosis(e.target.value)}
+          onChange={(e: any) => setDiagnosis(e.target.value)}
         />
       </label>
       <label className="block text-sm">
@@ -224,7 +224,7 @@ export default function RxEditor({ params }: { params: { id: string } }) {
           className="w-full border rounded p-2"
           rows={2}
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e: any) => setNotes(e.target.value)}
         />
       </label>
 

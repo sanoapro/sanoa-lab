@@ -14,7 +14,7 @@ function backoff(attempts: number) {
  * Ejecuta un lote de recordatorios listos para enviar.
  * Usa service role para evitar lectura de cookies en entornos server/cron.
  */
-export async function runReminderBatch(orgId?: string, limit = 20) {
+export async function runReminderBatch(orgId?: string, limit: any = 20) {
   const supa = createServiceClient();
   const now = new Date().toISOString();
 

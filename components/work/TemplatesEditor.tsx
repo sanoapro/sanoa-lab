@@ -105,10 +105,10 @@ export default function TemplatesEditor() {
             <span className="text-sm text-slate-500">Módulo</span>
             <select
               value={form.module ?? "general"}
-              onChange={(e) => setForm((f) => ({ ...f, module: e.target.value as any }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, module: e.target.value as any }))}
               className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             >
-              {MODULES.map((m) => (
+              {MODULES.map((m: any) => (
                 <option key={m} value={m}>
                   {m}
                 </option>
@@ -120,7 +120,7 @@ export default function TemplatesEditor() {
             <input
               className="rounded-xl border px-3 py-2"
               value={form.title ?? ""}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, title: e.target.value }))}
               placeholder="p.ej., Respiración diafragmática 4-7-8"
             />
           </label>
@@ -132,7 +132,7 @@ export default function TemplatesEditor() {
             className="rounded-xl border px-3 py-2"
             rows={3}
             value={form.description ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))}
           />
         </label>
 
@@ -144,7 +144,7 @@ export default function TemplatesEditor() {
             className="font-mono text-xs rounded-xl border px-3 py-2"
             rows={8}
             value={jsonString(form.content)}
-            onChange={(e) => setForm((f) => ({ ...f, content: tryParse(e.target.value) }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, content: tryParse(e.target.value) }))}
           />
         </label>
 
@@ -162,15 +162,15 @@ export default function TemplatesEditor() {
             className="rounded-xl border px-3 py-2"
             placeholder="Buscar…"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e: any) => setQ(e.target.value)}
           />
           <select
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={module}
-            onChange={(e) => setModule(e.target.value as any)}
+            onChange={(e: any) => setModule(e.target.value as any)}
           >
             <option value="">Todos</option>
-            {MODULES.map((m) => (
+            {MODULES.map((m: any) => (
               <option key={m} value={m}>
                 {m}
               </option>
@@ -190,7 +190,7 @@ export default function TemplatesEditor() {
               </tr>
             </thead>
             <tbody>
-              {list.map((t) => (
+              {list.map((t: any) => (
                 <tr key={t.id} className="border-b">
                   <td className="p-2">{t.title}</td>
                   <td className="p-2">{t.module}</td>

@@ -50,7 +50,7 @@ export default function PlanEditor() {
   const [saving, setSaving] = useState(false);
 
   function add(row: Row) {
-    setItems((xs) => [
+    setItems((xs: any) => [
       ...xs,
       {
         library_id: row.id,
@@ -63,7 +63,7 @@ export default function PlanEditor() {
   }
 
   function setDay(i: number, key: keyof Days, v: boolean) {
-    setItems((xs) => xs.map((x, idx) => (idx === i ? { ...x, days: { ...x.days, [key]: v } } : x)));
+    setItems((xs: any) => xs.map((x: any, idx: any) => (idx === i ? { ...x, days: { ...x.days, [key]: v } } : x)));
   }
 
   async function save() {
@@ -81,7 +81,7 @@ export default function PlanEditor() {
       patient_id: patient.id,
       starts_on: startsOn,
       replace_active: replaceActive,
-      items: items.map((it) => ({
+      items: items.map((it: any) => ({
         library_id: it.library_id,
         goal: it.goal || null,
         days: it.days,
@@ -141,14 +141,14 @@ export default function PlanEditor() {
               type="date"
               className="border rounded px-3 py-2 w-full"
               value={startsOn}
-              onChange={(e) => setStartsOn(e.target.value)}
+              onChange={(e: any) => setStartsOn(e.target.value)}
             />
           </div>
           <label className="inline-flex items-center gap-2 mt-6">
             <input
               type="checkbox"
               checked={replaceActive}
-              onChange={(e) => setReplaceActive(e.target.checked)}
+              onChange={(e: any) => setReplaceActive(e.target.checked)}
             />
             <span className="text-sm">Reemplazar plan activo</span>
           </label>
@@ -171,28 +171,28 @@ export default function PlanEditor() {
               </tr>
             </thead>
             <tbody>
-              {items.map((it, i) => (
+              {items.map((it: any, i: any) => (
                 <tr key={i} className="border-t">
                   <td className="px-3 py-2">{it.title}</td>
                   <td className="px-3 py-2">
                     <input
                       className="border rounded px-2 py-1 w-40"
                       value={it.goal || ""}
-                      onChange={(e) =>
-                        setItems((xs) =>
-                          xs.map((x, idx) => (idx === i ? { ...x, goal: e.target.value } : x)),
+                      onChange={(e: any) =>
+                        setItems((xs: any) =>
+                          xs.map((x: any, idx: any) => (idx === i ? { ...x, goal: e.target.value } : x)),
                         )
                       }
                     />
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex gap-1">
-                      {weekdays.map((d) => (
+                      {weekdays.map((d: any) => (
                         <label key={d} className="inline-flex items-center gap-1">
                           <input
                             type="checkbox"
                             checked={!!it.days[d]}
-                            onChange={(e) => setDay(i, d, e.target.checked)}
+                            onChange={(e: any) => setDay(i, d, e.target.checked)}
                           />
                           <span className="text-xs">{labels[d]}</span>
                         </label>
@@ -203,9 +203,9 @@ export default function PlanEditor() {
                     <input
                       className="border rounded px-2 py-1 w-60"
                       value={it.notes || ""}
-                      onChange={(e) =>
-                        setItems((xs) =>
-                          xs.map((x, idx) => (idx === i ? { ...x, notes: e.target.value } : x)),
+                      onChange={(e: any) =>
+                        setItems((xs: any) =>
+                          xs.map((x: any, idx: any) => (idx === i ? { ...x, notes: e.target.value } : x)),
                         )
                       }
                     />
@@ -213,7 +213,7 @@ export default function PlanEditor() {
                   <td className="px-3 py-2">
                     <button
                       className="border rounded px-2 py-1"
-                      onClick={() => setItems((xs) => xs.filter((_, idx) => idx !== i))}
+                      onClick={() => setItems((xs: any) => xs.filter((_: any, idx: any) => idx !== i))}
                     >
                       Quitar
                     </button>

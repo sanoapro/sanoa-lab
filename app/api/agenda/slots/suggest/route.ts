@@ -20,6 +20,28 @@ function weekdayISO(date: string) {
   return n === 0 ? 7 : n; // 1..7 Mon..Sun
 }
 
+// Tipos de filas
+type AvailabilityRow = {
+  weekday: number;
+  start_time: string; // "HH:MM"
+  end_time: string;   // "HH:MM"
+  slot_minutes: number | null;
+  tz: string;
+};
+
+type OverrideRow = {
+  date: string;       // "YYYY-MM-DD"
+  kind: "block" | "extra" | (string & {});
+  start_time: string; // "HH:MM"
+  end_time: string;   // "HH:MM"
+};
+
+type AppointmentRow = {
+  starts_at: string;  // ISO
+  ends_at: string;    // ISO
+  status: "scheduled" | "completed" | (string & {});
+};
+
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: au } = await supa.auth.getUser();
@@ -55,7 +77,8 @@ export async function GET(req: NextRequest) {
     .select("weekday, start_time, end_time, slot_minutes, tz")
     .eq("org_id", org_id)
     .eq("provider_id", provider_id)
-    .eq("weekday", wd);
+    .eq("weekday", wd)
+    .returns<AvailabilityRow[]>();
 
   if (e1)
     return NextResponse.json(
@@ -69,7 +92,8 @@ export async function GET(req: NextRequest) {
     .select("date, kind, start_time, end_time")
     .eq("org_id", org_id)
     .eq("provider_id", provider_id)
-    .eq("date", date);
+    .eq("date", date)
+    .returns<OverrideRow[]>();
 
   // Citas existentes del día
   const { data: appts } = await supa
@@ -80,7 +104,8 @@ export async function GET(req: NextRequest) {
     .gte("starts_at", start)
     .lte("starts_at", end)
     .in("status", ["scheduled", "completed"]) // bloquean
-    .limit(500);
+    .limit(500)
+    .returns<AppointmentRow[]>();
 
   // Score no-show por paciente (si se conoce)
   let nsScore = 50;
@@ -90,7 +115,7 @@ export async function GET(req: NextRequest) {
       .select("score")
       .eq("org_id", org_id)
       .eq("patient_id", patient_id)
-      .maybeSingle();
+      .maybeSingle<{ score: number }>();
     nsScore = ns?.score ?? 50;
   }
 
@@ -111,7 +136,7 @@ export async function GET(req: NextRequest) {
   // Bloqueos y extras
   const blocks: Array<{ start: string; end: string }> = [];
   const extras: Array<{ start: string; end: string }> = [];
-  (ovs || []).forEach((o) => {
+  (ovs || []).forEach((o: OverrideRow) => {
     const s = new Date(`${date}T${o.start_time}:00`).toISOString();
     const e = new Date(`${date}T${o.end_time}:00`).toISOString();
     (o.kind === "block" ? blocks : extras).push({ start: s, end: e });
@@ -135,13 +160,16 @@ export async function GET(req: NextRequest) {
       if (new Date(sIso).getTime() < Date.now() + lead_min * 60_000) continue;
 
       // Bloqueos
-      if (blocks.some((b) => overlaps(sIso, eIso, b.start, b.end))) continue;
+      if (blocks.some((b: { start: string; end: string }) => overlaps(sIso, eIso, b.start, b.end)))
+        continue;
 
       // Colisiones con citas
-      if ((appts || []).some((x) => overlaps(sIso, eIso, x.starts_at, x.ends_at))) continue;
+      if ((appts || []).some((x: AppointmentRow) => overlaps(sIso, eIso, x.starts_at, x.ends_at)))
+        continue;
 
       // Window extra: si hay extras definidos, permitir sólo dentro de ellas
-      if (extras.length > 0 && !extras.some((x) => overlaps(sIso, eIso, x.start, x.end))) continue;
+      if (extras.length > 0 && !extras.some((x: { start: string; end: string }) => overlaps(sIso, eIso, x.start, x.end)))
+        continue;
 
       // Scoring simple
       const d = new Date(sIso);
@@ -168,8 +196,8 @@ export async function GET(req: NextRequest) {
       // Bonus por gap grande antes/después (menos fricción)
       const gapBefore = Math.min(
         ...(appts || [])
-          .filter((x) => x.ends_at <= sIso)
-          .map((x) => new Date(sIso).getTime() - new Date(x.ends_at).getTime())
+          .filter((x: AppointmentRow) => x.ends_at <= sIso)
+          .map((x: AppointmentRow) => new Date(sIso).getTime() - new Date(x.ends_at).getTime())
           .concat([60 * 60_000]),
       ); // default 60min
       if (gapBefore >= 60 * 60_000) {
@@ -188,6 +216,6 @@ export async function GET(req: NextRequest) {
   }
 
   // Ordenar por score y hora
-  slots.sort((a, b) => b.score - a.score || a.start_iso.localeCompare(b.start_iso));
+  slots.sort((a: Slot, b: Slot) => b.score - a.score || a.start_iso.localeCompare(b.start_iso));
   return NextResponse.json({ ok: true, data: slots.slice(0, limit) });
 }

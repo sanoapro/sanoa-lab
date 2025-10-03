@@ -17,7 +17,7 @@ export default function VerifyPage() {
       }
       const j = await fetch(
         `/api/docs/verify?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}&code=${encodeURIComponent(code)}`,
-      ).then((r) => r.json());
+      ).then((r: any) => r.json());
       setInfo(j);
     })();
   }, []);

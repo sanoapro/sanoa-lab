@@ -6,7 +6,7 @@ export default function PrintReferral({ params }: { params: { id: string } }) {
   const [data, setData] = useState<any>(null);
   useEffect(() => {
     (async () => {
-      const j = await fetch(`/api/referrals/${id}/json`).then((r) => r.json());
+      const j = await fetch(`/api/referrals/${id}/json`).then((r: any) => r.json());
       setData(j);
       setTimeout(() => window.print(), 500);
     })();

@@ -204,7 +204,7 @@ export default function AgendaPage() {
   }
 
   const unified: UniItem[] = [
-    ...calItems.map((b) => ({
+    ...calItems.map((b: any) => ({
       kind: "cal" as const,
       uid: b.uid,
       title: b.title || "Cita",
@@ -213,7 +213,7 @@ export default function AgendaPage() {
       meetingUrl: b.meetingUrl,
       attendee: b.attendees?.[0]?.email,
     })),
-    ...localItems.map((a) => ({
+    ...localItems.map((a: any) => ({
       kind: "local" as const,
       id: a.id,
       title: "Cita (local)",
@@ -222,7 +222,7 @@ export default function AgendaPage() {
       patient_id: a.patient_id,
       cal_event_id: a.cal_event_id || null,
     })),
-  ].sort((x, y) => +new Date(x.start) - +new Date(y.start));
+  ].sort((x: any, y: any) => +new Date(x.start) - +new Date(y.start));
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -234,7 +234,7 @@ export default function AgendaPage() {
         <div className="flex items-center gap-2">
           <a
             href={exportUrl || undefined}
-            onClick={(e) => {
+            onClick={(e: any) => {
               if (!exportUrl) e.preventDefault();
             }}
             className={clsx(
@@ -259,7 +259,7 @@ export default function AgendaPage() {
         <select
           className="border rounded-md px-3 py-2"
           value={status}
-          onChange={(e) => setStatus(e.target.value as Status)}
+          onChange={(e: any) => setStatus(e.target.value as Status)}
         >
           <option value="upcoming">Próximas</option>
           <option value="past">Pasadas</option>
@@ -269,10 +269,10 @@ export default function AgendaPage() {
         <Input
           placeholder="Buscar por nombre o email…"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e: any) => setQ(e.target.value)}
         />
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        <Input type="date" value={from} onChange={(e: any) => setFrom(e.target.value)} />
+        <Input type="date" value={to} onChange={(e: any) => setTo(e.target.value)} />
         <Button
           variant="secondary"
           onClick={() => {
@@ -296,7 +296,7 @@ export default function AgendaPage() {
             {loading ? "Cargando…" : "Sin resultados."}
           </div>
         )}
-        {unified.map((it) => (
+        {unified.map((it: any) => (
           <div
             key={it.kind === "cal" ? it.uid : it.id}
             className="p-4 flex items-center justify-between gap-4"
@@ -335,14 +335,14 @@ export default function AgendaPage() {
             <Input
               placeholder="Buscar por nombre o email…"
               value={pQ}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 setPQ(e.target.value);
                 setPSel(null);
               }}
             />
             {pList.length > 0 && (
               <div className="mt-1 border rounded-md max-h-60 overflow-auto">
-                {pList.map((p) => (
+                {pList.map((p: any) => (
                   <button
                     key={p.id}
                     className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b"
@@ -366,11 +366,11 @@ export default function AgendaPage() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-sm block mb-1">Fecha</label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Input type="date" value={date} onChange={(e: any) => setDate(e.target.value)} />
             </div>
             <div>
               <label className="text-sm block mb-1">Hora</label>
-              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+              <Input type="time" value={time} onChange={(e: any) => setTime(e.target.value)} />
             </div>
           </div>
 
@@ -382,12 +382,12 @@ export default function AgendaPage() {
                 min={5}
                 max={480}
                 value={duration}
-                onChange={(e) => setDuration(Number(e.target.value || 50))}
+                onChange={(e: any) => setDuration(Number(e.target.value || 50))}
               />
             </div>
             <div>
               <label className="text-sm block mb-1">Título</label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Input value={title} onChange={(e: any) => setTitle(e.target.value)} />
             </div>
           </div>
 
@@ -396,7 +396,7 @@ export default function AgendaPage() {
             <textarea
               className="w-full border rounded-md p-2"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e: any) => setNotes(e.target.value)}
             />
           </div>
 

@@ -36,7 +36,7 @@ export default function NewReferral({ params }: { params: { id: string } }) {
     setLoadingTemplates(true);
     try {
       const data = await listReferralTemplates(orgId);
-      const active = data.filter((tpl) => tpl.is_active !== false);
+      const active = data.filter((tpl: any) => tpl.is_active !== false);
       setTemplates(active);
       return active;
     } catch (err) {
@@ -55,7 +55,7 @@ export default function NewReferral({ params }: { params: { id: string } }) {
   const applyTemplate = useCallback(
     (tpl?: ReferralTemplate) => {
       if (!tpl) return;
-      setForm((prev) => ({
+      setForm((prev: any) => ({
         ...prev,
         to_specialty: tpl.content?.to_specialty ?? "",
         to_doctor_name: tpl.content?.to_doctor_name ?? "",
@@ -69,7 +69,7 @@ export default function NewReferral({ params }: { params: { id: string } }) {
 
   const handleSelectChange = (value: string) => {
     setSel(value);
-    const tpl = templates.find((t) => t.id === value);
+    const tpl = templates.find((t: any) => t.id === value);
     applyTemplate(tpl);
   };
 
@@ -77,7 +77,7 @@ export default function NewReferral({ params }: { params: { id: string } }) {
     async (tpl: { id: string; name: string }) => {
       setModalOpen(false);
       const data = await loadTemplates();
-      const found = data.find((item) => item.id === tpl.id);
+      const found = data.find((item: any) => item.id === tpl.id);
       if (found) {
         setSel(found.id);
         applyTemplate(found);
@@ -110,10 +110,10 @@ export default function NewReferral({ params }: { params: { id: string } }) {
               className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
               value={sel}
               disabled={!templates.length}
-              onChange={(e) => handleSelectChange(e.target.value)}
+              onChange={(e: any) => handleSelectChange(e.target.value)}
             >
               <option value="">Selecciona plantilla…</option>
-              {templates.map((t) => (
+              {templates.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                   {t.content?.meta?.specialty ? ` · ${t.content.meta.specialty}` : ""}
@@ -140,34 +140,34 @@ export default function NewReferral({ params }: { params: { id: string } }) {
           className="border rounded p-2"
           placeholder="Especialidad destino"
           value={form.to_specialty}
-          onChange={(e) => setForm({ ...form, to_specialty: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, to_specialty: e.target.value })}
         />
         <input
           className="border rounded p-2"
           placeholder="Dr(a) destinatario"
           value={form.to_doctor_name}
-          onChange={(e) => setForm({ ...form, to_doctor_name: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, to_doctor_name: e.target.value })}
         />
         <textarea
           className="col-span-2 border rounded p-2"
           rows={2}
           placeholder="Motivo"
           value={form.reason}
-          onChange={(e) => setForm({ ...form, reason: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, reason: e.target.value })}
         />
         <textarea
           className="col-span-2 border rounded p-2"
           rows={3}
           placeholder="Resumen"
           value={form.summary}
-          onChange={(e) => setForm({ ...form, summary: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, summary: e.target.value })}
         />
         <textarea
           className="col-span-2 border rounded p-2"
           rows={2}
           placeholder="Plan sugerido"
           value={form.plan}
-          onChange={(e) => setForm({ ...form, plan: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, plan: e.target.value })}
         />
       </div>
       <div className="flex gap-2">

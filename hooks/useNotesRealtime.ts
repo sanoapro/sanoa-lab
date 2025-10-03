@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 /** Llama a onChange cuando cambian notas de un patient_id. */
-export function useNotesRealtime(patientId: string, onChange: () => void, debounceMs = 250) {
+export function useNotesRealtime(patientId: string, onChange: () => void, debounceMs: any = 250) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {

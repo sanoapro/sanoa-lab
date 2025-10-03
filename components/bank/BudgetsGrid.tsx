@@ -19,7 +19,7 @@ function ymFirst(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
 }
 
-function fmtMoney(cents: number, currency = "MXN") {
+function fmtMoney(cents: number, currency: any = "MXN") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format((cents || 0) / 100);
 }
 
@@ -43,7 +43,7 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
       const [{ data: catData }, bud] = await Promise.all([
         supa.from("bank_categories").select("id,name,kind").eq("org_id", orgId).order("name"),
         fetch(`/api/bank/budgets?org_id=${orgId}&month=${month}`)
-          .then((r) => r.json())
+          .then((r: any) => r.json())
           .catch(() => ({ ok: false })),
       ]);
       if (!alive) return;
@@ -77,7 +77,7 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
       });
       return;
     }
-    const r = await fetch(`/api/bank/budgets?org_id=${orgId}&month=${month}`).then((r) =>
+    const r = await fetch(`/api/bank/budgets?org_id=${orgId}&month=${month}`).then((r: any) =>
       r.json(),
     );
     if (r.ok) setBudgets(r.data);
@@ -97,7 +97,7 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
               type="month"
               className="glass-input"
               value={month.slice(0, 7)}
-              onChange={(e) => setMonth(`${e.target.value}-01`)}
+              onChange={(e: any) => setMonth(`${e.target.value}-01`)}
             />
           </div>
           <div>
@@ -105,11 +105,11 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
             <select
               className="glass-input"
               value={row.category_id}
-              onChange={(e) => setRow((r) => ({ ...r, category_id: e.target.value }))}
+              onChange={(e: any) => setRow((r: any) => ({ ...r, category_id: e.target.value }))}
               ref={categoryRef}
             >
               <option value="">Selecciona</option>
-              {cats.map((c) => (
+              {cats.map((c: any) => (
                 <option key={c.id} value={c.id}>
                   {c.name} · {c.kind}
                 </option>
@@ -122,7 +122,7 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
               type="number"
               className="glass-input"
               value={row.amount_cents}
-              onChange={(e) => setRow((r) => ({ ...r, amount_cents: Number(e.target.value || 0) }))}
+              onChange={(e: any) => setRow((r: any) => ({ ...r, amount_cents: Number(e.target.value || 0) }))}
             />
           </div>
           <div>
@@ -181,8 +181,8 @@ export default function BudgetsGrid({ orgId }: { orgId: string }) {
               </tr>
             )}
             {!loading &&
-              budgets.map((b) => {
-                const c = cats.find((x) => x.id === b.category_id);
+              budgets.map((b: any) => {
+                const c = cats.find((x: any) => x.id === b.category_id);
                 return (
                   <tr key={b.id} className="border-t">
                     <td className="px-3 py-2">{c?.name ?? b.category_id}</td>

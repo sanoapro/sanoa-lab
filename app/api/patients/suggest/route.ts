@@ -10,7 +10,7 @@ const QuerySchema = z.object({
   only_mine: z
     .union([z.literal("true"), z.literal("false")])
     .optional()
-    .transform((v) => (v === undefined ? true : v === "true")),
+    .transform((v: any) => (v === undefined ? true : v === "true")),
   limit: z.coerce.number().int().min(1).max(20).default(10),
 });
 
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i: any) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 

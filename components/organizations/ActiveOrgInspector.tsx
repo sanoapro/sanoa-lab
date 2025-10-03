@@ -41,7 +41,7 @@ export default function ActiveOrgInspector() {
     return () => window.removeEventListener("sanoa:org-changed", onChanged);
   }, [load]);
 
-  const activeOrg = React.useMemo(() => orgs.find((org) => org.id === current) ?? null, [orgs, current]);
+  const activeOrg = React.useMemo(() => orgs.find((org: any) => org.id === current) ?? null, [orgs, current]);
 
   const handleChange = async (nextId: string) => {
     setChanging(true);
@@ -101,7 +101,7 @@ export default function ActiveOrgInspector() {
           <div>
             <h4 className="text-sm font-semibold text-slate-600">Cambiar organización</h4>
             <div className="mt-2 space-y-2">
-              {orgs.map((org) => {
+              {orgs.map((org: any) => {
                 const isActive = org.id === current;
                 return (
                   <button

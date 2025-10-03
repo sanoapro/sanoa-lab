@@ -66,7 +66,7 @@ export default function SmartSlots({
             </tr>
           </thead>
           <tbody>
-            {rows.map((s, i) => {
+            {rows.map((s: any, i: any) => {
               const start = new Date(s.start_iso);
               const end = new Date(s.end_iso);
               const fmt = (d: Date) =>

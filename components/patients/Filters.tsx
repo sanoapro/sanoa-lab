@@ -49,7 +49,7 @@ export default function PatientsFilters() {
           <input
             className="rounded border px-3 py-2 w-full"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e: any) => setQ(e.target.value)}
             placeholder="Nombre o término…"
           />
         </div>
@@ -58,7 +58,7 @@ export default function PatientsFilters() {
           <select
             className="rounded border px-3 py-2 w-full"
             value={genero}
-            onChange={(e) => setGenero(e.target.value)}
+            onChange={(e: any) => setGenero(e.target.value)}
           >
             <option value="">(todos)</option>
             <option value="F">Femenino</option>
@@ -72,7 +72,7 @@ export default function PatientsFilters() {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e: any) => setFrom(e.target.value)}
           />
         </div>
         <div>
@@ -81,7 +81,7 @@ export default function PatientsFilters() {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e: any) => setTo(e.target.value)}
           />
         </div>
         <div className="flex items-end">
@@ -90,7 +90,7 @@ export default function PatientsFilters() {
               type="checkbox"
               className="rounded border"
               checked={includeDeleted}
-              onChange={(e) => setIncludeDeleted(e.target.checked)}
+              onChange={(e: any) => setIncludeDeleted(e.target.checked)}
             />
             <span className="text-sm">Incluir eliminados</span>
           </label>
@@ -103,7 +103,7 @@ export default function PatientsFilters() {
           <input
             className="rounded border px-3 py-2 w-full"
             value={tagsAny}
-            onChange={(e) => setTagsAny(e.target.value)}
+            onChange={(e: any) => setTagsAny(e.target.value)}
             placeholder="ej. DM2,HTA"
           />
         </div>
@@ -112,7 +112,7 @@ export default function PatientsFilters() {
           <input
             className="rounded border px-3 py-2 w-full"
             value={tagsAll}
-            onChange={(e) => setTagsAll(e.target.value)}
+            onChange={(e: any) => setTagsAll(e.target.value)}
             placeholder="ej. embarazo,alto_riesgo"
           />
         </div>

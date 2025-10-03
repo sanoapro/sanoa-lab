@@ -67,7 +67,7 @@ export default function AssessmentsTimeline({
               </td>
             </tr>
           )}
-          {rows.map((r) => (
+          {rows.map((r: any) => (
             <tr key={r.id} className="border-t">
               <td className="px-3 py-2">
                 {r.issued_at || new Date(r.created_at).toLocaleString()}

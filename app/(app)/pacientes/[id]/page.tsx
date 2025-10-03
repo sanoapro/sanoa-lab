@@ -43,8 +43,8 @@ export default function PatientsTable({ orgId }: { orgId: string }) {
       pageSize: String(pageSize),
     });
     fetch(`/api/patients/search?${params.toString()}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) {
           setRows(j.data);
@@ -85,7 +85,7 @@ export default function PatientsTable({ orgId }: { orgId: string }) {
               </td>
             </tr>
           )}
-          {rows.map((r) => (
+          {rows.map((r: any) => (
             <tr key={r.id} className="border-t">
               <td className="px-3 py-2">
                 <Link href={`/pacientes/${r.id}`} className="underline underline-offset-2">

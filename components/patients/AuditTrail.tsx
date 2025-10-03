@@ -29,8 +29,8 @@ export default function AuditTrail({ orgId, patientId }: { orgId: string; patien
       pageSize: "50",
     });
     fetch(`/api/patients/share/access?${p.toString()}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) {
           setRows(j.data);
@@ -74,7 +74,7 @@ export default function AuditTrail({ orgId, patientId }: { orgId: string; patien
                 </td>
               </tr>
             )}
-            {rows.map((r) => (
+            {rows.map((r: any) => (
               <tr key={`${r.share_id}-${r.access_at}`} className="border-t">
                 <td className="px-3 py-2">{new Date(r.access_at).toLocaleString()}</td>
                 <td className="px-3 py-2">

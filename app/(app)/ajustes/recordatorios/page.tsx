@@ -84,7 +84,7 @@ export default function RecordatoriosSettings() {
               <input
                 className="border p-2 rounded w-full"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e: any) => setForm({ ...form, name: e.target.value })}
               />
             </label>
             <label className="block text-sm">
@@ -92,7 +92,7 @@ export default function RecordatoriosSettings() {
               <select
                 className="border p-2 rounded w-full"
                 value={form.channel}
-                onChange={(e) => setForm({ ...form, channel: e.target.value as any })}
+                onChange={(e: any) => setForm({ ...form, channel: e.target.value as any })}
               >
                 <option value="whatsapp">WhatsApp</option>
                 <option value="sms">SMS</option>
@@ -104,7 +104,7 @@ export default function RecordatoriosSettings() {
                 className="border p-2 rounded w-full"
                 rows={6}
                 value={form.body}
-                onChange={(e) => setForm({ ...form, body: e.target.value })}
+                onChange={(e: any) => setForm({ ...form, body: e.target.value })}
               />
             </label>
             <div className="flex gap-2">
@@ -120,7 +120,7 @@ export default function RecordatoriosSettings() {
           <div>
             <div className="text-sm opacity-80 mb-2">Plantillas guardadas</div>
             <ul className="space-y-2">
-              {list.map((t) => (
+              {list.map((t: any) => (
                 <li key={t.id} className="border rounded p-2">
                   <div className="font-medium">{t.name}</div>
                   <div className="text-xs opacity-70">

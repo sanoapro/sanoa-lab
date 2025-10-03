@@ -104,7 +104,7 @@ function templateToDraft(
     const notes =
       (isPrescriptionContent(raw) && typeof raw.notes === "string" ? raw.notes : "") ?? "";
     const items = isPrescriptionContent(raw) && Array.isArray(raw.items)
-      ? raw.items.map((it) => ({ ...PRESCRIPTION_EMPTY_ITEM, ...it }))
+      ? raw.items.map((it: any) => ({ ...PRESCRIPTION_EMPTY_ITEM, ...it }))
       : [];
 
     return {
@@ -152,7 +152,7 @@ function draftToPayload(draft: Draft) {
         summary: draft.metaSummary || undefined,
       },
       notes: draft.notes || undefined,
-      items: draft.items.map((it) => ({
+      items: draft.items.map((it: any) => ({
         drug: it.drug.trim(),
         dose: it.dose.trim(),
         route: it.route.trim(),
@@ -242,10 +242,10 @@ export default function TemplateLibraryModal({
     try {
       if (kind === "prescription") {
         const rows = await listPrescriptionTemplates(orgId);
-        setTemplates(rows.map((r) => ({ ...r, type: "prescription" as const })));
+        setTemplates(rows.map((r: any) => ({ ...r, type: "prescription" as const })));
       } else {
         const rows = await listReferralTemplates(orgId);
-        setTemplates(rows.map((r) => ({ ...r, type: "referral" as const })));
+        setTemplates(rows.map((r: any) => ({ ...r, type: "referral" as const })));
       }
       setLoadState("idle");
     } catch (err: any) {
@@ -268,7 +268,7 @@ export default function TemplateLibraryModal({
   const currentList = React.useMemo(() => {
     if (!search.trim()) return templates;
     const q = search.toLowerCase();
-    return templates.filter((tpl) => {
+    return templates.filter((tpl: any) => {
       const meta = (tpl.content as any)?.meta;
       const specialty = meta?.specialty ?? "";
       const metaSummary = meta?.summary ?? "";
@@ -299,18 +299,18 @@ export default function TemplateLibraryModal({
         }
         setSaveState("saved");
         setDirty(false);
-        setTemplates((prev) => {
-          const updated = prev.filter((tpl) => tpl.id !== payload.id);
+        setTemplates((prev: any) => {
+          const updated = prev.filter((tpl: any) => tpl.id !== payload.id);
           const base = {
             ...payload,
             id: newId,
             content: payload.content,
             type: next.type,
           } as (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind };
-          return [...updated, base].sort((a, b) => a.name.localeCompare(b.name));
+          return [...updated, base].sort((a: any, b: any) => a.name.localeCompare(b.name));
         });
         setSelectedId(newId ?? null);
-        setDraft((d) => (d ? { ...next, id: newId ?? next.id } : d));
+        setDraft((d: any) => (d ? { ...next, id: newId ?? next.id } : d));
       } catch (err: any) {
         console.error(err);
         setSaveState("error");
@@ -356,8 +356,8 @@ export default function TemplateLibraryModal({
       } else {
         await toggleReferralTemplate(tpl.id, next);
       }
-      setTemplates((prev) =>
-        prev.map((row) => (row.id === tpl.id ? { ...row, is_active: next } : row)),
+      setTemplates((prev: any) =>
+        prev.map((row: any) => (row.id === tpl.id ? { ...row, is_active: next } : row)),
       );
       if (draft && draft.id === tpl.id) {
         setDraft({ ...draft, is_active: next });
@@ -377,7 +377,7 @@ export default function TemplateLibraryModal({
       } else {
         await deleteReferralTemplate(tpl.id);
       }
-      setTemplates((prev) => prev.filter((row) => row.id !== tpl.id));
+      setTemplates((prev: any) => prev.filter((row: any) => row.id !== tpl.id));
       if (draft?.id === tpl.id) {
         setDraft(null);
         setSelectedId(null);
@@ -417,7 +417,7 @@ export default function TemplateLibraryModal({
   };
 
   const updateDraft = (updater: (_draft: Draft) => Draft) => {
-    setDraft((prev) => {
+    setDraft((prev: any) => {
       if (!prev) return prev;
       const next = updater(prev);
       setDirty(true);
@@ -472,13 +472,13 @@ export default function TemplateLibraryModal({
               className="w-full rounded-xl border border-white/30 bg-white/80 px-3 py-2 text-sm shadow-inner focus:border-sky-400"
               placeholder="Buscar por nombre o especialidad"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e: any) => setSearch(e.target.value)}
             />
             <div className="flex flex-wrap gap-2">
               <button className="glass-btn text-sm" onClick={onCreateNew}>
                 ➕ Nueva plantilla
               </button>
-              <button className="glass-btn text-sm" onClick={() => setShowCatalog((v) => !v)}>
+              <button className="glass-btn text-sm" onClick={() => setShowCatalog((v: any) => !v)}>
                 📚 {showCatalog ? "Ocultar catálogo" : "Ver catálogo"}
               </button>
             </div>
@@ -486,7 +486,7 @@ export default function TemplateLibraryModal({
 
           <div className="max-h-80 overflow-y-auto rounded-2xl border border-white/20 bg-white/70 p-1 dark:bg-slate-950/40">
             <ul>
-              {currentList.map((tpl) => {
+              {currentList.map((tpl: any) => {
                 const meta = (tpl.content as any)?.meta;
                 const specialty = meta?.specialty ?? "";
                 const isActive = tpl.is_active ?? true;
@@ -541,7 +541,7 @@ export default function TemplateLibraryModal({
                 <span>{catalog.length}</span>
               </div>
               <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
-                {catalog.map((tpl) => (
+                {catalog.map((tpl: any) => (
                   <article key={tpl.slug} className="rounded-xl border border-white/30 bg-white/80 p-2">
                     <div className="text-sm font-semibold">{tpl.name}</div>
                     <div className="text-[11px] text-slate-500">{tpl.specialty}</div>
@@ -579,30 +579,30 @@ type PrescriptionEditorFormProps = {
 
 function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFormProps) {
   const update = (mutator: (_draft: PrescriptionDraft) => PrescriptionDraft) => {
-    onChange((current) => {
+    onChange((current: any) => {
       if (current.type !== "prescription") return current;
       return mutator(current);
     });
   };
 
   const updateItem = (idx: number, key: keyof PrescriptionDraft["items"][number], value: string) => {
-    update((cur) => ({
+    update((cur: any) => ({
       ...cur,
-      items: cur.items.map((it, i) => (i === idx ? { ...it, [key]: value } : it)),
+      items: cur.items.map((it: any, i: any) => (i === idx ? { ...it, [key]: value } : it)),
     }));
   };
 
   const addItem = () => {
-    update((cur) => ({
+    update((cur: any) => ({
       ...cur,
       items: [...cur.items, { ...PRESCRIPTION_EMPTY_ITEM }],
     }));
   };
 
   const removeItem = (idx: number) => {
-    update((cur) => ({
+    update((cur: any) => ({
       ...cur,
-      items: cur.items.filter((_, i) => i !== idx),
+      items: cur.items.filter((_: any, i: any) => i !== idx),
     }));
   };
 
@@ -614,7 +614,7 @@ function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFo
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.name}
-            onChange={(e) => update((cur) => ({ ...cur, name: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, name: e.target.value }))}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -622,7 +622,7 @@ function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFo
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.metaSpecialty}
-            onChange={(e) => update((cur) => ({ ...cur, metaSpecialty: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, metaSpecialty: e.target.value }))}
           />
         </label>
         <label className="md:col-span-2 flex flex-col gap-1 text-sm">
@@ -630,7 +630,7 @@ function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFo
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.metaSummary}
-            onChange={(e) => update((cur) => ({ ...cur, metaSummary: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, metaSummary: e.target.value }))}
           />
         </label>
         <label className="md:col-span-2 flex flex-col gap-1 text-sm">
@@ -639,7 +639,7 @@ function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFo
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             rows={3}
             value={draft.notes}
-            onChange={(e) => update((cur) => ({ ...cur, notes: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, notes: e.target.value }))}
           />
         </label>
       </div>
@@ -652,44 +652,44 @@ function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFo
           </button>
         </div>
         <div className="space-y-3">
-          {draft.items.map((item, idx) => (
+          {draft.items.map((item: any, idx: any) => (
             <div key={idx} className="rounded-xl border border-white/40 bg-white/80 p-3">
               <div className="grid gap-2 md:grid-cols-3">
                 <input
                   className="rounded-lg border border-white/40 bg-white/90 px-2 py-1 text-sm"
                   placeholder="Fármaco"
                   value={item.drug}
-                  onChange={(e) => updateItem(idx, "drug", e.target.value)}
+                  onChange={(e: any) => updateItem(idx, "drug", e.target.value)}
                 />
                 <input
                   className="rounded-lg border border-white/40 bg-white/90 px-2 py-1 text-sm"
                   placeholder="Dosis"
                   value={item.dose}
-                  onChange={(e) => updateItem(idx, "dose", e.target.value)}
+                  onChange={(e: any) => updateItem(idx, "dose", e.target.value)}
                 />
                 <input
                   className="rounded-lg border border-white/40 bg-white/90 px-2 py-1 text-sm"
                   placeholder="Vía"
                   value={item.route}
-                  onChange={(e) => updateItem(idx, "route", e.target.value)}
+                  onChange={(e: any) => updateItem(idx, "route", e.target.value)}
                 />
                 <input
                   className="rounded-lg border border-white/40 bg-white/90 px-2 py-1 text-sm"
                   placeholder="Frecuencia"
                   value={item.frequency}
-                  onChange={(e) => updateItem(idx, "frequency", e.target.value)}
+                  onChange={(e: any) => updateItem(idx, "frequency", e.target.value)}
                 />
                 <input
                   className="rounded-lg border border-white/40 bg-white/90 px-2 py-1 text-sm"
                   placeholder="Duración"
                   value={item.duration}
-                  onChange={(e) => updateItem(idx, "duration", e.target.value)}
+                  onChange={(e: any) => updateItem(idx, "duration", e.target.value)}
                 />
                 <input
                   className="rounded-lg border border-white/40 bg-white/90 px-2 py-1 text-sm"
                   placeholder="Indicaciones"
                   value={item.instructions ?? ""}
-                  onChange={(e) => updateItem(idx, "instructions", e.target.value)}
+                  onChange={(e: any) => updateItem(idx, "instructions", e.target.value)}
                 />
               </div>
               <div className="mt-2 flex justify-end">
@@ -720,7 +720,7 @@ type ReferralEditorFormProps = {
 
 function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps) {
   const update = (mutator: (_draft: ReferralDraft) => ReferralDraft) => {
-    onChange((current) => {
+    onChange((current: any) => {
       if (current.type !== "referral") return current;
       return mutator(current);
     });
@@ -734,7 +734,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.name}
-            onChange={(e) => update((cur) => ({ ...cur, name: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, name: e.target.value }))}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -742,7 +742,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.metaSpecialty}
-            onChange={(e) => update((cur) => ({ ...cur, metaSpecialty: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, metaSpecialty: e.target.value }))}
           />
         </label>
         <label className="md:col-span-2 flex flex-col gap-1 text-sm">
@@ -750,7 +750,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.metaSummary}
-            onChange={(e) => update((cur) => ({ ...cur, metaSummary: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, metaSummary: e.target.value }))}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -758,7 +758,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.to_specialty}
-            onChange={(e) => update((cur) => ({ ...cur, to_specialty: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, to_specialty: e.target.value }))}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -766,7 +766,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
           <input
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             value={draft.to_doctor_name}
-            onChange={(e) => update((cur) => ({ ...cur, to_doctor_name: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, to_doctor_name: e.target.value }))}
           />
         </label>
         <label className="md:col-span-2 flex flex-col gap-1 text-sm">
@@ -775,7 +775,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             rows={2}
             value={draft.reason}
-            onChange={(e) => update((cur) => ({ ...cur, reason: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, reason: e.target.value }))}
           />
         </label>
         <label className="md:col-span-2 flex flex-col gap-1 text-sm">
@@ -784,7 +784,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             rows={3}
             value={draft.summary}
-            onChange={(e) => update((cur) => ({ ...cur, summary: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, summary: e.target.value }))}
           />
         </label>
         <label className="md:col-span-2 flex flex-col gap-1 text-sm">
@@ -793,7 +793,7 @@ function ReferralEditorForm({ draft, onChange, onUse }: ReferralEditorFormProps)
             className="rounded-xl border border-white/30 bg-white/80 px-3 py-2"
             rows={3}
             value={draft.plan}
-            onChange={(e) => update((cur) => ({ ...cur, plan: e.target.value }))}
+            onChange={(e: any) => update((cur: any) => ({ ...cur, plan: e.target.value }))}
           />
         </label>
       </div>

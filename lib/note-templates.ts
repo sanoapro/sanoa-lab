@@ -90,7 +90,7 @@ export interface NoteTemplate {
  * - includeOrg=true: devuelve personales (owner_id=user) **o** de la org actual (org_id=current_org)
  * - includeOrg=false: devuelve solo personales
  */
-export async function listTemplates(includeOrg = true): Promise<NoteTemplate[]> {
+export async function listTemplates(includeOrg: any = true): Promise<NoteTemplate[]> {
   const supabase = getSupabaseBrowser();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth?.user?.id;
@@ -117,12 +117,12 @@ export async function listTemplates(includeOrg = true): Promise<NoteTemplate[]> 
  * Helper: devuelve plantillas de BD + las built-in (útil para pickers)
  * - Las built-in aparecen al final para priorizar las del usuario/organización.
  */
-export async function listTemplatesWithDefaults(includeOrg = true): Promise<NoteTemplate[]> {
+export async function listTemplatesWithDefaults(includeOrg: any = true): Promise<NoteTemplate[]> {
   const db = await listTemplates(includeOrg).catch(() => []);
   const builtins = builtInTemplatesDb();
   // Evitar duplicados si algún día guardas una con mismo id (poco probable):
-  const ids = new Set(db.map((t) => t.id));
-  const merged = [...db, ...builtins.filter((b) => !ids.has(b.id))];
+  const ids = new Set(db.map((t: any) => t.id));
+  const merged = [...db, ...builtins.filter((b: any) => !ids.has(b.id))];
   return merged;
 }
 

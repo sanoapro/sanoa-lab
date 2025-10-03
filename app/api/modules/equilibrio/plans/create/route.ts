@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
 
-  const items = body.items.map((it) => ({
+  const items = body.items.map((it: any) => ({
     plan_id: plan!.id,
     library_id: it.library_id!,
     goal: it.goal ? String(it.goal).slice(0, 120) : null,

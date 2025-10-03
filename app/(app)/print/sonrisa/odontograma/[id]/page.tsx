@@ -32,7 +32,7 @@ export default async function PrintOdonto({ params }: { params: { id: string } }
 
       <div className="space-y-4">
         <div className="grid [grid-template-columns:repeat(16,minmax(0,1fr))] gap-1">
-          {top.map((n) => {
+          {top.map((n: any) => {
             const st = chart[String(n)]?.status;
             return (
               <div
@@ -45,7 +45,7 @@ export default async function PrintOdonto({ params }: { params: { id: string } }
           })}
         </div>
         <div className="grid [grid-template-columns:repeat(16,minmax(0,1fr))] gap-1">
-          {bottom.map((n) => {
+          {bottom.map((n: any) => {
             const st = chart[String(n)]?.status;
             return (
               <div

@@ -109,7 +109,7 @@ function I({ v, set }: { v: string; set: (x: string) => void }) {
   return (
     <input
       value={v}
-      onChange={(e) => set(e.target.value)}
+      onChange={(e: any) => set(e.target.value)}
       className="border rounded-xl p-2 w-full"
     />
   );

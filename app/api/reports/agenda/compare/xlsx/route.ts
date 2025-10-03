@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
 
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
   const filename = `agenda_compare_${org_id}_${fromA}_${toA}_vs_${fromB}_${toB}.xlsx`;
-  return new Response(buf, {
+  return new Response(new Blob([buf]), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,

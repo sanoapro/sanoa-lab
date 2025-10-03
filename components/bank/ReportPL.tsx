@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 type Row = { kind: "income" | "expense" | null; category: string | null; total_cents: number };
 
-function fmtMoney(cents: number, currency = "MXN") {
+function fmtMoney(cents: number, currency: any = "MXN") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format((cents || 0) / 100);
 }
 
@@ -17,8 +17,8 @@ export default function ReportPL({ orgId, from, to }: { orgId: string; from: str
     let alive = true;
     setLoading(true);
     fetch(`/api/bank/report/pl?org_id=${orgId}&from=${from}&to=${to}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) setRows(j.data);
       })
@@ -47,8 +47,8 @@ export default function ReportPL({ orgId, from, to }: { orgId: string; from: str
       </div>
     );
 
-  const income = rows.filter((r) => r.kind === "income");
-  const expense = rows.filter((r) => r.kind === "expense");
+  const income = rows.filter((r: any) => r.kind === "income");
+  const expense = rows.filter((r: any) => r.kind === "expense");
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -62,7 +62,7 @@ export default function ReportPL({ orgId, from, to }: { orgId: string; from: str
             </tr>
           </thead>
           <tbody>
-            {income.map((r, i) => (
+            {income.map((r: any, i: any) => (
               <tr key={`${r.category}-${i}`} className="border-t">
                 <td className="px-3 py-2">{r.category ?? "—"}</td>
                 <td className="px-3 py-2 text-right">{fmtMoney(r.total_cents)}</td>
@@ -82,7 +82,7 @@ export default function ReportPL({ orgId, from, to }: { orgId: string; from: str
             </tr>
           </thead>
           <tbody>
-            {expense.map((r, i) => (
+            {expense.map((r: any, i: any) => (
               <tr key={`${r.category}-${i}`} className="border-t">
                 <td className="px-3 py-2">{r.category ?? "—"}</td>
                 <td className="px-3 py-2 text-right">{fmtMoney(r.total_cents)}</td>

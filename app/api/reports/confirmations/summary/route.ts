@@ -46,7 +46,7 @@ export async function GET(req: Request) {
   );
 
   const count = (arr: any[] = [], field: string, val: string) =>
-    arr.filter((x) => x[field] === val).length;
+    arr.filter((x: any) => x[field] === val).length;
 
   const today = {
     sent: count(logsToday, "status", "sent") + count(logsToday, "status", "delivered"),

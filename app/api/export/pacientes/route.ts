@@ -16,7 +16,7 @@ function toCSV(rows: any[]): string {
       r.deleted_at ?? "",
       (r.tags ?? "").replace(/\n/g, " ").replace(/,/g, ";"),
     ];
-    lines.push(vals.map((v) => String(v).replace(/\r?\n/g, " ")).join(","));
+    lines.push(vals.map((v: any) => String(v).replace(/\r?\n/g, " ")).join(","));
   }
   return lines.join("\n");
 }
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     idsByTags = (rows ?? []).map((r: any) => r.patient_id as string);
     if (idsByTags.length === 0) {
       const csvEmpty = "id,nombre,edad,genero,created_at,deleted_at,tags\n";
-      return new NextResponse(csvEmpty, {
+      return new NextResponse(new Blob([csvEmpty]), {
         headers: {
           "content-type": "text/csv; charset=utf-8",
           "content-disposition": "attachment; filename=pacientes.csv",
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   const csv = toCSV(data ?? []);
-  return new NextResponse(csv, {
+  return new NextResponse(new Blob([csv]), {
     headers: {
       "content-type": "text/csv; charset=utf-8",
       "content-disposition": "attachment; filename=pacientes.csv",

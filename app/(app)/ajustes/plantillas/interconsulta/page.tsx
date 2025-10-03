@@ -13,7 +13,7 @@ export default function RefTplPage() {
   });
   const [doctorScope, setDoctorScope] = useState(true);
   const load = async () => {
-    const j = await fetch("/api/referrals/templates").then((r) => r.json());
+    const j = await fetch("/api/referrals/templates").then((r: any) => r.json());
     setItems(j.items || []);
   };
   useEffect(() => {
@@ -41,48 +41,48 @@ export default function RefTplPage() {
             className="w-full border rounded p-2"
             placeholder="Nombre"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: any) => setName(e.target.value)}
           />
           <div className="grid grid-cols-2 gap-2 text-sm">
             <input
               className="border rounded p-2"
               placeholder="Especialidad destino"
               value={body.to_specialty}
-              onChange={(e) => setBody({ ...body, to_specialty: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, to_specialty: e.target.value })}
             />
             <input
               className="border rounded p-2"
               placeholder="Dr(a) destinatario"
               value={body.to_doctor_name}
-              onChange={(e) => setBody({ ...body, to_doctor_name: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, to_doctor_name: e.target.value })}
             />
             <textarea
               className="col-span-2 border rounded p-2"
               rows={2}
               placeholder="Motivo"
               value={body.reason}
-              onChange={(e) => setBody({ ...body, reason: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, reason: e.target.value })}
             />
             <textarea
               className="col-span-2 border rounded p-2"
               rows={3}
               placeholder="Resumen"
               value={body.summary}
-              onChange={(e) => setBody({ ...body, summary: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, summary: e.target.value })}
             />
             <textarea
               className="col-span-2 border rounded p-2"
               rows={2}
               placeholder="Plan sugerido"
               value={body.plan}
-              onChange={(e) => setBody({ ...body, plan: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, plan: e.target.value })}
             />
           </div>
           <label className="text-sm inline-flex items-center gap-2">
             <input
               type="checkbox"
               checked={doctorScope}
-              onChange={(e) => setDoctorScope(e.target.checked)}
+              onChange={(e: any) => setDoctorScope(e.target.checked)}
             />{" "}
             Sólo para mí
           </label>

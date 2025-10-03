@@ -70,13 +70,13 @@ export default function ExportAdvancedPage() {
 
   function filteredNotes(): PatientNote[] {
     let arr = notes;
-    if (from) arr = arr.filter((n) => new Date(n.created_at) >= new Date(from + "T00:00:00"));
-    if (to) arr = arr.filter((n) => new Date(n.created_at) <= new Date(to + "T23:59:59"));
+    if (from) arr = arr.filter((n: any) => new Date(n.created_at) >= new Date(from + "T00:00:00"));
+    if (to) arr = arr.filter((n: any) => new Date(n.created_at) <= new Date(to + "T23:59:59"));
     return arr;
   }
 
   function activeTpl(): ExportTemplate | null {
-    return templates.find((x) => x.id === tplId) ?? null;
+    return templates.find((x: any) => x.id === tplId) ?? null;
   }
 
   async function createTpl() {
@@ -144,7 +144,7 @@ export default function ExportAdvancedPage() {
           <input
             type="checkbox"
             checked={incPatient}
-            onChange={(e) => setIncPatient(e.target.checked)}
+            onChange={(e: any) => setIncPatient(e.target.checked)}
           />{" "}
           Datos del paciente
         </label>
@@ -152,7 +152,7 @@ export default function ExportAdvancedPage() {
           <input
             type="checkbox"
             checked={incNotes}
-            onChange={(e) => setIncNotes(e.target.checked)}
+            onChange={(e: any) => setIncNotes(e.target.checked)}
           />{" "}
           Notas
         </label>
@@ -160,7 +160,7 @@ export default function ExportAdvancedPage() {
           <input
             type="checkbox"
             checked={incFiles}
-            onChange={(e) => setIncFiles(e.target.checked)}
+            onChange={(e: any) => setIncFiles(e.target.checked)}
           />{" "}
           Archivos (listado)
         </label>
@@ -168,18 +168,18 @@ export default function ExportAdvancedPage() {
           <input
             type="checkbox"
             checked={incAudit}
-            onChange={(e) => setIncAudit(e.target.checked)}
+            onChange={(e: any) => setIncAudit(e.target.checked)}
           />{" "}
           Actividad (auditoría)
         </label>
         <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <span className="block text-sm text-gray-600">Notas desde</span>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="date" value={from} onChange={(e: any) => setFrom(e.target.value)} />
           </div>
           <div>
             <span className="block text-sm text-gray-600">Notas hasta</span>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input type="date" value={to} onChange={(e: any) => setTo(e.target.value)} />
           </div>
         </div>
       </div>
@@ -191,10 +191,10 @@ export default function ExportAdvancedPage() {
           <select
             className="border rounded-md px-3 py-2"
             value={tplId}
-            onChange={(e) => setTplId(e.target.value)}
+            onChange={(e: any) => setTplId(e.target.value)}
           >
             <option value="">(Sin portada)</option>
-            {templates.map((t) => (
+            {templates.map((t: any) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
@@ -207,7 +207,7 @@ export default function ExportAdvancedPage() {
               if (!confirm("¿Eliminar esta plantilla?")) return;
               void (async () => {
                 await deleteExportTemplate(tplId);
-                setTemplates(templates.filter((x) => x.id !== tplId));
+                setTemplates(templates.filter((x: any) => x.id !== tplId));
                 setTplId("");
               })();
             }}
@@ -223,12 +223,12 @@ export default function ExportAdvancedPage() {
             <Input
               placeholder="Nombre"
               value={tplName}
-              onChange={(e) => setTplName(e.target.value)}
+              onChange={(e: any) => setTplName(e.target.value)}
             />
             <select
               className="border rounded-md px-3 py-2"
               value={tplScope}
-              onChange={(e) => setTplScope(e.target.value as any)}
+              onChange={(e: any) => setTplScope(e.target.value as any)}
             >
               <option value="personal">Personal</option>
               <option value="org">Organización activa</option>
@@ -236,22 +236,22 @@ export default function ExportAdvancedPage() {
             <Input
               placeholder="Título de portada"
               value={tplTitle}
-              onChange={(e) => setTplTitle(e.target.value)}
+              onChange={(e: any) => setTplTitle(e.target.value)}
             />
             <Input
               placeholder="Subtítulo (opcional)"
               value={tplSubtitle}
-              onChange={(e) => setTplSubtitle(e.target.value)}
+              onChange={(e: any) => setTplSubtitle(e.target.value)}
             />
             <Input
               placeholder="Logo URL (opcional)"
               value={tplLogo}
-              onChange={(e) => setTplLogo(e.target.value)}
+              onChange={(e: any) => setTplLogo(e.target.value)}
             />
             <Input
               placeholder="Color marca (HEX)"
               value={tplColor}
-              onChange={(e) => setTplColor(e.target.value)}
+              onChange={(e: any) => setTplColor(e.target.value)}
             />
           </div>
           <div className="mt-3 flex justify-end">
@@ -290,7 +290,7 @@ export default function ExportAdvancedPage() {
             {filteredNotes().length === 0 && (
               <div className="text-sm text-gray-600">Sin notas en el rango.</div>
             )}
-            {filteredNotes().map((n) => (
+            {filteredNotes().map((n: any) => (
               <div key={n.id} className="border rounded-lg p-3 mb-2">
                 <div className="text-sm text-gray-600">
                   {new Date(n.created_at).toLocaleString()} · {n.titulo || "(Sin título)"}
@@ -307,7 +307,7 @@ export default function ExportAdvancedPage() {
           <section>
             <h2 className="text-xl font-semibold">Archivos (listado)</h2>
             {files.length === 0 && <div className="text-sm text-gray-600">Sin archivos.</div>}
-            {files.map((f) => (
+            {files.map((f: any) => (
               <div key={f.path} className="text-sm text-gray-700">
                 {f.name} · {Math.round((f.size as number) / 1024)} KB ·{" "}
                 {new Date((f.updated_at || f.created_at) as string).toLocaleString()}
@@ -320,7 +320,7 @@ export default function ExportAdvancedPage() {
           <section>
             <h2 className="text-xl font-semibold">Actividad</h2>
             {audit.length === 0 && <div className="text-sm text-gray-600">Sin actividad.</div>}
-            {audit.map((a) => (
+            {audit.map((a: any) => (
               <div key={a.id} className="text-sm">
                 {a.created_at} · {a.action}
               </div>

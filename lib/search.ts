@@ -21,9 +21,9 @@ export type SearchItem =
 
 export async function searchAll(
   query: string,
-  onlyActiveOrg = true,
-  limit = 20,
-  offset = 0,
+  onlyActiveOrg: any = true,
+  limit: any = 20,
+  offset: any = 0,
 ): Promise<SearchItem[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();

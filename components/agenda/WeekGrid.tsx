@@ -51,7 +51,7 @@ export default function WeekGrid({
   defaultDurationMin?: number;
 }) {
   const weekStart = useMemo(() => new Date(`${baseDate}T00:00:00`), [baseDate]);
-  const weekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(weekStart, i)), [weekStart]);
+  const weekDays = useMemo(() => [...Array(7)].map((_: any, i: any) => addDays(weekStart, i)), [weekStart]);
 
   const [availability, setAvailability] = useState<Avail[]>([]);
   const [overrides, setOverrides] = useState<Override[]>([]);
@@ -85,10 +85,10 @@ export default function WeekGrid({
     const [a, b] = await Promise.all([
       fetch(`/api/agenda/availability/week?${qs1.toString()}`, {
         cache: "no-store",
-      }).then((r) => r.json()),
+      }).then((r: any) => r.json()),
       fetch(`/api/agenda/appointments/list?${qs2.toString()}`, {
         cache: "no-store",
-      }).then((r) => r.json()),
+      }).then((r: any) => r.json()),
     ]);
     setAvailability(a?.ok ? a.data.availability : []);
     setOverrides(a?.ok ? a.data.overrides : []);
@@ -105,21 +105,21 @@ export default function WeekGrid({
     const wd = d.getDay() === 0 ? 7 : d.getDay();
     const hm = d.toTimeString().slice(0, 5);
     const day = dayKey(d);
-    const avs = availability.filter((a) => a.weekday === wd);
+    const avs = availability.filter((a: any) => a.weekday === wd);
     if (avs.length === 0) return false;
-    const base = avs.some((a) => `${hm}` >= a.start_time && `${hm}` < a.end_time);
-    const extras = overrides.filter((o) => o.date === day && o.kind === "extra");
+    const base = avs.some((a: any) => `${hm}` >= a.start_time && `${hm}` < a.end_time);
+    const extras = overrides.filter((o: any) => o.date === day && o.kind === "extra");
     if (extras.length > 0) {
-      return extras.some((x) => hm >= x.start_time && hm < x.end_time);
+      return extras.some((x: any) => hm >= x.start_time && hm < x.end_time);
     }
-    const blocks = overrides.filter((o) => o.date === day && o.kind === "block");
-    if (blocks.some((x) => hm >= x.start_time && hm < x.end_time)) return false;
+    const blocks = overrides.filter((o: any) => o.date === day && o.kind === "block");
+    if (blocks.some((x: any) => hm >= x.start_time && hm < x.end_time)) return false;
     return base;
   }
 
   function apptAt(d: Date) {
     const iso = d.toISOString();
-    return appts.find((a) => !(a.ends_at <= iso || iso < a.starts_at));
+    return appts.find((a: any) => !(a.ends_at <= iso || iso < a.starts_at));
   }
 
   async function createAt(d: Date) {
@@ -212,7 +212,7 @@ export default function WeekGrid({
             min={0}
             max={23}
             value={hoursStart}
-            onChange={(e) => setHoursStart(Number(e.target.value || 8))}
+            onChange={(e: any) => setHoursStart(Number(e.target.value || 8))}
           />
           <span>—</span>
           <input
@@ -221,7 +221,7 @@ export default function WeekGrid({
             min={0}
             max={23}
             value={hoursEnd}
-            onChange={(e) => setHoursEnd(Number(e.target.value || 20))}
+            onChange={(e: any) => setHoursEnd(Number(e.target.value || 20))}
           />
           <button className="border rounded px-3 py-1" onClick={loadAll}>
             Actualizar
@@ -231,7 +231,7 @@ export default function WeekGrid({
 
       <div className="grid grid-cols-8 border rounded-2xl overflow-hidden">
         <div className="bg-slate-50 p-2 text-sm font-medium">Hora</div>
-        {weekDays.map((d, i) => (
+        {weekDays.map((d: any, i: any) => (
           <div key={i} className="bg-slate-50 p-2 text-sm font-medium">
             {d.toLocaleDateString(undefined, {
               weekday: "short",
@@ -241,7 +241,7 @@ export default function WeekGrid({
           </div>
         ))}
 
-        {hours.map((hm, rIdx) => (
+        {hours.map((hm: any, rIdx: any) => (
           <FragmentRow
             key={rIdx}
             hm={hm}
@@ -251,7 +251,7 @@ export default function WeekGrid({
             apptAt={apptAt}
             onCreate={createAt}
             onStatus={markStatus}
-            onPlanReschedule={(id, newStartIso, dur) =>
+            onPlanReschedule={(id: any, newStartIso: any, dur: any) =>
               setResched({ id, newStart: newStartIso, duration: dur })
             }
           />
@@ -265,7 +265,7 @@ export default function WeekGrid({
             type="datetime-local"
             className="border rounded px-3 py-2"
             value={resched.newStart.slice(0, 16)}
-            onChange={(e) =>
+            onChange={(e: any) =>
               setResched({
                 ...resched,
                 newStart: new Date(e.target.value).toISOString(),
@@ -278,7 +278,7 @@ export default function WeekGrid({
             max={240}
             className="border rounded px-3 py-2 w-24"
             value={resched.duration}
-            onChange={(e) =>
+            onChange={(e: any) =>
               setResched({
                 ...resched,
                 duration: Number(e.target.value || 30),
@@ -319,7 +319,7 @@ function FragmentRow({
   return (
     <>
       <div className="p-2 border-t text-xs text-slate-500">{hm}</div>
-      {weekDays.map((d, cIdx) => {
+      {weekDays.map((d: any, cIdx: any) => {
         const dt = new Date(`${d.toISOString().slice(0, 10)}T${hm}:00`);
         const ap = apptAt(dt);
         const allowed = isWithinAvailability(dt);

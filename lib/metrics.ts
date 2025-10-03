@@ -11,41 +11,60 @@ export interface MonthMetric {
   total: number;
 }
 
+function toISODateStart(d?: string): string | undefined {
+  if (!d) return undefined;
+  // YYYY-MM-DDT00:00:00Z
+  return new Date(`${d}T00:00:00Z`).toISOString();
+}
+
+function toISODateEnd(d?: string): string | undefined {
+  if (!d) return undefined;
+  // YYYY-MM-DDT23:59:59Z
+  return new Date(`${d}T23:59:59Z`).toISOString();
+}
+
 export async function metricsPatientsByTag(
   from?: string,
   to?: string,
-  onlyOrg = true,
+  onlyOrg: boolean = true,
 ): Promise<TagMetric[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();
+
   const { data, error } = await supabase.rpc("metrics_patients_by_tag", {
-    p_org: onlyOrg ? active.id : null,
-    p_from: from ? new Date(from + "T00:00:00Z").toISOString() : null,
-    p_to: to ? new Date(to + "T23:59:59Z").toISOString() : null,
+    // ⬇️ usar undefined cuando no se envía el parámetro
+    p_org: onlyOrg && active.id ? active.id : undefined,
+    p_from: toISODateStart(from),
+    p_to: toISODateEnd(to),
   });
   if (error) throw error;
   return (data ?? []) as TagMetric[];
 }
 
 export async function metricsNewPatientsByMonth(
-  months = 12,
-  onlyOrg = true,
+  months: number = 12,
+  onlyOrg: boolean = true,
 ): Promise<MonthMetric[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();
+
   const { data, error } = await supabase.rpc("metrics_new_patients_by_month", {
-    p_org: onlyOrg ? active.id : null,
+    p_org: onlyOrg && active.id ? active.id : undefined,
     months,
   });
   if (error) throw error;
   return (data ?? []) as MonthMetric[];
 }
 
-export async function metricsNotesByMonth(months = 12, onlyOrg = true): Promise<MonthMetric[]> {
+export async function metricsNotesByMonth(
+  months: number = 12,
+  onlyOrg: boolean = true,
+): Promise<MonthMetric[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();
+
   const { data, error } = await supabase.rpc("metrics_notes_by_month", {
-    p_org: onlyOrg ? active.id : null,
+    p_org: onlyOrg && active.id ? active.id : undefined,
     months,
   });
   if (error) throw error;

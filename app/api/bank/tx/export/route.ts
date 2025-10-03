@@ -4,21 +4,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
 function parseMulti(q: URLSearchParams, key: string): string[] | undefined {
-  const vals = q.getAll(key).flatMap((v) =>
-    v
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
-  );
+  const vals = q
+    .getAll(key)
+    .flatMap((v: string) =>
+      v
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean),
+    );
   return vals.length ? Array.from(new Set(vals)) : undefined;
 }
 
-function csvEscape(val: any): string {
+function csvEscape(val: unknown): string {
   if (val === null || typeof val === "undefined") return "";
   const s = String(val);
   if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
+
+// Tipado de filas
+type BankTxRow = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  amount_cents: number;
+  currency: string | null;
+  status: string;
+  account_id: string;
+  category_id: string | null;
+  method: string | null;
+  memo: string | null;
+  tags: string[] | null;
+  created_at: string; // ISO
+};
 
 export async function GET(req: NextRequest) {
   // MODE: session
@@ -112,7 +129,7 @@ export async function GET(req: NextRequest) {
     if (tagsAny?.length) query = query.overlaps("tags", tagsAny);
     if (tagsAll?.length) query = query.contains("tags", tagsAll);
 
-    const { data, error } = await query.limit(MAX);
+    const { data, error } = await query.limit(MAX).returns<BankTxRow[]>();
     if (error)
       return NextResponse.json(
         { ok: false, error: { code: "DB_ERROR", message: error.message } },
@@ -133,10 +150,10 @@ export async function GET(req: NextRequest) {
       "created_at",
     ];
 
-    const rows = (data ?? []).map((r) => [
+    const rows: string[][] = (data ?? []).map((r: BankTxRow): string[] => [
       r.id,
       r.date,
-      r.amount_cents,
+      String(r.amount_cents),
       (r.currency ?? "mxn").toUpperCase(),
       r.status,
       r.account_id,
@@ -147,21 +164,23 @@ export async function GET(req: NextRequest) {
       r.created_at,
     ]);
 
-    const csv = [
+    const csvLines: string[] = [
       header.map(csvEscape).join(","),
-      ...rows.map((line) => line.map(csvEscape).join(",")),
-    ].join("\n");
+      ...rows.map((line: string[]) => line.map(csvEscape).join(",")),
+    ];
+    const csv = csvLines.join("\n");
 
     const filename = `bank_tx_${org_id}_${new Date().toISOString().slice(0, 10)}.csv`;
-    return new Response(csv, {
+    return new Response(new Blob([csv]), {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error";
     return NextResponse.json(
-      { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },
+      { ok: false, error: { code: "SERVER_ERROR", message: msg } },
       { status: 500 },
     );
   }

@@ -135,10 +135,10 @@ export default function Autocomplete({
     if (!open || !hits.length) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setIndex((i) => Math.min(hits.length - 1, i + 1));
+      setIndex((i: any) => Math.min(hits.length - 1, i + 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setIndex((i) => Math.max(0, i - 1));
+      setIndex((i: any) => Math.max(0, i - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (index >= 0) commit(index);
@@ -154,7 +154,7 @@ export default function Autocomplete({
         <input
           ref={inputRef}
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e: any) => setQ(e.target.value)}
           onFocus={() => hits.length > 0 && setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
@@ -174,12 +174,12 @@ export default function Autocomplete({
           role="listbox"
           className="absolute z-50 mt-1 w-full max-w-xl rounded-xl border bg-white dark:bg-slate-900 shadow"
         >
-          {hits.map((h, i) => (
+          {hits.map((h: any, i: any) => (
             <li
               key={`${h.patient_id}-${i}`}
               role="option"
               aria-selected={i === index}
-              onMouseDown={(e) => {
+              onMouseDown={(e: any) => {
                 e.preventDefault();
                 commit(i);
               }}

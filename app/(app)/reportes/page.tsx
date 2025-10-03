@@ -97,19 +97,19 @@ export default function ReportsPage() {
   }, [org.id, months]);
 
   const maxPts = useMemo(
-    () => Math.max(0, ...series.patients.map((x) => Number(x.total) || 0)),
+    () => Math.max(0, ...series.patients.map((x: any) => Number(x.total) || 0)),
     [series],
   );
   const maxNotes = useMemo(
-    () => Math.max(0, ...series.notes.map((x) => Number(x.total) || 0)),
+    () => Math.max(0, ...series.notes.map((x: any) => Number(x.total) || 0)),
     [series],
   );
   const maxFiles = useMemo(
-    () => Math.max(0, ...series.files.map((x) => Number(x.total) || 0)),
+    () => Math.max(0, ...series.files.map((x: any) => Number(x.total) || 0)),
     [series],
   );
 
-  const kv = (k: string) => overview.find((x) => x.metric === k)?.value ?? 0;
+  const kv = (k: string) => overview.find((x: any) => x.metric === k)?.value ?? 0;
   const fmt = (m: string) =>
     new Date(m).toLocaleDateString(undefined, { month: "short", year: "2-digit" });
 
@@ -127,7 +127,7 @@ export default function ReportsPage() {
               min={1}
               max={36}
               value={months}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 const n = Number(e.target.value);
                 setMonths(Number.isFinite(n) ? n : 12);
               }}
@@ -212,7 +212,7 @@ function Series({
         {loading && rows.length === 0 && (
           <div className="p-4 text-sm opacity-80">Cargando…</div>
         )}
-        {rows.map((p) => (
+        {rows.map((p: any) => (
           <div key={p.month_start} className="p-3">
             <div className="flex items-center justify-between">
               <div className="text-sm opacity-80">{fmt(p.month_start)}</div>

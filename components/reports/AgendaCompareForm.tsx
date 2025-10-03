@@ -77,7 +77,7 @@ export default function AgendaCompareForm({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={fromA}
-            onChange={(e) => setFromA(e.target.value)}
+            onChange={(e: any) => setFromA(e.target.value)}
           />
         </div>
         <div>
@@ -86,7 +86,7 @@ export default function AgendaCompareForm({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={toA}
-            onChange={(e) => setToA(e.target.value)}
+            onChange={(e: any) => setToA(e.target.value)}
           />
         </div>
         <div>
@@ -95,7 +95,7 @@ export default function AgendaCompareForm({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={fromB}
-            onChange={(e) => setFromB(e.target.value)}
+            onChange={(e: any) => setFromB(e.target.value)}
           />
         </div>
         <div>
@@ -104,7 +104,7 @@ export default function AgendaCompareForm({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={toB}
-            onChange={(e) => setToB(e.target.value)}
+            onChange={(e: any) => setToB(e.target.value)}
           />
         </div>
         <div>
@@ -112,7 +112,7 @@ export default function AgendaCompareForm({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={resource}
-            onChange={(e) => setResource(e.target.value)}
+            onChange={(e: any) => setResource(e.target.value)}
           />
         </div>
         <div>
@@ -120,7 +120,7 @@ export default function AgendaCompareForm({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={tz}
-            onChange={(e) => setTz(e.target.value)}
+            onChange={(e: any) => setTz(e.target.value)}
           />
         </div>
       </div>

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 type Row = { month: string; income_cents: number; expense_cents: number; net_cents: number };
 
-function fmtMoney(cents: number, currency = "MXN") {
+function fmtMoney(cents: number, currency: any = "MXN") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency }).format((cents || 0) / 100);
 }
 
@@ -25,8 +25,8 @@ export default function ReportFlow({
     let alive = true;
     setLoading(true);
     fetch(`/api/bank/report/flow?org_id=${orgId}&from=${from}&to=${to}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) setRows(j.data);
       })
@@ -59,7 +59,7 @@ export default function ReportFlow({
     );
 
   // Simple bar chart SVG (net by month)
-  const max = Math.max(...rows.map((r) => Math.abs(r.net_cents)));
+  const max = Math.max(...rows.map((r: any) => Math.abs(r.net_cents)));
   const width = 480,
     height = 180,
     pad = 24;
@@ -77,7 +77,7 @@ export default function ReportFlow({
             stroke="currentColor"
             opacity={0.2}
           />
-          {rows.map((r, i) => {
+          {rows.map((r: any, i: any) => {
             const x = pad + i * ((width - pad * 2) / rows.length);
             const h = max ? Math.round((Math.abs(r.net_cents) / max) * (height - pad * 2)) : 0;
             const isPos = r.net_cents >= 0;
@@ -101,7 +101,7 @@ export default function ReportFlow({
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {rows.map((r: any) => (
             <tr key={r.month} className="border-t">
               <td className="px-3 py-2">{r.month}</td>
               <td className="px-3 py-2 text-right">{fmtMoney(r.income_cents)}</td>

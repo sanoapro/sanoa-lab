@@ -40,8 +40,8 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
     let alive = true;
     setLoading(true);
     fetch(`/api/reports/schedules?org_id=${orgId}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) setItems(j.data);
       })
@@ -52,7 +52,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
   }, [orgId]);
 
   function updateField<K extends keyof Schedule>(k: K, v: Schedule[K]) {
-    setForm((f) => ({ ...f, [k]: v }));
+    setForm((f: any) => ({ ...f, [k]: v }));
   }
 
   async function save() {
@@ -63,9 +63,9 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
     });
     const j = await res.json();
     if (j.ok) {
-      setItems((prev) => [j.data[0], ...prev]);
+      setItems((prev: any) => [j.data[0], ...prev]);
       // reset parcial
-      setForm((f) => ({ ...f, target: "" }));
+      setForm((f: any) => ({ ...f, target: "" }));
     }
   }
 
@@ -77,7 +77,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
           <select
             className="rounded border px-3 py-2"
             value={form.scope}
-            onChange={(e) => updateField("scope", e.target.value as any)}
+            onChange={(e: any) => updateField("scope", e.target.value as any)}
           >
             <option value="bank_flow">Flujo mensual</option>
             <option value="bank_pl">P&amp;L por categoría</option>
@@ -88,7 +88,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
           <select
             className="rounded border px-3 py-2"
             value={form.channel}
-            onChange={(e) => updateField("channel", e.target.value as any)}
+            onChange={(e: any) => updateField("channel", e.target.value as any)}
           >
             <option value="email">Email</option>
             <option value="whatsapp">WhatsApp</option>
@@ -101,7 +101,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
           <input
             className="rounded border px-3 py-2"
             value={form.target}
-            onChange={(e) => updateField("target", e.target.value)}
+            onChange={(e: any) => updateField("target", e.target.value)}
           />
         </div>
         <div>
@@ -113,7 +113,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
               min={0}
               max={23}
               value={form.at_hour}
-              onChange={(e) => updateField("at_hour", Number(e.target.value || 0))}
+              onChange={(e: any) => updateField("at_hour", Number(e.target.value || 0))}
             />
             <input
               type="number"
@@ -121,7 +121,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
               min={0}
               max={59}
               value={form.at_minute}
-              onChange={(e) => updateField("at_minute", Number(e.target.value || 0))}
+              onChange={(e: any) => updateField("at_minute", Number(e.target.value || 0))}
             />
           </div>
           <p className="text-xs text-slate-500 mt-1">{form.tz}</p>
@@ -131,7 +131,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
           <select
             className="rounded border px-3 py-2"
             value={form.schedule_kind}
-            onChange={(e) => updateField("schedule_kind", e.target.value as any)}
+            onChange={(e: any) => updateField("schedule_kind", e.target.value as any)}
           >
             <option value="daily">Diario</option>
             <option value="weekly">Semanal</option>
@@ -139,7 +139,7 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
           </select>
           {form.schedule_kind === "weekly" && (
             <div className="mt-1 grid grid-cols-7 gap-1 text-xs">
-              {["D", "L", "M", "M", "J", "V", "S"].map((lbl, idx) => {
+              {["D", "L", "M", "M", "J", "V", "S"].map((lbl: any, idx: any) => {
                 const map = [0, 1, 2, 3, 4, 5, 6];
                 const active = form.dow?.includes(map[idx]) ?? false;
                 return (
@@ -170,8 +170,8 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
             type="date"
             className="rounded border px-3 py-2"
             value={form.params.from ?? ""}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, params: { ...f.params, from: e.target.value } }))
+            onChange={(e: any) =>
+              setForm((f: any) => ({ ...f, params: { ...f.params, from: e.target.value } }))
             }
           />
         </div>
@@ -181,8 +181,8 @@ export default function ScheduleForm({ orgId, defaultFrom, defaultTo }: Props) {
             type="date"
             className="rounded border px-3 py-2"
             value={form.params.to ?? ""}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, params: { ...f.params, to: e.target.value } }))
+            onChange={(e: any) =>
+              setForm((f: any) => ({ ...f, params: { ...f.params, to: e.target.value } }))
             }
           />
         </div>

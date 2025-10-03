@@ -21,24 +21,24 @@ export default function BudgetEditor() {
   const [accepting, setAccepting] = useState(false);
 
   const totalCents = useMemo(
-    () => items.reduce((s, it) => s + it.qty * it.unit_price_cents, 0),
+    () => items.reduce((s: any, it: any) => s + it.qty * it.unit_price_cents, 0),
     [items],
   );
 
   function add(it: Item) {
-    setItems((xs) => [...xs, it]);
+    setItems((xs: any) => [...xs, it]);
   }
   function del(i: number) {
-    setItems((xs) => xs.filter((_, idx) => idx !== i));
+    setItems((xs: any) => xs.filter((_: any, idx: any) => idx !== i));
   }
   function setQty(i: number, q: number) {
-    setItems((xs) =>
-      xs.map((x, idx) => (idx === i ? { ...x, qty: Math.max(1, Math.floor(q)) } : x)),
+    setItems((xs: any) =>
+      xs.map((x: any, idx: any) => (idx === i ? { ...x, qty: Math.max(1, Math.floor(q)) } : x)),
     );
   }
   function setPrice(i: number, p: number) {
-    setItems((xs) =>
-      xs.map((x, idx) => (idx === i ? { ...x, unit_price_cents: Math.max(0, Math.floor(p)) } : x)),
+    setItems((xs: any) =>
+      xs.map((x: any, idx: any) => (idx === i ? { ...x, unit_price_cents: Math.max(0, Math.floor(p)) } : x)),
     );
   }
 
@@ -126,7 +126,7 @@ export default function BudgetEditor() {
               </tr>
             </thead>
             <tbody>
-              {items.map((it, i) => (
+              {items.map((it: any, i: any) => (
                 <tr key={i} className="border-t">
                   <td className="px-3 py-2">{it.description}</td>
                   <td className="px-3 py-2 text-right">
@@ -134,7 +134,7 @@ export default function BudgetEditor() {
                       className="border rounded px-2 py-1 w-20 text-right"
                       inputMode="numeric"
                       value={it.qty}
-                      onChange={(e) => setQty(i, Number(e.target.value))}
+                      onChange={(e: any) => setQty(i, Number(e.target.value))}
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -142,7 +142,7 @@ export default function BudgetEditor() {
                       className="border rounded px-2 py-1 w-28 text-right"
                       inputMode="numeric"
                       value={Math.round(it.unit_price_cents)}
-                      onChange={(e) => setPrice(i, Number(e.target.value))}
+                      onChange={(e: any) => setPrice(i, Number(e.target.value))}
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -176,7 +176,7 @@ export default function BudgetEditor() {
               className="border rounded px-3 py-2 w-full min-h-[80px]"
               placeholder="Condiciones, vigencia, observaciones…"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e: any) => setNotes(e.target.value)}
             />
           </div>
           <div className="text-right min-w-[220px] pl-4">

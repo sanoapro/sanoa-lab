@@ -53,7 +53,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
 
   // selección
   const [sel, setSel] = useState<Record<string, boolean>>({});
-  const selectedKeys = Object.keys(sel).filter((k) => sel[k]);
+  const selectedKeys = Object.keys(sel).filter((k: any) => sel[k]);
 
   // predicción
   const [showPred, setShowPred] = useState(false);
@@ -211,7 +211,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e: any) => setFrom(e.target.value)}
           />
         </div>
         <div>
@@ -220,7 +220,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e: any) => setTo(e.target.value)}
           />
         </div>
         <div>
@@ -228,7 +228,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={tz}
-            onChange={(e) => setTz(e.target.value)}
+            onChange={(e: any) => setTz(e.target.value)}
           />
         </div>
         <div>
@@ -238,7 +238,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
             min={1}
             className="rounded border px-3 py-2 w-full"
             value={minN}
-            onChange={(e) => setMinN(Math.max(1, parseInt(e.target.value || "1", 10)))}
+            onChange={(e: any) => setMinN(Math.max(1, parseInt(e.target.value || "1", 10)))}
           />
         </div>
         <div>
@@ -248,7 +248,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
             min={1}
             className="rounded border px-3 py-2 w-full"
             value={top}
-            onChange={(e) => setTop(Math.max(1, parseInt(e.target.value || "1", 10)))}
+            onChange={(e: any) => setTop(Math.max(1, parseInt(e.target.value || "1", 10)))}
           />
         </div>
         <div className="flex gap-2">
@@ -265,13 +265,13 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
         <div className="flex gap-2">
           <select
             className="rounded border px-3 py-2 w-full"
-            onChange={(e) => {
-              const v = views.find((x) => x.id === e.target.value);
+            onChange={(e: any) => {
+              const v = views.find((x: any) => x.id === e.target.value);
               if (v) applyView(v);
             }}
           >
             <option value="">Vistas guardadas…</option>
-            {views.map((v) => (
+            {views.map((v: any) => (
               <option key={v.id} value={v.id}>
                 {v.name}
               </option>
@@ -287,7 +287,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={viewName}
-            onChange={(e) => setViewName(e.target.value)}
+            onChange={(e: any) => setViewName(e.target.value)}
             placeholder="Ej. Últimos 90 días, Top 100"
           />
         </div>
@@ -329,7 +329,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                   aria-label="Seleccionar todos"
                   type="checkbox"
                   checked={rows.length > 0 && selectedKeys.length === rows.length}
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     const v = e.target.checked;
                     const n: Record<string, boolean> = {};
                     if (v) for (const r of rows) n[r.patient_key] = true;
@@ -364,7 +364,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                 </td>
               </tr>
             )}
-            {rows.map((r) => {
+            {rows.map((r: any) => {
               const p = preds[r.patient_key];
               const cal = buildCalLink({ name: r.patient_name, notes: "Reagendado desde Sanoa" });
               return (
@@ -374,7 +374,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                       aria-label={`Seleccionar ${r.patient_name}`}
                       type="checkbox"
                       checked={!!sel[r.patient_key]}
-                      onChange={(e) => setSel((s) => ({ ...s, [r.patient_key]: e.target.checked }))}
+                      onChange={(e: any) => setSel((s: any) => ({ ...s, [r.patient_key]: e.target.checked }))}
                     />
                   </Td>
                   <td className="px-3 py-2">
@@ -444,7 +444,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
                         placeholder="+52..."
                         className="rounded border px-2 py-1 w-36"
                         id={`tel-${r.patient_key}`}
-                        onKeyDown={(e) => {
+                        onKeyDown={(e: any) => {
                           if (e.key === "Enter") {
                             const val = (e.target as HTMLInputElement).value;
                             sendReminder(val, r.patient_name);

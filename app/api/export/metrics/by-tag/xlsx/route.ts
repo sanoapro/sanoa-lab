@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
 
   const filename = `metrics_by_tag_${org_id}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  return new Response(buf, {
+  return new Response(new Blob([buf]), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,

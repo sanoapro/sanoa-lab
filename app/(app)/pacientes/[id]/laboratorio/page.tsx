@@ -20,7 +20,7 @@ export default function PatientLabPage() {
     if (!org.id) return;
     setBusy(true);
     try {
-      const j = await fetch(`/api/lab/requests/list?org_id=${org.id}&patient_id=${id}`).then((r) =>
+      const j = await fetch(`/api/lab/requests/list?org_id=${org.id}&patient_id=${id}`).then((r: any) =>
         r.json(),
       );
       setReqs(j.items || []);
@@ -46,7 +46,7 @@ export default function PatientLabPage() {
         {reqs.length === 0 && (
           <div className="p-4 text-sm text-slate-600 dark:text-slate-300">Sin solicitudes.</div>
         )}
-        {reqs.map((r) => (
+        {reqs.map((r: any) => (
           <div key={r.id} className="p-3">
             <div className="font-medium">{r.title}</div>
             <div className="text-xs text-slate-600 dark:text-slate-400">

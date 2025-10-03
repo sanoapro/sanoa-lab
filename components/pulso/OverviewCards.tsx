@@ -19,7 +19,7 @@ export default function OverviewCards({ orgId, patientId }: { orgId: string; pat
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      {rows.map((x) => (
+      {rows.map((x: any) => (
         <div key={x.type} className="rounded-2xl border p-4">
           <div className="text-sm text-slate-500">{x.type}</div>
           <div className="mt-1 text-2xl font-semibold">{x.pct_in_range}%</div>

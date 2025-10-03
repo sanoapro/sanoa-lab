@@ -73,7 +73,7 @@ export default function PacientesPage() {
   const sortValue: SortCombo = `${filters.orderBy}:${filters.orderDir}` as SortCombo;
   function setSortFromCombo(v: SortCombo) {
     const [orderBy, orderDir] = v.split(":") as ["created_at" | "nombre", "asc" | "desc"];
-    setFilters((f) => ({ ...f, orderBy, orderDir, page: 1 }));
+    setFilters((f: any) => ({ ...f, orderBy, orderDir, page: 1 }));
     void doSearch(1, { orderBy, orderDir });
   }
 
@@ -84,7 +84,7 @@ export default function PacientesPage() {
 
   // Aplica filtros de edad en cliente sobre la página actual
   const rows = useMemo(() => {
-    return items.filter((p) => {
+    return items.filter((p: any) => {
       if (filters.edadMin !== null && (p.edad ?? -Infinity) < filters.edadMin) return false;
       if (filters.edadMax !== null && (p.edad ?? Infinity) > filters.edadMax) return false;
       return true;
@@ -113,7 +113,7 @@ export default function PacientesPage() {
 
       setItems(res.items);
       setServerTotal(res.total);
-      setFilters((f) => ({ ...f, page: res.page })); // sincroniza página mostrada
+      setFilters((f: any) => ({ ...f, page: res.page })); // sincroniza página mostrada
     } catch (e) {
       setErr(toSpanishListError(e));
     } finally {
@@ -138,7 +138,7 @@ export default function PacientesPage() {
 
   // dispara búsqueda cuando cambia el debounce de q
   useEffect(() => {
-    setFilters((f) => ({ ...f, q: qDebounced, page: 1 }));
+    setFilters((f: any) => ({ ...f, q: qDebounced, page: 1 }));
     void doSearch(1, { q: qDebounced });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qDebounced]);
@@ -244,16 +244,16 @@ export default function PacientesPage() {
 
   // ===== Facetas (tags) =====
   function toggleTag(id: string) {
-    setFilters((f) => {
+    setFilters((f: any) => {
       if (f.useAllMode) {
         const exists = f.tagsAll.includes(id);
-        const nextAll = exists ? f.tagsAll.filter((x) => x !== id) : [...f.tagsAll, id];
+        const nextAll = exists ? f.tagsAll.filter((x: any) => x !== id) : [...f.tagsAll, id];
         const next = { ...f, tagsAll: nextAll, page: 1 };
         void doSearch(1, next);
         return next;
       } else {
         const exists = f.tagsAny.includes(id);
-        const nextAny = exists ? f.tagsAny.filter((x) => x !== id) : [...f.tagsAny, id];
+        const nextAny = exists ? f.tagsAny.filter((x: any) => x !== id) : [...f.tagsAny, id];
         const next = { ...f, tagsAny: nextAny, page: 1 };
         void doSearch(1, next);
         return next;
@@ -323,9 +323,9 @@ export default function PacientesPage() {
             <input
               type="checkbox"
               checked={filters.onlyActiveOrg}
-              onChange={(e) => {
+              onChange={(e: any) => {
                 const onlyActiveOrg = e.target.checked;
-                setFilters((f) => ({ ...f, onlyActiveOrg, page: 1 }));
+                setFilters((f: any) => ({ ...f, onlyActiveOrg, page: 1 }));
                 void doSearch(1, { onlyActiveOrg });
               }}
             />
@@ -341,7 +341,7 @@ export default function PacientesPage() {
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Nombre</span>
             <Input
               value={qInput}
-              onChange={(e) => setQInput(e.target.value)}
+              onChange={(e: any) => setQInput(e.target.value)}
               placeholder="Buscar por nombre…"
               className="mt-1 w-full"
             />
@@ -351,8 +351,8 @@ export default function PacientesPage() {
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Género</span>
             <select
               value={filters.genero}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, genero: e.target.value as GenderOpt, page: 1 }))
+              onChange={(e: any) =>
+                setFilters((f: any) => ({ ...f, genero: e.target.value as GenderOpt, page: 1 }))
               }
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             >
@@ -370,8 +370,8 @@ export default function PacientesPage() {
                 type="number"
                 min={0}
                 value={filters.edadMin ?? ""}
-                onChange={(e) =>
-                  setFilters((f) => ({
+                onChange={(e: any) =>
+                  setFilters((f: any) => ({
                     ...f,
                     edadMin: e.target.value === "" ? null : Number(e.target.value),
                     page: 1,
@@ -386,8 +386,8 @@ export default function PacientesPage() {
                 type="number"
                 min={0}
                 value={filters.edadMax ?? ""}
-                onChange={(e) =>
-                  setFilters((f) => ({
+                onChange={(e: any) =>
+                  setFilters((f: any) => ({
                     ...f,
                     edadMax: e.target.value === "" ? null : Number(e.target.value),
                     page: 1,
@@ -404,8 +404,8 @@ export default function PacientesPage() {
               <Input
                 type="date"
                 value={filters.createdFrom ?? ""}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, createdFrom: e.target.value || null, page: 1 }))
+                onChange={(e: any) =>
+                  setFilters((f: any) => ({ ...f, createdFrom: e.target.value || null, page: 1 }))
                 }
                 className="mt-1 w-full"
               />
@@ -415,8 +415,8 @@ export default function PacientesPage() {
               <Input
                 type="date"
                 value={filters.createdTo ?? ""}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, createdTo: e.target.value || null, page: 1 }))
+                onChange={(e: any) =>
+                  setFilters((f: any) => ({ ...f, createdTo: e.target.value || null, page: 1 }))
                 }
                 className="mt-1 w-full"
               />
@@ -428,7 +428,7 @@ export default function PacientesPage() {
             <span className="text-sm font-medium text-[var(--color-brand-text)]">Orden</span>
             <select
               value={sortValue}
-              onChange={(e) => setSortFromCombo(e.target.value as SortCombo)}
+              onChange={(e: any) => setSortFromCombo(e.target.value as SortCombo)}
               className="mt-1 w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             >
               <option value="created_at:desc">Más recientes primero</option>
@@ -443,8 +443,8 @@ export default function PacientesPage() {
             <input
               type="checkbox"
               checked={filters.includeDeleted}
-              onChange={(e) => {
-                setFilters((f) => ({ ...f, includeDeleted: e.target.checked, page: 1 }));
+              onChange={(e: any) => {
+                setFilters((f: any) => ({ ...f, includeDeleted: e.target.checked, page: 1 }));
                 void doSearch(1, { includeDeleted: e.target.checked });
               }}
             />
@@ -482,7 +482,7 @@ export default function PacientesPage() {
               <input
                 type="checkbox"
                 checked={filters.useAllMode}
-                onChange={(e) => {
+                onChange={(e: any) => {
                   const useAllMode = e.target.checked;
                   const next = { ...filters, useAllMode, tagsAny: [], tagsAll: [], page: 1 };
                   setFilters(next);
@@ -493,7 +493,7 @@ export default function PacientesPage() {
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
-            {myTags.map((t) => {
+            {myTags.map((t: any) => {
               const active = filters.useAllMode
                 ? filters.tagsAll.includes(t.id)
                 : filters.tagsAny.includes(t.id);
@@ -560,7 +560,7 @@ export default function PacientesPage() {
                     </td>
                   </tr>
                 ) : (
-                  rows.map((p) => {
+                  rows.map((p: any) => {
                     const isDeleted = !!p.deleted_at;
                     return (
                       <tr
@@ -654,7 +654,7 @@ export default function PacientesPage() {
           <label className="block text-sm text-[var(--color-brand-text)]">Nombre *</label>
           <Input
             value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
+            onChange={(e: any) => setNombre(e.target.value)}
             placeholder="Nombre completo"
             className="w-full"
           />
@@ -664,7 +664,7 @@ export default function PacientesPage() {
             type="number"
             inputMode="numeric"
             value={edad}
-            onChange={(e) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
+            onChange={(e: any) => setEdad(e.target.value === "" ? "" : Number(e.target.value))}
             placeholder="Ej. 32"
             className="w-full"
           />
@@ -673,7 +673,7 @@ export default function PacientesPage() {
           <select
             className="border rounded-md px-3 py-2 w-full"
             value={generoCrear}
-            onChange={(e) => setGeneroCrear(e.target.value as "F" | "M" | "O")}
+            onChange={(e: any) => setGeneroCrear(e.target.value as "F" | "M" | "O")}
           >
             <option value="O">Otro/Prefiero no decir</option>
             <option value="F">Femenino</option>

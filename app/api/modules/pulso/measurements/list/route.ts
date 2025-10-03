@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       "type",
       types
         .split(",")
-        .map((s) => s.trim())
+        .map((s: any) => s.trim())
         .filter(Boolean),
     );
   const from = url.searchParams.get("from");

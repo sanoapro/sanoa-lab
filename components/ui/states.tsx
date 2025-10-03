@@ -4,7 +4,7 @@ export function TableLoader() {
   return (
     <div className="space-y-2">
       <div className="skeleton h-10 w-full" />
-      {[...Array(6)].map((_, i) => (
+      {[...Array(6)].map((_: any, i: any) => (
         <div key={i} className="skeleton h-10 w-full" />
       ))}
     </div>

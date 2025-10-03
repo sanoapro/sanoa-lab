@@ -1,22 +1,35 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
+import { stripe } from "@/lib/billing/stripe";
 import { createServiceClient } from "@/lib/supabase/service";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
 export async function POST(req: NextRequest) {
-  let event: Stripe.Event;
-  const raw = await req.text();
-  const sig = req.headers.get("stripe-signature") ?? "";
+  // Validación de configuración
+  if (!stripe) {
+    return NextResponse.json(
+      { error: "Stripe no configurado (STRIPE_SECRET_KEY faltante)" },
+      { status: 501 },
+    );
+  }
 
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
+  if (!endpointSecret) {
+    return NextResponse.json(
+      { error: "Webhook secret no configurado (STRIPE_WEBHOOK_SECRET faltante)" },
+      { status: 501 },
+    );
+  }
+
+  // Construcción del evento con el cuerpo *sin parsear*
+  let event: Stripe.Event;
   try {
-    if (!endpointSecret) throw new Error("STRIPE_WEBHOOK_SECRET no configurado");
+    const raw = await req.text();
+    const sig = req.headers.get("stripe-signature") ?? "";
     event = stripe.webhooks.constructEvent(raw, sig, endpointSecret);
   } catch (err: any) {
-    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
+    return NextResponse.json({ error: `Webhook Error: ${err?.message || "invalid signature"}` }, { status: 400 });
   }
 
   try {
@@ -24,17 +37,22 @@ export async function POST(req: NextRequest) {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      const org_id = (session.metadata as any)?.org_id;
-      const feature = (session.metadata as any)?.feature;
+      const md = session.metadata as Record<string, string> | null | undefined;
+      const org_id = md?.org_id ?? undefined;
+      const feature = md?.feature ?? undefined; // p.ej. "mente" | "pulso" | "sonrisa" | "equilibrio"
 
       if (org_id && feature) {
-        const patch: Record<string, any> = { org_id, [feature]: true, updated_at: new Date().toISOString() };
+        const patch: Record<string, any> = {
+          org_id,
+          [feature]: true,
+          updated_at: new Date().toISOString(),
+        };
         await supa.from("org_features").upsert(patch, { onConflict: "org_id" });
       }
     }
 
     if (event.type === "invoice.paid") {
-      // no-op (ya quedó activo en checkout)
+      // no-op: la activación se hace al completar checkout
     }
 
     return NextResponse.json({ received: true }, { status: 200 });

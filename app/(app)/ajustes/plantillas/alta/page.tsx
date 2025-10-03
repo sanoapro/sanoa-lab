@@ -7,7 +7,7 @@ export default function DisTplPage() {
   const [body, setBody] = useState<any>({ diagnosis: "", summary: "", recommendations: "" });
   const [doctorScope, setDoctorScope] = useState(true);
   const load = async () => {
-    const j = await fetch("/api/discharges/templates").then((r) => r.json());
+    const j = await fetch("/api/discharges/templates").then((r: any) => r.json());
     setItems(j.items || []);
   };
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function DisTplPage() {
             className="w-full border rounded p-2"
             placeholder="Nombre"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: any) => setName(e.target.value)}
           />
           <div className="grid grid-cols-1 gap-2 text-sm">
             <textarea
@@ -43,28 +43,28 @@ export default function DisTplPage() {
               rows={2}
               placeholder="Diagnóstico"
               value={body.diagnosis}
-              onChange={(e) => setBody({ ...body, diagnosis: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, diagnosis: e.target.value })}
             />
             <textarea
               className="border rounded p-2"
               rows={3}
               placeholder="Resumen"
               value={body.summary}
-              onChange={(e) => setBody({ ...body, summary: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, summary: e.target.value })}
             />
             <textarea
               className="border rounded p-2"
               rows={2}
               placeholder="Recomendaciones"
               value={body.recommendations}
-              onChange={(e) => setBody({ ...body, recommendations: e.target.value })}
+              onChange={(e: any) => setBody({ ...body, recommendations: e.target.value })}
             />
           </div>
           <label className="text-sm inline-flex items-center gap-2">
             <input
               type="checkbox"
               checked={doctorScope}
-              onChange={(e) => setDoctorScope(e.target.checked)}
+              onChange={(e: any) => setDoctorScope(e.target.checked)}
             />{" "}
             Sólo para mí
           </label>

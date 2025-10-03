@@ -40,7 +40,7 @@ export default function Modal({
           "relative w-full rounded-xl bg-card text-card-foreground shadow-elevated border border-border",
           sizes[size]
         )}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: any) => e.stopPropagation()}
       >
         {(title || onClose) && (
           <div className="p-4 border-b border-border flex items-center justify-between">

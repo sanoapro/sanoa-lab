@@ -179,7 +179,7 @@ export default function UploadDemoPage() {
             </span>
             <input
               value={prefix}
-              onChange={(e) => setPrefix(e.target.value)}
+              onChange={(e: any) => setPrefix(e.target.value)}
               placeholder="Ej. REQ_abc123"
               className="block w-full rounded-xl border border-[var(--color-brand-border)] bg-white px-3 py-2"
             />
@@ -227,7 +227,7 @@ export default function UploadDemoPage() {
           </div>
         )}
 
-        {files.map((obj) => (
+        {files.map((obj: any) => (
           <article
             key={obj.name}
             className="surface-light group rounded-3xl border border-[var(--color-brand-border)] bg-white/80 dark:bg-white/[0.06] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_14px_38px_rgba(0,0,0,0.08)] transition overflow-hidden"

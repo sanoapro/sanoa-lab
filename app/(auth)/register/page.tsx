@@ -59,7 +59,7 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="tu@correo.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: any) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
               />
@@ -71,7 +71,7 @@ export default function RegisterPage() {
                 placeholder="********"
                 minLength={8}
                 value={pass}
-                onChange={(e) => setPass(e.target.value)}
+                onChange={(e: any) => setPass(e.target.value)}
                 required
                 autoComplete="new-password"
               />

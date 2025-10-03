@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
+type Assessment = {
+  tool: string;                  // e.g. "phq9" | "gad7" | "auditc"
+  risk_band: string | null;      // e.g. "low" | "moderate" | "high"
+  score_total: number | null;
+  created_at: string;
+};
+
+type ByToolStat = {
+  tool: string;
+  count: number;
+  avg_total: number;
+};
+
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
   const { data: u } = await supa.auth.getUser();
@@ -36,14 +49,20 @@ export async function GET(req: NextRequest) {
       { status: 400 },
     );
 
-  const total = data.length;
-  const high = data.filter((x) => x.risk_band === "high").length;
-  const byTool = ["phq9", "gad7", "auditc"].map((t) => {
-    const xs = data.filter((x) => x.tool === (t as any));
+  const rows: Assessment[] = (data ?? []) as Assessment[];
+
+  const total = rows.length;
+  const high = rows.filter((row: Assessment) => row.risk_band === "high").length;
+
+  const TOOLS = ["phq9", "gad7", "auditc"] as const;
+  const byTool: ByToolStat[] = TOOLS.map((t) => {
+    const xs = rows.filter((row: Assessment) => row.tool === t);
     const avg = xs.length
-      ? Math.round(xs.reduce((s, x) => s + (x.score_total || 0), 0) / xs.length)
+      ? Math.round(xs.reduce((sum: number, row: Assessment) => sum + (row.score_total ?? 0), 0) / xs.length)
       : 0;
     return { tool: t, count: xs.length, avg_total: avg };
+    // Si quieres incluir herramientas extra no listadas en TOOLS:
+    // podrías agrupar dinámicamente en vez de usar TOOLS fijas.
   });
 
   return NextResponse.json({ ok: true, data: { total, high, byTool } });

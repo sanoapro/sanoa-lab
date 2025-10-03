@@ -44,8 +44,8 @@ async function getPatientIdsByTags(tagIds: string[], mode: Mode): Promise<string
 
 export async function searchAdvanced(
   p: AdvancedSearchPayload,
-  limit = 40,
-  offset = 0,
+  limit: any = 40,
+  offset: any = 0,
 ): Promise<SearchItem[]> {
   const supabase = getSupabaseBrowser();
   const active = getActiveOrg();

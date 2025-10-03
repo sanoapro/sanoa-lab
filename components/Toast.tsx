@@ -34,14 +34,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const show = useCallback((toast: ToastInput) => {
     const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, ...toast }]);
+    setToasts((prev: any) => [...prev, { id, ...toast }]);
     setTimeout(() => {
-      setToasts((prev) => prev.filter((item) => item.id !== id));
+      setToasts((prev: any) => prev.filter((item: any) => item.id !== id));
     }, 4000);
   }, []);
 
   const remove = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((item) => item.id !== id));
+    setToasts((prev: any) => prev.filter((item: any) => item.id !== id));
   }, []);
 
   useEffect(() => {

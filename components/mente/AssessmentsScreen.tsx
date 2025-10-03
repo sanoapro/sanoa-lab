@@ -90,7 +90,7 @@ export default function AssessmentsScreen() {
 
         {tool === "phq9" && (
           <PHQ9Form
-            onScore={(res, a) => {
+            onScore={(res: any, a: any) => {
               setLastScore(res);
               setAnswers(a);
             }}
@@ -98,7 +98,7 @@ export default function AssessmentsScreen() {
         )}
         {tool === "gad7" && (
           <GAD7Form
-            onScore={(res, a) => {
+            onScore={(res: any, a: any) => {
               setLastScore(res);
               setAnswers(a);
             }}
@@ -106,7 +106,7 @@ export default function AssessmentsScreen() {
         )}
         {tool === "auditc" && (
           <AUDITCForm
-            onScore={(res, a) => {
+            onScore={(res: any, a: any) => {
               setLastScore(res);
               setAnswers(a);
             }}

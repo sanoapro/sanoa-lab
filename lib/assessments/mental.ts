@@ -16,9 +16,9 @@ function clamp(n: number, lo: number, hi: number) {
 }
 
 export function scorePHQ9(a: PHQ9Answers): ScoreResult {
-  const keys = Array.from({ length: 9 }, (_, i) => `q${i + 1}`);
-  const vals = keys.map((k) => clamp(Number(a[k] ?? 0), 0, 3));
-  const total = vals.reduce((s, x) => s + x, 0);
+  const keys = Array.from({ length: 9 }, (_: any, i: any) => `q${i + 1}`);
+  const vals = keys.map((k: any) => clamp(Number(a[k] ?? 0), 0, 3));
+  const total = vals.reduce((s: any, x: any) => s + x, 0);
 
   let severity = "mínima";
   if (total >= 20) severity = "severa";
@@ -33,7 +33,7 @@ export function scorePHQ9(a: PHQ9Answers): ScoreResult {
   return {
     tool: "phq9",
     total,
-    breakdown: Object.fromEntries(keys.map((k, i) => [k, vals[i]])),
+    breakdown: Object.fromEntries(keys.map((k: any, i: any) => [k, vals[i]])),
     risk_band,
     severity,
     flags: { item9_positive: item9 >= 1 },
@@ -41,9 +41,9 @@ export function scorePHQ9(a: PHQ9Answers): ScoreResult {
 }
 
 export function scoreGAD7(a: GAD7Answers): ScoreResult {
-  const keys = Array.from({ length: 7 }, (_, i) => `q${i + 1}`);
-  const vals = keys.map((k) => clamp(Number(a[k] ?? 0), 0, 3));
-  const total = vals.reduce((s, x) => s + x, 0);
+  const keys = Array.from({ length: 7 }, (_: any, i: any) => `q${i + 1}`);
+  const vals = keys.map((k: any) => clamp(Number(a[k] ?? 0), 0, 3));
+  const total = vals.reduce((s: any, x: any) => s + x, 0);
 
   let severity = "mínima";
   if (total >= 15) severity = "severa";
@@ -55,7 +55,7 @@ export function scoreGAD7(a: GAD7Answers): ScoreResult {
   return {
     tool: "gad7",
     total,
-    breakdown: Object.fromEntries(keys.map((k, i) => [k, vals[i]])),
+    breakdown: Object.fromEntries(keys.map((k: any, i: any) => [k, vals[i]])),
     risk_band,
     severity,
   };
@@ -63,8 +63,8 @@ export function scoreGAD7(a: GAD7Answers): ScoreResult {
 
 export function scoreAUDITC(a: AUDITCAnswers): ScoreResult {
   const keys = ["q1", "q2", "q3"];
-  const vals = keys.map((k) => clamp(Number(a[k] ?? 0), 0, 4));
-  const total = vals.reduce((s, x) => s + x, 0);
+  const vals = keys.map((k: any) => clamp(Number(a[k] ?? 0), 0, 4));
+  const total = vals.reduce((s: any, x: any) => s + x, 0);
 
   let severity = "bajo";
   if (total >= 6) severity = "alto";
@@ -75,7 +75,7 @@ export function scoreAUDITC(a: AUDITCAnswers): ScoreResult {
   return {
     tool: "auditc",
     total,
-    breakdown: Object.fromEntries(keys.map((k, i) => [k, vals[i]])),
+    breakdown: Object.fromEntries(keys.map((k: any, i: any) => [k, vals[i]])),
     risk_band,
     severity,
   };

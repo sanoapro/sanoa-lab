@@ -94,7 +94,7 @@ export default function CalculadorasPulso() {
           <L label="Sexo">
             <select
               value={sexo}
-              onChange={(e) => setSexo(e.target.value as any)}
+              onChange={(e: any) => setSexo(e.target.value as any)}
               className="border rounded-xl p-2 w-full"
             >
               <option value="M">Masculino</option>
@@ -110,9 +110,9 @@ export default function CalculadorasPulso() {
 
       {/* Resultados rápidos */}
       <section className="grid md:grid-cols-4 gap-6">
-        <K title="IMC" v={imc} unit="kg/m²" fmt={(x) => x.toFixed(1)} />
-        <K title="SC (Mosteller)" v={sc} unit="m²" fmt={(x) => x.toFixed(2)} />
-        <K title="ClCr (Cockcroft–Gault)" v={clcr} unit="mL/min" fmt={(x) => x.toFixed(0)} />
+        <K title="IMC" v={imc} unit="kg/m²" fmt={(x: any) => x.toFixed(1)} />
+        <K title="SC (Mosteller)" v={sc} unit="m²" fmt={(x: any) => x.toFixed(2)} />
+        <K title="ClCr (Cockcroft–Gault)" v={clcr} unit="mL/min" fmt={(x: any) => x.toFixed(0)} />
         <div className={box}>
           <div className="text-sm text-[var(--color-brand-bluegray)]">Clasificación IMC</div>
           <div className="text-[var(--color-brand-text)] mt-2">
@@ -188,7 +188,7 @@ function I({ value, onChange }: { value: string; onChange: (v: string) => void }
   return (
     <input
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e: any) => onChange(e.target.value)}
       className="border rounded-xl p-2 w-full"
     />
   );

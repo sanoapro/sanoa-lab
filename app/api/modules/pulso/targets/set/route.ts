@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
   }
 
   const rows = body.items
-    .filter((x) => x?.type)
-    .map((x) => ({
+    .filter((x: any) => x?.type)
+    .map((x: any) => ({
       org_id: body.org_id!,
       patient_id: body.patient_id!,
       type: String(x.type),

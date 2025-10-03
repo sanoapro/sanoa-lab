@@ -90,7 +90,7 @@ export default function BancoPage() {
         <div className="rounded-3xl bg-white/95 border p-6">
           <h3 className="font-semibold">Suscripciones</h3>
           <ul className="mt-3 space-y-2 text-sm">
-            {["Mente", "Pulso", "Sonrisa", "Equilibrio"].map((label) => (
+            {["Mente", "Pulso", "Sonrisa", "Equilibrio"].map((label: any) => (
               <li key={label} className="flex flex-wrap items-center gap-2">
                 <span>🔹 {label}</span>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-100 text-xs font-medium text-emerald-700">

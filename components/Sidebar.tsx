@@ -18,7 +18,7 @@ export default function Sidebar(){
   const pathname = usePathname();
   return (
     <aside className="sidebar glass-card bubble">
-      {items.map(it => {
+      {items.map((it: any) => {
         const active = pathname?.startsWith(it.href);
         return (
           <Link

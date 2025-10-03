@@ -28,7 +28,7 @@ export default function PHQ9Form({
   const [ans, setAns] = useState<Record<string, number>>({});
 
   function setQ(i: number, v: number) {
-    setAns((a) => ({ ...a, [`q${i + 1}`]: v }));
+    setAns((a: any) => ({ ...a, [`q${i + 1}`]: v }));
   }
 
   async function calc() {
@@ -43,16 +43,16 @@ export default function PHQ9Form({
 
   return (
     <div className="space-y-3">
-      {items.map((text, i) => (
+      {items.map((text: any, i: any) => (
         <div key={i} className="grid md:grid-cols-2 gap-2 items-center">
           <label className="text-sm">{text}</label>
           <select
             className="border rounded px-3 py-2"
             value={ans[`q${i + 1}`] ?? ""}
-            onChange={(e) => setQ(i, Number(e.target.value))}
+            onChange={(e: any) => setQ(i, Number(e.target.value))}
           >
             <option value="">Selecciona…</option>
-            {opts.map((o) => (
+            {opts.map((o: any) => (
               <option key={o.v} value={o.v}>
                 {o.t}
               </option>

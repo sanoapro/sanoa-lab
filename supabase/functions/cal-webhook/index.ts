@@ -50,7 +50,7 @@ function safeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
-serve(async (req) => {
+serve(async (req: any) => {
   try {
     const url = new URL(req.url);
     const debug = url.searchParams.get("debug") === "1";
@@ -77,7 +77,7 @@ serve(async (req) => {
       const candidates = [hex, `sha256=${hex}`, b64, `sha256=${b64}`, b64url, `sha256=${b64url}`];
 
       const headerLc = header.toLowerCase();
-      const match = candidates.some((c) => safeEqual(headerLc, c.toLowerCase()));
+      const match = candidates.some((c: any) => safeEqual(headerLc, c.toLowerCase()));
       if (!match) {
         if (debug) {
           return json({ ok: false, reason: "mismatch", header, candidates });
@@ -172,7 +172,7 @@ serve(async (req) => {
 });
 
 // Helper JSON
-function json(obj: unknown, status = 200) {
+function json(obj: unknown, status: any = 200) {
   return new Response(JSON.stringify(obj), {
     status,
     headers: {

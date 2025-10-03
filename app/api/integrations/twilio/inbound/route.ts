@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     if (!rem) {
       // Sin contexto: solo educa
       const xml = toXml(reply);
-      return new NextResponse(xml, { headers: { "Content-Type": "text/xml" } });
+      return new NextResponse(new Blob([xml]), { headers: { "Content-Type": "text/xml" } });
     }
 
     if (intent === "confirm") {
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     }
 
     const xml = toXml(reply);
-    return new NextResponse(xml, { headers: { "Content-Type": "text/xml" } });
+    return new NextResponse(new Blob([xml]), { headers: { "Content-Type": "text/xml" } });
   } catch (e: any) {
     // Fallback ante error
     await supa.from("reminder_logs").insert({
@@ -172,6 +172,6 @@ export async function POST(req: NextRequest) {
       error: String(e?.message || e),
     });
     const xml = toXml("Hubo un problema procesando tu respuesta. Intenta de nuevo más tarde.");
-    return new NextResponse(xml, { headers: { "Content-Type": "text/xml" } });
+    return new NextResponse(new Blob([xml]), { headers: { "Content-Type": "text/xml" } });
   }
 }

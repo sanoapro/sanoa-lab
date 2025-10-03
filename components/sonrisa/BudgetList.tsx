@@ -35,7 +35,7 @@ export default function BudgetList({ orgId, patientId }: { orgId: string; patien
         <select
           className="border rounded px-3 py-2"
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e: any) => setStatus(e.target.value)}
         >
           <option value="">Todos</option>
           <option value="draft">Borrador</option>
@@ -57,7 +57,7 @@ export default function BudgetList({ orgId, patientId }: { orgId: string; patien
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r: any) => (
               <tr key={r.id} className="border-t">
                 <td className="px-3 py-2">{new Date(r.created_at).toLocaleString()}</td>
                 <td className="px-3 py-2">

@@ -111,7 +111,7 @@ export async function POST(req: Request) {
     try {
       const { email, name } = parseFromNameEmail(fromHeader);
       const sgBody = {
-        personalizations: [{ to: to.map((x) => ({ email: x })) }],
+        personalizations: [{ to: to.map((x: any) => ({ email: x })) }],
         from: name ? { email, name } : { email },
         subject,
         content: [{ type: html ? "text/html" : "text/plain", value: html || text }],

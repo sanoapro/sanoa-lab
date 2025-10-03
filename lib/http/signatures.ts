@@ -64,8 +64,8 @@ export function verifyTwilioSignature(req: NextRequest, bodyRaw: string): boolea
     const params = new URLSearchParams(bodyRaw);
     // Si no hay pares, tratamos body como cadena literal (algunos proxies envían JSON)
     if ([...params.keys()].length > 0) {
-      const pairs = [...params.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-      base += pairs.map(([k, v]) => k + v).join("");
+      const pairs = [...params.entries()].sort(([a]: any, [b]: any) => (a < b ? -1 : a > b ? 1 : 0));
+      base += pairs.map(([k, v]: any) => k + v).join("");
     } else {
       base += bodyRaw;
     }

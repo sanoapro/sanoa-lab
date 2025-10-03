@@ -110,10 +110,10 @@ export default function TemplatesEditor() {
             <span className="text-sm text-slate-500">Tipo</span>
             <select
               value={form.type ?? "specialist_patient"}
-              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as any }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, type: e.target.value as any }))}
               className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             >
-              {TYPES.map((t) => (
+              {TYPES.map((t: any) => (
                 <option key={t.val} value={t.val}>
                   {t.label}
                 </option>
@@ -125,7 +125,7 @@ export default function TemplatesEditor() {
             <input
               className="rounded-xl border px-3 py-2"
               value={form.title ?? ""}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, title: e.target.value }))}
               placeholder="p.ej., Acuerdo de atención psicológica"
             />
           </label>
@@ -137,7 +137,7 @@ export default function TemplatesEditor() {
             className="rounded-xl border px-3 py-2"
             rows={2}
             value={form.description ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))}
           />
         </label>
 
@@ -147,9 +147,9 @@ export default function TemplatesEditor() {
             className="font-mono text-xs rounded-xl border px-3 py-2"
             rows={10}
             value={JSON.stringify(form.content ?? defaultContent(), null, 2)}
-            onChange={(e) => {
+            onChange={(e: any) => {
               try {
-                setForm((f) => ({ ...f, content: JSON.parse(e.target.value) }));
+                setForm((f: any) => ({ ...f, content: JSON.parse(e.target.value) }));
               } catch {
                 /* noop */
               }
@@ -171,15 +171,15 @@ export default function TemplatesEditor() {
             className="rounded-xl border px-3 py-2"
             placeholder="Buscar…"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e: any) => setQ(e.target.value)}
           />
           <select
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={type}
-            onChange={(e) => setType(e.target.value as any)}
+            onChange={(e: any) => setType(e.target.value as any)}
           >
             <option value="">Todos</option>
-            {TYPES.map((t) => (
+            {TYPES.map((t: any) => (
               <option key={t.val} value={t.val}>
                 {t.label}
               </option>
@@ -199,7 +199,7 @@ export default function TemplatesEditor() {
               </tr>
             </thead>
             <tbody>
-              {list.map((t) => (
+              {list.map((t: any) => (
                 <tr key={t.id} className="border-b">
                   <td className="p-2">{t.title}</td>
                   <td className="p-2">{t.type}</td>

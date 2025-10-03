@@ -12,7 +12,7 @@ export function jsonOk<T>(data?: T, meta?: Record<string, unknown>) {
 export function jsonError(
   code: string,
   message: string,
-  status = 400,
+  status: any = 400,
   extra?: Record<string, unknown>,
 ) {
   return NextResponse.json({ ok: false, error: { code, message, ...(extra || {}) } }, { status });
@@ -44,7 +44,7 @@ export function parseOrError<T>(schema: z.ZodType<T>, data: unknown) {
   const parsed = schema.safeParse(data);
   if (!parsed.success) {
     const issues = parsed.error.issues
-      .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+      .map((i: any) => `${i.path.join(".") || "(root)"}: ${i.message}`)
       .join("; ");
     return { ok: false as const, error: { code: "VALIDATION_ERROR", message: issues } };
   }
@@ -62,7 +62,7 @@ export function asInt(v: string | null, fallback: number, opts?: { min?: number;
   return n;
 }
 
-export function asBool(v: string | null, fallback = false) {
+export function asBool(v: string | null, fallback: any = false) {
   if (v == null) return fallback;
   if (v === "1" || v.toLowerCase() === "true") return true;
   if (v === "0" || v.toLowerCase() === "false") return false;

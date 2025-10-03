@@ -131,7 +131,7 @@ function PageInner() {
           <select
             className="border rounded-md px-3 py-2"
             value={status}
-            onChange={(e) => setStatus(e.target.value as any)}
+            onChange={(e: any) => setStatus(e.target.value as any)}
             aria-label="Filtro de estado"
           >
             <option value="open">Abiertas</option>
@@ -152,19 +152,19 @@ function PageInner() {
             <label className="block text-sm text-gray-600 mb-1">patient_id (UUID)</label>
             <Input
               value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
+              onChange={(e: any) => setPatientId(e.target.value)}
               placeholder="uuid del paciente"
             />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Fecha límite</label>
-            <Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
+            <Input type="datetime-local" value={dueAt} onChange={(e: any) => setDueAt(e.target.value)} />
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm text-gray-600 mb-1">Título</label>
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: any) => setTitle(e.target.value)}
               placeholder="p. ej., Completar nota SOAP"
             />
           </div>
@@ -173,7 +173,7 @@ function PageInner() {
             <textarea
               className="w-full border rounded-md p-2 min-h-[80px]"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e: any) => setDescription(e.target.value)}
             />
           </div>
         </div>
@@ -192,7 +192,7 @@ function PageInner() {
             </div>
           )}
 
-          {items.map((w) => (
+          {items.map((w: any) => (
             <div key={w.id} className="p-3 flex items-center justify-between">
               <div>
                 <div className="font-medium">{w.title}</div>

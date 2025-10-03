@@ -35,7 +35,7 @@ export default function MetricsPage() {
 
   function qs(obj: Record<string, any>) {
     const p = new URLSearchParams();
-    Object.entries(obj).forEach(([k, v]) => {
+    Object.entries(obj).forEach(([k, v]: any) => {
       if (v !== undefined && v !== null && v !== "") p.set(k, String(v));
     });
     return p.toString();
@@ -61,7 +61,7 @@ export default function MetricsPage() {
     void load();
   }, []);
 
-  const maxTag = useMemo(() => Math.max(0, ...byTag.map((x) => Number(x.total))), [byTag]);
+  const maxTag = useMemo(() => Math.max(0, ...byTag.map((x: any) => Number(x.total))), [byTag]);
   const exportByTagUrl = `/api/export/metrics/by-tag?${qs({ from, to, onlyOrg, org: onlyOrg ? org.id : null })}`;
   const exportPatientsMonthlyUrl = `/api/export/metrics/monthly?${qs({ type: "patients", months: 12, onlyOrg, org: onlyOrg ? org.id : null })}`;
   const exportNotesMonthlyUrl = `/api/export/metrics/monthly?${qs({ type: "notes", months: 12, onlyOrg, org: onlyOrg ? org.id : null })}`;
@@ -73,14 +73,14 @@ export default function MetricsPage() {
       <div className="border rounded-xl p-4 bg-white grid grid-cols-1 sm:grid-cols-6 gap-3">
         <div className="sm:col-span-2">
           <span className="block text-sm text-gray-600">Desde</span>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <Input type="date" value={from} onChange={(e: any) => setFrom(e.target.value)} />
         </div>
         <div className="sm:col-span-2">
           <span className="block text-sm text-gray-600">Hasta</span>
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <Input type="date" value={to} onChange={(e: any) => setTo(e.target.value)} />
         </div>
         <label className="text-sm flex items-center gap-2 justify-center">
-          <input type="checkbox" checked={onlyOrg} onChange={(e) => setOnlyOrg(e.target.checked)} />
+          <input type="checkbox" checked={onlyOrg} onChange={(e: any) => setOnlyOrg(e.target.checked)} />
           Sólo org activa
         </label>
         <div className="flex gap-2 items-end">
@@ -101,7 +101,7 @@ export default function MetricsPage() {
           {byTag.length === 0 && (
             <div className="p-4 text-sm text-gray-600">{loading ? "Cargando…" : "Sin datos."}</div>
           )}
-          {byTag.map((row) => (
+          {byTag.map((row: any) => (
             <div key={row.tag_id} className="p-3">
               <div className="flex items-center justify-between">
                 <div className="font-medium">{row.tag_name}</div>
@@ -121,7 +121,7 @@ export default function MetricsPage() {
           </a>
         </div>
         <div className="border rounded-xl p-4 bg-white grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-          {ptByMonth.map((m) => (
+          {ptByMonth.map((m: any) => (
             <div key={m.month_start} className="text-center">
               <div className="text-xs text-gray-600">
                 {new Date(m.month_start).toLocaleDateString(undefined, {
@@ -143,7 +143,7 @@ export default function MetricsPage() {
           </a>
         </div>
         <div className="border rounded-xl p-4 bg-white grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-          {notesByMonth.map((m) => (
+          {notesByMonth.map((m: any) => (
             <div key={m.month_start} className="text-center">
               <div className="text-xs text-gray-600">
                 {new Date(m.month_start).toLocaleDateString(undefined, {

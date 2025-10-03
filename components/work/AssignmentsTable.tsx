@@ -48,7 +48,7 @@ export default function AssignmentsTable() {
   }, [org.id, status, module]);
 
   function toggle(id: string) {
-    setSel((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSel((prev: any) => (prev.includes(id) ? prev.filter((x: any) => x !== id) : [...prev, id]));
   }
 
   async function bulk(set: any) {
@@ -69,7 +69,7 @@ export default function AssignmentsTable() {
         <h3 className="font-semibold mr-auto">Asignaciones</h3>
         <select
           value={module}
-          onChange={(e) => setModule(e.target.value)}
+          onChange={(e: any) => setModule(e.target.value)}
           className="rounded-lg border px-2 py-1 bg-white dark:bg-slate-900"
         >
           <option value="">Todos</option>
@@ -81,7 +81,7 @@ export default function AssignmentsTable() {
         </select>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          onChange={(e: any) => setStatus(e.target.value)}
           className="rounded-lg border px-2 py-1 bg-white dark:bg-slate-900"
         >
           <option value="">Todos</option>
@@ -110,7 +110,7 @@ export default function AssignmentsTable() {
               <th className="p-2">
                 <input
                   type="checkbox"
-                  onChange={(e) => setSel(e.target.checked ? rows.map((r) => r.id) : [])}
+                  onChange={(e: any) => setSel(e.target.checked ? rows.map((r: any) => r.id) : [])}
                   checked={sel.length === rows.length && rows.length > 0}
                 />
               </th>
@@ -123,7 +123,7 @@ export default function AssignmentsTable() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r: any) => (
               <tr key={r.id} className="border-b">
                 <td className="p-2">
                   <input

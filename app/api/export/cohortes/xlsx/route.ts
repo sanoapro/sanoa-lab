@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   const params = new URLSearchParams();
   params.set("org_id", org_id);
-  ["from", "to", "cohort"].forEach((k) => {
+  ["from", "to", "cohort"].forEach((k: any) => {
     const v = url.searchParams.get(k);
     if (v) params.set(k, v);
   });
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
 
   const filename = `cohortes_${org_id}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  return new Response(buf, {
+  return new Response(new Blob([buf]), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,

@@ -10,7 +10,7 @@ const DIM = 1536;
 const hasGemini = () => !!process.env.GEMINI_API_KEY;
 const hasOpenAI = () => !!process.env.OPENAI_API_KEY;
 
-function toDim(vec: number[], dim = DIM) {
+function toDim(vec: number[], dim: any = DIM) {
   if (vec.length === dim) return vec;
   if (vec.length > dim) return vec.slice(0, dim);
   return vec.concat(Array(dim - vec.length).fill(0));
@@ -29,7 +29,7 @@ async function embedBatchGemini(
   const url = `${base}/models/text-embedding-004:batchEmbedContents?key=${process.env.GEMINI_API_KEY}`;
 
   const body = {
-    requests: texts.map((t) => ({
+    requests: texts.map((t: any) => ({
       model: GEM_MODEL,
       content: { parts: [{ text: t }] },
     })),
@@ -43,7 +43,7 @@ async function embedBatchGemini(
   if (!r.ok) throw new Error(await r.text());
   const j = await r.json();
   const arr = (j.embeddings || []) as Array<{ values: number[] }>;
-  return arr.map((e) => ({
+  return arr.map((e: any) => ({
     vec: toDim(e.values || []),
     provider: "gemini",
     model: GEM_MODEL,
@@ -114,9 +114,9 @@ export async function POST(req: Request) {
     let total = 0;
     for (let i = 0; i < rows.length; i += 100) {
       const slice = rows.slice(i, i + 100);
-      const embeds = await embedBatch(slice.map((r) => r.content));
+      const embeds = await embedBatch(slice.map((r: any) => r.content));
 
-      const payload = slice.map((r, idx) => {
+      const payload = slice.map((r: any, idx: any) => {
         const e = embeds[idx];
         // Si no hay proveedor o el vector es todo ceros → guardamos embedding NULL
         const embedding = !e.provider || isAllZeros(e.vec) ? null : (e.vec as any);
@@ -172,9 +172,9 @@ export async function POST(req: Request) {
     let total = 0;
     for (let i = 0; i < rows.length; i += 100) {
       const slice = rows.slice(i, i + 100);
-      const embeds = await embedBatch(slice.map((r) => r.content));
+      const embeds = await embedBatch(slice.map((r: any) => r.content));
 
-      const payload = slice.map((r, idx) => {
+      const payload = slice.map((r: any, idx: any) => {
         const e = embeds[idx];
         const embedding = !e.provider || isAllZeros(e.vec) ? null : (e.vec as any);
         return {

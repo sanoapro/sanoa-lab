@@ -1,12 +1,10 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { z } from "zod";
 
 import { createServiceClient } from "@/lib/supabase/service";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
+import { stripe, getBaseUrl } from "@/lib/billing/stripe";
 
 const Body = z.object({
   org_id: z.string().uuid(),
@@ -14,9 +12,18 @@ const Body = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Verifica Stripe configurado
+  if (!stripe) {
+    return NextResponse.json(
+      { error: "Stripe no configurado (faltan STRIPE_SECRET_KEY/NEXT_PUBLIC_SITE_URL)" },
+      { status: 501 },
+    );
+  }
+
   try {
     const { org_id, return_path } = Body.parse(await req.json());
 
+    // Busca el customer vinculado a la organización
     const supa = createServiceClient();
     const { data, error } = await supa
       .from("org_billing")
@@ -31,10 +38,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const base = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
+    // Normaliza base y path
+    const base = getBaseUrl();
+    const normalizedPath = return_path.startsWith("/") ? return_path : `/${return_path}`;
+    const returnUrl = `${base}${normalizedPath}`;
+
+    // Crea sesión del portal de facturación
     const sess = await stripe.billingPortal.sessions.create({
       customer: data.stripe_customer_id,
-      return_url: `${base}${return_path}`,
+      return_url: returnUrl,
     });
 
     return NextResponse.json({ url: sess.url });

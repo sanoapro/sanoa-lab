@@ -124,7 +124,7 @@ export function useActiveOrg() {
         let shouldPersistServer = false;
 
         if (orgs.length > 0) {
-          const match = currentId ? orgs.find((item) => item.id === currentId) : undefined;
+          const match = currentId ? orgs.find((item: any) => item.id === currentId) : undefined;
           const chosen = match ?? orgs[0];
           if (chosen) {
             nextOrg = normalizeOrg(chosen);

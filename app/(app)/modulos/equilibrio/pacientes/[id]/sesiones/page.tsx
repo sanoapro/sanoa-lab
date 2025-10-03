@@ -39,7 +39,7 @@ export default function SessionsList({ params }: { params: { id: string } }) {
         <div className="opacity-70 text-sm">Sin sesiones registradas.</div>
       ) : (
         <ul className="space-y-2">
-          {items.map((it) => (
+          {items.map((it: any) => (
             <li key={it.id} className="flex items-center justify-between border rounded p-2">
               <div className="text-sm">
                 <div className="font-medium">{new Date(it.date).toLocaleString()}</div>

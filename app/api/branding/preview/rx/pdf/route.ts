@@ -58,9 +58,9 @@ export async function GET(req: NextRequest) {
     text: string,
     x: number,
     y: number,
-    size = 11,
-    bold = false,
-    color = rgb(0, 0, 0),
+    size: any = 11,
+    bold: any = false,
+    color: any = rgb(0, 0, 0),
   ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
   }
 
   const bytes = await pdf.save();
-  return new NextResponse(Buffer.from(bytes), {
+  return new NextResponse(new Blob([bytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

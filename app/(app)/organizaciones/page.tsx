@@ -70,7 +70,7 @@ export default function OrgsPage() {
           <Input
             placeholder="Nombre de la organización"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: any) => setName(e.target.value)}
           />
           <Button onClick={() => void create()}>Crear</Button>
         </div>
@@ -80,7 +80,7 @@ export default function OrgsPage() {
         {orgs.length === 0 && (
           <div className="p-4 text-sm text-gray-600">Aún no tienes organizaciones.</div>
         )}
-        {orgs.map((o) => (
+        {orgs.map((o: any) => (
           <div key={o.id} className="p-4 space-y-2">
             <div className="flex items-center justify-between">
               <div className="font-medium">
@@ -97,7 +97,7 @@ export default function OrgsPage() {
             </div>
             <div className="text-sm text-gray-600">Miembros</div>
             <div className="rounded-md border">
-              {(members[o.id] ?? []).map((m) => (
+              {(members[o.id] ?? []).map((m: any) => (
                 <div
                   key={m.user_id}
                   className="p-2 flex items-center justify-between border-b last:border-b-0"

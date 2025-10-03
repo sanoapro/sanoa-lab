@@ -237,7 +237,7 @@ export default function PerfilPage() {
               </label>
               <input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e: any) => setName(e.target.value)}
                 placeholder="Tu nombre"
                 className="
                   w-full rounded-2xl border border-[var(--color-brand-border)]

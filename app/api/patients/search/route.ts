@@ -12,7 +12,7 @@ function toInt(v: string | null, def: number) {
 function splitMulti(q: URLSearchParams, key: string): string[] | null {
   const vals = q
     .getAll(key)
-    .flatMap((v) => v.split(",").map((s) => s.trim()).filter(Boolean));
+    .flatMap((v: any) => v.split(",").map((s: any) => s.trim()).filter(Boolean));
   return vals.length ? Array.from(new Set(vals)) : null;
 }
 
@@ -35,12 +35,12 @@ function hasLegacySearchParams(params: URLSearchParams) {
     "page",
     "pageSize",
   ];
-  return legacyKeys.some((key) => params.has(key));
+  return legacyKeys.some((key: any) => params.has(key));
 }
 
 function formatZodError(error: z.ZodError) {
   return error.issues
-    .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+    .map((issue: any) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
     .join("; ");
 }
 

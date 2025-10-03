@@ -13,7 +13,7 @@ async function fetchAllWithCookies(origin: string, path: string, params: URLSear
   const cookieStore = await nextCookies();
   const cookieHeader = cookieStore
     .getAll()
-    .map((c) => `${c.name}=${c.value}`)
+    .map((c: any) => `${c.name}=${c.value}`)
     .join("; ");
   while (page <= 20) {
     params.set("page", String(page));

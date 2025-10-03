@@ -4,10 +4,21 @@ import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import * as XLSX from "xlsx";
 
-function toInt(v: string | null, d = 50) {
+function toInt(v: string | null, d: number = 50): number {
   const n = v ? parseInt(v, 10) : NaN;
   return Number.isFinite(n) && n > 0 ? n : d;
 }
+
+type PatientViewRow = {
+  id: string;
+  org_id: string;
+  name: string | null;
+  gender: string | null;
+  dob: string | null; // ISO or YYYY-MM-DD
+  tags: string[] | null;
+  created_at: string | null; // ISO
+  deleted_at: string | null; // ISO
+};
 
 export async function GET(req: NextRequest) {
   // MODE: session
@@ -31,12 +42,12 @@ export async function GET(req: NextRequest) {
 
   const q = url.searchParams.get("q")?.trim() || "";
   const genero = url.searchParams.get("genero")?.trim() || "";
-  const tagsAny = (url.searchParams.get("tagsAny") || "")
+  const tagsAny: string[] = (url.searchParams.get("tagsAny") || "")
     .split(",")
-    .map((s) => s.trim())
+    .map((s: string) => s.trim())
     .filter(Boolean);
-  const from = url.searchParams.get("from");
-  const to = url.searchParams.get("to");
+  const from = url.searchParams.get("from") || undefined;
+  const to = url.searchParams.get("to") || undefined;
   const page = toInt(url.searchParams.get("page"), 1);
   const pageSize = Math.min(toInt(url.searchParams.get("pageSize"), 1000), 5000); // export permite más
 
@@ -49,12 +60,14 @@ export async function GET(req: NextRequest) {
   if (genero) sel = sel.eq("gender", genero);
   if (from) sel = sel.gte("created_at", from);
   if (to) sel = sel.lte("created_at", to);
-  if (tagsAny.length) sel = sel.contains("tags", tagsAny); // any-overlap si usas GIN de array; si es jsonb, ajustar
+  if (tagsAny.length) sel = sel.contains("tags", tagsAny); // si tags es array[] (ajustar si es jsonb)
 
   const fromIdx = (page - 1) * pageSize;
   const { data, error } = await sel
     .order("created_at", { ascending: false })
-    .range(fromIdx, fromIdx + pageSize - 1);
+    .range(fromIdx, fromIdx + pageSize - 1)
+    .returns<PatientViewRow[]>();
+
   if (error) {
     return new Response(
       JSON.stringify({ ok: false, error: { code: "DB_ERROR", message: error.message } }),
@@ -62,7 +75,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const rows = (data ?? []).map((r) => ({
+  const rows = (data ?? []).map((r: PatientViewRow) => ({
     ID: r.id,
     Nombre: r.name ?? "",
     Género: r.gender ?? "",
@@ -78,7 +91,7 @@ export async function GET(req: NextRequest) {
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
 
   const filename = `pacientes_${org_id}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  return new Response(buf, {
+  return new Response(new Blob([buf]), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${filename}"`,

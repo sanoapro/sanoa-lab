@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
     if (!cur.latest) cur.latest = { value: m.value, at: m.measured_at };
   });
 
-  const data = Array.from(perType.entries()).map(([type, v]) => ({
+  const data = Array.from(perType.entries()).map(([type, v]: any) => ({
     type,
     total: v.total,
     in_range: v.in_range,

@@ -19,8 +19,8 @@ export default function ClearAuthPage() {
           localStorage.removeItem(authStorageKey);
         } else {
           Object.keys(localStorage)
-            .filter((key) => key.startsWith("sb-") && key.endsWith("-auth-token"))
-            .forEach((key) => localStorage.removeItem(key));
+            .filter((key: any) => key.startsWith("sb-") && key.endsWith("-auth-token"))
+            .forEach((key: any) => localStorage.removeItem(key));
         }
 
         // 2) Cierra sesión local por si hubiera un estado intermedio
@@ -30,7 +30,7 @@ export default function ClearAuthPage() {
         // 3) Limpia caches del SW (si aplica)
         if ("caches" in window) {
           const keys = await caches.keys();
-          await Promise.all(keys.map((k) => caches.delete(k)));
+          await Promise.all(keys.map((k: any) => caches.delete(k)));
         }
       } catch (_) {}
       // 4) Vuelve al login limpio

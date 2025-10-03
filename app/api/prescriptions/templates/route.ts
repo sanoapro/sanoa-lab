@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const rows = Array.isArray(body) ? parseMany() : [parseSingle()];
 
   // Genera IDs si faltan (lado cliente opcional)
-  const withIds = rows.map((r) => ({ ...r, id: r.id ?? crypto.randomUUID() }));
+  const withIds = rows.map((r: any) => ({ ...r, id: r.id ?? crypto.randomUUID() }));
 
   const { data, error } = await svc
     .from("rx_templates")

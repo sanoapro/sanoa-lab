@@ -28,7 +28,7 @@ export function drawWrappedText(
   x: number,
   y: number,
   width: number,
-  size = 10,
+  size: any = 10,
 ) {
   const words = String(text).split(/\s+/);
   let line = "";

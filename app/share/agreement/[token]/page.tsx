@@ -106,7 +106,7 @@ export default function AgreementSharePage() {
               type="checkbox"
               className="mt-1"
               checked={!!checks[c.key]}
-              onChange={(e) => setChecks((prev) => ({ ...prev, [c.key]: e.target.checked }))}
+              onChange={(e: any) => setChecks((prev: any) => ({ ...prev, [c.key]: e.target.checked }))}
             />
             <span>
               {c.label}
@@ -127,7 +127,7 @@ export default function AgreementSharePage() {
         <input
           className="rounded-xl border px-3 py-2"
           value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          onChange={(e: any) => setFullName(e.target.value)}
           placeholder="Nombre Apellidos"
         />
       </label>

@@ -45,8 +45,8 @@ export function computePatientRisk(
   to: string,
   tz: string,
   items: Booking[],
-  min_n = 3,
-  top = 50,
+  min_n: any = 3,
+  top: any = 50,
 ): PatientRiskRow[] {
   // Agrupar por paciente
   const byPat = new Map<string, Booking[]>();
@@ -62,7 +62,7 @@ export function computePatientRisk(
   const rows: PatientRiskRow[] = [];
   for (const [key, arr0] of byPat) {
     // Ordenar por fecha de inicio asc
-    const arr = arr0.slice().sort((a, b) => {
+    const arr = arr0.slice().sort((a: any, b: any) => {
       const as = a.start_at ? +new Date(a.start_at) : 0;
       const bs = b.start_at ? +new Date(b.start_at) : 0;
       return as - bs;
@@ -126,6 +126,6 @@ export function computePatientRisk(
   }
 
   // Ordenar por riesgo desc, luego por total desc
-  const sorted = rows.sort((a, b) => b.risk_score - a.risk_score || b.total - a.total);
+  const sorted = rows.sort((a: any, b: any) => b.risk_score - a.risk_score || b.total - a.total);
   return sorted.slice(0, Math.max(1, top));
 }

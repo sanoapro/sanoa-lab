@@ -79,11 +79,11 @@ export default function QuickBar({ placeholder = "Buscar paciente por nombre, te
     if (!open) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActive((a) => Math.min(a + 1, items.length - 1));
+      setActive((a: any) => Math.min(a + 1, items.length - 1));
       scrollIntoView(active + 1);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActive((a) => Math.max(a - 1, 0));
+      setActive((a: any) => Math.max(a - 1, 0));
       scrollIntoView(active - 1);
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -109,7 +109,7 @@ export default function QuickBar({ placeholder = "Buscar paciente por nombre, te
           aria-controls="patient-quickbar-list"
           aria-activedescendant={open && items[active]?.id ? `patient-opt-${items[active].id}` : undefined}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e: any) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-50 placeholder:text-slate-400"
@@ -137,7 +137,7 @@ export default function QuickBar({ placeholder = "Buscar paciente por nombre, te
             {items.length === 0 && !loading ? (
               <li className="px-3 py-3 text-sm text-slate-500">Sin resultados</li>
             ) : (
-              items.map((it, idx) => (
+              items.map((it: any, idx: any) => (
                 <li
                   id={`patient-opt-${it.id}`}
                   role="option"

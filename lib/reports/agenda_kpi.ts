@@ -18,7 +18,7 @@ export function computeRatesByResource(
   to: string,
   tz: string,
   items: Booking[],
-  min_n = 10,
+  min_n: any = 10,
 ): { rows: RateRow[]; percentiles: ReturnType<typeof pctSummary> } {
   const map = new Map<string, RateRow>();
   for (const b of items) {
@@ -41,10 +41,10 @@ export function computeRatesByResource(
     map.set(resKey, row);
   }
   const rows = Array.from(map.values())
-    .map((r) => ({ ...r, rate: r.count_total ? r.count_ns / r.count_total : 0 }))
-    .filter((r) => r.count_total >= min_n)
-    .sort((a, b) => b.rate - a.rate || b.count_total - a.count_total);
-  const percentiles = pctSummary(rows.map((r) => r.rate));
+    .map((r: any) => ({ ...r, rate: r.count_total ? r.count_ns / r.count_total : 0 }))
+    .filter((r: any) => r.count_total >= min_n)
+    .sort((a: any, b: any) => b.rate - a.rate || b.count_total - a.count_total);
+  const percentiles = pctSummary(rows.map((r: any) => r.rate));
   return { rows, percentiles };
 }
 
@@ -54,7 +54,7 @@ export function computeRatesByPatient(
   to: string,
   tz: string,
   items: Booking[],
-  min_n = 3,
+  min_n: any = 3,
 ): { rows: RateRow[]; percentiles: ReturnType<typeof pctSummary> } {
   const map = new Map<string, RateRow>();
   for (const b of items) {
@@ -77,9 +77,9 @@ export function computeRatesByPatient(
     map.set(pKey, row);
   }
   const rows = Array.from(map.values())
-    .map((r) => ({ ...r, rate: r.count_total ? r.count_ns / r.count_total : 0 }))
-    .filter((r) => r.count_total >= min_n)
-    .sort((a, b) => b.rate - a.rate || b.count_total - a.count_total);
-  const percentiles = pctSummary(rows.map((r) => r.rate));
+    .map((r: any) => ({ ...r, rate: r.count_total ? r.count_ns / r.count_total : 0 }))
+    .filter((r: any) => r.count_total >= min_n)
+    .sort((a: any, b: any) => b.rate - a.rate || b.count_total - a.count_total);
+  const percentiles = pctSummary(rows.map((r: any) => r.rate));
   return { rows, percentiles };
 }

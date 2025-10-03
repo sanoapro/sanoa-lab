@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       );
 
     const variables = Array.from(
-      new Set((parsed.data.variables ?? []).map((s) => s.trim()).filter(Boolean)),
+      new Set((parsed.data.variables ?? []).map((s: any) => s.trim()).filter(Boolean)),
     );
 
     // Upsert por (org_id, name)

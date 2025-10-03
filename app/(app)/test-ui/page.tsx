@@ -130,7 +130,7 @@ export default function MisArchivosPage() {
       const { error } = await supabase.storage.from(bucket).remove([name]);
       if (error) throw error;
       // Actualizamos localmente
-      setFiles((prev) => (prev || []).filter((f) => f.name !== name));
+      setFiles((prev: any) => (prev || []).filter((f: any) => f.name !== name));
       setMsg("🗑️ Archivo eliminado.");
     } catch (e: any) {
       setMsg(e?.message ?? "No se pudo eliminar");
@@ -252,7 +252,7 @@ export default function MisArchivosPage() {
       {/* Lista */}
       {files && !isEmpty && !loading && (
         <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {files.map((f) => {
+          {files.map((f: any) => {
             const size = f.metadata?.size ?? (f.metadata?.contentLength as number | undefined);
             const shortName = f.name.split("/").pop() || f.name;
 

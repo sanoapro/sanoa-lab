@@ -7,7 +7,7 @@ export default function PrintRx({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     (async () => {
-      const rx = await fetch(`/api/prescriptions/${id}/json`).then((r) => r.json());
+      const rx = await fetch(`/api/prescriptions/${id}/json`).then((r: any) => r.json());
       setData(rx);
       setTimeout(() => window.print(), 400);
     })();

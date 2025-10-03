@@ -43,7 +43,7 @@ export default function ActiveOrgSelectorCard({ className }: { className?: strin
     e.preventDefault();
     if (!selected) return;
     setSaving(true);
-    const org = orgs.find((o) => o.id === selected) || null;
+    const org = orgs.find((o: any) => o.id === selected) || null;
     try {
       setActiveOrg(selected, org?.name ?? null);
       try {
@@ -104,10 +104,10 @@ export default function ActiveOrgSelectorCard({ className }: { className?: strin
               <span className="mb-1 block text-[var(--color-brand-bluegray)]">Elige organización</span>
               <select
                 value={selected}
-                onChange={(e) => setSelected(e.target.value)}
+                onChange={(e: any) => setSelected(e.target.value)}
                 className="w-full rounded-2xl border border-[var(--color-brand-border)] bg-white px-4 py-3 text-[var(--color-brand-text)] dark:bg-slate-900"
               >
-                {orgs.map((o) => (
+                {orgs.map((o: any) => (
                   <option key={o.id} value={o.id}>
                     {o.is_personal ? "Personal" : o.name}
                   </option>

@@ -32,7 +32,7 @@ function SessionsList({ orgId, patientId }: { orgId: string; patientId: string }
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r: any) => (
               <tr key={r.id} className="border-t">
                 <td className="px-3 py-2">{new Date(r.created_at).toLocaleString()}</td>
                 <td className="px-3 py-2">{r.signed_at ? "Sí" : "No"}</td>

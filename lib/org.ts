@@ -159,8 +159,8 @@ export async function listMyOrganizations(): Promise<Organization[]> {
   if (errMem) throw errMem;
 
   const orgIds = new Set<string>([
-    ...(asOwner ?? []).map((o) => o.id),
-    ...(memberships ?? []).map((m) => m.org_id),
+    ...(asOwner ?? []).map((o: any) => o.id),
+    ...(memberships ?? []).map((m: any) => m.org_id),
   ]);
   if (orgIds.size === 0) return [];
 
@@ -176,6 +176,7 @@ export async function listMyOrganizations(): Promise<Organization[]> {
 
 /**
  * Crea una organización y asegura que el creador quede como owner (membership).
+ * Nota: el esquema exige `created_by`, así que lo incluimos en el insert.
  */
 export async function createOrganization(name: string): Promise<Organization> {
   const supabase = getSupabaseBrowser();
@@ -184,9 +185,11 @@ export async function createOrganization(name: string): Promise<Organization> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("No hay sesión.");
 
+  const ownerId = user.id;
+
   const { data: org, error } = await supabase
     .from("organizations")
-    .insert({ owner_user_id: user.id, name })
+    .insert({ owner_user_id: ownerId, created_by: ownerId, name }) // <- created_by requerido
     .select("*")
     .single();
   if (error) throw error;
@@ -194,7 +197,7 @@ export async function createOrganization(name: string): Promise<Organization> {
   // upsert de membership como owner
   const { error: upErr } = await supabase
     .from("organization_members")
-    .upsert({ org_id: org.id, user_id: user.id, role: "owner" });
+    .upsert({ org_id: org.id, user_id: ownerId, role: "owner" });
   if (upErr) throw upErr;
 
   return org as Organization;

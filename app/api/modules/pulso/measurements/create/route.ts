@@ -37,10 +37,10 @@ export async function POST(req: NextRequest) {
 
   const rows = body.items
     .filter(
-      (x) =>
+      (x: any) =>
         x && typeof x.type === "string" && typeof x.value === "number" && !Number.isNaN(x.value),
     )
-    .map((x) => ({
+    .map((x: any) => ({
       org_id: body.org_id!,
       patient_id: body.patient_id!,
       type: x.type!,

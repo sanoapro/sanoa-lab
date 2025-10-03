@@ -78,7 +78,7 @@ function calcHASBLED({
   drugsAlcohol: boolean;
 }) {
   let s = 0;
-  [htn, renal, liver, stroke, bleed, inrLab, age65, drugsAlcohol].forEach((b) => (s += b ? 1 : 0));
+  [htn, renal, liver, stroke, bleed, inrLab, age65, drugsAlcohol].forEach((b: any) => (s += b ? 1 : 0));
   return s;
 }
 
@@ -170,14 +170,14 @@ function CHA2DS2VASC() {
     <section className={box}>
       <AccentHeader emoji="❤️">CHA₂DS₂-VASc (FA)</AccentHeader>
       <div className="grid md:grid-cols-4 gap-3 mt-4">
-        <Chk label="Insuf. cardiaca" v={st.ccf} set={(v) => set({ ...st, ccf: v })} />
-        <Chk label="Hipertensión" v={st.htn} set={(v) => set({ ...st, htn: v })} />
-        <Chk label="Edad ≥ 75" v={st.age75} set={(v) => set({ ...st, age75: v })} />
-        <Chk label="Diabetes" v={st.dm} set={(v) => set({ ...st, dm: v })} />
-        <Chk label="EVC/AIT prev." v={st.strokeTIA} set={(v) => set({ ...st, strokeTIA: v })} />
-        <Chk label="Enf. vascular" v={st.vasc} set={(v) => set({ ...st, vasc: v })} />
-        <Chk label="Edad 65–74" v={st.age65_74} set={(v) => set({ ...st, age65_74: v })} />
-        <Chk label="Mujer" v={st.female} set={(v) => set({ ...st, female: v })} />
+        <Chk label="Insuf. cardiaca" v={st.ccf} set={(v: any) => set({ ...st, ccf: v })} />
+        <Chk label="Hipertensión" v={st.htn} set={(v: any) => set({ ...st, htn: v })} />
+        <Chk label="Edad ≥ 75" v={st.age75} set={(v: any) => set({ ...st, age75: v })} />
+        <Chk label="Diabetes" v={st.dm} set={(v: any) => set({ ...st, dm: v })} />
+        <Chk label="EVC/AIT prev." v={st.strokeTIA} set={(v: any) => set({ ...st, strokeTIA: v })} />
+        <Chk label="Enf. vascular" v={st.vasc} set={(v: any) => set({ ...st, vasc: v })} />
+        <Chk label="Edad 65–74" v={st.age65_74} set={(v: any) => set({ ...st, age65_74: v })} />
+        <Chk label="Mujer" v={st.female} set={(v: any) => set({ ...st, female: v })} />
       </div>
       <ScoreDisplay value={s} note={risk} />
     </section>
@@ -201,21 +201,21 @@ function HASBLED() {
     <section className={box}>
       <AccentHeader emoji="🩸">HAS-BLED</AccentHeader>
       <div className="grid md:grid-cols-4 gap-3 mt-4">
-        <Chk label="HTA" v={st.htn} set={(v) => set({ ...st, htn: v })} />
-        <Chk label="Función renal deficiente" v={st.renal} set={(v) => set({ ...st, renal: v })} />
+        <Chk label="HTA" v={st.htn} set={(v: any) => set({ ...st, htn: v })} />
+        <Chk label="Función renal deficiente" v={st.renal} set={(v: any) => set({ ...st, renal: v })} />
         <Chk
           label="Función hepática deficiente"
           v={st.liver}
-          set={(v) => set({ ...st, liver: v })}
+          set={(v: any) => set({ ...st, liver: v })}
         />
-        <Chk label="Antecedente de EVC" v={st.stroke} set={(v) => set({ ...st, stroke: v })} />
-        <Chk label="Sangrado previo" v={st.bleed} set={(v) => set({ ...st, bleed: v })} />
-        <Chk label="INR inestable/lab." v={st.inrLab} set={(v) => set({ ...st, inrLab: v })} />
-        <Chk label="Edad > 65" v={st.age65} set={(v) => set({ ...st, age65: v })} />
+        <Chk label="Antecedente de EVC" v={st.stroke} set={(v: any) => set({ ...st, stroke: v })} />
+        <Chk label="Sangrado previo" v={st.bleed} set={(v: any) => set({ ...st, bleed: v })} />
+        <Chk label="INR inestable/lab." v={st.inrLab} set={(v: any) => set({ ...st, inrLab: v })} />
+        <Chk label="Edad > 65" v={st.age65} set={(v: any) => set({ ...st, age65: v })} />
         <Chk
           label="Drogas/Alcohol"
           v={st.drugsAlcohol}
-          set={(v) => set({ ...st, drugsAlcohol: v })}
+          set={(v: any) => set({ ...st, drugsAlcohol: v })}
         />
       </div>
       <ScoreDisplay value={s} note={risk} />
@@ -264,7 +264,7 @@ function I({ v, set }: { v: string; set: (x: string) => void }) {
   return (
     <input
       value={v}
-      onChange={(e) => set(e.target.value)}
+      onChange={(e: any) => set(e.target.value)}
       className="border rounded-xl p-2 w-full"
     />
   );
@@ -272,7 +272,7 @@ function I({ v, set }: { v: string; set: (x: string) => void }) {
 function Chk({ label, v, set }: { label: string; v: boolean; set: (x: boolean) => void }) {
   return (
     <label className="inline-flex items-center gap-2 text-sm">
-      <input type="checkbox" checked={v} onChange={(e) => set(e.target.checked)} />
+      <input type="checkbox" checked={v} onChange={(e: any) => set(e.target.checked)} />
       <span>{label}</span>
     </label>
   );

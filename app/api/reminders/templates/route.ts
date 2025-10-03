@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
-function toInt(v: string | null, d = 50) {
+function toInt(v: string | null, d: any = 50) {
   const n = v ? parseInt(v, 10) : NaN;
   return Number.isFinite(n) && n > 0 ? n : d;
 }

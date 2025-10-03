@@ -38,7 +38,7 @@ function Inner() {
       <FormRenderer
         schema={tpl.schema}
         submitting={saving}
-        onSubmit={async (answers) => {
+        onSubmit={async (answers: any) => {
           try {
             setSaving(true);
             const r = await fetch("/api/forms/responses", {

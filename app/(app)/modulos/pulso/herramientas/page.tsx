@@ -28,7 +28,7 @@ export default function HerramientasPulso() {
         body: JSON.stringify({
           items: text
             .split(",")
-            .map((s) => s.trim())
+            .map((s: any) => s.trim())
             .filter(Boolean),
         }),
       });
@@ -62,7 +62,7 @@ export default function HerramientasPulso() {
             className="w-full border rounded-xl p-3 mt-1"
             rows={3}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e: any) => setText(e.target.value)}
             placeholder="paracetamol, amoxicilina, claritromicina"
           />
         </label>
@@ -95,7 +95,7 @@ export default function HerramientasPulso() {
                     </td>
                   </tr>
                 )}
-                {result.map((x, i) => (
+                {result.map((x: any, i: any) => (
                   <tr key={i} className="border-t border-[var(--color-brand-border)]">
                     <td className="p-2">{x.drugA}</td>
                     <td className="p-2">{x.drugB}</td>

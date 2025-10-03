@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const rows = body.items.map((it) => ({
+  const rows = body.items.map((it: any) => ({
     id: it.id ?? undefined,
     org_id: body.org_id!,
     module: String(it.module || "equilibrio"),

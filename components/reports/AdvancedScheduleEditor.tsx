@@ -47,8 +47,8 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
 
   function load() {
     fetch(`/api/reports/schedules?org_id=${orgId}`)
-      .then((r) => r.json())
-      .then((j) => setList(j.ok ? j.data.filter((x: any) => x.report === "agenda_alerts") : []));
+      .then((r: any) => r.json())
+      .then((j: any) => setList(j.ok ? j.data.filter((x: any) => x.report === "agenda_alerts") : []));
   }
   useEffect(() => {
     load();
@@ -79,7 +79,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
               </tr>
             </thead>
             <tbody>
-              {list.map((it) => (
+              {list.map((it: any) => (
                 <tr key={it.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2 underline cursor-pointer" onClick={() => setForm(it)}>
                     {it.name}
@@ -110,7 +110,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))}
           />
         </div>
         <div className="grid grid-cols-3 gap-2">
@@ -119,7 +119,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
             <select
               className="rounded border px-3 py-2 w-full"
               value={form.channel}
-              onChange={(e) => setForm((f) => ({ ...f, channel: e.target.value as any }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, channel: e.target.value as any }))}
             >
               <option value="email">Email</option>
               <option value="whatsapp">WhatsApp</option>
@@ -131,7 +131,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
             <input
               className="rounded border px-3 py-2 w-full"
               value={form.target}
-              onChange={(e) => setForm((f) => ({ ...f, target: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, target: e.target.value }))}
             />
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
             <select
               className="rounded border px-3 py-2 w-full"
               value={form.frequency}
-              onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as any }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, frequency: e.target.value as any }))}
             >
               <option value="daily">Diaria</option>
               <option value="weekly">Semanal</option>
@@ -156,8 +156,8 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
               max={23}
               className="rounded border px-3 py-2 w-full"
               value={form.at_hour}
-              onChange={(e) =>
-                setForm((f) => ({
+              onChange={(e: any) =>
+                setForm((f: any) => ({
                   ...f,
                   at_hour: Math.max(0, Math.min(23, parseInt(e.target.value || "0", 10))),
                 }))
@@ -172,8 +172,8 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
               max={59}
               className="rounded border px-3 py-2 w-full"
               value={form.at_minute}
-              onChange={(e) =>
-                setForm((f) => ({
+              onChange={(e: any) =>
+                setForm((f: any) => ({
                   ...f,
                   at_minute: Math.max(0, Math.min(59, parseInt(e.target.value || "0", 10))),
                 }))
@@ -187,7 +187,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={form.tz}
-            onChange={(e) => setForm((f) => ({ ...f, tz: e.target.value }))}
+            onChange={(e: any) => setForm((f: any) => ({ ...f, tz: e.target.value }))}
           />
         </div>
 
@@ -196,10 +196,10 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
           <textarea
             className="rounded border px-3 py-2 w-full min-h-[160px]"
             value={JSON.stringify(form.params, null, 2)}
-            onChange={(e) => {
+            onChange={(e: any) => {
               try {
                 const v = JSON.parse(e.target.value);
-                setForm((f) => ({ ...f, params: v }));
+                setForm((f: any) => ({ ...f, params: v }));
               } catch {
                 /* ignore */
               }
@@ -217,7 +217,7 @@ export default function AdvancedScheduleEditor({ orgId }: { orgId: string }) {
               type="checkbox"
               className="mr-2"
               checked={!!form.is_active}
-              onChange={(e) => setForm((f) => ({ ...f, is_active: e.target.checked }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, is_active: e.target.checked }))}
             />
             Activo
           </label>

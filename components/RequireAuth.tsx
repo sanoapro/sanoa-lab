@@ -19,7 +19,7 @@ export function RequireAuth({ children }: Props) {
     let mounted = true;
 
     // 1) Chequeo inicial
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }: any) => {
       if (!mounted) return;
       const isAuthed = Boolean(data.session);
       if (!isAuthed) router.replace("/login");
@@ -27,7 +27,7 @@ export function RequireAuth({ children }: Props) {
     });
 
     // 2) Suscripción a cambios de auth
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       const isAuthed = Boolean(session);
       if (!isAuthed) router.replace("/login");
     });

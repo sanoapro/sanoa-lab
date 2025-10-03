@@ -35,7 +35,7 @@ export default function RiesgoCVD() {
               aria-label="Edad"
               type="number"
               value={age}
-              onChange={(e) => setAge(+e.target.value)}
+              onChange={(e: any) => setAge(+e.target.value)}
               className="border p-1 rounded w-full"
             />
           </label>
@@ -44,7 +44,7 @@ export default function RiesgoCVD() {
             <select
               aria-label="Sexo"
               value={sex}
-              onChange={(e) => setSex(e.target.value as any)}
+              onChange={(e: any) => setSex(e.target.value as any)}
               className="border p-1 rounded w-full"
             >
               <option value="M">M</option>
@@ -57,7 +57,7 @@ export default function RiesgoCVD() {
               aria-label="Fumador"
               type="checkbox"
               checked={smoker}
-              onChange={(e) => setSmoker(e.target.checked)}
+              onChange={(e: any) => setSmoker(e.target.checked)}
             />
           </label>
           <label>
@@ -66,7 +66,7 @@ export default function RiesgoCVD() {
               aria-label="Colesterol total"
               type="number"
               value={totalChol}
-              onChange={(e) => setTotalChol(+e.target.value)}
+              onChange={(e: any) => setTotalChol(+e.target.value)}
               className="border p-1 rounded w-full"
             />
           </label>
@@ -76,7 +76,7 @@ export default function RiesgoCVD() {
               aria-label="HDL"
               type="number"
               value={hdl}
-              onChange={(e) => setHdl(+e.target.value)}
+              onChange={(e: any) => setHdl(+e.target.value)}
               className="border p-1 rounded w-full"
             />
           </label>
@@ -86,7 +86,7 @@ export default function RiesgoCVD() {
               aria-label="SBP"
               type="number"
               value={sbp}
-              onChange={(e) => setSbp(+e.target.value)}
+              onChange={(e: any) => setSbp(+e.target.value)}
               className="border p-1 rounded w-full"
             />
           </label>
@@ -96,7 +96,7 @@ export default function RiesgoCVD() {
               aria-label="HTA tratada"
               type="checkbox"
               checked={treated}
-              onChange={(e) => setTreated(e.target.checked)}
+              onChange={(e: any) => setTreated(e.target.checked)}
             />
           </label>
         </div>

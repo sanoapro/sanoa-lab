@@ -13,7 +13,7 @@ const ListQuery = z.object({
   include_inactive: z
     .union([z.literal("true"), z.literal("false")])
     .optional()
-    .transform((v) => v === "true"),
+    .transform((v: any) => v === "true"),
 });
 
 const UpsertBody = z.object({
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     include_inactive: qp.get("include_inactive") || undefined,
   });
   if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i: any) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
 

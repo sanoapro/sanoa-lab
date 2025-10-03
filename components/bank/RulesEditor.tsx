@@ -42,7 +42,7 @@ export default function RulesEditor() {
       setLoading(true);
       // reglas por API. Solo se muestran pacientes de tu organización.
       const r = await fetch(`/api/bank/rules?org_id=${orgId}`)
-        .then((r) => r.json())
+        .then((r: any) => r.json())
         .catch(() => ({ ok: false }));
       // categorías desde Supabase browser client. Solo se muestran pacientes de tu organización.
       const supa = getSupabaseBrowser();
@@ -72,7 +72,7 @@ export default function RulesEditor() {
         set_tags: form.set_tags
           ? form.set_tags
               .split(",")
-              .map((s) => s.trim())
+              .map((s: any) => s.trim())
               .filter(Boolean)
           : null,
         priority: form.priority || 100,
@@ -85,7 +85,7 @@ export default function RulesEditor() {
     });
     const j = await res.json();
     if (j.ok) {
-      setRules((prev) => [...prev, ...j.data].sort((a, b) => a.priority - b.priority));
+      setRules((prev: any) => [...prev, ...j.data].sort((a: any, b: any) => a.priority - b.priority));
       setForm({ if_text_like: "", set_category_id: "", set_tags: "", priority: 100 });
     }
   }
@@ -93,7 +93,7 @@ export default function RulesEditor() {
   async function removeRule(id: string) {
     const res = await fetch(`/api/bank/rules/${id}?org_id=${orgId}`, { method: "DELETE" });
     const j = await res.json();
-    if (j.ok) setRules((prev) => prev.filter((r) => r.id !== id));
+    if (j.ok) setRules((prev: any) => prev.filter((r: any) => r.id !== id));
   }
 
   const containsTextId = useId();
@@ -130,7 +130,7 @@ export default function RulesEditor() {
               className="glass-input"
               placeholder="ej. Uber, Starbucks"
               value={form.if_text_like}
-              onChange={(e) => setForm((f) => ({ ...f, if_text_like: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, if_text_like: e.target.value }))}
               required
             />
           </Field>
@@ -139,10 +139,10 @@ export default function RulesEditor() {
               id={categoryId}
               className="glass-input"
               value={form.set_category_id}
-              onChange={(e) => setForm((f) => ({ ...f, set_category_id: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, set_category_id: e.target.value }))}
             >
               <option value="">(sin cambio)</option>
-              {cats.map((c) => (
+              {cats.map((c: any) => (
                 <option key={c.id} value={c.id}>
                   {c.name} · {c.kind}
                 </option>
@@ -155,7 +155,7 @@ export default function RulesEditor() {
               className="glass-input"
               placeholder="marketing, campaña"
               value={form.set_tags}
-              onChange={(e) => setForm((f) => ({ ...f, set_tags: e.target.value }))}
+              onChange={(e: any) => setForm((f: any) => ({ ...f, set_tags: e.target.value }))}
             />
           </Field>
           <Field label={<span className="text-sm">Prioridad</span>} htmlFor={priorityId}>
@@ -164,8 +164,8 @@ export default function RulesEditor() {
               type="number"
               className="glass-input"
               value={form.priority}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, priority: Number(e.target.value || 100) }))
+              onChange={(e: any) =>
+                setForm((f: any) => ({ ...f, priority: Number(e.target.value || 100) }))
               }
               min={1}
             />
@@ -211,8 +211,8 @@ export default function RulesEditor() {
 
         {!loading && rules.length > 0 && (
           <ul className="space-y-2">
-            {rules.map((r) => {
-              const category = cats.find((c) => c.id === r.set_category_id);
+            {rules.map((r: any) => {
+              const category = cats.find((c: any) => c.id === r.set_category_id);
               return (
                 <li key={r.id} className="rounded-lg border border-foreground/10 p-3">
                   <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

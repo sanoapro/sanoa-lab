@@ -16,8 +16,8 @@ type WindowCfg = {
 export function pickChannelAndWindow(cfg: WindowCfg) {
   const channel = cfg.channels_priority[0] ?? "whatsapp";
   const now = cfg.now;
-  const [sH, sM] = cfg.window_start.split(":").map((n) => parseInt(n, 10));
-  const [eH, eM] = cfg.window_end.split(":").map((n) => parseInt(n, 10));
+  const [sH, sM] = cfg.window_start.split(":").map((n: any) => parseInt(n, 10));
+  const [eH, eM] = cfg.window_end.split(":").map((n: any) => parseInt(n, 10));
 
   const start = new Date(now);
   start.setHours(sH, sM, 0, 0);
@@ -75,8 +75,8 @@ export function scheduleRetry(opts: {
   const baseNext = new Date(opts.now.getTime() + minutes * 60 * 1000);
 
   // Ajustar a ventana/día activo si cae fuera
-  const [sH, sM] = opts.window_start.split(":").map((n) => parseInt(n, 10));
-  const [eH, eM] = opts.window_end.split(":").map((n) => parseInt(n, 10));
+  const [sH, sM] = opts.window_start.split(":").map((n: any) => parseInt(n, 10));
+  const [eH, eM] = opts.window_end.split(":").map((n: any) => parseInt(n, 10));
   const start = new Date(baseNext);
   start.setHours(sH, sM, 0, 0);
   const end = new Date(baseNext);

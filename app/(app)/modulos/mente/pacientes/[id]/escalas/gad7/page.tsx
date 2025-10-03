@@ -19,7 +19,7 @@ export default function GAD7Page() {
   return (
     <div className="p-6 space-y-4">
       <AccentHeader emoji="🧠">GAD-7</AccentHeader>
-      {answers.map((v, i) => (
+      {answers.map((v: any, i: any) => (
         <div key={i} className="flex gap-3 items-center">
           <label className="w-6 text-right" htmlFor={`q${i + 1}`}>
             {i + 1}
@@ -28,7 +28,7 @@ export default function GAD7Page() {
             id={`q${i + 1}`}
             aria-label={`Pregunta ${i + 1}`}
             value={v}
-            onChange={(e) => {
+            onChange={(e: any) => {
               const a = [...answers];
               a[i] = Number(e.target.value);
               setAnswers(a);

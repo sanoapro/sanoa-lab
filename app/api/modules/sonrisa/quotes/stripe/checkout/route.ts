@@ -1,10 +1,30 @@
 // MODE: session (user-scoped, cookies)
 // POST /api/modules/sonrisa/quotes/stripe/checkout
-// { org_id, quote_id, success_url, cancel_url }
+// { org_id, quote_id, success_url?, cancel_url? }
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
+import { stripe, getBaseUrl } from "@/lib/billing/stripe";
+
+const Body = z.object({
+  org_id: z.string().uuid(),
+  quote_id: z.string().uuid(),
+  success_url: z.string().optional(), // puede ser URL completa o path
+  cancel_url: z.string().optional(),  // puede ser URL completa o path
+});
+
+function normalizeUrl(input: string | undefined, fallbackPath: string) {
+  const base = getBaseUrl();
+  const candidate = (input && input.trim()) || fallbackPath;
+  if (/^https?:\/\//i.test(candidate)) return candidate;
+  const path = candidate.startsWith("/") ? candidate : `/${candidate}`;
+  return `${base}${path}`;
+}
 
 export async function POST(req: NextRequest) {
+  // Autenticación de sesión
   const supa = await getSupabaseServer();
   const { data: u } = await supa.auth.getUser();
   if (!u?.user) {
@@ -14,39 +34,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const secret = process.env.STRIPE_SECRET_KEY;
-  if (!secret) {
+  // Stripe configurado
+  if (!stripe) {
     return NextResponse.json(
       { ok: false, error: { code: "NOT_CONFIGURED", message: "Stripe no configurado" } },
       { status: 501 },
     );
   }
 
-  const body = (await req.json().catch(() => null)) as {
-    org_id?: string;
-    quote_id?: string;
-    success_url?: string;
-    cancel_url?: string;
-  };
-  if (!body?.org_id || !body?.quote_id || !body?.success_url || !body?.cancel_url) {
+  // Body
+  const parsed = Body.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: {
-          code: "BAD_REQUEST",
-          message: "org_id, quote_id, success_url y cancel_url requeridos",
-        },
-      },
+      { ok: false, error: { code: "BAD_REQUEST", message: "Parámetros inválidos" } },
       { status: 400 },
     );
   }
+  const { org_id, quote_id, success_url, cancel_url } = parsed.data;
 
-  // obtener total
+  // Cargar presupuesto
   const { data: q, error: e1 } = await supa
     .from("sonrisa_quotes")
     .select("id, org_id, total_cents, currency, status")
-    .eq("id", body.quote_id)
-    .eq("org_id", body.org_id)
+    .eq("id", quote_id)
+    .eq("org_id", org_id)
     .single();
 
   if (e1 || !q) {
@@ -62,13 +73,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Crear checkout
-  const stripe = new (await import("stripe")).default(secret, { apiVersion: "2024-06-20" });
+  // URLs normalizadas
+  const successUrl = normalizeUrl(success_url, "/banco/ajustes?status=success");
+  const cancelUrl = normalizeUrl(cancel_url, "/banco/ajustes?status=cancel");
+
+  // Crear sesión de Checkout
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    success_url: body.success_url,
-    cancel_url: body.cancel_url,
-    currency: (q.currency || "mxn").toLowerCase(),
+    success_url: successUrl,
+    cancel_url: cancelUrl,
     line_items: [
       {
         quantity: 1,

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   const cookieStore = await nextCookies();
   const cookieHeader = cookieStore
     .getAll()
-    .map((c) => `${c.name}=${c.value}`)
+    .map((c: any) => `${c.name}=${c.value}`)
     .join("; ");
 
   let okCount = 0;

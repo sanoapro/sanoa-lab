@@ -106,7 +106,7 @@ function Inner() {
       }
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt: any, s: any) => {
       if (s?.access_token) router.replace(safeRedirect);
     });
 
@@ -215,7 +215,7 @@ function Inner() {
                 aria-invalid={emailError ? true : undefined}
                 aria-describedby={emailErrorId ?? (err ? errId : undefined)}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: any) => setEmail(e.target.value)}
                 placeholder="tucorreo@ejemplo.com"
                 invalid={Boolean(emailError)}
               />
@@ -238,7 +238,7 @@ function Inner() {
                 required
                 aria-required="true"
                 value={pass}
-                onChange={(e) => setPass(e.target.value)}
+                onChange={(e: any) => setPass(e.target.value)}
                 placeholder="••••••••"
                 aria-describedby={err && !emailError ? errId : undefined}
               />

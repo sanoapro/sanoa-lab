@@ -15,7 +15,7 @@ export default function NewDischarge({ params }: { params: { id: string } }) {
   });
   useEffect(() => {
     (async () => {
-      const j = await fetch("/api/discharges/templates").then((r) => r.json());
+      const j = await fetch("/api/discharges/templates").then((r: any) => r.json());
       setTpl(j.items || []);
     })();
   }, []);
@@ -38,7 +38,7 @@ export default function NewDischarge({ params }: { params: { id: string } }) {
     <div className="p-4 max-w-3xl space-y-3">
       <h1 className="text-2xl font-semibold">Nuevo resumen de alta</h1>
       <div className="flex gap-2 items-end">
-        <select className="border rounded p-2" value={sel} onChange={(e) => setSel(e.target.value)}>
+        <select className="border rounded p-2" value={sel} onChange={(e: any) => setSel(e.target.value)}>
           <option value="">Plantilla…</option>
           {tpl.map((t: any) => (
             <option key={t.id} value={t.id}>
@@ -56,40 +56,40 @@ export default function NewDischarge({ params }: { params: { id: string } }) {
           type="datetime-local"
           className="border rounded p-2"
           value={form.admission_at}
-          onChange={(e) => setForm({ ...form, admission_at: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, admission_at: e.target.value })}
         />
         <input
           type="datetime-local"
           className="border rounded p-2"
           value={form.discharge_at}
-          onChange={(e) => setForm({ ...form, discharge_at: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, discharge_at: e.target.value })}
         />
         <textarea
           className="col-span-2 border rounded p-2"
           rows={2}
           placeholder="Diagnóstico"
           value={form.diagnosis}
-          onChange={(e) => setForm({ ...form, diagnosis: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, diagnosis: e.target.value })}
         />
         <textarea
           className="col-span-2 border rounded p-2"
           rows={3}
           placeholder="Resumen"
           value={form.summary}
-          onChange={(e) => setForm({ ...form, summary: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, summary: e.target.value })}
         />
         <textarea
           className="col-span-2 border rounded p-2"
           rows={2}
           placeholder="Recomendaciones"
           value={form.recommendations}
-          onChange={(e) => setForm({ ...form, recommendations: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, recommendations: e.target.value })}
         />
         <input
           type="datetime-local"
           className="border rounded p-2"
           value={form.follow_up_at}
-          onChange={(e) => setForm({ ...form, follow_up_at: e.target.value })}
+          onChange={(e: any) => setForm({ ...form, follow_up_at: e.target.value })}
         />
       </div>
       <div className="flex gap-2">

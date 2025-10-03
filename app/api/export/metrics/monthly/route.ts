@@ -27,10 +27,10 @@ export async function GET(req: Request) {
   const rows = (data ?? []) as { month_start: string; total: number }[];
   const csv = [
     "month_start,total",
-    ...rows.map((r) => [r.month_start, r.total].map(csvEscape).join(",")),
+    ...rows.map((r: any) => [r.month_start, r.total].map(csvEscape).join(",")),
   ].join("\n");
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Blob([csv]), {
     status: 200,
     headers: {
       "content-type": "text/csv; charset=utf-8",

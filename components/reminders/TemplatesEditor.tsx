@@ -57,8 +57,8 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
     setLoading(true);
     const p = new URLSearchParams({ org_id: orgId, q });
     fetch(`/api/reminders/templates?${p.toString()}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (j?.ok) setList(j.data);
         else
           toast({
@@ -84,7 +84,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
   function allowedArray() {
     return form.variables
       .split(",")
-      .map((s) => s.trim())
+      .map((s: any) => s.trim())
       .filter(Boolean);
   }
 
@@ -156,7 +156,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
             className="glass-input w-full"
             placeholder="Buscar por nombre…"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e: any) => setQ(e.target.value)}
           />
           <button className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm hover:shadow-sm" onClick={load}>
             Buscar
@@ -188,7 +188,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
                   </td>
                 </tr>
               )}
-              {list.map((t) => (
+              {list.map((t: any) => (
                 <tr key={t.id} className="border-t hover:bg-white/70">
                   <td className="px-3 py-2">
                     <button
@@ -225,7 +225,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
             <input
               className="glass-input w-full"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e: any) => setForm({ ...form, name: e.target.value })}
               placeholder="recordatorio_cita"
             />
           </div>
@@ -234,7 +234,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
             <input
               className="glass-input w-full"
               value={form.specialty}
-              onChange={(e) => setForm({ ...form, specialty: e.target.value })}
+              onChange={(e: any) => setForm({ ...form, specialty: e.target.value })}
               placeholder="odontología, psicología…"
             />
           </div>
@@ -243,7 +243,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
             <select
               className="glass-input w-full"
               value={form.channel}
-              onChange={(e) => setForm({ ...form, channel: e.target.value as any })}
+              onChange={(e: any) => setForm({ ...form, channel: e.target.value as any })}
             >
               <option value="whatsapp">WhatsApp</option>
               <option value="sms">SMS</option>
@@ -257,7 +257,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
             <input
               className="glass-input w-full"
               value={form.variables}
-              onChange={(e) => setForm({ ...form, variables: e.target.value })}
+              onChange={(e: any) => setForm({ ...form, variables: e.target.value })}
             />
             <p className="text-xs text-slate-500 mt-1">Ej: paciente,fecha,hora,clinica</p>
           </div>
@@ -273,7 +273,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <textarea
             className="glass-input w-full min-h-[160px]"
             value={form.body}
-            onChange={(e) => setForm({ ...form, body: e.target.value })}
+            onChange={(e: any) => setForm({ ...form, body: e.target.value })}
           />
           <p className="text-xs text-slate-500 mt-1">
             Usa llaves dobles: {"{{paciente}} {{fecha}} {{hora}} {{clinica}}"}
@@ -284,13 +284,13 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
           <div className="md:col-span-2">
             <label className="block text-sm mb-1">Datos de prueba</label>
             <div className="grid grid-cols-2 gap-2">
-              {Object.keys(payload).map((k) => (
+              {Object.keys(payload).map((k: any) => (
                 <div key={k} className="flex items-center gap-2">
                   <span className="text-xs text-slate-500 w-20">{k}</span>
                   <input
                     className="glass-input w-full"
                     value={payload[k]}
-                    onChange={(e) => setPayload({ ...payload, [k]: e.target.value })}
+                    onChange={(e: any) => setPayload({ ...payload, [k]: e.target.value })}
                   />
                 </div>
               ))}
@@ -301,7 +301,7 @@ export default function TemplatesEditor({ orgId }: { orgId: string }) {
             <input
               className="glass-input w-full"
               value={testTarget}
-              onChange={(e) => setTestTarget(e.target.value)}
+              onChange={(e: any) => setTestTarget(e.target.value)}
             />
             <p className={`text-xs mt-1 ${targetValid ? "text-green-700" : "text-rose-700"}`}>
               {targetValid ? "Formato válido (+...)" : "Formato inválido (usa +<código><número>)"}

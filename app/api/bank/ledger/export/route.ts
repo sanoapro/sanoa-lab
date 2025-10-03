@@ -50,10 +50,10 @@ export async function GET(req: Request) {
     ]),
   ];
   const csv = rows
-    .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .map((r: any) => r.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
     .join("\n");
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Blob([csv]), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="sanoa_ledger_${org_id}.csv"`,

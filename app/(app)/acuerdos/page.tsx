@@ -45,7 +45,7 @@ export default function AcuerdosPage() {
     });
     const j = await r.json();
     if (j?.ok) {
-      setStatus((prev) => ({
+      setStatus((prev: any) => ({
         ...(prev || { specialist_platform: false }),
         specialist_platform: true,
       }));
@@ -111,7 +111,7 @@ export default function AcuerdosPage() {
           <div className="mt-2">
             <Autocomplete
               placeholder="Escribe nombre del paciente…"
-              onSelect={(hit) => createLink(hit.patient_id)}
+              onSelect={(hit: any) => createLink(hit.patient_id)}
             />
           </div>
         </div>

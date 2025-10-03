@@ -49,7 +49,7 @@ export default function AuthGate({
     // Suscribirse a cambios de sesión
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s: any) => {
       setSession(s ?? null);
 
       if (!s) {

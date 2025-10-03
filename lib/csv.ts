@@ -10,7 +10,7 @@ export function toCSV<T extends CsvRow>(rows: T[], headers?: string[]): string {
   const cols = headers && headers.length
     ? headers
     : Array.from(
-        rows.reduce((set, r) => {
+        rows.reduce((set: any, r: any) => {
           for (const k of Object.keys(r ?? {})) set.add(k);
           return set;
         }, new Set<string>())
@@ -23,7 +23,7 @@ export function toCSV<T extends CsvRow>(rows: T[], headers?: string[]): string {
 
   const lines: string[] = [cols.join(",")];
   for (const r of rows) {
-    lines.push(cols.map((h) => esc((r as CsvRow)[h] ?? "")).join(","));
+    lines.push(cols.map((h: any) => esc((r as CsvRow)[h] ?? "")).join(","));
   }
   return lines.join("\n");
 }
@@ -33,7 +33,7 @@ export function toCSV<T extends CsvRow>(rows: T[], headers?: string[]): string {
  */
 export function downloadCSV<T extends CsvRow>(
   rows: T[],
-  filename = "export.csv",
+  filename: any = "export.csv",
   headers?: string[],
 ) {
   const csv = toCSV(rows, headers);

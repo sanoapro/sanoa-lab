@@ -19,7 +19,7 @@ export default function RemindersFilters() {
   const [to, setTo] = useState(initial.to ?? "");
 
   function toggle(list: string[], v: string) {
-    return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
+    return list.includes(v) ? list.filter((x: any) => x !== v) : [...list, v];
   }
 
   function apply() {
@@ -50,7 +50,7 @@ export default function RemindersFilters() {
           <input
             className="rounded border px-3 py-2 w-full"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e: any) => setQ(e.target.value)}
             placeholder="Destino, plantilla…"
           />
         </div>
@@ -59,7 +59,7 @@ export default function RemindersFilters() {
           <select
             className="rounded border px-3 py-2 w-full"
             value={dateField}
-            onChange={(e) => setDateField(e.target.value)}
+            onChange={(e: any) => setDateField(e.target.value)}
           >
             <option value="created">Creación</option>
             <option value="lastAttempt">Último intento</option>
@@ -71,7 +71,7 @@ export default function RemindersFilters() {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e: any) => setFrom(e.target.value)}
           />
         </div>
         <div>
@@ -80,7 +80,7 @@ export default function RemindersFilters() {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e: any) => setTo(e.target.value)}
           />
         </div>
       </div>
@@ -89,12 +89,12 @@ export default function RemindersFilters() {
         <div className="md:col-span-2">
           <label className="block text-sm mb-1">Estado</label>
           <div className="flex flex-wrap gap-2">
-            {["scheduled", "sent", "failed", "retry"].map((s) => (
+            {["scheduled", "sent", "failed", "retry"].map((s: any) => (
               <button
                 key={s}
                 type="button"
                 className={`px-3 py-1.5 rounded border text-sm ${status.includes(s) ? "bg-white" : "opacity-60"}`}
-                onClick={() => setStatus((prev) => toggle(prev, s))}
+                onClick={() => setStatus((prev: any) => toggle(prev, s))}
               >
                 {s}
               </button>
@@ -104,12 +104,12 @@ export default function RemindersFilters() {
         <div className="md:col-span-2">
           <label className="block text-sm mb-1">Canal</label>
           <div className="flex flex-wrap gap-2">
-            {["whatsapp", "sms"].map((c) => (
+            {["whatsapp", "sms"].map((c: any) => (
               <button
                 key={c}
                 type="button"
                 className={`px-3 py-1.5 rounded border text-sm ${channel.includes(c) ? "bg-white" : "opacity-60"}`}
-                onClick={() => setChannel((prev) => toggle(prev, c))}
+                onClick={() => setChannel((prev: any) => toggle(prev, c))}
               >
                 {c.toUpperCase()}
               </button>

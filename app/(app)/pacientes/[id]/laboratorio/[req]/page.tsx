@@ -28,7 +28,7 @@ export default function LabRequestDetailPage() {
   async function load() {
     setBusy(true);
     try {
-      const j = await fetch(`/api/lab/results/list?request_id=${requestId}`).then((r) => r.json());
+      const j = await fetch(`/api/lab/results/list?request_id=${requestId}`).then((r: any) => r.json());
       setItems(j.results || []);
     } finally {
       setBusy(false);
@@ -75,7 +75,7 @@ export default function LabRequestDetailPage() {
         return;
       }
       const url = await getSignedUrl(res.file_path);
-      const blob = await fetch(url).then((r) => r.blob());
+      const blob = await fetch(url).then((r: any) => r.blob());
       const {
         data: { text },
       } = await Tesseract.recognize(await blob.arrayBuffer(), "spa");
@@ -98,7 +98,7 @@ export default function LabRequestDetailPage() {
             {busy ? "Cargando…" : "Sin resultados."}
           </div>
         )}
-        {items.map((r) => (
+        {items.map((r: any) => (
           <div key={r.id} className="p-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="min-w-0">

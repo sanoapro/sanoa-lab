@@ -79,7 +79,7 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
   }
 
   const csv = lines.join("\n");
-  return new NextResponse(csv, {
+  return new NextResponse(new Blob([csv]), {
     headers: {
       "content-type": "text/csv; charset=utf-8",
       "content-disposition": `attachment; filename=paciente_${escape(p.nombre)}.csv`,

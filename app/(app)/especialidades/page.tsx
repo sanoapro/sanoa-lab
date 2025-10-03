@@ -107,7 +107,7 @@ export default function EspecialidadesPage() {
       )}
 
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {AREAS.map((a, idx) => {
+        {AREAS.map((a: any, idx: any) => {
           const enabled = !!modules[a.featureKey];
           const locked = !(subActive && enabled);
           const statusLabel = locked ? "Bloqueada" : "Activa";

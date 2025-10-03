@@ -19,7 +19,7 @@ function slugify(s: string) {
 }
 
 function interpolate(body: string, map: Record<string, string>): string {
-  return body.replace(/\{\{([A-Z0-9_]+)\}\}/g, (_, k) => map[k] ?? `{{${k}}}`);
+  return body.replace(/\{\{([A-Z0-9_]+)\}\}/g, (_: any, k: any) => map[k] ?? `{{${k}}}`);
 }
 
 /** -----------------------------
@@ -32,7 +32,7 @@ const ListQuery = z.object({
   include_inactive: z
     .union([z.literal("true"), z.literal("false")])
     .optional()
-    .transform((v) => v === "true"),
+    .transform((v: any) => v === "true"),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   offset: z.coerce.number().int().min(0).default(0),
   /** Optional preview helpers */
@@ -41,7 +41,7 @@ const ListQuery = z.object({
   populateNames: z
     .union([z.literal("true"), z.literal("false")])
     .optional()
-    .transform((v) => (v == null ? true : v === "true")),
+    .transform((v: any) => (v == null ? true : v === "true")),
 });
 
 const UpsertBody = z.object({
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
     populateNames: qp.get("populateNames") || undefined,
   });
   if (!parsed.success) {
-    const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const msg = parsed.error.issues.map((i: any) => `${i.path.join(".")}: ${i.message}`).join("; ");
     return jsonError("VALIDATION_ERROR", msg, 400);
   }
   const q = parsed.data;

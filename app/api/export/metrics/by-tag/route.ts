@@ -30,10 +30,10 @@ export async function GET(req: Request) {
   const rows = (data ?? []) as { tag_id: string; tag_name: string; total: number }[];
   const csv = [
     "tag_id,tag_name,total",
-    ...rows.map((r) => [r.tag_id, r.tag_name, r.total].map(csvEscape).join(",")),
+    ...rows.map((r: any) => [r.tag_id, r.tag_name, r.total].map(csvEscape).join(",")),
   ].join("\n");
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Blob([csv]), {
     status: 200,
     headers: {
       "content-type": "text/csv; charset=utf-8",

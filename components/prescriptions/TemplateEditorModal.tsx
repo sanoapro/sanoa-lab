@@ -88,35 +88,35 @@ export default function TemplateEditorModal({ open, onClose, initial, onSaved }:
         <input
           className="input"
           value={data.specialty}
-          onChange={(e) => setData({ ...data, specialty: e.target.value })}
+          onChange={(e: any) => setData({ ...data, specialty: e.target.value })}
           placeholder="Ej. Medicina Familiar, Cardiología, Odontología…"
         />
         <label className="text-sm text-contrast/80">Título</label>
         <input
           className="input"
           value={data.title}
-          onChange={(e) => setData({ ...data, title: e.target.value })}
+          onChange={(e: any) => setData({ ...data, title: e.target.value })}
           placeholder="Ej. Amoxicilina 500 mg c/8h x7d"
         />
         <label className="text-sm text-contrast/80">Contenido (receta / referencia)</label>
         <textarea
           className="input min-h-44"
           value={data.body}
-          onChange={(e) => setData({ ...data, body: e.target.value })}
+          onChange={(e: any) => setData({ ...data, body: e.target.value })}
           placeholder="Formato libre: medicamento, dosis, vía, frecuencia, duración. O cuerpo de la carta de referencia."
         />
         <label className="text-sm text-contrast/80">Notas/Advertencias</label>
         <textarea
           className="input min-h-20"
           value={data.notes ?? ""}
-          onChange={(e) => setData({ ...data, notes: e.target.value })}
+          onChange={(e: any) => setData({ ...data, notes: e.target.value })}
           placeholder="Alergias, interacciones, precauciones, seguimiento…"
         />
         <label className="inline-flex items-center gap-2">
           <input
             type="checkbox"
             checked={Boolean(data.is_reference)}
-            onChange={(e) => setData({ ...data, is_reference: e.target.checked })}
+            onChange={(e: any) => setData({ ...data, is_reference: e.target.checked })}
           />
           <span className="text-sm">Es referencia (no receta)</span>
         </label>

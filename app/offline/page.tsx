@@ -28,7 +28,7 @@ export default function OfflinePage() {
               const isPage = !u.pathname.startsWith("/_next/") && !u.pathname.startsWith("/icons/");
               if (isOwn && isPage) {
                 const path = u.pathname + (u.search || "");
-                if (!found.some((x) => x.path === path)) {
+                if (!found.some((x: any) => x.path === path)) {
                   found.push({ url: u.href, path });
                 }
               }
@@ -37,7 +37,7 @@ export default function OfflinePage() {
         }
         // Prioriza rutas “core”
         const order = ["/", "/dashboard", "/login", "/instalar"];
-        found.sort((a, b) => {
+        found.sort((a: any, b: any) => {
           const ai = order.indexOf(a.path);
           const bi = order.indexOf(b.path);
           if (ai !== -1 || bi !== -1) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
@@ -100,7 +100,7 @@ export default function OfflinePage() {
             </p>
           ) : (
             <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {pages.map((p) => (
+              {pages.map((p: any) => (
                 <li key={p.url}>
                   <a
                     href={p.path}

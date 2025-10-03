@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type SaveFn<T> = (_data: T) => Promise<T | void>;
 
-export function useAutosave<T>(initial: T, saveFn: SaveFn<T>, delay = 800) {
+export function useAutosave<T>(initial: T, saveFn: SaveFn<T>, delay: any = 800) {
   const [data, setData] = useState<T>(initial);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   // React 19: requiere valor inicial explícito

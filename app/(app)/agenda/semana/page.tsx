@@ -75,7 +75,7 @@ export default function AgendaSemanaPage() {
             <input
               className="border rounded px-3 py-2 w-full"
               value={tz}
-              onChange={(e) => setTz(e.target.value)}
+              onChange={(e: any) => setTz(e.target.value)}
             />
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function AgendaSemanaPage() {
             type="date"
             className="border rounded px-3 py-2"
             value={baseDate}
-            onChange={(e) => setBaseDate(e.target.value)}
+            onChange={(e: any) => setBaseDate(e.target.value)}
           />
           <div className="ml-auto flex items-center gap-2">
             <button className="border rounded px-3 py-2" onClick={() => shiftDays(-7)}>

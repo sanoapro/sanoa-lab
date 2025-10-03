@@ -16,7 +16,7 @@ function nowPartsTZ(tz: string) {
     month: "2-digit",
     day: "2-digit",
   });
-  const parts = fmt.formatToParts(d).reduce<Record<string, string>>((acc, p) => {
+  const parts = fmt.formatToParts(d).reduce<Record<string, string>>((acc: any, p: any) => {
     if (p.type !== "literal") acc[p.type] = p.value;
     return acc;
   }, {});

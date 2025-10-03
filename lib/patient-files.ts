@@ -21,9 +21,9 @@ const SIGNED_TTL = Number(process.env.NEXT_PUBLIC_SIGNED_URL_TTL || 300);
 function mimeAllowed(mime: string): boolean {
   if (!mime) return false;
   const parts = ALLOWED.split(/[,\s]+/)
-    .map((s) => s.trim())
+    .map((s: any) => s.trim())
     .filter(Boolean);
-  return parts.some((p) =>
+  return parts.some((p: any) =>
     p.endsWith("/*") ? mime.startsWith(p.slice(0, -1)) : mime.toLowerCase() === p.toLowerCase(),
   );
 }
@@ -39,11 +39,11 @@ function slugify(name: string): string {
     .slice(0, 100);
 }
 
-function randomId(len = 8): string {
+function randomId(len: any = 8): string {
   const bytes = new Uint8Array(len);
   crypto.getRandomValues(bytes);
   return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
+    .map((b: any) => b.toString(16).padStart(2, "0"))
     .join("")
     .slice(0, len);
 }

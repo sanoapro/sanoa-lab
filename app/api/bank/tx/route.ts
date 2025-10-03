@@ -8,10 +8,10 @@ type DB = Database;
 type Tx = DB["public"]["Tables"]["bank_tx"]["Row"];
 
 function parseMulti(q: URLSearchParams, key: string): string[] | undefined {
-  const vals = q.getAll(key).flatMap((v) =>
+  const vals = q.getAll(key).flatMap((v: any) =>
     v
       .split(",")
-      .map((s) => s.trim())
+      .map((s: any) => s.trim())
       .filter(Boolean),
   );
   return vals.length ? Array.from(new Set(vals)) : undefined;
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleaned = items.map((it) => ({
+    const cleaned = items.map((it: any) => ({
       org_id,
       account_id: it.account_id!,
       date: it.date!,

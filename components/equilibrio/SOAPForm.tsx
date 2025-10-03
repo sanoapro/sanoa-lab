@@ -27,7 +27,7 @@ export default function SOAPForm({
           className="w-full border p-2 rounded"
           rows={4}
           value={S}
-          onChange={(e) => setS(e.target.value)}
+          onChange={(e: any) => setS(e.target.value)}
         />
       </label>
 
@@ -38,7 +38,7 @@ export default function SOAPForm({
           className="w-full border p-2 rounded"
           rows={4}
           value={O}
-          onChange={(e) => setO(e.target.value)}
+          onChange={(e: any) => setO(e.target.value)}
         />
       </label>
 
@@ -49,7 +49,7 @@ export default function SOAPForm({
           className="w-full border p-2 rounded"
           rows={4}
           value={A}
-          onChange={(e) => setA(e.target.value)}
+          onChange={(e: any) => setA(e.target.value)}
         />
       </label>
 
@@ -60,7 +60,7 @@ export default function SOAPForm({
           className="w-full border p-2 rounded"
           rows={4}
           value={P}
-          onChange={(e) => setP(e.target.value)}
+          onChange={(e: any) => setP(e.target.value)}
         />
       </label>
 

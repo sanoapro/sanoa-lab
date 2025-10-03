@@ -142,7 +142,7 @@ const MODULES: ModuleInfo[] = [
   },
 ];
 
-const MODULE_TOKENS = new Set(MODULES.map((m) => m.token));
+const MODULE_TOKENS = new Set(MODULES.map((m: any) => m.token));
 
 export default function ModulosHubPage() {
   const searchParams = useSearchParams();
@@ -192,7 +192,7 @@ export default function ModulosHubPage() {
   );
 
   const activeModule = React.useMemo(() => {
-    return MODULES.find((m) => m.token === activeTab) ?? MODULES[0];
+    return MODULES.find((m: any) => m.token === activeTab) ?? MODULES[0];
   }, [activeTab]);
 
   return (
@@ -205,7 +205,7 @@ export default function ModulosHubPage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,260px)_1fr]">
         <nav className="flex flex-col gap-3" aria-label="Módulos" role="tablist">
-          {MODULES.map((module) => {
+          {MODULES.map((module: any) => {
             const tabId = `module-${module.token}`;
             const isActive = module.token === activeModule.token;
             return (
@@ -285,7 +285,7 @@ export default function ModulosHubPage() {
               <section className="rounded-3xl border bg-white/95 p-5">
                 <h3 className="font-semibold text-[var(--color-brand-text)]">Lo que incluye</h3>
                 <ul className="mt-3 space-y-2 list-disc pl-5 text-sm text-slate-700">
-                  {activeModule.features.map((feature) => (
+                  {activeModule.features.map((feature: any) => (
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
@@ -296,7 +296,7 @@ export default function ModulosHubPage() {
               <section className="rounded-3xl border bg-white/95 p-5">
                 <h3 className="font-semibold text-[var(--color-brand-text)]">Acciones rápidas</h3>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {activeModule.quickActions.map((action) => (
+                  {activeModule.quickActions.map((action: any) => (
                     <Link
                       key={`${activeModule.token}-${action.href}`}
                       href={action.href}

@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
               autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: any) => setEmail(e.target.value)}
               placeholder="tucorreo@ejemplo.com"
               invalid={Boolean(err)}
               aria-describedby={err ? "reset-email-error" : undefined}

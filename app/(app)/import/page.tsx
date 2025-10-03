@@ -11,16 +11,16 @@ type Row = { nombre: string; edad?: number | null; genero?: "F" | "M" | "O" };
 function parseCSV(text: string): Row[] {
   const lines = text
     .split(/\r?\n/)
-    .map((l) => l.trim())
+    .map((l: any) => l.trim())
     .filter(Boolean);
   if (lines.length === 0) return [];
-  const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const header = lines[0].split(",").map((h: any) => h.trim().toLowerCase());
   const idxNombre = header.indexOf("nombre");
   const idxEdad = header.indexOf("edad");
   const idxGenero = header.indexOf("genero");
   const out: Row[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(",").map((c) => c.trim());
+    const cols = lines[i].split(",").map((c: any) => c.trim());
     const nombre = cols[idxNombre] || "";
     if (!nombre) continue;
     const edad = idxEdad >= 0 ? (cols[idxEdad] ? Number(cols[idxEdad]) : null) : null;
@@ -42,7 +42,7 @@ export default function ImportPage() {
       const rows = parseCSV(text);
       for (const r of rows) {
         await createPatient({ nombre: r.nombre, edad: r.edad ?? null, genero: r.genero ?? "O" });
-        setDone((x) => x + 1);
+        setDone((x: any) => x + 1);
       }
       showToast({
         title: "Importación completa",
@@ -65,7 +65,7 @@ export default function ImportPage() {
       <textarea
         className="w-full h-64 border rounded-md p-3 font-mono text-sm"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e: any) => setText(e.target.value)}
       />
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">Creados: {done}</div>

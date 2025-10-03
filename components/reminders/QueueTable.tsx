@@ -68,7 +68,7 @@ export default function QueueTable() {
           <select
             className="rounded-lg border px-2 py-1 bg-white dark:bg-slate-900"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e: any) => setStatus(e.target.value)}
           >
             <option value="">Todos</option>
             <option value="scheduled">scheduled</option>
@@ -98,7 +98,7 @@ export default function QueueTable() {
           </thead>
           <tbody>
             {loading &&
-              skeletonRows.map((_, idx) => (
+              skeletonRows.map((_: any, idx: any) => (
                 <tr key={`queue-skeleton-${idx}`} className={idx === 0 ? undefined : "border-b"}>
                   <td className="p-2">
                     <Skeleton
@@ -127,7 +127,7 @@ export default function QueueTable() {
                   </td>
                 </tr>
               ))}
-            {items.map((i) => (
+            {items.map((i: any) => (
               <tr key={i.id} className="border-b">
                 <td className="p-2">{new Date(i.created_at).toLocaleString()}</td>
                 <td className="p-2">{i.status}</td>

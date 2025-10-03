@@ -29,7 +29,7 @@ export default function FeatureGate({
         const j = await r.json();
         const f = new Set<string>(j?.features || []);
         const required = Array.isArray(needs) ? needs : [needs];
-        setOk(required.every((x) => f.has(x)));
+        setOk(required.every((x: any) => f.has(x)));
       } finally {
         setLoading(false);
       }

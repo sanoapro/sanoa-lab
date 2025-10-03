@@ -18,7 +18,7 @@ export default function PatientFormsPage() {
 
   const items = useMemo(
     () =>
-      templates.map((t) => ({
+      templates.map((t: any) => ({
         id: t.id,
         name: t.name,
       })),
@@ -33,7 +33,7 @@ export default function PatientFormsPage() {
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {items.map((it) => (
+        {items.map((it: any) => (
           <Link
             key={it.id}
             className="rounded border p-4 hover:bg-gray-50"

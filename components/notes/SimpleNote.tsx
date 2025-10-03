@@ -38,10 +38,10 @@ export default function SimpleNote({
         className="border rounded px-3 py-2 w-full min-h-[120px]"
         placeholder="Escribe la nota de sesión…"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e: any) => setText(e.target.value)}
       />
       <label className="inline-flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={sign} onChange={(e) => setSign(e.target.checked)} />
+        <input type="checkbox" checked={sign} onChange={(e: any) => setSign(e.target.checked)} />
         Firmar la nota al guardar
       </label>
       <div>

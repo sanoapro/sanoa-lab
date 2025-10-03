@@ -19,7 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "perfil",
     "test-ui/upload",
   ];
-  return paths.map((p) => ({
+  return paths.map((p: any) => ({
     url: `${base}/${p}`.replace(/\/+$/, "/"),
     lastModified: now,
     changeFrequency: "monthly",

@@ -32,7 +32,7 @@ export default function TemplatePicker() {
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((it, i) => (
+        {items.map((it: any, i: any) => (
           <Card key={`${it.id ?? "seed"}-${i}`} className="card-hover">
             <CardHeader>
               <CardTitle className="text-base font-bold">{it.title}</CardTitle>
@@ -77,9 +77,9 @@ export default function TemplatePicker() {
         {current && (
           <TemplateEditor
             initial={current}
-            onSaved={(saved) => {
-              setItems((prev) => {
-                const has = prev.findIndex((p) => p.id === saved.id && saved.id);
+            onSaved={(saved: any) => {
+              setItems((prev: any) => {
+                const has = prev.findIndex((p: any) => p.id === saved.id && saved.id);
                 if (has >= 0) {
                   const nxt = [...prev];
                   nxt[has] = saved;

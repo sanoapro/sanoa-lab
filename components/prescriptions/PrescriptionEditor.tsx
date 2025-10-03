@@ -35,18 +35,18 @@ export default function PrescriptionEditor() {
   const [saving, setSaving] = useState(false);
 
   function addEmpty() {
-    setItems((xs) => [
+    setItems((xs: any) => [
       ...xs,
       { drug: "", dose: "", route: "", freq: "", duration: "", instructions: "" },
     ]);
   }
 
   function removeAt(index: number) {
-    setItems((xs) => xs.filter((_, idx) => idx !== index));
+    setItems((xs: any) => xs.filter((_: any, idx: any) => idx !== index));
   }
 
   function setAt<T extends keyof Item>(index: number, key: T, value: Item[T]) {
-    setItems((xs) => xs.map((x, idx) => (idx === index ? { ...x, [key]: value } : x)));
+    setItems((xs: any) => xs.map((x: any, idx: any) => (idx === index ? { ...x, [key]: value } : x)));
   }
 
   async function searchDrug(index: number, query: string) {
@@ -77,7 +77,7 @@ export default function PrescriptionEditor() {
         signature_path: signaturePath || null,
         notes: notes || null,
         issued_at: issuedAt ? new Date(issuedAt).toISOString() : null,
-        items: items.map((it) => ({
+        items: items.map((it: any) => ({
           ...it,
           frequency: it.freq,
         })),
@@ -170,20 +170,20 @@ export default function PrescriptionEditor() {
             className="border rounded px-3 py-2 w-full"
             placeholder="letterheads/&lt;org&gt;/&lt;file&gt;.png"
             value={letterheadPath}
-            onChange={(e) => setLetterheadPath(e.target.value)}
+            onChange={(e: any) => setLetterheadPath(e.target.value)}
           />
           <input
             className="border rounded px-3 py-2 w-full"
             placeholder="signatures/&lt;org&gt;/&lt;file&gt;.png"
             value={signaturePath}
-            onChange={(e) => setSignaturePath(e.target.value)}
+            onChange={(e: any) => setSignaturePath(e.target.value)}
           />
           <label className="text-sm">Fecha/hora emisión</label>
           <input
             type="datetime-local"
             className="border rounded px-3 py-2 w-full"
             value={issuedAt}
-            onChange={(e) => setIssuedAt(e.target.value)}
+            onChange={(e: any) => setIssuedAt(e.target.value)}
           />
         </div>
         <div className="md:col-span-2 border rounded-2xl p-4">
@@ -213,14 +213,14 @@ export default function PrescriptionEditor() {
               </tr>
             </thead>
             <tbody>
-              {items.map((it, i) => (
+              {items.map((it: any, i: any) => (
                 <tr key={i} className="border-t">
                   <td className="px-3 py-2">
                     <input
                       className="border rounded px-2 py-1 w-56"
                       value={it.drug}
-                      onChange={(e) => setAt(i, "drug", e.target.value)}
-                      onBlur={(e) => searchDrug(i, e.target.value)}
+                      onChange={(e: any) => setAt(i, "drug", e.target.value)}
+                      onBlur={(e: any) => searchDrug(i, e.target.value)}
                       placeholder="Buscar/Escribir fármaco…"
                     />
                   </td>
@@ -228,14 +228,14 @@ export default function PrescriptionEditor() {
                     <input
                       className="border rounded px-2 py-1 w-32"
                       value={it.dose}
-                      onChange={(e) => setAt(i, "dose", e.target.value)}
+                      onChange={(e: any) => setAt(i, "dose", e.target.value)}
                     />
                   </td>
                   <td className="px-3 py-2">
                     <input
                       className="border rounded px-2 py-1 w-28"
                       value={it.route}
-                      onChange={(e) => setAt(i, "route", e.target.value)}
+                      onChange={(e: any) => setAt(i, "route", e.target.value)}
                       placeholder="VO/IM/IV..."
                     />
                   </td>
@@ -243,7 +243,7 @@ export default function PrescriptionEditor() {
                     <input
                       className="border rounded px-2 py-1 w-32"
                       value={it.freq}
-                      onChange={(e) => setAt(i, "freq", e.target.value)}
+                      onChange={(e: any) => setAt(i, "freq", e.target.value)}
                       placeholder="cada 8h..."
                     />
                   </td>
@@ -251,7 +251,7 @@ export default function PrescriptionEditor() {
                     <input
                       className="border rounded px-2 py-1 w-28"
                       value={it.duration}
-                      onChange={(e) => setAt(i, "duration", e.target.value)}
+                      onChange={(e: any) => setAt(i, "duration", e.target.value)}
                       placeholder="7 días..."
                     />
                   </td>
@@ -259,7 +259,7 @@ export default function PrescriptionEditor() {
                     <input
                       className="border rounded px-2 py-1 w-56"
                       value={it.instructions || ""}
-                      onChange={(e) => setAt(i, "instructions", e.target.value)}
+                      onChange={(e: any) => setAt(i, "instructions", e.target.value)}
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -285,7 +285,7 @@ export default function PrescriptionEditor() {
           <textarea
             className="border rounded px-3 py-2 w-full min-h-[100px]"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e: any) => setNotes(e.target.value)}
             placeholder="Instrucciones generales al paciente..."
           />
         </div>

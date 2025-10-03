@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const rows = body.items.map((x) => ({
+  const rows = body.items.map((x: any) => ({
     id: x.id ?? undefined,
     org_id: body.org_id!,
     code: String(x.code || "").slice(0, 64),

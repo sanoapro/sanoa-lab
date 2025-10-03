@@ -42,8 +42,8 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
     let alive = true;
     setLoading(true);
     fetch(`/api/saved-views?org_id=${orgId}&scope=${scope}`)
-      .then((r) => r.json())
-      .then((j) => {
+      .then((r: any) => r.json())
+      .then((j: any) => {
         if (!alive) return;
         if (j.ok) setItems(j.data);
       })
@@ -56,7 +56,7 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
   function applyFilters(filters: Record<string, any>) {
     const q = new URLSearchParams();
     q.set("org_id", orgId);
-    Object.entries(filters).forEach(([k, v]) => {
+    Object.entries(filters).forEach(([k, v]: any) => {
       if (v === undefined || v === null || v === "") return;
       q.set(k, String(v));
     });
@@ -77,7 +77,7 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
     const j = await res.json();
     if (j.ok) {
       const v = j.data[0] as SavedView;
-      setItems((prev) => [v, ...prev]);
+      setItems((prev: any) => [v, ...prev]);
       setSelectedId(v.id);
       setName("");
     }
@@ -85,7 +85,7 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
 
   async function updateSelected() {
     if (!selectedId) return;
-    const sv = items.find((i) => i.id === selectedId);
+    const sv = items.find((i: any) => i.id === selectedId);
     if (!sv) return;
     const res = await fetch("/api/saved-views", {
       method: "POST",
@@ -98,7 +98,7 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
     const j = await res.json();
     if (j.ok) {
       const v = j.data[0] as SavedView;
-      setItems((prev) => prev.map((x) => (x.id === v.id ? v : x)));
+      setItems((prev: any) => prev.map((x: any) => (x.id === v.id ? v : x)));
     }
   }
 
@@ -107,7 +107,7 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
     const res = await fetch(`/api/saved-views/${selectedId}?org_id=${orgId}`, { method: "DELETE" });
     const j = await res.json();
     if (j.ok) {
-      setItems((prev) => prev.filter((x) => x.id !== selectedId));
+      setItems((prev: any) => prev.filter((x: any) => x.id !== selectedId));
       setSelectedId("");
     }
   }
@@ -118,17 +118,17 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
         <label className="text-sm">Vistas guardadas</label>
         <select
           value={selectedId}
-          onChange={(e) => {
+          onChange={(e: any) => {
             const id = e.target.value;
             setSelectedId(id);
-            const sv = items.find((x) => x.id === id);
+            const sv = items.find((x: any) => x.id === id);
             if (sv) applyFilters(sv.filters || {});
           }}
           className="rounded border px-3 py-2"
           aria-label="Seleccionar vista guardada"
         >
           <option value="">(ninguna)</option>
-          {items.map((v) => (
+          {items.map((v: any) => (
             <option key={v.id} value={v.id}>
               {v.name}
             </option>
@@ -153,7 +153,7 @@ export default function SavedViewsBar({ orgId, scope }: Props) {
       <div className="flex items-center gap-2">
         <input
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e: any) => setName(e.target.value)}
           placeholder="Nombre de la vista"
           className="rounded border px-3 py-2"
           aria-label="Nombre de nueva vista"

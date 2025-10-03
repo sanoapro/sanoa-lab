@@ -26,7 +26,7 @@ type StatusFilter = typeof STATUS_PENDING | typeof STATUS_CLEARED;
 function parseStatus(search: ReadonlyURLSearchParams): StatusFilter | null {
   const values = search
     .getAll("status")
-    .flatMap((value) => value.split(",").map((item) => item.trim()).filter(Boolean));
+    .flatMap((value: any) => value.split(",").map((item: any) => item.trim()).filter(Boolean));
 
   if (values.length === 1 && (values[0] === STATUS_PENDING || values[0] === STATUS_CLEARED)) {
     return values[0];
@@ -60,7 +60,7 @@ export default function BankTransactionsClientPage() {
   );
 
   const handleReset = useCallback(() => {
-    pushSearch((params) => {
+    pushSearch((params: any) => {
       params.delete("flow");
       params.delete("min");
       params.delete("max");
@@ -70,7 +70,7 @@ export default function BankTransactionsClientPage() {
 
   const handleFlowChange = useCallback(
     (next: FlowFilter) => {
-      pushSearch((params) => {
+      pushSearch((params: any) => {
         const current = params.get("flow");
         if (current === next) {
           params.delete("flow");
@@ -94,10 +94,10 @@ export default function BankTransactionsClientPage() {
 
   const handleStatusChange = useCallback(
     (next: StatusFilter) => {
-      pushSearch((params) => {
+      pushSearch((params: any) => {
         const values = params
           .getAll("status")
-          .flatMap((value) => value.split(",").map((item) => item.trim()).filter(Boolean));
+          .flatMap((value: any) => value.split(",").map((item: any) => item.trim()).filter(Boolean));
         const current = values.length === 1 ? values[0] : null;
 
         if (current === next) {

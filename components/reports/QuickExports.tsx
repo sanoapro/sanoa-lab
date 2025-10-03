@@ -28,7 +28,7 @@ export default function QuickExports({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e: any) => setFrom(e.target.value)}
           />
         </div>
         <div>
@@ -37,7 +37,7 @@ export default function QuickExports({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e: any) => setTo(e.target.value)}
           />
         </div>
         <div>
@@ -45,7 +45,7 @@ export default function QuickExports({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={tag}
-            onChange={(e) => setTag(e.target.value)}
+            onChange={(e: any) => setTag(e.target.value)}
             placeholder="opcional"
           />
         </div>

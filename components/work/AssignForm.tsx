@@ -100,7 +100,16 @@ export default function AssignForm() {
         <div className="md:col-span-2">
           <Autocomplete
             placeholder="Buscar paciente…"
-            onSelect={(s) => setPatient({ id: s.patient_id, name: s.display_name })}
+            onSelect={(hit: any) => {
+              const id: string | undefined = hit?.patient_id ?? hit?.id;
+              const name: string =
+                hit?.name ??
+                hit?.display_name ??
+                hit?.full_name ??
+                "";
+              if (!id) return;
+              setPatient({ id, name });
+            }}
             autoFocus
           />
           {patient && <p className="text-xs text-slate-500 mt-1">Paciente: {patient.name}</p>}
@@ -115,7 +124,7 @@ export default function AssignForm() {
             id="assign-due-at"
             type="datetime-local"
             value={dueAt}
-            onChange={(e) => setDueAt(e.target.value)}
+            onChange={(e: any) => setDueAt(e.target.value)}
             className="bg-white dark:bg-slate-900"
           />
         </Field>
@@ -126,10 +135,10 @@ export default function AssignForm() {
         <Field label={<span className="text-slate-500">Módulo</span>} className="md:col-span-1">
           <select
             value={module}
-            onChange={(e) => setModule(e.target.value as Module)}
+            onChange={(e: any) => setModule(e.target.value as Module)}
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
           >
-            {MODULES.map((m) => (
+            {MODULES.map((m: any) => (
               <option key={m} value={m}>
                 {m}
               </option>
@@ -141,10 +150,10 @@ export default function AssignForm() {
           <select
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
             value={templateId}
-            onChange={(e) => setTemplateId(e.target.value)}
+            onChange={(e: any) => setTemplateId(e.target.value)}
           >
             <option value="">— Ad-hoc —</option>
-            {templates.map((t) => (
+            {templates.map((t: any) => (
               <option key={t.id} value={t.id}>
                 {t.title}
               </option>
@@ -158,7 +167,7 @@ export default function AssignForm() {
             <Field label={<span className="text-slate-500">Título (si no usas plantilla)</span>} className="md:col-span-3">
               <Input
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e: any) => setTitle(e.target.value)}
                 placeholder="p.ej., Caminar 20 min diarios"
                 className="bg-white dark:bg-slate-900"
               />
@@ -168,7 +177,7 @@ export default function AssignForm() {
               <Textarea
                 rows={5}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e: any) => setContent(e.target.value)}
                 className="font-mono text-xs bg-white dark:bg-slate-900"
               />
             </Field>
@@ -178,7 +187,7 @@ export default function AssignForm() {
         <Field label={<span className="text-slate-500">Frecuencia</span>}>
           <select
             value={frequency}
-            onChange={(e) => setFrequency(e.target.value as any)}
+            onChange={(e: any) => setFrequency(e.target.value as any)}
             className="rounded-xl border px-3 py-2 bg-white dark:bg-slate-900"
           >
             <option value="once">Una vez</option>
@@ -194,7 +203,7 @@ export default function AssignForm() {
             min={1}
             max={100}
             value={occ}
-            onChange={(e) => setOcc(e.target.value ? Number(e.target.value) : "")}
+            onChange={(e: any) => setOcc(e.target.value ? Number(e.target.value) : "")}
             className="bg-white dark:bg-slate-900"
           />
         </Field>

@@ -6,7 +6,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { jsonError, jsonOk } from "@/lib/http/validate";
 
 function interpolate(body: string, map: Record<string, string>): string {
-  return body.replace(/\{\{([A-Z0-9_]+)\}\}/g, (_, k) => map[k] ?? `{{${k}}}`);
+  return body.replace(/\{\{([A-Z0-9_]+)\}\}/g, (_: any, k: any) => map[k] ?? `{{${k}}}`);
 }
 
 export async function GET(req: NextRequest) {

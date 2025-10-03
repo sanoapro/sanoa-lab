@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (items.length) {
-      const payload = items.map((item) => ({
+      const payload = items.map((item: any) => ({
         request_id: requestRow!.id,
         test_code: item.code || null,
         test_name: item.name,

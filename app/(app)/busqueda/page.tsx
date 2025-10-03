@@ -38,13 +38,13 @@ export default function SearchPage() {
           className="sm:col-span-4"
           placeholder="Buscar pacientes y notas…"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => {
+          onChange={(e: any) => setQ(e.target.value)}
+          onKeyDown={(e: any) => {
             if (e.key === "Enter") void run();
           }}
         />
         <label className="flex items-center gap-2 text-sm justify-center">
-          <input type="checkbox" checked={onlyOrg} onChange={(e) => setOnlyOrg(e.target.checked)} />
+          <input type="checkbox" checked={onlyOrg} onChange={(e: any) => setOnlyOrg(e.target.checked)} />
           Sólo org activa
         </label>
         <Button onClick={() => void run()} disabled={loading}>
@@ -58,7 +58,7 @@ export default function SearchPage() {
             {loading ? "Buscando…" : "Sin resultados."}
           </div>
         )}
-        {items.map((it, idx) => (
+        {items.map((it: any, idx: any) => (
           <div key={idx} className="p-4 flex items-center justify-between">
             <div className="flex-1">
               <div className="text-xs uppercase tracking-wide text-gray-500">

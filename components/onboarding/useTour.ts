@@ -21,11 +21,11 @@ export function useTour(steps: TourStep[]) {
   }, [steps.length]);
 
   function next() {
-    if (index + 1 < steps.length) setIndex((i) => i + 1);
+    if (index + 1 < steps.length) setIndex((i: any) => i + 1);
     else finish();
   }
   function prev() {
-    if (index > 0) setIndex((i) => i - 1);
+    if (index > 0) setIndex((i: any) => i - 1);
   }
   function finish() {
     localStorage.setItem(STORAGE_KEY, "1");

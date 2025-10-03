@@ -34,7 +34,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       .order("created_at", { ascending: false })
       .limit(200)
       .maybeSingle()
-      .then((r) => {
+      .then((r: any) => {
         // si no existe tabla o RLS, ignora silencioso
         if (!r || (r as any).error) return { data: [] as any[] };
         return {
@@ -82,6 +82,6 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     r.revoked_at = led?.revoked_at || null;
   }
 
-  out.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  out.sort((a: any, b: any) => b.created_at.localeCompare(a.created_at));
   return NextResponse.json({ items: out });
 }

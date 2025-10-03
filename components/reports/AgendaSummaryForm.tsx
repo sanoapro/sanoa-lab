@@ -75,7 +75,7 @@ export default function AgendaSummaryForm({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e: any) => setFrom(e.target.value)}
           />
         </div>
         <div>
@@ -84,7 +84,7 @@ export default function AgendaSummaryForm({ orgId }: { orgId: string }) {
             type="date"
             className="rounded border px-3 py-2 w-full"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e: any) => setTo(e.target.value)}
           />
         </div>
         <div>
@@ -92,7 +92,7 @@ export default function AgendaSummaryForm({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={resource}
-            onChange={(e) => setResource(e.target.value)}
+            onChange={(e: any) => setResource(e.target.value)}
             placeholder="ID o nombre"
           />
         </div>
@@ -101,7 +101,7 @@ export default function AgendaSummaryForm({ orgId }: { orgId: string }) {
           <input
             className="rounded border px-3 py-2 w-full"
             value={tz}
-            onChange={(e) => setTz(e.target.value)}
+            onChange={(e: any) => setTz(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
@@ -154,7 +154,7 @@ export default function AgendaSummaryForm({ orgId }: { orgId: string }) {
                 </tr>
               </thead>
               <tbody>
-                {sum.by_day.map((d) => (
+                {sum.by_day.map((d: any) => (
                   <tr key={d.date} className="border-t">
                     <Td>{d.date}</Td>
                     <Td>{d.total}</Td>
@@ -183,7 +183,7 @@ export default function AgendaSummaryForm({ orgId }: { orgId: string }) {
                 </tr>
               </thead>
               <tbody>
-                {sum.by_resource.map((r) => (
+                {sum.by_resource.map((r: any) => (
                   <tr key={r.resource} className="border-t">
                     <Td>{r.resource}</Td>
                     <Td>{r.total}</Td>

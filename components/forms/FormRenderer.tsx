@@ -23,7 +23,7 @@ function Likert({
     <div className="space-y-2">
       <div className="font-medium">{f.label}</div>
       <div className="flex gap-2 items-center">
-        {f.options.map((opt) => (
+        {f.options.map((opt: any) => (
           <label key={opt} className="inline-flex items-center gap-1 cursor-pointer">
             <input
               type="radio"
@@ -44,19 +44,19 @@ function Likert({
 export default function FormRenderer({ schema, onSubmit, submitting }: Props) {
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
 
-  const setVal = (k: string, v: unknown) => setAnswers((s) => ({ ...s, [k]: v }));
+  const setVal = (k: string, v: unknown) => setAnswers((s: any) => ({ ...s, [k]: v }));
 
   return (
     <form
       className="space-y-6"
-      onSubmit={async (e) => {
+      onSubmit={async (e: any) => {
         e.preventDefault();
         await onSubmit(answers);
       }}
     >
       <h1 className="text-2xl font-semibold">{schema.title}</h1>
 
-      {schema.fields.map((f) => {
+      {schema.fields.map((f: any) => {
         if (f.type === "text") {
           return (
             <Field key={f.key} label={f.label} htmlFor={f.key}>
@@ -64,7 +64,7 @@ export default function FormRenderer({ schema, onSubmit, submitting }: Props) {
                 id={f.key}
                 type="text"
                 value={(answers[f.key] as string) || ""}
-                onChange={(e) => setVal(f.key, e.target.value)}
+                onChange={(e: any) => setVal(f.key, e.target.value)}
               />
             </Field>
           );
@@ -76,7 +76,7 @@ export default function FormRenderer({ schema, onSubmit, submitting }: Props) {
                 id={f.key}
                 type="date"
                 value={(answers[f.key] as string) || ""}
-                onChange={(e) => setVal(f.key, e.target.value)}
+                onChange={(e: any) => setVal(f.key, e.target.value)}
               />
             </Field>
           );
@@ -88,7 +88,7 @@ export default function FormRenderer({ schema, onSubmit, submitting }: Props) {
               <input
                 type="checkbox"
                 checked={val}
-                onChange={(e) => setVal(f.key, e.target.checked)}
+                onChange={(e: any) => setVal(f.key, e.target.checked)}
               />
               <span>{f.label}</span>
             </label>
@@ -100,7 +100,7 @@ export default function FormRenderer({ schema, onSubmit, submitting }: Props) {
               key={f.key}
               f={f}
               value={Number(answers[f.key] ?? NaN)}
-              onChange={(n) => setVal(f.key, n)}
+              onChange={(n: any) => setVal(f.key, n)}
             />
           );
         }

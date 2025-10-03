@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
 
     if (eLogs) return jsonError("DB_ERROR", eLogs.message, 400);
 
-    const sent = (logs || []).filter((l) => l.status === "sent").length;
-    const failed = (logs || []).filter((l) => l.status === "failed").length;
+    const sent = (logs || []).filter((l: any) => l.status === "sent").length;
+    const failed = (logs || []).filter((l: any) => l.status === "failed").length;
 
     const byChannel: Record<string, number> = {};
     (logs || []).forEach((l: any) => {
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       .map((l: any) => l.reminders?.appointment_at)
       .filter(Boolean)
       .map((x: string) => new Date(x))
-      .filter((d) => {
+      .filter((d: any) => {
         const ds = new Date(start).getTime();
         const de = ds + 24 * 60 * 60 * 1000;
         const t = d.getTime();
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 ⚠️ Fallidos: ${failed}
 🔎 Por canal: ${
       Object.entries(byChannel)
-        .map(([k, v]) => `${k}:${v}`)
+        .map(([k, v]: any) => `${k}:${v}`)
         .join(", ") || "—"
     }
 🙈 Posibles no-show: ${possibleNoShow}

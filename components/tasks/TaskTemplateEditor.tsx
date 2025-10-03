@@ -61,7 +61,7 @@ export default function TaskTemplateEditor({
           <input
             className="border rounded px-3 py-2 w-full"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e: any) => setTitle(e.target.value)}
             placeholder="Ej. Ejercicios respiratorios (7 días)"
           />
         </div>
@@ -70,7 +70,7 @@ export default function TaskTemplateEditor({
           <textarea
             className="border rounded px-3 py-2 w-full h-24"
             value={JSON.stringify(content)}
-            onChange={(e) => {
+            onChange={(e: any) => {
               try {
                 setContent(JSON.parse(e.target.value || "{}"));
               } catch {
@@ -95,7 +95,7 @@ export default function TaskTemplateEditor({
             </tr>
           </thead>
           <tbody>
-            {list.map((x) => (
+            {list.map((x: any) => (
               <tr key={x.id} className="border-t">
                 <td className="px-3 py-2">{x.title}</td>
                 <td className="px-3 py-2">

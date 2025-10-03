@@ -60,7 +60,7 @@ export function dateKeyInTZ(iso: string, tz: string): string {
     day: "2-digit",
   })
     .formatToParts(d)
-    .reduce<Record<string, string>>((acc, p) => {
+    .reduce<Record<string, string>>((acc: any, p: any) => {
       if (p.type !== "literal") acc[p.type] = p.value;
       return acc;
     }, {});
@@ -86,7 +86,7 @@ export function computeAgendaSummary(
   to: string,
   tz: string,
   items: Booking[],
-  resourceLabelFallback = "Sin recurso",
+  resourceLabelFallback: any = "Sin recurso",
 ): AgendaSummary {
   const totals = { total: 0, completed: 0, no_show: 0, cancelled: 0, other: 0 };
   let durationSumMin = 0;
@@ -180,8 +180,8 @@ export function computeAgendaSummary(
   }
 
   const by_day = Array.from(byDayMap.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, d]) => ({
+    .sort(([a]: any, [b]: any) => a.localeCompare(b))
+    .map(([date, d]: any) => ({
       date,
       total: d.total,
       completed: d.completed,
@@ -193,8 +193,8 @@ export function computeAgendaSummary(
     }));
 
   const by_resource = Array.from(byResMap.entries())
-    .sort((a, b) => b[1].total - a[1].total)
-    .map(([resource, r]) => ({
+    .sort((a: any, b: any) => b[1].total - a[1].total)
+    .map(([resource, r]: any) => ({
       resource,
       total: r.total,
       completed: r.completed,

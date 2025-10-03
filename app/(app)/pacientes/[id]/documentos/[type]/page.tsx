@@ -41,7 +41,7 @@ export default function DocViewer({
 
   useEffect(() => {
     (async () => {
-      const j = await fetch(`/api/patients/${patientId}/docs/list`).then((r) => r.json());
+      const j = await fetch(`/api/patients/${patientId}/docs/list`).then((r: any) => r.json());
       const row = (j.items || []).find((x: any) => x.type === type && x.id === id);
       setMeta(row || {});
     })();
@@ -127,7 +127,7 @@ export default function DocViewer({
           className="border rounded p-2 text-sm flex-1"
           placeholder="Motivo de revocación (opcional)"
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          onChange={(e: any) => setReason(e.target.value)}
         />
         <button
           disabled={revoking}

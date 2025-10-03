@@ -138,7 +138,7 @@ export default function BancoAjustesPage() {
       toast({ variant: "error", title: "Selecciona una organización activa" });
       return;
     }
-    const def = MODULES.find((m) => m.key === moduleKey);
+    const def = MODULES.find((m: any) => m.key === moduleKey);
     if (!def) return;
 
     if (!def.checkoutEndpoint) {
@@ -218,7 +218,7 @@ export default function BancoAjustesPage() {
                 min={0}
                 step={10}
                 value={threshold}
-                onChange={(e) => setTh(e.target.value)}
+                onChange={(e: any) => setTh(e.target.value)}
                 className="glass-input w-full"
               />
               <div className="text-xs opacity-70">
@@ -229,7 +229,7 @@ export default function BancoAjustesPage() {
               <div className="text-sm">Canal</div>
               <select
                 value={channel}
-                onChange={(e) => setCh(e.target.value as any)}
+                onChange={(e: any) => setCh(e.target.value as any)}
                 className="glass-input w-full"
               >
                 <option value="whatsapp">WhatsApp</option>
@@ -241,7 +241,7 @@ export default function BancoAjustesPage() {
               <div className="text-sm">Destino (tel/wa/email)</div>
               <input
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
+                onChange={(e: any) => setTo(e.target.value)}
                 className="glass-input w-full"
                 placeholder="+52..."
               />
@@ -281,7 +281,7 @@ export default function BancoAjustesPage() {
         </div>
 
         <div className="space-y-3">
-          {MODULES.map((module) => {
+          {MODULES.map((module: any) => {
             const active = modulesActive && Boolean(modulesMap[module.key]);
             return (
               <div
@@ -338,7 +338,7 @@ export default function BancoAjustesPage() {
             );
           })}
 
-          {!loadingModules && MODULES.every((m) => modulesMap[m.key] === undefined) && (
+          {!loadingModules && MODULES.every((m: any) => modulesMap[m.key] === undefined) && (
             <p className="rounded-2xl border border-dashed border-[var(--color-brand-border)] bg-white/70 p-4 text-sm text-[var(--color-brand-text)]/70 dark:bg-slate-900/40">
               Aún no hay módulos configurados para esta organización. Completa un checkout para activarlos al instante.
             </p>

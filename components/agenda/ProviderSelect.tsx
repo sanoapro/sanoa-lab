@@ -14,7 +14,7 @@ export default function ProviderSelect({
   const [me, setMe] = useState<string>("");
 
   useEffect(() => {
-    supa.auth.getUser().then(({ data }) => {
+    supa.auth.getUser().then(({ data }: any) => {
       if (data?.user?.id) setMe(data.user.id);
     });
   }, [supa]);
@@ -25,7 +25,7 @@ export default function ProviderSelect({
         className="border rounded px-3 py-2 w-[360px]"
         placeholder="UUID de profesional"
         value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e: any) => onChange(e.target.value)}
         aria-label="UUID del profesional"
       />
       <button

@@ -44,7 +44,7 @@ export default function TemplateEditor({
       const cached = localStorage.getItem(storageKey);
       if (cached) {
         const v = JSON.parse(cached);
-        setTpl((t) => ({ ...t, ...v }));
+        setTpl((t: any) => ({ ...t, ...v }));
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,7 +94,7 @@ export default function TemplateEditor({
         <select
           className="h-11 rounded-lg border border-border bg-background px-3"
           value={tpl.specialty}
-          onChange={(e) => setTpl((t) => ({ ...t, specialty: e.target.value }))}
+          onChange={(e: any) => setTpl((t: any) => ({ ...t, specialty: e.target.value }))}
         >
           <option value="mente">Mente</option>
           <option value="pulso">Pulso</option>
@@ -107,7 +107,7 @@ export default function TemplateEditor({
       <Field label="Título" required>
         <Input
           value={tpl.title}
-          onChange={(e) => setTpl((t) => ({ ...t, title: e.target.value }))}
+          onChange={(e: any) => setTpl((t: any) => ({ ...t, title: e.target.value }))}
           placeholder="Ej. Sertralina 50 mg cada 24h"
         />
       </Field>
@@ -115,7 +115,7 @@ export default function TemplateEditor({
       <Field label="Contenido" hint="Indicaciones, dosis, duración, advertencias" required>
         <Textarea
           value={tpl.body}
-          onChange={(e) => setTpl((t) => ({ ...t, body: e.target.value }))}
+          onChange={(e: any) => setTpl((t: any) => ({ ...t, body: e.target.value }))}
           rows={10}
           placeholder="Escribe la plantilla de la receta…"
         />
