@@ -1,6 +1,3 @@
-Aquí tienes el archivo unificado y sin conflictos, conservando lo más completo de ambas versiones: usamos el `EmptyState` que exporta por defecto (`@/components/ui/EmptyState`) y mantenemos el esqueleto de carga detallado con múltiples filas.
-
-```tsx
 // components/bank/TxTable.tsx
 "use client";
 
@@ -244,4 +241,4 @@ export default function TxTable({ orgId }: { orgId: string }) {
     </div>
   );
 }
-```
+
