@@ -39,9 +39,11 @@ export async function POST(req: NextRequest) {
     org_id: parsed.data.org_id,
     patient_id: parsed.data.patient_id,
     provider_id: parsed.data.provider_id,
-    content,
+    
+    doctor_id: provider_id, // tipos requieren doctor_id
+content,
     status: parsed.data.status,
-  };
+  } as any;
 
   const { data, error } = await supa.from("prescriptions").insert(insert).select("id").single();
 

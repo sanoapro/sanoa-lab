@@ -22,9 +22,10 @@ export async function POST(req: NextRequest) {
   const parsed = parseOrError(BodySchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
+  const payload = { ...parsed.data, doctor_id: (parsed.data as any).provider_id };
   const { data, error } = await supa
     .from("prescriptions")
-    .insert(parsed.data)
+    .insert(payload as any)
     .select("id")
     .single();
 

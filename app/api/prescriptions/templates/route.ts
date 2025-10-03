@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const q = searchParams.get("q")?.trim() || "";
   const org_id = searchParams.get("org_id") || null;
 
-  let query = supa.from("rx_templates").select("*").order("updated_at", { ascending: false });
+  let query = supa.from("rx_templates" as any).select("*").order("updated_at", { ascending: false } as any);
   if (org_id) query = query.eq("org_id", org_id);
   if (q) {
     // filtra por título/especialidad/cuerpo básico
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   const withIds = rows.map((r: any) => ({ ...r, id: r.id ?? crypto.randomUUID() }));
 
   const { data, error } = await svc
-    .from("rx_templates")
+    .from("rx_templates" as any)
     .upsert(withIds, { onConflict: "id" })
     .select("*");
 

@@ -10,7 +10,7 @@ import { parseOrError } from "@/lib/http/validate";
 const PreviewSchema = z.object({
   body: z.string().min(1, "body requerido"),
   variables: z.array(z.string()).optional(),
-  payload: z.record(z.any()).optional(),
+  payload: z.record(z.string(), z.any()).optional(),
   target: z.string().optional(),
 });
 
@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
     const targetRaw = parsed.data.target ?? undefined;
     const target = targetRaw ? normalizeE164(String(targetRaw)) : undefined;
 
-    const { text, missing, extra } = interpolateTemplate(parsed.data.body, payload, allowed);
-    if (target && !isE164(target)) {
+    const safePayload = (payload ?? {}) as Record<string, string | number | null | undefined>;
+    const { text, missing, extra } = interpolateTemplate(parsed.data.body, safePayload, allowed);
+if (target && !isE164(target)) {
       return NextResponse.json(
         {
           ok: false,

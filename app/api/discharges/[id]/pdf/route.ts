@@ -42,7 +42,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const bytes = await pdf.save();
   const filename = `alta_${id}.pdf`;
 
-  return new NextResponse(new Blob([bytes]), {
+  return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
