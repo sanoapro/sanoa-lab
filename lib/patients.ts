@@ -108,9 +108,7 @@ async function orgIdSupported(): Promise<boolean> {
 /** Helper: detecta si falta una RPC para degradar sin romper la UX */
 function isMissingRpc(err: unknown, rpcName: string): boolean {
   const s = String((err as any)?.message || (err as any)?.details || "").toLowerCase();
-  return (
-    s.includes("function") && s.includes(rpcName.toLowerCase()) && s.includes("does not exist")
-  );
+  return s.includes("function") && s.includes(rpcName.toLowerCase()) && s.includes("does not exist");
 }
 
 /** Obtiene el user_id actual (compatibilidad) */
@@ -132,9 +130,9 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
   const pageSize = Math.min(100, Math.max(1, Number(params.pageSize ?? 10)));
 
   const allowedSort: Array<NonNullable<ListPatientsParams["sortBy"]>> = ["created_at", "nombre"];
-  const sortBy = (
-    params.sortBy && allowedSort.includes(params.sortBy) ? params.sortBy : "created_at"
-  ) as NonNullable<ListPatientsParams["sortBy"]>;
+  const sortBy = (params.sortBy && allowedSort.includes(params.sortBy) ? params.sortBy : "created_at") as NonNullable<
+    ListPatientsParams["sortBy"]
+  >;
 
   const direction = (params.direction ?? (sortBy === "created_at" ? "desc" : "asc")) as NonNullable<
     ListPatientsParams["direction"]
@@ -163,10 +161,12 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
         if (!isMissingRpc(e1, "patients_ids_by_tags")) throw toError(e1, "patients_ids_by_tags");
         // si falta la RPC, degradamos: no filtramos por tags
       } else {
-        idsByTags = (rows ?? []).map((r: any) => r.patient_id as string);
-        if (idsByTags.length === 0) {
+        // ✅ Evita "possibly null": usa una constante local y decide temprano
+        const idsFromRpc: string[] = (rows ?? []).map((r: any) => String(r.patient_id));
+        if (idsFromRpc.length === 0) {
           return { items: [], total: 0, page, pageSize };
         }
+        idsByTags = idsFromRpc;
       }
     } catch (e) {
       if (!isMissingRpc(e, "patients_ids_by_tags")) throw toError(e, "patients_ids_by_tags");
@@ -205,7 +205,7 @@ export async function listPatients(params: ListPatientsParams = {}): Promise<Lis
   }
 
   // Aplicar filtro por tags si tenemos IDs prefiltrados
-  if (idsByTags && idsByTags.length > 0) {
+  if (idsByTags?.length) {
     query = query.in("id", idsByTags);
   }
 
@@ -266,12 +266,7 @@ export async function updatePatient(id: string, input: PatientInput): Promise<Pa
   if (typeof input.edad !== "undefined") patch.edad = input.edad ?? null;
   if (typeof input.genero !== "undefined") patch.genero = input.genero;
 
-  const { data, error } = await supabase
-    .from("patients")
-    .update(patch)
-    .eq("id", id)
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("patients").update(patch).eq("id", id).select("*").single();
   if (error) throw toError(error, "updatePatient");
   return data as Patient;
 }

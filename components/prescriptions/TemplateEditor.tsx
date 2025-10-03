@@ -2,15 +2,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Field, Input, Textarea } from "@/components/ui/field";
+import { Field, Textarea } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toast";
 
-type RxTemplate = {
+// ✅ Exporta el tipo para que TemplateEditorModal pueda importarlo
+export type RxTemplate = {
   id?: string;
   specialty: string;
   title: string;
   body: string;
+  notes?: string | null;       // opcional (lo usa el modal)
+  is_reference?: boolean;      // opcional (lo usa el modal)
 };
 
 export default function TemplateEditor({
@@ -26,14 +30,13 @@ export default function TemplateEditor({
     specialty: initial?.specialty ?? "general",
     title: initial?.title ?? "",
     body: initial?.body ?? "",
+    notes: initial?.notes ?? null,
+    is_reference: initial?.is_reference ?? false,
   });
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const storageKey = useMemo(
-    () => `rx-template:draft:${tpl.id ?? "new"}`,
-    [tpl.id]
-  );
+  const storageKey = useMemo(() => `rx-template:draft:${tpl.id ?? "new"}`, [tpl.id]);
 
   // Carga borrador si existe
   useEffect(() => {

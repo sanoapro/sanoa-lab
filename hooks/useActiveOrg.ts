@@ -154,11 +154,14 @@ export function useActiveOrg() {
     const handleOrgChanged = (event: Event) => {
       const detail = (event as CustomEvent<ActiveOrg | null>).detail;
       if (detail && typeof detail === "object" && typeof detail.id === "string") {
-        applyActiveOrg({
-          id: detail.id,
-          name: detail.name ?? "Organización",
-          slug: detail.slug,
-        }, { emit: false, persistServer: false });
+        applyActiveOrg(
+          {
+            id: detail.id,
+            name: detail.name ?? "Organización",
+            slug: detail.slug,
+          },
+          { emit: false, persistServer: false },
+        );
       } else {
         applyActiveOrg(null, { emit: false, persistServer: false });
       }

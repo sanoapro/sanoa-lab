@@ -1,17 +1,23 @@
+// /workspaces/sanoa-lab/lib/supabase-browser.ts
 "use client";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "./database.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "@/types/database.types";
 
 const NOT_CONFIGURED_MSG = "Supabase no está configurado";
 
+// Singleton en el navegador
 let browserClient: SupabaseClient<Database> | null = null;
 let browserStub: SupabaseClient<Database> | null = null;
 
 function createBrowserQueryStub() {
-  const listResult = { data: [] as any[], error: { message: NOT_CONFIGURED_MSG } };
-  const mutationResult = { data: null, error: { message: NOT_CONFIGURED_MSG } };
-  let pendingResult = listResult;
+  // ✅ Pending permite any[] | null para compatibilidad entre select (array) y mutaciones (null)
+  type Pending = { data: any[] | null; error: { message: string } };
+
+  const listResult: Pending = { data: [] as any[], error: { message: NOT_CONFIGURED_MSG } };
+  const mutationResult: Pending = { data: null, error: { message: NOT_CONFIGURED_MSG } };
+  let pendingResult: Pending = listResult;
 
   const chain: any = {
     select: () => {
@@ -51,6 +57,7 @@ function createBrowserQueryStub() {
     throwOnError: () => chain,
   };
 
+  // Hace que el stub sea "thenable" como las llamadas reales de Supabase
   chain.then = (resolve: any, reject: any) =>
     Promise.resolve(pendingResult).then(resolve, reject);
 
@@ -100,9 +107,27 @@ function getBrowserStub(): SupabaseClient<Database> {
         };
       },
     },
+
     from() {
       return createBrowserQueryStub();
     },
+    rpc() {
+      return createBrowserQueryStub();
+    },
+
+    // Stubs de realtime para evitar errores si no hay envs
+    channel() {
+      const ch: any = {
+        on: () => ch,
+        subscribe: () => ch,
+        unsubscribe: () => {},
+      };
+      return ch;
+    },
+    removeChannel: (_ch?: any) => {
+      // no-op
+    },
+
     storage: {
       from() {
         return {
@@ -115,11 +140,15 @@ function getBrowserStub(): SupabaseClient<Database> {
     },
   };
 
-  browserStub = stub;
-  return stub;
+  browserStub = stub as SupabaseClient<Database>;
+  return browserStub;
 }
 
-export function getSupabaseBrowser() {
+/**
+ * Cliente de Supabase para el navegador (singleton).
+ * Si faltan variables de entorno, devuelve un stub seguro que no rompe la app.
+ */
+export function getSupabaseBrowser(): SupabaseClient<Database> {
   if (browserClient) return browserClient;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -129,7 +158,7 @@ export function getSupabaseBrowser() {
     return getBrowserStub();
   }
 
-  browserClient = createClient<Database>(url, anon, {
+  browserClient = createBrowserClient<Database>(url, anon, {
     auth: {
       flowType: "pkce",
       persistSession: true,
@@ -143,3 +172,6 @@ export function getSupabaseBrowser() {
 
   return browserClient;
 }
+
+/** Export directo por conveniencia (misma instancia tipada) */
+export const supabase: SupabaseClient<Database> = getSupabaseBrowser();

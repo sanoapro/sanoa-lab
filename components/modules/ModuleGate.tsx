@@ -15,7 +15,7 @@ export default function ModuleGate({
   const { loading, locked } = useModuleAccess(featureKey);
 
   return (
-    <div className={["relative", className].join(" ")]}>
+    <div className={["relative", className].join(" ")}>
       <div className={locked ? "pointer-events-none select-none opacity-40" : ""}>{children}</div>
 
       {!loading && locked && (

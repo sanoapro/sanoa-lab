@@ -4,9 +4,16 @@ import Emoji from "@/components/Emoji";
 import { Button } from "@/components/ui/button";
 import GlassModal from "@/components/ui/GlassModal";
 import { useAutosave } from "@/hooks/useAutosave";
-import type { RxTemplate } from "./TemplateEditor";
 
-export type { RxTemplate } from "./TemplateEditor";
+// ✅ Declara el tipo aquí y exporta para que otros consumidores lo puedan usar
+export type RxTemplate = {
+  id?: string;
+  specialty: string;
+  title: string;
+  body: string;
+  notes?: string | null;
+  is_reference?: boolean;
+};
 
 type Props = {
   open: boolean;

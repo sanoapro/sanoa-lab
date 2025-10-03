@@ -6,7 +6,8 @@ type SaveFn<T> = (_data: T) => Promise<T | void>;
 export function useAutosave<T>(initial: T, saveFn: SaveFn<T>, delay = 800) {
   const [data, setData] = useState<T>(initial);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const timeoutRef = useRef<number | undefined>();
+  // React 19: requiere valor inicial explícito
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setData(initial);
@@ -14,7 +15,10 @@ export function useAutosave<T>(initial: T, saveFn: SaveFn<T>, delay = 800) {
   }, [initial]);
 
   const flush = useCallback(async () => {
-    window.clearTimeout(timeoutRef.current);
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     try {
       setStatus("saving");
       const result = await saveFn(data);
@@ -29,13 +33,18 @@ export function useAutosave<T>(initial: T, saveFn: SaveFn<T>, delay = 800) {
   }, [data, saveFn]);
 
   useEffect(() => {
-    window.clearTimeout(timeoutRef.current);
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
     timeoutRef.current = window.setTimeout(() => {
       void flush();
     }, delay);
 
     return () => {
-      window.clearTimeout(timeoutRef.current);
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
   }, [data, flush, delay]);
 

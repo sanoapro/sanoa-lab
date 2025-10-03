@@ -1,10 +1,12 @@
 // lib/supabase/server.ts
-import { cookies as nextCookies, headers as nextHeaders } from "next/headers";
+import { cookies as nextCookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
+import type { Database } from "@/types/database.types"; // Ajusta la ruta si es distinta
 
 const NOT_CONFIGURED_MSG = "Supabase no está configurado";
 
+/* ----------------------------- STUBS DE SEGURIDAD ---------------------------- */
 function createQueryStub() {
   const listResult = { data: [] as any[], error: { message: NOT_CONFIGURED_MSG } };
   const singleResult = { data: null, error: { message: NOT_CONFIGURED_MSG } };
@@ -13,10 +15,7 @@ function createQueryStub() {
   let pendingResult = listResult;
 
   const chain: any = {
-    select: () => {
-      pendingResult = listResult;
-      return chain;
-    },
+    select: () => ((pendingResult = listResult), chain),
     eq: () => chain,
     neq: () => chain,
     gt: () => chain,
@@ -36,28 +35,14 @@ function createQueryStub() {
     returns: () => chain,
     maybeSingle: async () => singleResult,
     single: async () => singleResult,
-    insert: () => {
-      pendingResult = mutationResult;
-      return chain;
-    },
-    update: () => {
-      pendingResult = mutationResult;
-      return chain;
-    },
-    upsert: () => {
-      pendingResult = mutationResult;
-      return chain;
-    },
-    delete: () => {
-      pendingResult = mutationResult;
-      return chain;
-    },
+    insert: () => ((pendingResult = mutationResult), chain),
+    update: () => ((pendingResult = mutationResult), chain),
+    upsert: () => ((pendingResult = mutationResult), chain),
+    delete: () => ((pendingResult = mutationResult), chain),
     throwOnError: () => chain,
   };
 
-  chain.then = (resolve: any, reject: any) =>
-    Promise.resolve(pendingResult).then(resolve, reject);
-
+  chain.then = (resolve: any, reject: any) => Promise.resolve(pendingResult).then(resolve, reject);
   return chain;
 }
 
@@ -65,16 +50,10 @@ function createSupabaseStub() {
   return {
     auth: {
       async getUser() {
-        return {
-          data: { user: null },
-          error: { message: NOT_CONFIGURED_MSG },
-        };
+        return { data: { user: null }, error: { message: NOT_CONFIGURED_MSG } };
       },
       async getSession() {
-        return {
-          data: { session: null },
-          error: { message: NOT_CONFIGURED_MSG },
-        };
+        return { data: { session: null }, error: { message: NOT_CONFIGURED_MSG } };
       },
       async signOut() {
         return { error: { message: NOT_CONFIGURED_MSG } };
@@ -100,16 +79,15 @@ function createSupabaseStub() {
     }),
   } as any;
 }
+/* --------------------------------------------------------------------------- */
 
 /**
- * Cliente para Route Handlers / Server Components (Next 15: cookies/headers con await)
- * - Usa SIEMPRE la ANON KEY (NUNCA service) para respetar RLS por sesión.
- * - Implementa set/remove sólo si el entorno lo permite (Route Handlers).
+ * Cliente servidor para Route Handlers / Server Components
+ * - Usa SIEMPRE la ANON KEY para respetar RLS por sesión.
+ * - El adaptador `cookies` sigue exactamente la forma esperada por @supabase/ssr@0.7.x.
+ * - En entornos donde no se pueden setear cookies (p. ej., RSC), capturamos y seguimos sin romper.
  */
-export async function getSupabaseServer() {
-  const cookieStore = await nextCookies(); // ✅ Next 15
-  const hdrs = await nextHeaders(); // ✅ Next 15
-
+export function getSupabaseServer() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -117,59 +95,40 @@ export async function getSupabaseServer() {
     return createSupabaseStub();
   }
 
-  // Detecta si el store soporta set/delete (Route Handlers). En Server Components no.
-  const canSet = typeof (cookieStore as any)?.set === "function";
-  const canDelete = typeof (cookieStore as any)?.delete === "function";
+  const store = nextCookies();
 
-  return createServerClient(supabaseUrl, anonKey, {
+  return createServerClient<Database>(supabaseUrl, anonKey, {
     cookies: {
-      get: (name: string) => {
+      get(name: string) {
         try {
-          return cookieStore.get(name)?.value;
+          return store.get(name)?.value;
         } catch {
           return undefined;
         }
       },
-      set: (name: string, value: string, options?: Parameters<(typeof cookieStore)["set"]>[2]) => {
+      set(name: string, value: string, options?: Record<string, any>) {
         try {
-          if (canSet) {
-            // En Route Handlers podemos setear cookies
-            (cookieStore as any).set(name, value, options);
-          } else {
-            // En Server Components, ignoramos silenciosamente
-          }
+          // En RSC puede fallar set(); en Route Handlers funciona
+          store.set({ name, value, ...(options ?? {}) });
         } catch {
-          // no-op
+          /* no-op */
         }
       },
-      remove: (name: string, options?: Parameters<(typeof cookieStore)["set"]>[2]) => {
+      remove(name: string, options?: Record<string, any>) {
         try {
-          if (canDelete) {
-            (cookieStore as any).delete(name);
-          } else if (canSet) {
-            // Fallback: setear expiración inmediata
-            (cookieStore as any).set(name, "", { ...options, maxAge: 0 });
-          } else {
-            // En Server Components, ignoramos
-          }
+          store.set({ name, value: "", ...(options ?? {}), maxAge: 0 });
         } catch {
-          // no-op
-        }
-      },
-    },
-    headers: {
-      get: (name: string) => {
-        try {
-          return hdrs.get(name) ?? undefined;
-        } catch {
-          return undefined;
+          /* no-op */
         }
       },
     },
   });
 }
 
-/** Service role para backend (sin sesión, jobs/webhooks/exports). NUNCA usar en endpoints con RLS de usuario. */
+/**
+ * Cliente con Service Role para procesos backend (jobs, webhooks, exports).
+ * NUNCA usar en endpoints de usuario con RLS.
+ */
 export function createServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -179,6 +138,6 @@ export function createServiceClient() {
   return createSupabaseAdmin(url, key, { auth: { persistSession: false } });
 }
 
-/** Alias histórico (algunos archivos lo importan) */
+/** Alias históricos para compatibilidad con imports existentes */
 export const createClient = getSupabaseServer;
 export const supaServer = getSupabaseServer;

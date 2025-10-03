@@ -15,6 +15,14 @@ type Item = {
   instructions?: string;
 };
 
+type PatientItem = {
+  id?: string;
+  patient_id?: string;
+  label?: string | null;
+  name?: string | null;
+  display_name?: string | null;
+};
+
 export default function PrescriptionEditor() {
   const org = useMemo(() => getActiveOrg(), []);
   const orgId = org?.id || "";
@@ -139,7 +147,12 @@ export default function PrescriptionEditor() {
           <PatientAutocomplete
             orgId={orgId}
             scope="mine"
-            onSelect={setPatient}
+            onSelect={(p: PatientItem) =>
+              setPatient({
+                id: (p.id ?? p.patient_id)!,
+                label: p.label ?? p.name ?? p.display_name ?? "Paciente",
+              })
+            }
             placeholder="Buscar paciente…"
           />
         )}

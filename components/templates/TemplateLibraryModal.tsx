@@ -70,35 +70,77 @@ const PRESCRIPTION_EMPTY_ITEM = {
   instructions: "",
 };
 
-function templateToDraft(kind: TemplateKind, tpl: PrescriptionTemplate | ReferralTemplate, orgId: string): Draft {
-  if (kind === "prescription") {
-    const content = tpl.content ?? { items: [] };
+/* ───────────────────────── Type guards para content ───────────────────────── */
+function isPrescriptionContent(
+  content: unknown,
+): content is PrescriptionTemplateContent {
+  return !!content && typeof content === "object" && "items" in (content as any);
+}
+
+function isReferralContent(
+  content: unknown,
+): content is ReferralTemplateContent {
+  return (
+    !!content &&
+    typeof content === "object" &&
+    ("to_specialty" in (content as any) ||
+      "to_doctor_name" in (content as any) ||
+      "reason" in (content as any) ||
+      "summary" in (content as any) ||
+      "plan" in (content as any))
+  );
+}
+
+/* ───────────────────────── Draft helpers (con guards) ─────────────────────── */
+function templateToDraft(
+  kind: TemplateKind,
+  tpl: PrescriptionTemplate | ReferralTemplate,
+  orgId: string,
+): Draft {
+  const raw = tpl.content;
+
+  if (kind === "prescription" || isPrescriptionContent(raw)) {
+    const meta = (raw as any)?.meta ?? {};
+    const notes =
+      (isPrescriptionContent(raw) && typeof raw.notes === "string" ? raw.notes : "") ?? "";
+    const items = isPrescriptionContent(raw) && Array.isArray(raw.items)
+      ? raw.items.map((it) => ({ ...PRESCRIPTION_EMPTY_ITEM, ...it }))
+      : [];
+
     return {
       type: "prescription",
       id: tpl.id,
       org_id: orgId,
       name: tpl.name,
       is_active: tpl.is_active ?? true,
-      metaSpecialty: content.meta?.specialty ?? "",
-      metaSummary: content.meta?.summary ?? "",
-      notes: content.notes ?? "",
-      items: Array.isArray(content.items) ? content.items.map((it) => ({ ...PRESCRIPTION_EMPTY_ITEM, ...it })) : [],
+      metaSpecialty: meta?.specialty ?? "",
+      metaSummary: meta?.summary ?? "",
+      notes,
+      items,
     };
   }
-  const content = tpl.content ?? {};
+
+  // Referral por default (o si el guard lo detecta)
+  const meta = (raw as any)?.meta ?? {};
+  const to_specialty = (isReferralContent(raw) && raw.to_specialty) || "";
+  const to_doctor_name = (isReferralContent(raw) && raw.to_doctor_name) || "";
+  const reason = (isReferralContent(raw) && raw.reason) || "";
+  const summary = (isReferralContent(raw) && raw.summary) || "";
+  const plan = (isReferralContent(raw) && raw.plan) || "";
+
   return {
     type: "referral",
     id: tpl.id,
     org_id: orgId,
     name: tpl.name,
     is_active: tpl.is_active ?? true,
-    metaSpecialty: content.meta?.specialty ?? "",
-    metaSummary: content.meta?.summary ?? "",
-    to_specialty: content.to_specialty ?? "",
-    to_doctor_name: content.to_doctor_name ?? "",
-    reason: content.reason ?? "",
-    summary: content.summary ?? "",
-    plan: content.plan ?? "",
+    metaSpecialty: meta?.specialty ?? "",
+    metaSummary: meta?.summary ?? "",
+    to_specialty,
+    to_doctor_name,
+    reason,
+    summary,
+    plan,
   };
 }
 
@@ -175,9 +217,17 @@ function createEmptyDraft(kind: TemplateKind, orgId: string): Draft {
   };
 }
 
-export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse }: TemplateLibraryModalProps) {
+export default function TemplateLibraryModal({
+  orgId,
+  kind,
+  open,
+  onClose,
+  onUse,
+}: TemplateLibraryModalProps) {
   const [loadState, setLoadState] = React.useState<LoadState>("idle");
-  const [templates, setTemplates] = React.useState<Array<(PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind }>>([]);
+  const [templates, setTemplates] = React.useState<
+    Array<(PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind }>
+  >([]);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState<Draft | null>(null);
   const [dirty, setDirty] = React.useState(false);
@@ -219,7 +269,7 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
     if (!search.trim()) return templates;
     const q = search.toLowerCase();
     return templates.filter((tpl) => {
-      const meta = tpl.content?.meta;
+      const meta = (tpl.content as any)?.meta;
       const specialty = meta?.specialty ?? "";
       const metaSummary = meta?.summary ?? "";
       return (
@@ -232,46 +282,43 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
 
   const catalog = React.useMemo(() => getCatalogByType(kind), [kind]);
 
-  const scheduleSave = React.useCallback(
-    (next: Draft) => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(async () => {
-        setSaveState("saving");
-        setErrorMessage(null);
-        try {
-          const payload = draftToPayload(next);
-          let newId = payload.id;
-          if (next.type === "prescription") {
-            const res = await upsertPrescriptionTemplate(payload);
-            newId = res.id;
-          } else {
-            const res = await upsertReferralTemplate(payload);
-            newId = res.id;
-          }
-          setSaveState("saved");
-          setDirty(false);
-          setTemplates((prev) => {
-            const updated = prev.filter((tpl) => tpl.id !== payload.id);
-            const base = {
-              ...payload,
-              id: newId,
-              content: payload.content,
-              type: next.type,
-            } as (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind };
-            return [...updated, base].sort((a, b) => a.name.localeCompare(b.name));
-          });
-          setSelectedId(newId ?? null);
-          setDraft((d) => (d ? { ...next, id: newId ?? next.id } : d));
-        } catch (err: any) {
-          console.error(err);
-          setSaveState("error");
-          setErrorMessage(err?.message || "No pudimos guardar la plantilla");
-          showToast(err?.message || "No pudimos guardar la plantilla", "error");
+  const scheduleSave = React.useCallback((next: Draft) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      setSaveState("saving");
+      setErrorMessage(null);
+      try {
+        const payload = draftToPayload(next);
+        let newId = payload.id;
+        if (next.type === "prescription") {
+          const res = await upsertPrescriptionTemplate(payload);
+          newId = res.id;
+        } else {
+          const res = await upsertReferralTemplate(payload);
+          newId = res.id;
         }
-      }, 900);
-    },
-    [],
-  );
+        setSaveState("saved");
+        setDirty(false);
+        setTemplates((prev) => {
+          const updated = prev.filter((tpl) => tpl.id !== payload.id);
+          const base = {
+            ...payload,
+            id: newId,
+            content: payload.content,
+            type: next.type,
+          } as (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind };
+          return [...updated, base].sort((a, b) => a.name.localeCompare(b.name));
+        });
+        setSelectedId(newId ?? null);
+        setDraft((d) => (d ? { ...next, id: newId ?? next.id } : d));
+      } catch (err: any) {
+        console.error(err);
+        setSaveState("error");
+        setErrorMessage(err?.message || "No pudimos guardar la plantilla");
+        showToast(err?.message || "No pudimos guardar la plantilla", "error");
+      }
+    }, 900);
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -279,7 +326,9 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
     };
   }, []);
 
-  const onSelectTemplate = (tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind }) => {
+  const onSelectTemplate = (
+    tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind },
+  ) => {
     setSelectedId(tpl.id);
     setDraft(templateToDraft(tpl.type, tpl as any, orgId));
     setDirty(false);
@@ -297,7 +346,9 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
     scheduleSave(fresh);
   };
 
-  const onToggleActive = async (tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind }) => {
+  const onToggleActive = async (
+    tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind },
+  ) => {
     const next = !tpl.is_active;
     try {
       if (tpl.type === "prescription") {
@@ -316,7 +367,9 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
     }
   };
 
-  const onDelete = async (tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind }) => {
+  const onDelete = async (
+    tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind },
+  ) => {
     if (!confirm(`¿Eliminar la plantilla "${tpl.name}"?`)) return;
     try {
       if (tpl.type === "prescription") {
@@ -382,13 +435,7 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
       );
     }
     if (draft.type === "prescription") {
-      return (
-        <PrescriptionEditorForm
-          draft={draft}
-          onChange={updateDraft}
-          onUse={onUse}
-        />
-      );
+      return <PrescriptionEditorForm draft={draft} onChange={updateDraft} onUse={onUse} />;
     }
     return <ReferralEditorForm draft={draft} onChange={updateDraft} onUse={onUse} />;
   };
@@ -440,7 +487,7 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
           <div className="max-h-80 overflow-y-auto rounded-2xl border border-white/20 bg-white/70 p-1 dark:bg-slate-950/40">
             <ul>
               {currentList.map((tpl) => {
-                const meta = tpl.content?.meta;
+                const meta = (tpl.content as any)?.meta;
                 const specialty = meta?.specialty ?? "";
                 const isActive = tpl.is_active ?? true;
                 const isSelected = tpl.id === selectedId;
@@ -470,10 +517,7 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
                     </button>
                     {isSelected && (
                       <div className="flex items-center gap-2 px-3 pb-2 text-xs text-slate-500">
-                        <button
-                          className="glass-btn text-xs"
-                          onClick={() => onToggleActive(tpl)}
-                        >
+                        <button className="glass-btn text-xs" onClick={() => onToggleActive(tpl)}>
                           {tpl.is_active ? "Desactivar" : "Activar"}
                         </button>
                         <button className="glass-btn text-xs" onClick={() => onDelete(tpl)}>
@@ -502,10 +546,7 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
                     <div className="text-sm font-semibold">{tpl.name}</div>
                     <div className="text-[11px] text-slate-500">{tpl.specialty}</div>
                     <div className="mt-1 text-xs text-slate-600">{tpl.summary}</div>
-                    <button
-                      className="mt-2 glass-btn text-xs"
-                      onClick={() => handleCatalogImport(tpl)}
-                    >
+                    <button className="mt-2 glass-btn text-xs" onClick={() => handleCatalogImport(tpl)}>
                       Agregar a mis plantillas
                     </button>
                   </article>
@@ -527,6 +568,8 @@ export default function TemplateLibraryModal({ orgId, kind, open, onClose, onUse
     </GlassModal>
   );
 }
+
+/* ────────────────────────────── Editors (sin cambios) ─────────────────────── */
 
 type PrescriptionEditorFormProps = {
   draft: PrescriptionDraft;
@@ -661,10 +704,7 @@ function PrescriptionEditorForm({ draft, onChange, onUse }: PrescriptionEditorFo
       </div>
 
       {draft.id && onUse ? (
-        <button
-          className="glass-btn neon"
-          onClick={() => onUse({ id: draft.id!, name: draft.name })}
-        >
+        <button className="glass-btn neon" onClick={() => onUse({ id: draft.id!, name: draft.name })}>
           Usar esta plantilla
         </button>
       ) : null}

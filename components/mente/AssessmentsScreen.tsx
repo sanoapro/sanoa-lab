@@ -13,6 +13,14 @@ function bandCls(b: "low" | "med" | "high") {
   return "bg-emerald-100 text-emerald-800";
 }
 
+type PatientItem = {
+  id?: string;
+  patient_id?: string;
+  label?: string | null;
+  name?: string | null;
+  display_name?: string | null;
+};
+
 export default function AssessmentsScreen() {
   const org = useMemo(() => getActiveOrg(), []);
   const orgId = org?.id || "";
@@ -54,7 +62,12 @@ export default function AssessmentsScreen() {
           <PatientAutocomplete
             orgId={orgId}
             scope="mine"
-            onSelect={(it) => setPatient(it)}
+            onSelect={(p: PatientItem) =>
+              setPatient({
+                id: (p.id ?? p.patient_id)!,
+                label: p.label ?? p.name ?? p.display_name ?? "Paciente",
+              })
+            }
             placeholder="Buscar paciente (solo mis pacientes)…"
           />
         )}
@@ -72,18 +85,6 @@ export default function AssessmentsScreen() {
             onClick={() => setTool("phq9")}
           >
             PHQ-9
-          </button>
-          <button
-            className={`border rounded px-3 py-2 ${tool === "gad7" ? "bg-slate-100" : ""}`}
-            onClick={() => setTool("gad7")}
-          >
-            GAD-7
-          </button>
-          <button
-            className={`border rounded px-3 py-2 ${tool === "auditc" ? "bg-slate-100" : ""}`}
-            onClick={() => setTool("auditc")}
-          >
-            AUDIT-C
           </button>
         </div>
 
