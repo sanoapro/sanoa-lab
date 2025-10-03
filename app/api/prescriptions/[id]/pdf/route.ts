@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 // MODE: session (user-scoped, cookies)
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
@@ -241,7 +242,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const bytes = await pdf.save();
   const filename = `receta_${rx.folio ?? rx.id}.pdf`;
 
-  return new NextResponse(new Blob([bytes), {
+  return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

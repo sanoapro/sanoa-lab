@@ -1,5 +1,5 @@
 // /workspaces/sanoa-lab/types/database-extended.d.ts
-import type { Database as Base } from "@/lib/database.types";
+import type { Database as Base } from "@/types/database.types";
 
 type Rows<T> = T extends { Row: infer R } ? R : never;
 

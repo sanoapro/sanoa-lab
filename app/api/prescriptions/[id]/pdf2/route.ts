@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 // MODE: session (user-scoped, cookies)
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -217,7 +218,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const pdfBytes = await pdf.save();
 
   // ✅ Body como Blob para satisfacer BodyInit (TS) en Response/NextResponse
-  return new Response(new Blob([pdfBytes], { type: "application/pdf" }), {
+  return new Response(Buffer.from(pdfBytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

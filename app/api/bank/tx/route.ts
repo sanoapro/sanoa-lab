@@ -2,7 +2,7 @@
 // Ruta: /api/bank/tx
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import type { Database } from "@/lib/database.types";
+import type { Database } from "@/types/database.types";
 
 type DB = Database;
 type Tx = DB["public"]["Tables"]["bank_tx"]["Row"];
