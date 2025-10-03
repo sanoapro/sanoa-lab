@@ -10,7 +10,8 @@ import {
 } from "@/lib/work/templates";
 import { getActiveOrg } from "@/lib/org-local";
 import ColorEmoji from "@/components/ColorEmoji";
-import { Field, Input, Textarea } from "@/components/ui/field";
+import { Field, Textarea } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const MODULES = ["general", "mente", "equilibrio", "sonrisa", "pulso"] as const;
 

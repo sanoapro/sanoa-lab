@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
-import { Field, Input } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 /** Icono oficial de Google “G” (inline, sin archivos extra) */

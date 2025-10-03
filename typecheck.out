@@ -1,3 +1,7 @@
+
+> sanoa-lab@0.1.0 typecheck /workspaces/sanoa-lab
+> tsc --noEmit
+
 app/(app)/agenda/page.tsx(206,9): error TS2322: Type '({ kind: "cal"; uid: string; title: string; start: string; end: string; meetingUrl: string | null | undefined; attendee: string | undefined; } | { kind: "local"; id: string; title: string; start: string; end: string; patient_id: string; cal_event_id: string | null; })[]' is not assignable to type 'UniItem[]'.
   Type '{ kind: "cal"; uid: string; title: string; start: string; end: string; meetingUrl: string | null | undefined; attendee: string | undefined; } | { kind: "local"; id: string; title: string; start: string; end: string; patient_id: string; cal_event_id: string | null; }' is not assignable to type 'UniItem'.
     Type '{ kind: "cal"; uid: string; title: string; start: string; end: string; meetingUrl: string | null | undefined; attendee: string | undefined; }' is not assignable to type 'UniItem'.
@@ -5,14 +9,6 @@ app/(app)/agenda/page.tsx(206,9): error TS2322: Type '({ kind: "cal"; uid: strin
         Types of property 'meetingUrl' are incompatible.
           Type 'string | null | undefined' is not assignable to type 'string | undefined'.
             Type 'null' is not assignable to type 'string | undefined'.
-app/(app)/agenda/page.tsx(272,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(274,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(275,50): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(338,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(369,58): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(373,58): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(385,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/agenda/page.tsx(390,47): error TS7006: Parameter 'e' implicitly has an 'any' type.
 app/(app)/agenda/semana/page.tsx(57,17): error TS2322: Type 'Dispatch<SetStateAction<{ id: string; label: string; } | null>>' is not assignable to type '(p: Item) => void'.
   Types of parameters 'value' and 'p' are incompatible.
     Type 'Item' is not assignable to type 'SetStateAction<{ id: string; label: string; } | null>'.
@@ -23,23 +19,6 @@ app/(app)/banco/presupuestos/page.tsx(25,31): error TS2322: Type '{ ctaHref: str
   Property 'ctaHref' does not exist on type 'IntrinsicAttributes & Props'.
 app/(app)/banco/reportes/page.tsx(41,23): error TS2322: Type '{ ctaHref: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
   Property 'ctaHref' does not exist on type 'IntrinsicAttributes & Props'.
-app/(app)/buscador/page.tsx(72,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/avanzada/page.tsx(130,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/avanzada/page.tsx(131,25): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/avanzada/page.tsx(145,54): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/avanzada/page.tsx(146,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/avanzada/page.tsx(203,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/page.tsx(41,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/busqueda/page.tsx(42,23): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(178,56): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(182,54): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(226,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(239,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(244,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(249,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/export/[id]/page.tsx(254,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/metricas/page.tsx(76,54): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/metricas/page.tsx(80,52): error TS7006: Parameter 'e' implicitly has an 'any' type.
 app/(app)/modulos/equilibrio/checkins/page.tsx(32,13): error TS2322: Type 'Dispatch<SetStateAction<{ id: string; label: string; } | null>>' is not assignable to type '(p: Item) => void'.
   Types of parameters 'value' and 'p' are incompatible.
     Type 'Item' is not assignable to type 'SetStateAction<{ id: string; label: string; } | null>'.
@@ -60,47 +39,32 @@ app/(app)/modulos/sonrisa/presupuestos/page.tsx(33,13): error TS2322: Type 'Disp
   Types of parameters 'value' and 'p' are incompatible.
     Type 'Item' is not assignable to type 'SetStateAction<{ id: string; label: string; } | null>'.
       Property 'label' is missing in type 'Item' but required in type '{ id: string; label: string; }'.
-app/(app)/organizaciones/page.tsx(73,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
 app/(app)/pacientes/[id]/laboratorio/[req]/page.tsx(73,11): error TS2322: Type '"secondary"' is not assignable to type '"default" | "error" | "success" | "info" | "destructive" | undefined'.
 app/(app)/pacientes/[id]/laboratorio/[req]/page.tsx(81,37): error TS2345: Argument of type 'ArrayBuffer' is not assignable to parameter of type 'ImageLike'.
   Type 'ArrayBuffer' is missing the following properties from type 'Buffer<ArrayBufferLike>': subarray, write, toJSON, equals, and 99 more.
-app/(app)/pacientes/page.tsx(344,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/pacientes/page.tsx(373,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/pacientes/page.tsx(389,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/pacientes/page.tsx(407,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/pacientes/page.tsx(418,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/pacientes/page.tsx(657,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/pacientes/page.tsx(667,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
 app/(app)/print/recetas/[id]/page.tsx(79,35): error TS7006: Parameter 'it' implicitly has an 'any' type.
 app/(app)/print/recetas/[id]/page.tsx(79,39): error TS7006: Parameter 'i' implicitly has an 'any' type.
 app/(app)/recordatorios/page.tsx(84,42): error TS2322: Type '"reminders"' is not assignable to type '"bank_tx"'.
-app/(app)/reportes/page.tsx(130,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/trabajo/page.tsx(155,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/trabajo/page.tsx(161,67): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(app)/trabajo/page.tsx(167,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/login/page.tsx(6,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-app/(auth)/login/page.tsx(203,15): error TS2322: Type '{ children: Element; htmlFor: string; required: true; label: Element; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
+app/(auth)/login/page.tsx(204,15): error TS2322: Type '{ children: Element; htmlFor: string; required: true; label: Element; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
   Property 'error' does not exist on type 'IntrinsicAttributes & FieldProps'.
-app/(auth)/login/page.tsx(217,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/login/page.tsx(240,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/register/page.tsx(7,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-app/(auth)/register/page.tsx(61,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/register/page.tsx(73,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/reset-password/change/page.tsx(6,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-app/(auth)/reset-password/change/page.tsx(60,13): error TS2322: Type '{ children: Element; label: string; htmlFor: string; required: true; hint: string; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
+app/(auth)/login/page.tsx(220,17): error TS2322: Type '{ id: string; name: string; type: "email"; inputMode: "email"; autoComplete: "email"; required: true; "aria-required": "true"; "aria-invalid": true | undefined; "aria-describedby": string | undefined; value: string; onChange: (e: ChangeEvent<...>) => void; placeholder: string; invalid: boolean; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'.
+  Property 'invalid' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'. Did you mean 'onInvalid'?
+app/(auth)/reset-password/change/page.tsx(61,13): error TS2322: Type '{ children: Element; label: string; htmlFor: string; required: true; hint: string; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
   Property 'error' does not exist on type 'IntrinsicAttributes & FieldProps'.
-app/(auth)/reset-password/change/page.tsx(70,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/reset-password/page.tsx(6,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-app/(auth)/reset-password/page.tsx(59,58): error TS2322: Type '{ children: Element; label: string; htmlFor: string; required: true; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
+app/(auth)/reset-password/change/page.tsx(73,15): error TS2322: Type '{ id: string; name: string; type: "password"; required: true; minLength: number; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; invalid: boolean; "aria-describedby": string | undefined; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'.
+  Property 'invalid' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'. Did you mean 'onInvalid'?
+app/(auth)/reset-password/page.tsx(60,58): error TS2322: Type '{ children: Element; label: string; htmlFor: string; required: true; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
   Property 'error' does not exist on type 'IntrinsicAttributes & FieldProps'.
-app/(auth)/reset-password/page.tsx(68,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/update-password/page.tsx(9,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-app/(auth)/update-password/page.tsx(150,13): error TS2322: Type '{ children: Element; label: Element; required: true; error: string | undefined; errorId: string | undefined; hint: string; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
+app/(auth)/reset-password/page.tsx(71,15): error TS2322: Type '{ id: string; name: string; type: "email"; inputMode: "email"; autoComplete: "email"; required: true; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; invalid: boolean; "aria-describedby": string | undefined; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'.
+  Property 'invalid' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'. Did you mean 'onInvalid'?
+app/(auth)/update-password/page.tsx(151,13): error TS2322: Type '{ children: Element; label: Element; required: true; error: string | undefined; errorId: string | undefined; hint: string; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
   Property 'error' does not exist on type 'IntrinsicAttributes & FieldProps'.
-app/(auth)/update-password/page.tsx(157,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-app/(auth)/update-password/page.tsx(172,13): error TS2322: Type '{ children: Element; label: Element; required: true; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
+app/(auth)/update-password/page.tsx(161,15): error TS2322: Type '{ type: "password"; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; required: true; invalid: boolean; "aria-describedby": string | undefined; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'.
+  Property 'invalid' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'. Did you mean 'onInvalid'?
+app/(auth)/update-password/page.tsx(173,13): error TS2322: Type '{ children: Element; label: Element; required: true; error: string | undefined; errorId: string | undefined; }' is not assignable to type 'IntrinsicAttributes & FieldProps'.
   Property 'error' does not exist on type 'IntrinsicAttributes & FieldProps'.
-app/(auth)/update-password/page.tsx(178,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
+app/(auth)/update-password/page.tsx(182,15): error TS2322: Type '{ type: "password"; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; required: true; invalid: boolean; "aria-describedby": string | undefined; }' is not assignable to type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'.
+  Property 'invalid' does not exist on type 'IntrinsicAttributes & Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & RefAttributes<...>'. Did you mean 'onInvalid'?
 app/api/acuerdos/accept/route.ts(11,11): error TS2769: No overload matches this call.
   Overload 1 of 2, '(relation: "organizations" | "patients" | "audit_log" | "org_members" | "patient_files" | "patient_notes" | "patient_shares" | "user_prefs"): PostgrestQueryBuilder<{ PostgrestVersion: "13.0.4"; }, { ...; }, { ...; } | ... 6 more ... | { ...; }, "organizations" | ... 6 more ... | "user_prefs", [] | ... 4 more ... | [...]>', gave the following error.
     Argument of type '"agreements"' is not assignable to parameter of type '"organizations" | "patients" | "audit_log" | "org_members" | "patient_files" | "patient_notes" | "patient_shares" | "user_prefs"'.
@@ -666,15 +630,12 @@ app/api/jobs/reminders/dispatch/route.ts(125,22): error TS2339: Property 'id' do
   Property 'id' does not exist on type 'SelectQueryError<"column 'id' does not exist on 'organizations'.">'.
 app/api/jobs/reminders/run/route.ts(17,37): error TS2345: Argument of type '"reminders_run_due"' is not assignable to parameter of type '"ensure_personal_org_for" | "gtrgm_compress" | "gtrgm_decompress" | "gtrgm_in" | "gtrgm_options" | "gtrgm_out" | "is_member" | "jwt_email" | "log_audit" | "role_at_least" | "role_rank" | "set_limit" | "show_limit" | "show_trgm"'.
 app/api/jobs/reports/run/route.ts(98,32): error TS7006: Parameter 'sc' implicitly has an 'any' type.
-app/api/lab/templates/upsert/route.ts(9,17): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(values: readonly ["user", "org"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
-    Object literal may only specify known properties, and 'errorMap' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; }'.
-  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
-    Argument of type 'string[]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
-      Index signature for type 'string' is missing in type 'string[]'.
 app/api/lab/upload/route.ts(24,20): error TS7006: Parameter 'b' implicitly has an 'any' type.
-app/api/labs/requests/[id]/pdf/route.ts(204,29): error TS2345: Argument of type 'Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
-  Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 2 more.
+app/api/labs/requests/[id]/pdf/route.ts(206,28): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+    Types of property 'buffer' are incompatible.
+      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+        Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
 app/api/modules/equilibrio/overview/route.ts(65,25): error TS7006: Parameter 'c' implicitly has an 'any' type.
 app/api/modules/equilibrio/overview/route.ts(88,26): error TS7006: Parameter 'it' implicitly has an 'any' type.
 app/api/modules/mente/overview/route.ts(40,29): error TS7006: Parameter 'x' implicitly has an 'any' type.
@@ -687,8 +648,11 @@ app/api/notify/sms/route.ts(27,61): error TS2339: Property 'value' does not exis
 app/api/notify/whatsapp/route.ts(27,49): error TS2339: Property 'value' does not exist on type '{ ok: true; data: { to: string; message: string; org_id?: string | undefined; }; error?: undefined; }'.
 app/api/notify/whatsapp/route.ts(27,66): error TS2339: Property 'value' does not exist on type '{ ok: true; data: { to: string; message: string; org_id?: string | undefined; }; error?: undefined; }'.
 app/api/org/features/route.ts(13,68): error TS7006: Parameter 'x' implicitly has an 'any' type.
-app/api/patients/[id]/pdf/route.ts(129,25): error TS2345: Argument of type 'Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
-  Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 2 more.
+app/api/patients/[id]/pdf/route.ts(131,28): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+    Types of property 'buffer' are incompatible.
+      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+        Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
 app/api/patients/[id]/route.ts(40,52): error TS7006: Parameter 'l' implicitly has an 'any' type.
 app/api/patients/autocomplete/route.ts(55,29): error TS7006: Parameter 'x' implicitly has an 'any' type.
 app/api/prescriptions/[id]/pdf/route.ts(44,37): error TS2347: Untyped function calls may not accept type arguments.
@@ -768,16 +732,12 @@ components/bank/TxTable.tsx(93,11): error TS2322: Type '{ title: string; descrip
   Property 'description' does not exist on type 'IntrinsicAttributes & { emoji?: string | undefined; title?: string | undefined; hint?: string | undefined; ctaText?: string | undefined; onCta?: (() => void) | undefined; }'.
 components/equilibrio/PlanEditor.tsx(126,13): error TS2322: Type '{ orgId: string; scope: string; onSelect: (p: PatientItem) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & { onSelect?: ((p: Item) => void) | undefined; placeholder?: string | undefined; className?: string | undefined; }'.
   Property 'orgId' does not exist on type 'IntrinsicAttributes & { onSelect?: ((p: Item) => void) | undefined; placeholder?: string | undefined; className?: string | undefined; }'.
-components/forms/FormRenderer.tsx(3,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-components/forms/FormRenderer.tsx(66,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-components/forms/FormRenderer.tsx(78,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
 components/mente/AssessmentsScreen.tsx(63,13): error TS2322: Type '{ orgId: string; scope: string; onSelect: (p: PatientItem) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & { onSelect?: ((p: Item) => void) | undefined; placeholder?: string | undefined; className?: string | undefined; }'.
   Property 'orgId' does not exist on type 'IntrinsicAttributes & { onSelect?: ((p: Item) => void) | undefined; placeholder?: string | undefined; className?: string | undefined; }'.
 components/prescriptions/PrescriptionEditor.tsx(148,13): error TS2322: Type '{ orgId: string; scope: string; onSelect: (p: PatientItem) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & { onSelect?: ((p: Item) => void) | undefined; placeholder?: string | undefined; className?: string | undefined; }'.
   Property 'orgId' does not exist on type 'IntrinsicAttributes & { onSelect?: ((p: Item) => void) | undefined; placeholder?: string | undefined; className?: string | undefined; }'.
 components/prescriptions/PrescriptionEditor.tsx(191,27): error TS2322: Type '{ onSelect: (tpl: RxTemplate) => Promise<void>; }' is not assignable to type 'IntrinsicAttributes'.
   Property 'onSelect' does not exist on type 'IntrinsicAttributes'.
-components/prescriptions/TemplateEditor.tsx(110,22): error TS7006: Parameter 'e' implicitly has an 'any' type.
 components/prescriptions/TemplateEditorModal.tsx(64,18): error TS2322: Type 'string' is not assignable to type 'number'.
 components/sonrisa/BudgetEditor.tsx(102,13): error TS2322: Type 'Dispatch<SetStateAction<{ id: string; label: string; } | null>>' is not assignable to type '(p: Item) => void'.
   Types of parameters 'value' and 'p' are incompatible.
@@ -787,15 +747,7 @@ components/templates/TemplateLibraryModal.tsx(294,56): error TS2345: Argument of
   Type '{ id: string | undefined; org_id: string; name: string; content: ReferralTemplateContent; is_active: boolean; }' is not assignable to type '{ id?: string | undefined; org_id: string; name: string; content: PrescriptionTemplateContent; is_active?: boolean | undefined; }'.
     Types of property 'content' are incompatible.
       Property 'items' is missing in type 'ReferralTemplateContent' but required in type 'PrescriptionTemplateContent'.
-components/ui/input.tsx(1,10): error TS2305: Module '"./field"' has no exported member 'Input'.
-components/work/AssignForm.tsx(10,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-components/work/AssignForm.tsx(102,69): error TS2339: Property 'display_name' does not exist on type 'Hit'.
-components/work/AssignForm.tsx(117,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
-components/work/AssignForm.tsx(160,28): error TS7006: Parameter 'e' implicitly has an 'any' type.
-components/work/AssignForm.tsx(196,24): error TS7006: Parameter 'e' implicitly has an 'any' type.
-components/work/TemplateEditor.tsx(13,17): error TS2305: Module '"@/components/ui/field"' has no exported member 'Input'.
-components/work/TemplateEditor.tsx(98,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
-components/work/TemplateEditor.tsx(114,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
+components/work/AssignForm.tsx(103,69): error TS2339: Property 'display_name' does not exist on type 'Hit'.
 lib/metrics.ts(22,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
   Type 'null' is not assignable to type 'string | undefined'.
 lib/metrics.ts(23,5): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
@@ -946,3 +898,4 @@ lib/supabase/server.ts(41,21): error TS2322: Type '{ data: null; error: { messag
 lib/supabase/server.ts(104,24): error TS2339: Property 'get' does not exist on type 'Promise<ReadonlyRequestCookies>'.
 lib/supabase/server.ts(112,17): error TS2339: Property 'set' does not exist on type 'Promise<ReadonlyRequestCookies>'.
 lib/supabase/server.ts(119,17): error TS2339: Property 'set' does not exist on type 'Promise<ReadonlyRequestCookies>'.
+ ELIFECYCLE  Command failed with exit code 2.

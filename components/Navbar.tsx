@@ -35,7 +35,6 @@ export default function Navbar() {
         variant: "error",
         title: "No pudimos cerrar sesión",
         description: error.message,
-        emoji: "🛑",
       });
       return;
     }
@@ -43,7 +42,6 @@ export default function Navbar() {
       variant: "success",
       title: "Sesión cerrada",
       description: "Hasta pronto 👋",
-      emoji: "✅",
     });
     router.replace("/login");
   }

@@ -54,3 +54,11 @@ full_dump.sql
 schema_public.sql
 # si usas pnpm, ignora lock de npm
 package-lock.json
+# logs locales
+logs/
+*.log
+*.out
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*

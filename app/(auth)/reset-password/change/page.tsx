@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ColorEmoji from "@/components/ColorEmoji";
-import { Field, Input } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export default function ChangePasswordPage() {

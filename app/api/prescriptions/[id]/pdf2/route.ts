@@ -215,7 +215,11 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   }
 
   const pdfBytes = await pdf.save();
-  return new NextResponse(pdfBytes, {
+
+  // ⬇️ Ajuste clave: envolver el Uint8Array en un Blob para Response
+  const blob = new Blob([pdfBytes], { type: "application/pdf" });
+
+  return new Response(blob, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

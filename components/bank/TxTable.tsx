@@ -90,7 +90,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
       {isEmpty ? (
         <EmptyState
           title="Sin transacciones"
-          description="Conecta tu banco o importa movimientos CSV para verlos aquí."
+          hint="Conecta tu banco o importa movimientos CSV para verlos aquí."
           action={{
             label: "Conectar banco",
             onClick: () => window.location.assign("/banco/ajustes"),
@@ -150,10 +150,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
                         <span
                           className={r.amount_cents >= 0 ? "text-emerald-700" : "text-rose-700"}
                         >
-                          {fmtMoney(
-                            r.amount_cents,
-                            (r.currency ?? "mxn").toUpperCase()
-                          )}
+                          {fmtMoney(r.amount_cents, (r.currency ?? "mxn").toUpperCase())}
                         </span>
                       </td>
                       <td className="px-3 py-2">

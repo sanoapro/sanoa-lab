@@ -1,12 +1,16 @@
+// /workspaces/sanoa-lab/app/api/lab/templates/upsert/route.ts
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { ok, unauthorized, badRequest, dbError, serverError } from "@/lib/api/responses";
 
+// Define enum sin errorMap personalizado (React 19 + Zod más estricto)
+const ownerKindSchema = z.enum(["user", "org"]);
+
 const schema = z.object({
   id: z.string().uuid().optional(),
   org_id: z.string().min(1, "org_id requerido"),
-  owner_kind: z.enum(["user", "org"], { errorMap: () => ({ message: "owner_kind inválido" }) }),
+  owner_kind: ownerKindSchema,
   title: z.string().min(1, "title requerido"),
   items: z
     .array(
@@ -36,6 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { id, org_id, owner_kind, title, items, is_active = true } = parsed.data;
+
     const payload = {
       org_id,
       owner_kind,
