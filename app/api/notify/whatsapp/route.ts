@@ -12,23 +12,27 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Auth por header (cron / backend)
   const key = requireHeader(req, "x-cron-key", process.env.CRON_SECRET);
   if (!key.ok) {
     return jsonError(key.error.code, key.error.message, 401);
   }
 
-  const body = await parseJson(req);
-  const parsed = parseOrError(BodySchema, body);
+  // Parse + validación
+  const parsed = parseOrError(BodySchema, await parseJson(req));
   if (!parsed.ok) {
     return jsonError(parsed.error.code, parsed.error.message, 400);
   }
 
+  // Evita repetir parsed.data.*
+  const { to, message } = parsed.data;
+
   try {
-    const res = await sendTwilioWhatsApp(parsed.value.to, parsed.value.message);
-    return jsonOk({ sid: res.sid, status: res.status });
+    const res: any = await sendTwilioWhatsApp(to, message);
+    return jsonOk({ sid: res?.sid ?? null, status: res?.status ?? null });
   } catch (e: any) {
-    const message = String(e?.message || "Twilio error");
+    const msg = String(e?.message || "Twilio error");
     const status = typeof e?.status === "number" ? e.status : 502;
-    return jsonError("PROVIDER_ERROR", message, status);
+    return jsonError("PROVIDER_ERROR", msg, status);
   }
 }

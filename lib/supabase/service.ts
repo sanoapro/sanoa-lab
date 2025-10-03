@@ -1,44 +1,47 @@
 // /workspaces/sanoa-lab/lib/supabase/service.ts
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database.types";
+import type { DatabaseExtended as Database } from "@/types/database-extended";
 
 const NOT_CONFIGURED_MSG = "Supabase (service) no está configurado";
 
 /** Query/RPC stub encadenable para no romper en runtime si faltan envs. */
 function createQueryStub() {
   const listResult = { data: [] as any[], error: { message: NOT_CONFIGURED_MSG } };
-  const singleResult = { data: null, error: { message: NOT_CONFIGURED_MSG } };
-  const mutationResult = { data: null, error: { message: NOT_CONFIGURED_MSG } };
-  let pendingResult = listResult;
+  const singleResult = { data: null as any, error: { message: NOT_CONFIGURED_MSG } };
+  const mutationResult = { data: [] as any[], error: { message: NOT_CONFIGURED_MSG } };
+  let pending: any = listResult;
 
-  const chain: any = {
-    select: () => ((pendingResult = listResult), chain),
-    eq: () => chain,
-    neq: () => chain,
-    gt: () => chain,
-    lt: () => chain,
-    gte: () => chain,
-    lte: () => chain,
-    in: () => chain,
-    not: () => chain,
-    or: () => chain,
-    filter: () => chain,
-    contains: () => chain,
-    textSearch: () => chain,
-    order: () => chain,
-    range: () => chain,
-    limit: () => chain,
-    match: () => chain,
-    returns: () => chain,
+  const chain: any = (..._args: any[]) => chain;
+  Object.assign(chain, {
+    select: (..._args: any[]) => ((pending = listResult), chain),
+    eq: (..._args: any[]) => chain,
+    neq: (..._args: any[]) => chain,
+    gt: (..._args: any[]) => chain,
+    lt: (..._args: any[]) => chain,
+    gte: (..._args: any[]) => chain,
+    lte: (..._args: any[]) => chain,
+    in: (..._args: any[]) => chain,
+    not: (..._args: any[]) => chain,
+    or: (..._args: any[]) => chain,
+    filter: (..._args: any[]) => chain,
+    contains: (..._args: any[]) => chain,
+    textSearch: (..._args: any[]) => chain,
+    order: (..._args: any[]) => chain,
+    range: (..._args: any[]) => chain,
+    limit: (..._args: any[]) => chain,
+    match: (..._args: any[]) => chain,
+    returns: (..._args: any[]) => chain,
     maybeSingle: async () => singleResult,
     single: async () => singleResult,
-    insert: () => ((pendingResult = mutationResult), chain),
-    update: () => ((pendingResult = mutationResult), chain),
-    upsert: () => ((pendingResult = mutationResult), chain),
-    delete: () => ((pendingResult = mutationResult), chain),
-    throwOnError: () => chain,
-  };
-  chain.then = (resolve: any, reject: any) => Promise.resolve(pendingResult).then(resolve, reject);
+    insert: (..._args: any[]) => ((pending = mutationResult), chain),
+    update: (..._args: any[]) => ((pending = mutationResult), chain),
+    upsert: (..._args: any[]) => ((pending = mutationResult), chain),
+    delete: (..._args: any[]) => ((pending = mutationResult), chain),
+    throwOnError: (..._args: any[]) => chain,
+    then: (res: any, rej: any) => Promise.resolve(pending).then(res, rej),
+    catch: (rej: any) => Promise.resolve(pending).catch(rej),
+    finally: (cb: any) => Promise.resolve(pending).finally(cb),
+  });
   return chain;
 }
 

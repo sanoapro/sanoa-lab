@@ -1,10 +1,13 @@
-export const runtime = "nodejs";
+// app/api/prescriptions/[id]/pdf/route.ts
 // MODE: session (user-scoped, cookies)
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { jsonError, readOrgIdFromQuery } from "@/lib/http/validate";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type RGB } from "pdf-lib";
 import QRCode from "qrcode";
+
+// Aseguramos runtime Node (Buffer disponible)
+export const runtime = "nodejs";
 
 // Helpers
 async function fetchAsUint8(url: string): Promise<Uint8Array | null> {
@@ -70,17 +73,20 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   let license_number: string | null = null;
 
   if (!letterhead_url || !signature_url || !signature_name) {
+    // Tablas válidas en tu esquema actual
     const { data: pb } = await supa
-      .from("provider_branding")
-      .select("letterhead_url, signature_url, signature_name, clinic_name, license_number")
-      .eq("org_id", rx.org_id)
-      .eq("provider_id", rx.provider_id)
+      .from("doctor_letterheads" as any)
+      .select(
+        "letterhead_url,signature_url,signature_name,clinic_name,license_number" as any,
+      )
+      .eq("provider_id" as any, rx.provider_id as any)
       .maybeSingle();
-    letterhead_url = letterhead_url ?? pb?.letterhead_url ?? null;
-    signature_url = signature_url ?? pb?.signature_url ?? null;
-    signature_name = signature_name ?? pb?.signature_name ?? null;
-    clinic_name = pb?.clinic_name ?? null;
-    license_number = pb?.license_number ?? null;
+
+    letterhead_url = letterhead_url ?? (pb as any)?.letterhead_url ?? null;
+    signature_url = signature_url ?? (pb as any)?.signature_url ?? null;
+    signature_name = signature_name ?? (pb as any)?.signature_name ?? null;
+    clinic_name = (pb as any)?.clinic_name ?? null;
+    license_number = (pb as any)?.license_number ?? null;
   }
 
   // Paciente
@@ -95,15 +101,15 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     if (p?.full_name) patientName = p.full_name;
   }
 
-  // Especialista
+  // Especialista (tabla actualizada)
   let providerName = "Especialista";
   {
     const { data: pr } = await supa
-      .from("profiles")
-      .select("full_name")
-      .eq("id", rx.provider_id)
+      .from("provider_identity" as any)
+      .select("full_name" as any)
+      .eq("id" as any, rx.provider_id as any)
       .maybeSingle();
-    if (pr?.full_name) providerName = pr.full_name;
+    if ((pr as any)?.full_name) providerName = (pr as any).full_name as string;
   }
 
   // URL de verificación (JSON)
@@ -122,9 +128,9 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     text: string,
     x: number,
     y: number,
-    size: any = 11,
-    bold: any = false,
-    color: any = rgb(0, 0, 0),
+    size: number = 11,
+    bold: boolean = false,
+    color: RGB = rgb(0, 0, 0),
   ) => {
     page.drawText(text, { x, y, size, font: bold ? fontB : font, color });
   };
@@ -185,7 +191,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   };
 
   if (Array.isArray(rx.content)) {
-    for (const item of rx.content) {
+    for (const item of rx.content as Array<Record<string, any>>) {
       const med = item?.medication ?? item?.drug ?? "";
       const dose = item?.dose ? ` · Dosis: ${item.dose}` : "";
       const freq = item?.frequency ? ` · Frecuencia: ${item.frequency}` : "";
@@ -242,6 +248,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const bytes = await pdf.save();
   const filename = `receta_${rx.folio ?? rx.id}.pdf`;
 
+  // ⬇️ Buffer en lugar de Blob (evita TS2322)
   return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {

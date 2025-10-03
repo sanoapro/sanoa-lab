@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     ).toISOString();
 
     const { data, error } = await supa
-      .from("patient_shares")
+      .from("patient_shares" as any)
       .insert({
         org_id,
         patient_id,
@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
       ? `${req.headers.get("x-forwarded-proto") ?? "https"}://${req.headers.get("x-forwarded-host")}`
       : new URL(req.url).origin;
 
-    const url = `${origin}/share/patient/${data.token}`;
-    return NextResponse.json({ ok: true, data: { url, token: data.token, expires_at } });
+    const url = `${origin}/share/patient/${(data as any).token}`;
+    return NextResponse.json({ ok: true, data: { url, token: (data as any).token, expires_at } });
   } catch (e: any) {
     return NextResponse.json(
       { ok: false, error: { code: "SERVER_ERROR", message: e?.message ?? "Error" } },

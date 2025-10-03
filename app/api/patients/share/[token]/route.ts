@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
 
     // 1) Validar token
     const { data: share, error: errShare } = await svc
-      .from("patient_shares")
+      .from("patient_shares" as any)
       .select("id, org_id, patient_id, expires_at, revoked_at")
       .eq("token", params.token)
       .single();
