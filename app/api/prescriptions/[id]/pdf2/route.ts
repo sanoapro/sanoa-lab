@@ -216,10 +216,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   const pdfBytes = await pdf.save();
 
-  // ⬇️ Ajuste clave: envolver el Uint8Array en un Blob para Response
-  const blob = new Blob([pdfBytes], { type: "application/pdf" });
-
-  return new Response(new Blob([blob]), {
+  // ✅ Body como Blob para satisfacer BodyInit (TS) en Response/NextResponse
+  return new Response(new Blob([pdfBytes], { type: "application/pdf" }), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

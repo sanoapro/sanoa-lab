@@ -18,47 +18,53 @@ const BodySchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
+type TemplateRow = { title?: string | null; content?: unknown | null } | null;
+
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
+
   const body = await parseJson(req);
   const parsed = parseOrError(BodySchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
   const { data: me } = await supa.auth.getUser();
-  const provider = parsed.data.provider_id ?? me?.user?.id ?? null;
+  const provider: string | null = parsed.data.provider_id ?? me?.user?.id ?? null;
   if (!provider) return jsonError("UNAUTHORIZED", "No provider", 401);
 
   // Si viene template_id y no viene title/content, obtén contenido de la plantilla
   let tplTitle: string | undefined = parsed.data.title;
-  let tplContent: any = parsed.data.content;
-  if (parsed.data.template_id && (!tplTitle || !tplContent)) {
+  let tplContent: unknown = parsed.data.content;
+
+  if (parsed.data.template_id && (!tplTitle || typeof tplContent === "undefined")) {
     const { data: tpl, error: e } = await supa
       .from("work_templates")
       .select("title, content")
       .eq("id", parsed.data.template_id)
-      .single();
+      .single<TemplateRow>();
     if (e) return jsonError("DB_ERROR", e.message, 400);
-    tplTitle = tplTitle ?? tpl?.title ?? "Tarea";
-    tplContent = tplContent ?? tpl?.content ?? {};
+
+    tplTitle = tplTitle ?? (tpl?.title ?? "Tarea");
+    tplContent = typeof tplContent === "undefined" ? (tpl?.content ?? {}) : tplContent;
   }
 
-  const rows = parsed.data.patient_ids.map((pid: any) => ({
+  const rows = parsed.data.patient_ids.map((pid: string) => ({
     org_id: parsed.data.org_id,
     patient_id: pid,
     provider_id: provider,
     module: parsed.data.module,
     template_id: parsed.data.template_id ?? null,
     title: tplTitle ?? parsed.data.title ?? "Tarea",
-    content: tplContent ?? parsed.data.content ?? {},
+    content: typeof tplContent === "undefined" ? (parsed.data.content ?? {}) : tplContent,
     due_at: parsed.data.due_at ?? null,
     frequency: parsed.data.frequency,
     occurrences: parsed.data.occurrences ?? null,
     notes: parsed.data.notes ?? null,
-    status: "active",
+    status: "active" as const,
   }));
 
   const { data, error } = await supa.from("work_assignments").insert(rows).select("id");
-
   if (error) return jsonError("DB_ERROR", error.message, 400);
-  return jsonOk({ created: data?.length ?? 0, ids: data?.map((r: any) => r.id) });
+
+  const ids = (data ?? []).map((r: { id: string }) => r.id);
+  return jsonOk({ created: ids.length, ids });
 }

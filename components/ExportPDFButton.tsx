@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   /** Referencia al nodo raíz a exportar */
-  targetRef?: React.RefObject<HTMLElement | null>;
+  targetRef?: React.RefObject<HTMLElement>;
   /** Alternativa: id del elemento si no usas ref */
   targetId?: string;
   /** Nombre de archivo (compatibilidad) */
@@ -61,7 +61,9 @@ export default function ExportPDFButton({
     setBusy(true);
     try {
       // Cede dos frames para estabilizar layout antes de capturar
-      await new Promise<void>((r: any) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
 
       // Lazy import (mejor chunking que import estático)
       const html2canvasMod = await import("html2canvas");
@@ -82,7 +84,7 @@ export default function ExportPDFButton({
         windowWidth: el.scrollWidth || undefined,
         windowHeight: el.scrollHeight || undefined,
         // Ignora elementos marcados para no renderizar, útil para botones/acciones
-        ignoreElements: (node: any) =>
+        ignoreElements: (node: Element) =>
           node instanceof HTMLElement && node.getAttribute("data-html2canvas-ignore") === "true",
       });
 

@@ -62,7 +62,7 @@ export async function OPTIONS() {
 }
 
 export async function HEAD() {
-  return cors(new NextResponse(new Blob([null]), { status: 200 }));
+  return cors(new NextResponse(null, { status: 200 }));
 }
 
 export async function GET(req: NextRequest) {
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     const form = await req.formData();
     const token = String(form.get("token") || "").trim();
-    const file = form.get("file") as unknown as File | null;
+    const file = form.get("file") as File | null;
     const notes = String(form.get("notes") || "").slice(0, 500);
 
     if (!token || !file) {
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       return cors(jsonError("FILE_TOO_LARGE", `Máximo ${MAX_MB}MB`, 413));
     }
 
-    const originalName = (file as unknown as { name?: string }).name || "archivo";
+    const originalName = file.name || "archivo";
     const incomingMime = file.type || inferMimeFromName(originalName);
     if (!mimeAllowed(incomingMime, originalName)) {
       return cors(
@@ -152,20 +152,22 @@ export async function POST(req: NextRequest) {
       return cors(jsonError("TOKEN_EXPIRED", "El enlace expiró", 410));
     }
 
-    const arrayBuf = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuf);
-
+    // Nombre seguro y clave de storage
     const safeName = originalName.replace(/[^\w.-]+/g, "_");
     const key = `${tokenRow.request_id}/${Date.now()}_${randomUUID().slice(0, 8)}_${safeName}`;
 
-    const { error: uploadError } = await supa.storage.from(bucket).upload(key, buffer, {
+    // Metadata estrictamente string->string
+    const metadata: Record<string, string> = {
+      original_name: originalName,
+      uploaded_at: new Date().toISOString(),
+    };
+    if (notes) metadata.notes = notes;
+
+    // Subir: pasa el propio File (o un Blob/ArrayBuffer si prefieres)
+    const { error: uploadError } = await supa.storage.from(bucket).upload(key, file, {
       contentType: incomingMime,
       upsert: false,
-      metadata: {
-        original_name: originalName,
-        uploaded_at: new Date().toISOString(),
-        notes: notes || undefined,
-      } as Record<string, string | undefined>,
+      metadata,
     });
 
     if (uploadError) {

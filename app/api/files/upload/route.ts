@@ -11,8 +11,9 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const patient = String(form.get("patient"));
   const file = form.get("file") as File | null;
-  if (!patient || !file)
+  if (!patient || !file) {
     return NextResponse.json({ error: "patient y file son requeridos" }, { status: 400 });
+  }
 
   // group_key = nombre normalizado (minúsculas)
   const name = file.name || "archivo";
@@ -26,13 +27,14 @@ export async function POST(req: Request) {
   if (eV) return NextResponse.json({ error: eV.message }, { status: 400 });
   const version = Number(nextv || 1);
 
+  // Leer bytes y calcular checksum sin Buffer
   const arrayBuf = await file.arrayBuffer();
-  const buf = Buffer.from(arrayBuf);
-  const checksum = crypto.createHash("sha256").update(buf).digest("hex");
+  const u8 = new Uint8Array(arrayBuf);
+  const checksum = crypto.createHash("sha256").update(u8).digest("hex");
   const path = `patients/${patient}/${group_key}/v${version}/${name}`;
 
-  // Subir a Storage
-  const { error: eUp } = await supabase.storage.from(BUCKET).upload(path, buf, {
+  // Subir a Storage (puedes pasar el File directamente)
+  const { error: eUp } = await supabase.storage.from(BUCKET).upload(path, file, {
     contentType: file.type || "application/octet-stream",
     upsert: false,
   });
@@ -45,7 +47,7 @@ export async function POST(req: Request) {
     version,
     name,
     path,
-    size_bytes: buf.byteLength,
+    size_bytes: u8.byteLength,
     checksum_sha256: checksum,
   });
   if (eIns) return NextResponse.json({ error: eIns.message }, { status: 400 });
@@ -61,7 +63,9 @@ export async function POST(req: Request) {
       p_ip: ip,
       p_ua: ua,
     });
-  } catch {}
+  } catch {
+    // noop
+  }
 
   return NextResponse.json({ ok: true, version, path });
 }
