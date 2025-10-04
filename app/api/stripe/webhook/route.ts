@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         // upsert en org_features activando la bandera del producto
         await supa
           .from("org_features")
-          .upsert({ org_id, [product]: true }, { onConflict: "org_id" });
+          .upsert({ org_id, feature_id: product, [product]: true }, { onConflict: "org_id,feature_id" });
       }
     }
 

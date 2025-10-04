@@ -14,6 +14,7 @@ const Body = z.object({
 
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const raw = await parseJson(req);
   const p = parseOrError(Body, raw);
   if (!p.ok) return jsonError(p.error.code, p.error.message, 400);
@@ -22,13 +23,15 @@ export async function POST(req: NextRequest) {
   const provider_id = p.data.provider_id ?? me?.user?.id ?? null;
   if (!provider_id) return jsonError("UNAUTHORIZED", "Sin sesión", 401);
 
-  const { data: tpl, error: eTpl } = await supa
+  const { data: tplRow, error: eTpl } = await supaAny
     .from("agreements_templates")
-    .select("id, org_id, type, title, provider_id")
+    .select("id, org_id, type, title, version, provider_id")
     .eq("id", p.data.template_id)
     .eq("org_id", p.data.org_id)
-    .single();
+    .maybeSingle();
+  const tpl = tplRow as any;
   if (eTpl) return jsonError("DB_ERROR", eTpl.message, 400);
+  if (!tpl) return jsonError("NOT_FOUND", "Template no encontrado", 404);
 
   if (tpl.type === "specialist_patient" && !p.data.patient_id) {
     return jsonError("BAD_REQUEST", "patient_id requerido para specialist_patient", 400);
@@ -48,7 +51,7 @@ export async function POST(req: NextRequest) {
     status: "pending" as const,
   };
 
-  const { error } = await supa.from("agreements_links").insert(rec);
+  const { error } = await supaAny.from("agreements_links").insert(rec as any);
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
   const url = `${new URL(req.url).origin}/share/agreement/${token}`;

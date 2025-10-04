@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const orgId = url.searchParams.get("org_id");
-    const owner = ((url.searchParams.get("owner") || "user") as OwnerKind) ?? "user";
+    const scopeParam = url.searchParams.get("scope") ?? url.searchParams.get("owner") ?? "user";
+    const scope = (scopeParam as OwnerKind) ?? "user";
 
     if (!orgId) {
       return badRequest("org_id requerido");
