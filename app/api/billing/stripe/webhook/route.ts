@@ -36,8 +36,8 @@ export async function POST(req: Request) {
         const supa = createServiceClient();
 
         if (product) {
-          const patch: Record<string, unknown> = { org_id, [product]: true };
-          await supa.from<any>("org_features" as any).upsert(patch, { onConflict: "org_id" });
+          const patch = { org_id, feature_id: product, [product]: true } as any;
+          await supa.from<any>("org_features" as any).upsert(patch, { onConflict: "org_id,feature_id" });
         }
 
         await supa
