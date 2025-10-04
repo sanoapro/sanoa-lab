@@ -54,7 +54,7 @@ export async function toggleReferralTemplate(id: string, next: boolean) {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase
     .from("referral_templates")
-    .update({ active: next })
+    .update({ is_active: next })
     .eq("id", id);
   if (error) throw error;
 }

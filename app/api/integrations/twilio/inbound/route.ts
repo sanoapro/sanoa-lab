@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         .eq("id", rem.id);
 
       await supa.from("reminder_logs").insert({
-        reminder_id: rem.id,
+        reminder_id: String(rem?.id || ""),
         status: "user_confirmed",
         provider: "twilio",
         meta: { channel: Channel, to: To },
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
         .eq("id", rem.id);
 
       await supa.from("reminder_logs").insert({
-        reminder_id: rem.id,
+        reminder_id: String(rem?.id || ""),
         status: "user_cancelled",
         provider: "twilio",
         meta: { channel: Channel, to: To },
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         .eq("id", rem.id);
 
       await supa.from("reminder_logs").insert({
-        reminder_id: rem.id,
+        reminder_id: String(rem?.id || ""),
         status: "user_rebook",
         provider: "twilio",
         meta: { channel: Channel, to: To },
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     // Fallback ante error
     await supa.from("reminder_logs").insert({
-      reminder_id: rem?.id,
+      reminder_id: String(rem?.id || ""),
       status: logStatus || "failed",
       provider: "twilio",
       error: String(e?.message || e),

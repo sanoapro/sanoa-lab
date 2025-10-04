@@ -16,6 +16,7 @@ const UpsertSchema = z.object({
   name: z.string().min(1),
   schema: z.any(), // JSON de definición del formulario
   is_active: z.boolean().default(true),
+  specialty: z.string().min(1).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -39,9 +40,15 @@ export async function POST(req: NextRequest) {
   const parsed = parseOrError(UpsertSchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
+  const row: any = {
+    ...parsed.data,
+    created_by: req.headers.get("x-user-id") || "system",
+    specialty: parsed.data.specialty ?? "general",
+  };
+
   const { data, error } = await supa
     .from("form_templates")
-    .upsert(parsed.data, { onConflict: "id" })
+    .upsert(row, { onConflict: "id" })
     .select("id")
     .single();
 

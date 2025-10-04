@@ -50,9 +50,14 @@ export async function POST(req: NextRequest) {
   const parsed = parseOrError(CreateSchema, body);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
 
+  const row: any = {
+    ...parsed.data,
+    submitted_by: req.headers.get("x-user-id") || "system",
+  };
+
   const { data, error } = await supa
     .from("form_responses")
-    .insert(parsed.data)
+    .insert(row)
     .select("id")
     .single();
 

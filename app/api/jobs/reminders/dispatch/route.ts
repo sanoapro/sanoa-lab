@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const { data: assignment } = await svc
       .from("work_assignments")
       .select("id, org_id, patient_id, provider_id, module, title, due_at, status, last_done_at")
-      .eq("id", it.assignment_id)
+      .eq("id", String(it.assignment_id || ""))
       .maybeSingle();
 
     // Si la asignación ya no aplica, cancelar
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
-    const message = buildMessage({ template_slug: it.template_slug, assignment });
+    const message = buildMessage({ template_slug: it.template_slug as any, assignment });
 
     // Llamada a endpoint interno de notificación (debes tenerlos ya listos)
     const notifyPath = it.channel === "whatsapp" ? "/api/notify/whatsapp" : "/api/notify/sms";

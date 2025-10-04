@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     await supa.from("reminder_logs").insert({
-      reminder_id: rem?.id || null,
+      reminder_id: String(rem?.id || ""),
       status:
         MessageStatus === "delivered"
           ? "delivered"

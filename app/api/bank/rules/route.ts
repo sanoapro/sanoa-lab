@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supa
       .from("bank_rules")
-      .upsert(payload, { onConflict: "id" })
+      .upsert(payload as any, { onConflict: "id" })
       .select("*");
     if (error)
       return NextResponse.json(
