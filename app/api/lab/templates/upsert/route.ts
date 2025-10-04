@@ -26,6 +26,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
 
   try {
     const { data: auth } = await supa.auth.getUser();
@@ -51,13 +52,13 @@ export async function POST(req: NextRequest) {
     };
 
     if (id) {
-      let query = supa
-        .from<any>("lab_templates" as any)
+      let query = supaAny
+        .from("lab_templates")
         .update(payload)
-        .eq("id", id)
-        .eq("org_id", org_id);
+        .eq("id" as any, id as any)
+        .eq("org_id" as any, org_id as any);
       if (owner_kind === "user") {
-        query = query.eq("owner_id", auth.user.id);
+        query = query.eq("owner_id" as any, auth.user.id as any);
       }
 
       const { error } = await query;
@@ -68,8 +69,8 @@ export async function POST(req: NextRequest) {
       return ok({ id });
     }
 
-    const { data, error } = await supa
-      .from<any>("lab_templates" as any)
+    const { data, error } = await supaAny
+      .from("lab_templates")
       .insert(payload)
       .select("id")
       .single();
