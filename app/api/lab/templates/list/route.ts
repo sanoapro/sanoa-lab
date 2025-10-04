@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     let query = supa
-      .from("lab_templates")
+      .from<any>("lab_templates" as any)
       .select("id, org_id, owner_kind, owner_id, title, items, is_active, created_at")
       .eq("org_id", orgId)
       .eq("is_active", true)
