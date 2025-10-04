@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { newPdf, pngFromDataUrl, makeQrDataUrl, drawWrappedText } from "@/lib/pdf";
 import { badRequest, unauthorized, notFound, dbError, serverError } from "@/lib/api/responses";
 import { getSupabaseServer } from "@/lib/supabase/server";
@@ -202,10 +202,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     const bytes = await pdf.save();
 
-    // 👇 Envolvemos Uint8Array en un Blob para que TS/Fetch lo acepte sin queja
-    const blob = new Blob([bytes], { type: "application/pdf" });
-
-    return new NextResponse(new Blob([blob]), {
+    return new Response(bytes as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
