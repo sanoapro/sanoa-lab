@@ -6,6 +6,7 @@ type OwnerKind = "user" | "org";
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
 
   try {
     const { data: auth } = await supa.auth.getUser();
@@ -21,19 +22,19 @@ export async function GET(req: NextRequest) {
       return badRequest("org_id requerido");
     }
 
-    let query = supa
-      .from<any>("lab_templates" as any)
+    let query = supaAny
+      .from("lab_templates")
       .select("id, org_id, owner_kind, owner_id, title, items, is_active, created_at")
-      .eq("org_id", orgId)
-      .eq("is_active", true)
+      .eq("org_id" as any, orgId as any)
+      .eq("is_active" as any, true as any)
       .order("created_at", { ascending: false });
 
     if (owner === "user") {
-      query = query.eq("owner_kind", "user").eq("owner_id", auth.user.id);
+      query = query.eq("owner_kind" as any, "user" as any).eq("owner_id" as any, auth.user.id as any);
     }
 
     if (owner === "org") {
-      query = query.eq("owner_kind", "org");
+      query = query.eq("owner_kind" as any, "org" as any);
     }
 
     const { data, error } = await query;

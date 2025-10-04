@@ -25,10 +25,11 @@ export async function POST(req: NextRequest) {
 
     // Busca el customer vinculado a la organización
     const supa = createServiceClient();
-    const { data, error } = await supa
-      .from<any>("org_billing" as any)
+    const supaAny = supa as any;
+    const { data, error } = await supaAny
+      .from("org_billing")
       .select("stripe_customer_id")
-      .eq("org_id", org_id)
+      .eq("org_id" as any, org_id as any)
       .single();
 
     if (error || !data?.stripe_customer_id) {
