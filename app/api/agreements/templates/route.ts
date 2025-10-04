@@ -61,6 +61,7 @@ const UpsertBody = z.object({
  * ------------------------------ */
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const qp = new URL(req.url).searchParams;
   const parsed = ListQuery.safeParse({
     org_id: qp.get("org_id"),
@@ -80,15 +81,15 @@ export async function GET(req: NextRequest) {
   const q = parsed.data;
 
   // Base select
-  let sel = supa
-    .from("agreement_templates")
+  let sel = supaAny
+    .from("agreements_templates")
     .select("*", { count: "exact" })
-    .eq("org_id", q.org_id)
+    .eq("org_id" as any, q.org_id)
     .order("updated_at", { ascending: false })
     .range(q.offset, q.offset + q.limit - 1);
 
-  if (q.type) sel = sel.eq("type", q.type);
-  if (!q.include_inactive) sel = sel.eq("is_active", true);
+  if (q.type) sel = sel.eq("type" as any, q.type);
+  if (!q.include_inactive) sel = sel.eq("is_active" as any, true);
   if (q.q && q.q.trim()) sel = sel.ilike("title", `%${q.q.trim()}%`);
 
   const { data, error, count } = await sel;
@@ -165,6 +166,7 @@ export async function GET(req: NextRequest) {
  * ------------------------------ */
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const raw = await parseJson(req);
   const parsed = parseOrError(UpsertBody, raw);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
@@ -186,19 +188,19 @@ export async function POST(req: NextRequest) {
 
   if (raw && raw.id) {
     // Update by id + org
-    const { data, error } = await supa
-      .from("agreement_templates")
+    const { data, error } = await supaAny
+      .from("agreements_templates")
       .update(payload)
-      .eq("id", parsed.data.id!)
-      .eq("org_id", parsed.data.org_id)
+      .eq("id" as any, parsed.data.id!)
+      .eq("org_id" as any, parsed.data.org_id)
       .select("*")
       .single();
     if (error) return jsonError("DB_ERROR", error.message, 400);
     return jsonOk(data);
   } else {
     // Upsert by unique (org_id, slug, provider_id)
-    const { data, error } = await supa
-      .from("agreement_templates")
+    const { data, error } = await supaAny
+      .from("agreements_templates")
       .upsert(payload, { onConflict: "org_id,slug,provider_id" })
       .select("*")
       .single();
