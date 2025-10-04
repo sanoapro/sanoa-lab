@@ -144,7 +144,7 @@ export async function DELETE(req: NextRequest) {
       query = query.eq("org_id", org_id);
     }
 
-    const { error, count } = await query.select("id", { count: "exact" });
+    const { error, count } = await (query as any).select("id", { count: "exact" });
     if (error) {
       return dbError(error);
     }

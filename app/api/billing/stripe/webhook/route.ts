@@ -36,8 +36,16 @@ export async function POST(req: Request) {
         const supa = createServiceClient();
 
         if (product) {
-          const patch: Record<string, unknown> = { org_id, [product]: true };
-          await supa.from("org_features").upsert(patch, { onConflict: "org_id" });
+          const row: any = {
+            org_id,
+            feature_id: product,
+            source: "stripe",
+            equilibrio: product === "equilibrio" ? true : undefined,
+            mente: product === "mente" ? true : undefined,
+            pulso: product === "pulso" ? true : undefined,
+            sonrisa: product === "sonrisa" ? true : undefined,
+          };
+          await supa.from("org_features").upsert(row, { onConflict: "org_id,feature_id" });
         }
 
         await supa

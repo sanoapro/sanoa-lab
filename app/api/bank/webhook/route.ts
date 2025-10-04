@@ -39,15 +39,24 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       const md = session.metadata as Record<string, string> | null | undefined;
       const org_id = md?.org_id ?? undefined;
-      const feature = md?.feature ?? undefined; // p.ej. "mente" | "pulso" | "sonrisa" | "equilibrio"
+      const product = md?.feature as
+        | "mente"
+        | "pulso"
+        | "sonrisa"
+        | "equilibrio"
+        | undefined;
 
-      if (org_id && feature) {
-        const patch: Record<string, any> = {
+      if (org_id && product) {
+        const row: any = {
           org_id,
-          [feature]: true,
-          updated_at: new Date().toISOString(),
+          feature_id: product,
+          source: "stripe",
+          equilibrio: product === "equilibrio" ? true : undefined,
+          mente: product === "mente" ? true : undefined,
+          pulso: product === "pulso" ? true : undefined,
+          sonrisa: product === "sonrisa" ? true : undefined,
         };
-        await supa.from("org_features").upsert(patch, { onConflict: "org_id" });
+        await supa.from("org_features").upsert(row, { onConflict: "org_id,feature_id" });
       }
     }
 
