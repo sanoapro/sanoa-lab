@@ -23,9 +23,11 @@ const WRITE_KEY =
   process.env.SEGMENT_WRITE_KEY || process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
 
 /** Base64 en Node/Edge (fallback a Buffer en Node) */
+type MaybeBtoa = (input: string) => string;
+
 function b64encode(str: string): string {
-  // @ts-expect-error - razon: API legacy hasta migrar evento
-  if (typeof btoa === "function") return btoa(str);
+  const globalBtoa = (globalThis as { btoa?: MaybeBtoa }).btoa;
+  if (typeof globalBtoa === "function") return globalBtoa(str);
   // Node
   // eslint-disable-next-line n/no-deprecated-api
   return Buffer.from(str, "utf8").toString("base64");
