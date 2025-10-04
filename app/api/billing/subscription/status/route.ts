@@ -14,17 +14,18 @@ export async function GET(req: Request) {
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  const status = data?.stripe_status ?? null;
+  const d: any = data;
+  const status = d?.stripe_status ?? null;
   const active = typeof status === "string" && ["active", "trialing", "past_due"].includes(status);
-  const modules = (data?.modules as Record<string, boolean> | null) ?? {};
-  const bankReady = Boolean((data as { bank_ready?: boolean | null } | null)?.bank_ready);
+  const modules = (d?.modules as Record<string, boolean> | null) ?? {};
+  const bankReady = Boolean(d?.bank_ready ?? null);
 
   return NextResponse.json({
     ok: true,
     data: {
       stripe_status: status,
-      current_period_end: data?.current_period_end ?? null,
-      stripe_customer_id: data?.stripe_customer_id ?? null,
+      current_period_end: d?.current_period_end ?? null,
+      stripe_customer_id: d?.stripe_customer_id ?? null,
       active,
       modules,
       bank_ready: bankReady,
