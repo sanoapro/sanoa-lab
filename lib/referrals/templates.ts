@@ -52,7 +52,8 @@ export async function upsertReferralTemplate(payload: {
 
 export async function toggleReferralTemplate(id: string, next: boolean) {
   const supabase = getSupabaseBrowser();
-  const { error } = await supabase
+  const supabaseAny = supabase as any;
+  const { error } = await supabaseAny
     .from("referral_templates")
     .update({ is_active: next })
     .eq("id", id);

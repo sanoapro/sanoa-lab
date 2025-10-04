@@ -38,10 +38,11 @@ type Rx = {
 
 export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const id = ctx.params.id;
 
   // Cargar receta (filtrando por org si viene en query)
-  let base = supa.from("prescriptions").select("*").eq("id", id).limit(1);
+  let base = supaAny.from("prescriptions").select("*").eq("id", id).limit(1);
   const org = readOrgIdFromQuery(req);
   if (org.ok) base = base.eq("org_id", org.org_id);
 
@@ -56,12 +57,13 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       p_prefix: "RX",
     });
     if (!e1 && ensured) {
-      const { data: rx2 } = await supa
+      const { data: rx2 } = await supaAny
         .from("prescriptions")
         .select("folio")
         .eq("id", rx.id)
         .maybeSingle();
-      if (rx2?.folio) rx.folio = rx2.folio;
+      const rx2Data = (rx2 ?? {}) as any;
+      if (rx2Data?.folio) rx.folio = rx2Data.folio;
     }
   }
 
@@ -74,12 +76,10 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   if (!letterhead_url || !signature_url || !signature_name) {
     // Tablas válidas en tu esquema actual
-    const { data: pb } = await supa
-      .from("doctor_letterheads" as any)
-      .select(
-        "letterhead_url,signature_url,signature_name,clinic_name,license_number" as any,
-      )
-      .eq("provider_id" as any, rx.provider_id as any)
+    const { data: pb } = await supaAny
+      .from("doctor_letterheads")
+      .select("letterhead_url,signature_url,signature_name,clinic_name,license_number")
+      .eq("provider_id", rx.provider_id as any)
       .maybeSingle();
 
     letterhead_url = letterhead_url ?? (pb as any)?.letterhead_url ?? null;
@@ -91,22 +91,25 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   // Paciente
   let patientName = "Paciente";
+  let patientExternalId: string | null = null;
   if (rx.patient_id) {
-    const { data: p } = await supa
+    const { data: p } = await supaAny
       .from("patients")
       .select("full_name, external_id")
       .eq("id" as any, rx.patient_id)
       .maybeSingle();
-    if (p?.full_name) patientName = p.full_name;
+    const patientData = (p ?? {}) as any;
+    if (patientData?.full_name) patientName = patientData.full_name;
+    if (patientData?.external_id) patientExternalId = patientData.external_id;
   }
 
   // Especialista (tabla actualizada)
   let providerName = "Especialista";
   {
-    const { data: pr } = await supa
-      .from("provider_identity" as any)
-      .select("full_name" as any)
-      .eq("id" as any, rx.provider_id as any)
+    const { data: pr } = await supaAny
+      .from("provider_identity")
+      .select("full_name")
+      .eq("id", rx.provider_id as any)
       .maybeSingle();
     if ((pr as any)?.full_name) providerName = (pr as any).full_name as string;
   }
@@ -229,7 +232,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   // Sello inferior (proveedor / verificación)
   draw(providerName, marginX, 100, 10, true);
   if (license_number) draw(`Cédula: ${license_number}`, marginX, 86, 9);
-  if (patientId) draw(`Paciente ID: ${patientId}`, marginX, 72, 9);
+  if (patientExternalId)
+    draw(`Paciente ID: ${patientExternalId}`, marginX, 72, 9);
   draw("Verificación:", marginX, 58, 9);
 
   // QR de verificación
