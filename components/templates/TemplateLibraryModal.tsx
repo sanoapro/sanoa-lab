@@ -28,7 +28,7 @@ type CommonDraft = {
   id?: string;
   org_id: string;
   name: string;
-  is_active: boolean;
+  active: boolean;
   metaSpecialty: string;
   metaSummary: string;
 };
@@ -112,7 +112,7 @@ function templateToDraft(
       id: tpl.id,
       org_id: orgId,
       name: tpl.name,
-      is_active: tpl.is_active ?? true,
+      active: tpl.active ?? true,
       metaSpecialty: meta?.specialty ?? "",
       metaSummary: meta?.summary ?? "",
       notes,
@@ -133,7 +133,7 @@ function templateToDraft(
     id: tpl.id,
     org_id: orgId,
     name: tpl.name,
-    is_active: tpl.is_active ?? true,
+    active: tpl.active ?? true,
     metaSpecialty: meta?.specialty ?? "",
     metaSummary: meta?.summary ?? "",
     to_specialty,
@@ -166,7 +166,7 @@ function draftToPayload(draft: Draft) {
       org_id: draft.org_id,
       name: draft.name.trim(),
       content,
-      is_active: draft.is_active,
+      active: draft.active,
     };
   }
   const content: ReferralTemplateContent = {
@@ -185,7 +185,7 @@ function draftToPayload(draft: Draft) {
     org_id: draft.org_id,
     name: draft.name.trim(),
     content,
-    is_active: draft.is_active,
+    active: draft.active,
   };
 }
 
@@ -195,7 +195,7 @@ function createEmptyDraft(kind: TemplateKind, orgId: string): Draft {
       type: "prescription",
       org_id: orgId,
       name: "Nueva plantilla",
-      is_active: true,
+      active: true,
       metaSpecialty: "",
       metaSummary: "",
       notes: "",
@@ -206,7 +206,7 @@ function createEmptyDraft(kind: TemplateKind, orgId: string): Draft {
     type: "referral",
     org_id: orgId,
     name: "Nueva plantilla",
-    is_active: true,
+    active: true,
     metaSpecialty: "",
     metaSummary: "",
     to_specialty: "",
@@ -291,7 +291,7 @@ export default function TemplateLibraryModal({
         const payload = draftToPayload(next);
         let newId = payload.id;
         if (next.type === "prescription") {
-          const res = await upsertPrescriptionTemplate(payload);
+          const res = await upsertPrescriptionTemplate((payload) as any);
           newId = res.id;
         } else {
           const res = await upsertReferralTemplate(payload);
@@ -349,7 +349,7 @@ export default function TemplateLibraryModal({
   const onToggleActive = async (
     tpl: (PrescriptionTemplate | ReferralTemplate) & { type: TemplateKind },
   ) => {
-    const next = !tpl.is_active;
+    const next = !tpl.active;
     try {
       if (tpl.type === "prescription") {
         await togglePrescriptionTemplate(tpl.id, next);
@@ -357,10 +357,10 @@ export default function TemplateLibraryModal({
         await toggleReferralTemplate(tpl.id, next);
       }
       setTemplates((prev: any) =>
-        prev.map((row: any) => (row.id === tpl.id ? { ...row, is_active: next } : row)),
+        prev.map((row: any) => (row.id === tpl.id ? { ...row, active: next } : row)),
       );
       if (draft && draft.id === tpl.id) {
-        setDraft({ ...draft, is_active: next });
+        setDraft({ ...draft, active: next });
       }
     } catch (err: any) {
       showToast(err?.message || "No pudimos actualizar la plantilla", "error");
@@ -392,18 +392,18 @@ export default function TemplateLibraryModal({
     try {
       setSaveState("saving");
       if (tpl.type === "prescription") {
-        await upsertPrescriptionTemplate({
+        await upsertPrescriptionTemplate(({
           org_id: orgId,
           name: tpl.name,
           content: tpl.content,
-          is_active: true,
-        });
+          active: true,
+        }) as any);
       } else {
         await upsertReferralTemplate({
           org_id: orgId,
           name: tpl.name,
           content: tpl.content,
-          is_active: true,
+          active: true,
         });
       }
       await load();
@@ -489,7 +489,7 @@ export default function TemplateLibraryModal({
               {currentList.map((tpl: any) => {
                 const meta = (tpl.content as any)?.meta;
                 const specialty = meta?.specialty ?? "";
-                const isActive = tpl.is_active ?? true;
+                const isActive = tpl.active ?? true;
                 const isSelected = tpl.id === selectedId;
                 return (
                   <li key={tpl.id}>
@@ -518,7 +518,7 @@ export default function TemplateLibraryModal({
                     {isSelected && (
                       <div className="flex items-center gap-2 px-3 pb-2 text-xs text-slate-500">
                         <button className="glass-btn text-xs" onClick={() => onToggleActive(tpl)}>
-                          {tpl.is_active ? "Desactivar" : "Activar"}
+                          {tpl.active ? "Desactivar" : "Activar"}
                         </button>
                         <button className="glass-btn text-xs" onClick={() => onDelete(tpl)}>
                           Eliminar

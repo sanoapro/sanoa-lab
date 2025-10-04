@@ -17,7 +17,7 @@ export type ReferralTemplate = {
   org_id: string;
   name: string;
   content: ReferralTemplateContent;
-  is_active: boolean;
+  active: boolean;
   created_at?: string;
   updated_at?: string;
 };
@@ -26,7 +26,7 @@ export async function listReferralTemplates(orgId: string) {
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase
     .from("referral_templates")
-    .select("id, org_id, name, content, is_active, created_at, updated_at")
+    .select("id, org_id, name, content, active:is_active, created_at, updated_at")
     .eq("org_id", orgId)
     .order("name", { ascending: true });
   if (error) throw error;
@@ -38,7 +38,7 @@ export async function upsertReferralTemplate(payload: {
   org_id: string;
   name: string;
   content: ReferralTemplateContent;
-  is_active?: boolean;
+  active?: boolean;
 }) {
   const supabase = getSupabaseBrowser();
   const { data, error } = await supabase

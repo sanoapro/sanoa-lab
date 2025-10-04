@@ -4,7 +4,7 @@ import Stripe from "stripe";
 export type { Stripe as StripeNS } from "stripe";
 
 // Mantén una sola versión consistente en todo el proyecto
-export const STRIPE_API_VERSION: Stripe.LatestApiVersion = "2024-06-20";
+export const STRIPE_API_VERSION: any = "2024-06-20";
 
 // Singleton de Stripe (o null si no hay secret configurado)
 const secret = process.env.STRIPE_SECRET_KEY || "";

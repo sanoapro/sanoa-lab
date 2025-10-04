@@ -9,10 +9,9 @@ type Item = { id: string; name: string; doc?: string };
 export default function PatientAutocomplete({
   onSelect,
   placeholder = "Buscar paciente",
-  className,
+   orgId, scope, orgId, scope, className,
 }: {
-  onSelect?: (p: Item) => void;
-  placeholder?: string;
+  onSelect?: (p: Item | { id: string; label: string } | null) => void; orgId?: string; scope?: string; placeholder?: string;
   className?: string;
 }) {
   const [q, setQ] = useState("");
@@ -31,14 +30,15 @@ export default function PatientAutocomplete({
 
   useEffect(() => {
     const t = setTimeout(async () => {
-      if (!q) {
-        setItems([]);
-        return;
-      }
+      if (!q) { setItems([]); setOpen(false); return; }
       setLoading(true);
       try {
-        const r = await fetch(`/api/patients/suggest?q=${encodeURIComponent(q)}`);
-        const data = await r.json();
+        const url = new URL("/api/patients/suggest", window.location.origin);
+        url.searchParams.set("q", q.trim());
+        if (orgId) url.searchParams.set("org_id", orgId);
+        if (scope) url.searchParams.set("scope", scope);
+        const r = await fetch(url.toString(), { cache: "no-store" });
+const data = await r.json();
         setItems((data?.items ?? []).slice(0, 8));
       } catch {
         setItems([]);
