@@ -51,7 +51,11 @@ export async function POST(req: NextRequest) {
     };
 
     if (id) {
-      let query = supa.from("lab_templates").update(payload).eq("id", id).eq("org_id", org_id);
+      let query = supa
+        .from<any>("lab_templates" as any)
+        .update(payload)
+        .eq("id", id)
+        .eq("org_id", org_id);
       if (owner_kind === "user") {
         query = query.eq("owner_id", auth.user.id);
       }
@@ -64,7 +68,11 @@ export async function POST(req: NextRequest) {
       return ok({ id });
     }
 
-    const { data, error } = await supa.from("lab_templates").insert(payload).select("id").single();
+    const { data, error } = await supa
+      .from<any>("lab_templates" as any)
+      .insert(payload)
+      .select("id")
+      .single();
 
     if (error) {
       return dbError(error);

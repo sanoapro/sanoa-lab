@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   if (!provider_id) return jsonError("UNAUTHORIZED", "No provider", 401);
 
   const { data: pb, error } = await supa
-    .from("provider_branding")
+    .from<any>("provider_branding" as any)
     .select("*")
     .eq("org_id", org_id)
     .eq("provider_id", provider_id)
