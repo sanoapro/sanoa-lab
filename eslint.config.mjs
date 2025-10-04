@@ -1,3 +1,4 @@
+import pluginN from "eslint-plugin-n";
 // eslint.config.mjs
 
 import { existsSync, readdirSync } from "node:fs";

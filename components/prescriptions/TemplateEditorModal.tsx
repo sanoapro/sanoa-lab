@@ -81,7 +81,6 @@ export default function TemplateEditorModal({ open, onClose, initial, onSaved }:
           </div>
         </div>
       }
-      size="lg"
     >
       <div className="grid gap-3">
         <label className="text-sm text-contrast/80">Especialidad</label>

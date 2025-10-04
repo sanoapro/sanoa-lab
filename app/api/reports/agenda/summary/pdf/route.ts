@@ -192,10 +192,10 @@ export async function GET(req: NextRequest) {
     // ✅ Envolver Uint8Array en Blob para Response (TS feliz)
     const blob = new Blob([bytes], { type: "application/pdf" });
 
-    return new Response(new Blob([blob]), {
+    return new Response(bytes, {
       headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "content-type": "application/pdf",
+        "content-disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-store",
       },
     });

@@ -249,11 +249,11 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const filename = `receta_${rx.folio ?? rx.id}.pdf`;
 
   // ⬇️ Buffer en lugar de Blob (evita TS2322)
-  return new NextResponse(Buffer.from(bytes), {
+  return new NextResponse(bytes, {
     status: 200,
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${filename}"`,
+      "content-type": "application/pdf",
+      "content-disposition": `inline; filename="${filename}"`,
       "Cache-Control": "private, max-age=0, must-revalidate",
     },
   });

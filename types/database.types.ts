@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       agenda_alert_log: {
@@ -4883,8 +4908,8 @@ export type Database = {
         Returns: {
           expense_cents: number
           income_cents: number
+          month: string
           net_cents: number
-          period: string
         }[]
       }
       bank_pl: {
@@ -5035,7 +5060,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
       }
       list_file_versions: {
         Args: { p_group_key: string; p_patient_id: string }
@@ -5301,7 +5326,12 @@ export type Database = {
           | { p_limit?: number; p_offset?: number; p_org?: string; q: string }
           | { q: string }
         Returns: {
+          id: string
+          kind: string
           patient_id: string
+          rank: number
+          snippet: string
+          title: string
         }[]
       }
       search_all_plus: {
@@ -5318,7 +5348,13 @@ export type Database = {
             }
           | { payload: Json }
         Returns: {
+          created_at: string
+          id: string
+          kind: string
           patient_id: string
+          rank: number
+          snippet: string
+          title: string
         }[]
       }
       search_notes_files: {
@@ -5556,6 +5592,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       agreement_role: ["specialist", "patient", "platform"],

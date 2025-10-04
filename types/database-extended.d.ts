@@ -24,7 +24,7 @@ type FallbackTable = {
 type TableOrFallback<Name extends PropertyKey> =
   Name extends keyof BaseTables ? BaseTables[Name] : FallbackTable;
 
-export type DatabaseExtended = Base & {
+export type Database = Base & {
   public: Public & {
     Tables: BaseTables & {
       /**

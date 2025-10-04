@@ -1,12 +1,15 @@
+import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
 // /workspaces/sanoa-lab/lib/supabase/client.ts
 "use client";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { DatabaseExtended } from "@/types/database-extended";
+import type { Database } from "@/types/database.types";
 
-let client: SupabaseClient<DatabaseExtended> | null = null;
+let client: SupabaseClient<Database> | null = null;
 
-export function getSupabaseClient(): SupabaseClient<DatabaseExtended> {
+export function getSupabaseClient(): SupabaseClient<Database> {
   // Evita que se use desde SSR por accidente
   if (typeof window === "undefined") {
     throw new Error(
@@ -23,7 +26,7 @@ export function getSupabaseClient(): SupabaseClient<DatabaseExtended> {
     throw new Error("Supabase no está configurado en variables públicas (NEXT_PUBLIC_*).");
   }
 
-  client = createClient<DatabaseExtended>(url, anon, {
+  client = createClient<Database>(url, anon, {
     auth: {
       flowType: "pkce",
       persistSession: true,

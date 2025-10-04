@@ -1,6 +1,6 @@
 // /workspaces/sanoa-lab/lib/supabase/service.ts
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { DatabaseExtended as Database } from "@/types/database-extended";
+import type { Database } from "@/types/database.types";
 
 const NOT_CONFIGURED_MSG = "Supabase (service) no está configurado";
 

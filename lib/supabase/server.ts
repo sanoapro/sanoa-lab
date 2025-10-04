@@ -2,7 +2,7 @@
 import { cookies as nextCookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseAdmin, type SupabaseClient } from "@supabase/supabase-js";
-import type { DatabaseExtended as Database } from "@/types/database-extended";
+import type { Database } from "@/types/database.types";
 
 const NOT_CONFIGURED_MSG = "Supabase no está configurado";
 

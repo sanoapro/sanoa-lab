@@ -218,11 +218,11 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const pdfBytes = await pdf.save();
 
   // ✅ Body como Blob para satisfacer BodyInit (TS) en Response/NextResponse
-  return new Response(Buffer.from(pdfBytes), {
+  return new Response(pdfBytes, {
     status: 200,
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="receta-${prescription_id}.pdf"`,
+      "content-type": "application/pdf",
+      "content-disposition": `inline; filename="receta-${prescription_id}.pdf"`,
       "Cache-Control": "no-store",
     },
   });

@@ -157,11 +157,11 @@ export async function GET(req: NextRequest) {
   }
 
   const bytes = await pdf.save();
-  return new NextResponse(Buffer.from(bytes), {
+  return new NextResponse(bytes, {
     status: 200,
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="preview_receta.pdf"`,
+      "content-type": "application/pdf",
+      "content-disposition": `inline; filename="preview_receta.pdf"`,
       "Cache-Control": "private, max-age=0, must-revalidate",
     },
   });
