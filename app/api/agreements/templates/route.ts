@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
 
   // Base select
   let sel = supa
-    .from("agreement_templates")
+    .from("agreements_templates")
     .select("*", { count: "exact" })
     .eq("org_id", q.org_id)
     .order("updated_at", { ascending: false })
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
   if (raw && raw.id) {
     // Update by id + org
     const { data, error } = await supa
-      .from("agreement_templates")
+      .from("agreements_templates")
       .update(payload)
       .eq("id", parsed.data.id!)
       .eq("org_id", parsed.data.org_id)
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
   } else {
     // Upsert by unique (org_id, slug, provider_id)
     const { data, error } = await supa
-      .from("agreement_templates")
+      .from("agreements_templates")
       .upsert(payload, { onConflict: "org_id,slug,provider_id" })
       .select("*")
       .single();
