@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ThemeProvider } from "@/lib/next-themes";
+import { ThemeProvider } from "next-themes";
 import { ToastProvider } from "@/components/Toast";
 import RegisterSW from "@/components/RegisterSW";
 import Toaster from "@/components/Toaster";

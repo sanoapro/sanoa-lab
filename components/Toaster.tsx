@@ -24,7 +24,7 @@ export default function Toaster() {
         return (
           <Card key={toast.id} className="min-w-[260px] flex items-start gap-3 bg-background/90 shadow-card backdrop-blur">
             <div className="text-2xl">
-              <Emoji size={24} glyph={emoji} />
+              <Emoji size={24}>{emoji}</Emoji>
             </div>
             <div className="flex-1 space-y-1">
               {toast.title && <div className="font-semibold text-sm uppercase tracking-wide text-muted-foreground/70">{toast.title}</div>}

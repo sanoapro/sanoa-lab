@@ -61,7 +61,7 @@ export default function TemplateEditorModal({ open, onClose, initial, onSaved }:
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <Emoji size="lg" glyph="🧪" /> Editar plantilla
+          <Emoji size={24}>🧪</Emoji> Editar plantilla
         </div>
       }
       footer={
