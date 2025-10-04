@@ -54,11 +54,11 @@ export async function POST(req: NextRequest) {
     if (id) {
       let query = supaAny
         .from("lab_templates")
-        .update(payload as any)
-        .eq("id" as any, id)
-        .eq("org_id" as any, org_id);
+        .update(payload)
+        .eq("id" as any, id as any)
+        .eq("org_id" as any, org_id as any);
       if (owner_kind === "user") {
-        query = query.eq("owner_id" as any, auth.user.id);
+        query = query.eq("owner_id" as any, auth.user.id as any);
       }
 
       const { error } = await query;
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supaAny
       .from("lab_templates")
-      .insert(payload as any)
+      .insert(payload)
       .select("id")
       .single();
 

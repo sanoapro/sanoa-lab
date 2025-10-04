@@ -91,12 +91,11 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   // Paciente
   let patientName = "Paciente";
-  const patientId = rx.patient_id ?? "";
-  {
+  if (rx.patient_id) {
     const { data: p } = await supa
       .from("patients")
-      .select("full_name")
-      .eq("id", rx.patient_id)
+      .select("full_name, external_id")
+      .eq("id" as any, rx.patient_id)
       .maybeSingle();
     if (p?.full_name) patientName = p.full_name;
   }

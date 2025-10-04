@@ -23,17 +23,20 @@ export async function GET(req: NextRequest) {
       return badRequest("org_id requerido");
     }
 
-    const q = supaAny
+    let query = supaAny
       .from("lab_templates")
-      .select("*")
-      .eq("org_id" as any, orgId)
-      .eq("is_active" as any, true)
+      .select("id, org_id, owner_kind, owner_id, title, items, is_active, created_at")
+      .eq("org_id" as any, orgId as any)
+      .eq("is_active" as any, true as any)
       .order("created_at", { ascending: false });
 
-    const query =
-      scope === "user"
-        ? q.eq("owner_kind" as any, "user").eq("owner_id" as any, auth.user.id)
-        : q.eq("owner_kind" as any, "org");
+    if (owner === "user") {
+      query = query.eq("owner_kind" as any, "user" as any).eq("owner_id" as any, auth.user.id as any);
+    }
+
+    if (owner === "org") {
+      query = query.eq("owner_kind" as any, "org" as any);
+    }
 
     const { data, error } = await query;
     if (error) {

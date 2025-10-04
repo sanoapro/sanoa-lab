@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
 
   const { data: tpl, error: eTpl } = await svc
     .from("agreements_templates")
-    .select("id, org_id, type, title, content, provider_id")
+    .select("id, org_id, type, version, title, content, provider_id")
     .eq("id", link.template_id)
     .single();
   if (eTpl) return jsonError("DB_ERROR", eTpl.message, 400);
@@ -46,10 +46,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     signer_id: link.type === "specialist_platform" ? link.provider_id : link.patient_id,
     signer_name: p.data.full_name,
     accepted_at: new Date().toISOString(),
+    contract_type: (tpl as any)?.type ?? link.type,
+    template_version: (tpl as any)?.version ?? (link as any)?.template_version ?? null,
     snapshot: { title: tpl.title, content: tpl.content, selections: p.data.extra ?? {} },
     ip: req.headers.get("x-forwarded-for") || null,
     user_agent: req.headers.get("user-agent") || null,
-  };
+  } as any;
 
   const { error: eAcc } = await svc.from("agreements_acceptances").insert(acceptance);
   if (eAcc) return jsonError("DB_ERROR", eAcc.message, 400);
