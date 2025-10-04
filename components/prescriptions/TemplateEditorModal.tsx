@@ -56,12 +56,12 @@ export default function TemplateEditorModal({ open, onClose, initial, onSaved }:
   const { data, setData, status, flush } = useAutosave(initial, saveFn);
 
   return (
-    <GlassModal
+    <GlassModal size="lg"
       open={open}
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <Emoji size={24} glyph="🧪" /> Editar plantilla
+          <Emoji size="lg" glyph="🧪" /> Editar plantilla
         </div>
       }
       footer={
@@ -81,7 +81,7 @@ export default function TemplateEditorModal({ open, onClose, initial, onSaved }:
           </div>
         </div>
       }
-      size={24}
+      size="lg"
     >
       <div className="grid gap-3">
         <label className="text-sm text-contrast/80">Especialidad</label>

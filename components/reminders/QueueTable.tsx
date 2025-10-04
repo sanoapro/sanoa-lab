@@ -57,7 +57,7 @@ export default function QueueTable() {
 
   React.useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [org.id, status]);
 
   return (

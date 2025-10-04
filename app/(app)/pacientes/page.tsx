@@ -133,14 +133,14 @@ export default function PacientesPage() {
         // no crítico
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // dispara búsqueda cuando cambia el debounce de q
   useEffect(() => {
     setFilters((f: any) => ({ ...f, q: qDebounced, page: 1 }));
     void doSearch(1, { q: qDebounced });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [qDebounced]);
 
   function onSubmit(e: React.FormEvent) {

@@ -36,7 +36,7 @@ export default function LabRequestDetailPage() {
   }
 
   useEffect(() => {
-    void load(); /* eslint-disable-next-line */
+    void load();  
   }, [requestId]);
 
   async function getSignedUrl(path: string): Promise<string> {

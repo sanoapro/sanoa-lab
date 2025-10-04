@@ -122,7 +122,7 @@ export default function AgendaPage() {
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [status, q, from, to, org.id]);
 
   // Autocomplete paciente (nueva cita) — ahora con try/catch
@@ -148,7 +148,7 @@ export default function AgendaPage() {
         // Puedes mostrar toast si quieres ruido controlado:
         // showToast({ title: "No se pudo buscar pacientes", description: (e as any)?.message, variant: "destructive" });
         if (!cancel) setPList([]);
-        // eslint-disable-next-line no-console
+         
         console.warn("[agenda] listPatients failed", e);
       }
     }

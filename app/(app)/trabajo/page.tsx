@@ -64,7 +64,7 @@ function PageInner() {
   }
 
   useEffect(() => {
-    void load(); /* eslint-disable-next-line */
+    void load();  
   }, [org.id, status]);
 
   async function create() {

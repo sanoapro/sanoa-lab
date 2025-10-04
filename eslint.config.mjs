@@ -80,6 +80,7 @@ const nextConfigs = [
 
 export default [
   {
+  plugins: { n: pluginN },
     ignores: ["**/.next/**", "dist/**", "build/**", "node_modules/**"],
   },
   js.configs.recommended,
@@ -115,6 +116,7 @@ export default [
       },
     },
     rules: {
+      "n/no-deprecated-api": "warn",
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "@typescript-eslint/no-unused-vars": [
         "warn",

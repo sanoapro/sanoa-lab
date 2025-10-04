@@ -98,7 +98,7 @@ export default function WeekGrid({
 
   useEffect(() => {
     loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [orgId, providerId, baseDate, tz]);
 
   function isWithinAvailability(d: Date) {

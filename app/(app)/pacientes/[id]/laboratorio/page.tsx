@@ -30,7 +30,7 @@ export default function PatientLabPage() {
   }
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [org.id, id]);
 
   return (

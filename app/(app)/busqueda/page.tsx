@@ -27,7 +27,7 @@ export default function SearchPage() {
   }
 
   useEffect(() => {
-    void run(); /* eslint-disable-next-line */
+    void run();  
   }, []);
 
   return (

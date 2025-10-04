@@ -47,7 +47,7 @@ export default function TemplateEditor({
         setTpl((t: any) => ({ ...t, ...v }));
       }
     } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [storageKey]);
 
   // Autosave local + POST (debounced)
@@ -78,7 +78,7 @@ export default function TemplateEditor({
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [tpl.specialty, tpl.title, tpl.body]); // eslint-disable-line
+  }, [tpl.specialty, tpl.title, tpl.body]);  
 
   return (
     <div className="space-y-4">

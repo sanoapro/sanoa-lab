@@ -24,7 +24,7 @@ export default function PatientAssignments({ patientId }: { patientId: string })
     setLoading(false);
   }
   React.useEffect(() => {
-    load(); /* eslint-disable-next-line */
+    load();  
   }, [org.id, patientId]);
 
   async function complete(a: WorkAssignment) {

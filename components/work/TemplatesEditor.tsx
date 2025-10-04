@@ -47,7 +47,7 @@ export default function TemplatesEditor() {
   }
 
   React.useEffect(() => {
-    load(); /* eslint-disable-next-line */
+    load();  
   }, [org.id, q, module]);
 
   async function save() {

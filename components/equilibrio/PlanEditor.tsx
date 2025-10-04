@@ -125,7 +125,7 @@ export default function PlanEditor() {
           <PatientAutocomplete
             orgId={orgId}
             scope="mine"
-            onSelect={(p: PatientItem) =>
+            onSelect={(p: any) =>
               setPatient({
                 id: (p.id ?? p.patient_id)!,
                 label: p.label ?? p.name ?? p.display_name ?? "Paciente",
@@ -194,7 +194,7 @@ export default function PlanEditor() {
                             checked={!!it.days[d]}
                             onChange={(e: any) => setDay(i, d, e.target.checked)}
                           />
-                          <span className="text-xs">{labels[d]}</span>
+                          <span className="text-xs">{(labels as any)[d as any]}</span>
                         </label>
                       ))}
                     </div>

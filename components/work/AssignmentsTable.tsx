@@ -44,7 +44,7 @@ export default function AssignmentsTable() {
   }
 
   React.useEffect(() => {
-    load(); /* eslint-disable-next-line */
+    load();  
   }, [org.id, status, module]);
 
   function toggle(id: string) {

@@ -34,7 +34,7 @@ export async function listPrescriptionTemplates(orgId: string) {
     .eq("org_id", orgId)
     .order("name", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as PrescriptionTemplate[];
+  return ((data as unknown) as PrescriptionTemplate[]) ?? [];
 }
 
 export async function upsertPrescriptionTemplate(payload: {
@@ -58,7 +58,7 @@ export async function togglePrescriptionTemplate(id: string, next: boolean) {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase
     .from("prescription_templates")
-    .update({ is_active: next })
+    .update({ active: next })
     .eq("id", id);
   if (error) throw error;
 }

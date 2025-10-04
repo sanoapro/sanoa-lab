@@ -62,7 +62,7 @@ export default function AssessmentsScreen() {
           <PatientAutocomplete
             orgId={orgId}
             scope="mine"
-            onSelect={(p: PatientItem) =>
+            onSelect={(p: any) =>
               setPatient({
                 id: (p.id ?? p.patient_id)!,
                 label: p.label ?? p.name ?? p.display_name ?? "Paciente",

@@ -97,7 +97,7 @@ export default function BancoAjustesPage() {
     }
     void load();
     void loadModules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [orgId]);
 
   async function save() {

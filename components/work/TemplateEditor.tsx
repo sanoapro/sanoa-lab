@@ -33,7 +33,7 @@ export default function TemplateEditor() {
   }
 
   React.useEffect(() => {
-    load(); /* eslint-disable-next-line */
+    load();  
   }, [module, org.id]);
 
   async function onCreate(e: React.FormEvent) {

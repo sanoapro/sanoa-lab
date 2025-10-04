@@ -253,7 +253,7 @@ export async function createPatient(input: PatientInput): Promise<Patient> {
     payload.org_id = activeOrgId ?? null;
   }
 
-  const { data, error } = await supabase.from("patients").insert(payload).select("*").single();
+  const { data, error } = await supabase.from("patients").insert(payload as any).select("*").single();
   if (error) throw toError(error, "createPatient");
   return data as Patient;
 }

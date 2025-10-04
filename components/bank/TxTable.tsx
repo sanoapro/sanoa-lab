@@ -88,14 +88,7 @@ export default function TxTable({ orgId }: { orgId: string }) {
       </div>
 
       {isEmpty ? (
-        <EmptyState
-          title="Sin transacciones"
-          hint="Conecta tu banco o importa movimientos CSV para verlos aquí."
-          action={{
-            label: "Conectar banco",
-            onClick: () => window.location.assign("/banco/ajustes"),
-          }}
-        />
+        <EmptyState emoji="📄" title="Sin reglas" hint="Crea tu primera regla para clasificar movimientos" ctaText="Crear regla" onCta={() => {}} />
       ) : (
         <>
           <div className="rounded border overflow-hidden">

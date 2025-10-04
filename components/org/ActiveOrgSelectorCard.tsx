@@ -49,7 +49,7 @@ export default function ActiveOrgSelectorCard({ className }: { className?: strin
       try {
         await setCurrentOrgId(selected);
       } catch (err) {
-        // eslint-disable-next-line no-console
+         
         console.warn("[ActiveOrgSelector] setCurrentOrgId failed", err);
       }
       showToast({

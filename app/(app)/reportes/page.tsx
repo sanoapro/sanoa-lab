@@ -93,7 +93,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [org.id, months]);
 
   const maxPts = useMemo(

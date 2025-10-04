@@ -94,7 +94,7 @@ export default function AgendaPatientRisk({ orgId }: { orgId: string }) {
   useEffect(() => {
     load();
     loadViews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [orgId]);
 
   function applyView(v: any) {

@@ -44,7 +44,7 @@ export default function PatientTasksPanel({
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [orgId, moduleName, patientId]);
 
   async function assignTemplate(template_id: string) {

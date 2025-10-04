@@ -30,7 +30,7 @@ export async function listReferralTemplates(orgId: string) {
     .eq("org_id", orgId)
     .order("name", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as ReferralTemplate[];
+  return ((data as unknown) as ReferralTemplate[]) ?? [];
 }
 
 export async function upsertReferralTemplate(payload: {
@@ -54,7 +54,7 @@ export async function toggleReferralTemplate(id: string, next: boolean) {
   const supabase = getSupabaseBrowser();
   const { error } = await supabase
     .from("referral_templates")
-    .update({ is_active: next })
+    .update({ active: next })
     .eq("id", id);
   if (error) throw error;
 }

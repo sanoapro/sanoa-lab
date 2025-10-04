@@ -99,7 +99,7 @@ export default function BudgetEditor() {
           <PatientAutocomplete
             orgId={orgId}
             scope="mine"
-            onSelect={setPatient}
+            onSelect={(p:any) => setPatient(p as any)}
             placeholder="Buscar paciente…"
           />
         )}

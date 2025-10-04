@@ -9,7 +9,7 @@ type Item = { id: string; name: string; doc?: string };
 export default function PatientAutocomplete({
   onSelect,
   placeholder = "Buscar paciente",
-   orgId, scope, orgId, scope, className,
+   orgId, scope, className,
 }: {
   onSelect?: (p: Item | { id: string; label: string } | null) => void; orgId?: string; scope?: string; placeholder?: string;
   className?: string;
@@ -48,7 +48,7 @@ const data = await r.json();
       }
     }, 200);
     return () => clearTimeout(t);
-  }, [q]);
+  }, [q, orgId, scope]);
 
   return (
     <div ref={boxRef} className={cn("relative w-full", className)}>

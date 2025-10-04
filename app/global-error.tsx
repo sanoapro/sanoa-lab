@@ -13,7 +13,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log en consola para desarrollo
-    // eslint-disable-next-line no-console
+     
     console.error("[GlobalError]", error);
 
     // Reporta a Sentry

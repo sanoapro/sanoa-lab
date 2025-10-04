@@ -24,7 +24,7 @@ const WRITE_KEY =
 
 /** Base64 en Node/Edge (fallback a Buffer en Node) */
 function b64encode(str: string): string {
-  // @ts-ignore
+  // @ts-expect-error - razon: API legacy hasta migrar evento
   if (typeof btoa === "function") return btoa(str);
   // Node
   // eslint-disable-next-line n/no-deprecated-api
@@ -90,11 +90,11 @@ export async function track(
 
     if (!res.ok) {
       const txt = await res.text();
-      // eslint-disable-next-line no-console
+       
       console.error("Segment track failed:", res.status, txt);
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error("Segment track error:", e);
   }
 }
@@ -116,11 +116,11 @@ export async function identify(userId: string, traits?: Props) {
       }),
     });
     if (!res.ok) {
-      // eslint-disable-next-line no-console
+       
       console.error("Segment identify failed:", res.status, await res.text());
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error("Segment identify error:", e);
   }
 }
@@ -146,11 +146,11 @@ export async function group(
       }),
     });
     if (!res.ok) {
-      // eslint-disable-next-line no-console
+       
       console.error("Segment group failed:", res.status, await res.text());
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error("Segment group error:", e);
   }
 }

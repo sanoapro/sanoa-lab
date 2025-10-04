@@ -147,7 +147,7 @@ export default function PrescriptionEditor() {
           <PatientAutocomplete
             orgId={orgId}
             scope="mine"
-            onSelect={(p: PatientItem) =>
+            onSelect={(p: any) =>
               setPatient({
                 id: (p.id ?? p.patient_id)!,
                 label: p.label ?? p.name ?? p.display_name ?? "Paciente",
@@ -188,7 +188,7 @@ export default function PrescriptionEditor() {
         </div>
         <div className="md:col-span-2 border rounded-2xl p-4">
           <h3 className="font-semibold">Plantillas</h3>
-          <TemplatePicker onSelect={useTemplate} />
+          <TemplatePicker {...({ onSelect: useTemplate } as any)} />
         </div>
       </div>
 
