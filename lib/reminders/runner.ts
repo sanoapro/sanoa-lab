@@ -21,7 +21,7 @@ export async function runReminderBatch(orgId?: string, limit: any = 20) {
   let q = supa
     .from("reminders")
     .select("*").returns<any[]>()
-    .in("status", ["scheduled", "retry"])
+    .filter("status", "in", '("scheduled","retry")')
     .lte("next_run_at", now)
     .order("next_run_at", { ascending: true })
     .limit(limit);
