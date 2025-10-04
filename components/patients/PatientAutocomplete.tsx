@@ -6,12 +6,24 @@ import { cn } from "@/lib/utils";
 
 type Item = { id: string; name: string; doc?: string };
 
+type Selection = {
+  id: string;
+  label: string;
+  name?: string;
+  doc?: string;
+};
+
 export default function PatientAutocomplete({
   onSelect,
   placeholder = "Buscar paciente",
-   orgId, scope, className,
+  orgId,
+  scope,
+  className,
 }: {
-  onSelect?: (p: Item | { id: string; label: string } | null) => void; orgId?: string; scope?: string; placeholder?: string;
+  onSelect?: (p: Selection | null) => void;
+  orgId?: string;
+  scope?: string;
+  placeholder?: string;
   className?: string;
 }) {
   const [q, setQ] = useState("");
@@ -38,7 +50,7 @@ export default function PatientAutocomplete({
         if (orgId) url.searchParams.set("org_id", orgId);
         if (scope) url.searchParams.set("scope", scope);
         const r = await fetch(url.toString(), { cache: "no-store" });
-const data = await r.json();
+        const data = await r.json();
         setItems((data?.items ?? []).slice(0, 8));
       } catch {
         setItems([]);
@@ -78,7 +90,7 @@ const data = await r.json();
                 key={it.id}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
                 onClick={() => {
-                  onSelect?.(it);
+                  onSelect?.({ ...it, label: it.name });
                   setQ(it.name);
                   setOpen(false);
                 }}

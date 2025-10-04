@@ -217,7 +217,6 @@ function Inner() {
                 value={email}
                 onChange={(e: any) => setEmail(e.target.value)}
                 placeholder="tucorreo@ejemplo.com"
-                invalid={Boolean(emailError)}
               />
             </Field>
 

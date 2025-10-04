@@ -70,7 +70,7 @@ export default function LabRequestDetailPage() {
         showToast({
           title: "OCR",
           description: "El OCR rápido funciona para imágenes (PNG/JPG). Para PDF lo veremos luego.",
-          variant: "secondary",
+          variant: "info",
         });
         return;
       }

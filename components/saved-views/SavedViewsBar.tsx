@@ -15,7 +15,7 @@ type SavedView = {
 
 type Props = {
   orgId: string;
-  scope: "bank_tx"; // extensible a otros módulos
+  scope: "bank_tx" | "reminders"; // extensible a otros módulos
 };
 
 export default function SavedViewsBar({ orgId, scope }: Props) {
