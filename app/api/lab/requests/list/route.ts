@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       .select(
         `
         id, org_id, patient_id, title, status, due_at, created_at,
-        lab_results ( path )
+        lab_results ( file_path )
       `,
       )
       .eq("org_id", orgId)

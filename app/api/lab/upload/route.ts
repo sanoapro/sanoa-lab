@@ -177,19 +177,48 @@ export async function POST(req: NextRequest) {
     await supa
       .from("lab_upload_tokens")
       .update({ used_at: new Date().toISOString() })
-      .eq("id", tokenRow.id)
+      .eq("id", tokenRow.id);
       
+    const { data: requestRow, error: requestError } = await supa
+      .from("lab_requests")
+      .select("id, patient_id")
+      .eq("id", tokenRow.request_id)
+      .single();
+
+    if (requestError) {
+      return cors(jsonError("REQUEST_ERROR", requestError.message));
+    }
+
+    if (!requestRow) {
+      return cors(jsonError("REQUEST_NOT_FOUND", "Solicitud inválida", 404));
+    }
+
     await supa
       .from("lab_requests")
       .update({ status: "uploaded" })
-      .eq("id", tokenRow.request_id)
-      
-    await supa
-      .from("lab_results")
-      .insert({ request_id: tokenRow.request_id, path: key, notes: notes || null })
-      
+      .eq("id", tokenRow.request_id);
 
-    return cors(ok({ request_id: tokenRow.request_id, path: key }));
+    const { error: insertError } = await supa
+      .from("lab_results")
+      .insert({
+        request_id: tokenRow.request_id,
+        patient_id: requestRow.patient_id,
+        file_path: key,
+        file_name: originalName,
+        mime_type: incomingMime,
+        size_bytes: file.size ?? null,
+        notes: notes || null,
+        uploaded_via_token: true,
+      });
+
+    if (insertError) {
+      return cors(jsonError("RESULT_ERROR", insertError.message));
+    }
+
+
+    return cors(
+      ok({ request_id: tokenRow.request_id, file_path: key, path: key }),
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return cors(serverError("No se pudo subir el archivo", { details: { message } }));

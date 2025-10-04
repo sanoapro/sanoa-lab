@@ -9,7 +9,7 @@ type ReqRow = {
   title: string;
   status: "awaiting_upload" | "uploaded" | string;
   created_at: string;
-  lab_results?: { path: string }[] | null;
+  lab_results?: { file_path: string }[] | null;
 };
 
 type Template = {
@@ -89,12 +89,12 @@ function RequestsPanel() {
     void load();
   }, []);
 
-  async function download(path: string) {
+  async function download(filePath: string) {
     try {
       const r = await fetch("/api/lab/results/sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ path: filePath }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "No se pudo firmar");
@@ -133,7 +133,7 @@ function RequestsPanel() {
           </thead>
           <tbody>
             {rows.map((r: any) => {
-              const hasFile = !!r.lab_results?.[0]?.path;
+              const hasFile = !!r.lab_results?.[0]?.file_path;
               return (
                 <tr
                   key={r.id}
@@ -155,7 +155,7 @@ function RequestsPanel() {
                   <td className="py-2">
                     {hasFile ? (
                       <button
-                        onClick={() => download(r.lab_results![0].path)}
+                        onClick={() => download(r.lab_results![0].file_path)}
                         className="px-3 py-1.5 rounded-lg bg-[var(--color-brand-bluegray)] text-white"
                       >
                         Descargar
