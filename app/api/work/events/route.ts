@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const { data: me } = await supa.auth.getUser();
   const actor = me?.user?.id ?? null;
 
-  const { error: e1 } = await supa.from("work_events").insert({
+  const { error: e1 } = await supa.from<any>("work_events" as any).insert({
     org_id: parsed.data.org_id,
     assignment_id: parsed.data.assignment_id,
     kind: parsed.data.kind,
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   // Si es completado, marca en assignment
   if (parsed.data.kind === "completed") {
     const { error: e2 } = await supa
-      .from("work_assignments")
+      .from<any>("work_assignments" as any)
       .update({ last_done_at: new Date().toISOString(), status: "completed" })
       .eq("id", parsed.data.assignment_id);
     if (e2) return jsonError("DB_ERROR", e2.message, 400);

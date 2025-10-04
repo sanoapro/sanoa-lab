@@ -37,11 +37,11 @@ export async function POST(req: Request) {
 
         if (product) {
           const patch: Record<string, unknown> = { org_id, [product]: true };
-          await supa.from("org_features").upsert(patch, { onConflict: "org_id" });
+          await supa.from<any>("org_features" as any).upsert(patch, { onConflict: "org_id" });
         }
 
         await supa
-          .from("org_billing")
+          .from<any>("org_billing" as any)
           .upsert(
             { org_id, stripe_customer_id: customer, stripe_subscription_id: subscription },
             { onConflict: "org_id" },

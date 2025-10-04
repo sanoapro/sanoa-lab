@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   if (!provider_id) return jsonError("UNAUTHORIZED", "No provider", 401);
 
   const { data, error } = await supa
-    .from("provider_branding")
+    .from<any>("provider_branding" as any)
     .select("*")
     .eq("org_id", parsed.data.org_id)
     .eq("provider_id", provider_id)
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   const row = { ...parsed.data, provider_id };
 
   const { data, error } = await supa
-    .from("provider_branding")
+    .from<any>("provider_branding" as any)
     .upsert(row, { onConflict: "org_id,provider_id" })
     .select("*")
     .single();
