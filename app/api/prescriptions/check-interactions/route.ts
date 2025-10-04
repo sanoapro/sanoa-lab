@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const { org_id, drugs, patient_id, allergies } = parsed.data;
 
   // Intentar RPC si existe (nombre ilustrativo: rx_check_interactions)
-  const { data, error } = await supa.rpc("rx_check_interactions", {
+  const { data, error } = await supa.rpc("rx_check_interactions" as any, {
     p_org_id: org_id ?? null,
     p_drugs: drugs,
     p_patient_id: patient_id ?? null,
@@ -37,5 +37,5 @@ export async function POST(req: NextRequest) {
 
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
-  return jsonOk<{ interactions: unknown[] }>({ interactions: data ?? [] });
+  return jsonOk<{ interactions: unknown[] }>({ interactions: (data as any) ?? [] });
 }

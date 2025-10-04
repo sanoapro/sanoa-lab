@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const svc = createServiceClient();
-    const { error } = await svc.rpc("reminders_run_due", {});
+    const { error } = await svc.rpc("reminders_run_due" as any, {});
     if (error && error.code !== "PGRST204") {
       return jsonError("DB_ERROR", error.message, 400);
     }

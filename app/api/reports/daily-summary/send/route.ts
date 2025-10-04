@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const supa = createServiceClient();
-  const { error: rpcError } = await supa.rpc("reports_daily_summary_send", {});
+  const { error: rpcError } = await supa.rpc("reports_daily_summary_send" as any, {});
   if (!rpcError) {
     return jsonOk({ queued: true, rpc: "reports_daily_summary_send" });
   }

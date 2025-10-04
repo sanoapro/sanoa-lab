@@ -9,7 +9,10 @@ export async function GET() {
     const svc = createServiceClient();
 
     // DB Ping
-    const { error: dbErr } = await svc.rpc("now", {}); // si no existe rpc now, hacemos un select trivial:
+    const { error: dbErr } = await svc
+      .from("organizations" as any)
+      .select("id", { head: true, count: "exact" } as any)
+      .limit(1);
     let db_ok = true;
     if (dbErr) {
       // fallback
