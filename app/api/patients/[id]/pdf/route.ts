@@ -127,10 +127,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const bytes = await pdf.save();
     const filename = `paciente_${patient.id}.pdf`;
 
-    // ⚠️ Importante: envolver Uint8Array en Blob para evitar error de TS con Response
-    const blob = new Blob([bytes], { type: "application/pdf" });
-
-    return new Response(new Blob([blob]), {
+    return new Response(bytes as any, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,

@@ -1,6 +1,6 @@
 // app/api/prescriptions/[id]/pdf/route.ts
 // MODE: session (user-scoped, cookies)
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { jsonError, readOrgIdFromQuery } from "@/lib/http/validate";
 import { PDFDocument, StandardFonts, rgb, type RGB } from "pdf-lib";
@@ -249,7 +249,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const filename = `receta_${rx.folio ?? rx.id}.pdf`;
 
   // ⬇️ Buffer en lugar de Blob (evita TS2322)
-  return new NextResponse(bytes, {
+  return new Response(bytes as any, {
     status: 200,
     headers: {
       "content-type": "application/pdf",

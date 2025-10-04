@@ -217,8 +217,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   const pdfBytes = await pdf.save();
 
-  // ✅ Body como Blob para satisfacer BodyInit (TS) en Response/NextResponse
-  return new Response(pdfBytes, {
+  // ✅ Body como Uint8Array casteado para satisfacer BodyInit en Response
+  return new Response(pdfBytes as any, {
     status: 200,
     headers: {
       "content-type": "application/pdf",

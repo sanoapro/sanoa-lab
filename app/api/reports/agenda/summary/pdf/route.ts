@@ -189,10 +189,7 @@ export async function GET(req: NextRequest) {
     const bytes = await pdf.save();
     const filename = `agenda_resumen_${org_id}_${from}_${to}.pdf`;
 
-    // ✅ Envolver Uint8Array en Blob para Response (TS feliz)
-    const blob = new Blob([bytes], { type: "application/pdf" });
-
-    return new Response(bytes, {
+    return new Response(bytes as any, {
       headers: {
         "content-type": "application/pdf",
         "content-disposition": `attachment; filename="${filename}"`,
