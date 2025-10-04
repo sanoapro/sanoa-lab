@@ -31,17 +31,17 @@ export async function POST(req: NextRequest) {
   if (e1 || !tpl) return jsonError("NOT_FOUND", "Plantilla no encontrada", 404);
 
   // Combinar overrides simples
+  const tplData = tpl as any;
   const content = parsed.data.overrides
-    ? { ...tpl.content, ...parsed.data.overrides }
-    : tpl.content;
+    ? { ...(tplData?.content ?? {}), ...parsed.data.overrides }
+    : tplData?.content;
 
   const insert = {
     org_id: parsed.data.org_id,
     patient_id: parsed.data.patient_id,
     provider_id: parsed.data.provider_id,
-    
-    doctor_id: provider_id, // tipos requieren doctor_id
-content,
+    doctor_id: null as any, // tipos requieren doctor_id
+    content,
     status: parsed.data.status,
   } as any;
 

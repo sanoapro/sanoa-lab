@@ -45,9 +45,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const [{ data: items, error: itemsError }, { data: patient, error: patientError }] =
       await Promise.all([
         supabase.from("lab_request_items").select("*").eq("request_id", params.id).order("id"),
-        supabase
+        (supabase
           .from("patients")
-          .select("full_name, external_id")
+          .select("full_name, external_id") as any)
           .eq("id", request.patient_id)
           .maybeSingle(),
       ]);

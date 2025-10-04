@@ -21,8 +21,9 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
         { status: 404 },
       );
     }
+    const shareData = share as any;
     const now = new Date();
-    if (share.revoked_at || (share.expires_at && new Date(share.expires_at) < now)) {
+    if (shareData.revoked_at || (shareData.expires_at && new Date(shareData.expires_at) < now)) {
       return NextResponse.json(
         { ok: false, error: { code: "EXPIRED", message: "Enlace expirado o revocado." } },
         { status: 410 },
@@ -33,8 +34,8 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
     const { data: patient, error: errP } = await svc
       .from("v_patients")
       .select("id, org_id, name, gender, dob, tags, created_at")
-      .eq("id", share.patient_id)
-      .eq("org_id", share.org_id)
+      .eq("id", shareData.patient_id)
+      .eq("org_id", shareData.org_id)
       .single();
 
     if (errP || !patient) {
@@ -49,7 +50,7 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
       const ip = (_req.headers.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || null;
       const ua = _req.headers.get("user-agent") || null;
       await svc.from("patient_share_access").insert({
-        share_id: share.id,
+        share_id: shareData.id,
         ip,
         user_agent: ua ?? null,
       });
