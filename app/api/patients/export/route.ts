@@ -51,12 +51,12 @@ export async function GET(req: NextRequest) {
       await getSupabaseServer()
     ).rpc("patients_search", {
       p_org_id: org_id,
-      p_q: q,
-      p_genero: genero,
-      p_tags_any: tagsAny,
-      p_tags_all: tagsAll,
-      p_from: from,
-      p_to: to,
+      p_q: (q) ?? undefined,
+      p_genero: (genero) ?? undefined,
+      p_tags_any: (tagsAny) ?? undefined,
+      p_tags_all: (tagsAll) ?? undefined,
+      p_from: (from) ?? undefined,
+      p_to: (to) ?? undefined,
       p_include_deleted: includeDeleted,
       p_limit: MAX,
       p_offset: 0,

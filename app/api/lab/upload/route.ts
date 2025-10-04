@@ -29,7 +29,7 @@ async function ensureBucket() {
         public: false,
         fileSizeLimit: `${MAX_MB}MB`,
       })
-      .catch(() => {});
+      
   }
 }
 
@@ -178,16 +178,16 @@ export async function POST(req: NextRequest) {
       .from("lab_upload_tokens")
       .update({ used_at: new Date().toISOString() })
       .eq("id", tokenRow.id)
-      .catch(() => {});
+      
     await supa
       .from("lab_requests")
       .update({ status: "uploaded" })
       .eq("id", tokenRow.request_id)
-      .catch(() => {});
+      
     await supa
       .from("lab_results")
       .insert({ request_id: tokenRow.request_id, path: key, notes: notes || null })
-      .catch(() => {});
+      
 
     return cors(ok({ request_id: tokenRow.request_id, path: key }));
   } catch (err) {

@@ -62,11 +62,11 @@ export async function searchAdvanced(
 
   const { data, error } = await supabase.rpc("search_all_plus", {
     q: p.q ?? "",
-    p_org: p.onlyOrg ? active.id : null,
-    p_patient_ids: patientIds,
-    p_from: fromTs,
-    p_to: toTs,
-    p_genero: genero,
+    p_org: (p.onlyOrg ? active.id : null) ?? undefined,
+    p_patient_ids: (patientIds) ?? undefined,
+    p_from: (fromTs) ?? undefined,
+    p_to: (toTs) ?? undefined,
+    p_genero: (genero) ?? undefined,
     p_limit: limit,
     p_offset: offset,
   });

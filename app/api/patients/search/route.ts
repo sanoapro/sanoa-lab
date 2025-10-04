@@ -78,12 +78,12 @@ export async function GET(req: NextRequest) {
 
       const { data, error } = await supa.rpc("patients_search", {
         p_org_id: orgId,
-        p_q: q,
-        p_genero: genero,
-        p_tags_any: tagsAny,
-        p_tags_all: tagsAll,
-        p_from: from,
-        p_to: to,
+        p_q: (q) ?? undefined,
+        p_genero: (genero) ?? undefined,
+        p_tags_any: (tagsAny) ?? undefined,
+        p_tags_all: (tagsAll) ?? undefined,
+        p_from: (from) ?? undefined,
+        p_to: (to) ?? undefined,
         p_include_deleted: includeDeleted,
         p_limit: pageSize,
         p_offset: offset,
@@ -129,10 +129,10 @@ export async function GET(req: NextRequest) {
 
     const { data: viaRpc, error: rpcErr } = await supa.rpc("patients_search_suggest", {
       p_org_id: org_id,
-      p_q: q,
+      p_q: (q) ?? undefined,
       p_limit: limit,
       p_scope: scope,
-      p_provider_id: provider_id ?? null,
+      p_provider_id: (provider_id) ?? undefined,
     });
 
     if (!rpcErr && Array.isArray(viaRpc)) {

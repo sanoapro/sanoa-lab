@@ -29,7 +29,7 @@ export async function searchAll(
   const active = getActiveOrg();
   const { data, error } = await supabase.rpc("search_all", {
     q: query,
-    p_org: onlyActiveOrg ? active.id : null,
+    p_org: (onlyActiveOrg ? active.id : null) ?? undefined,
     p_limit: limit,
     p_offset: offset,
   });

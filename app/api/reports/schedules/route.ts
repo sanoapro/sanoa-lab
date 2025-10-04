@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
         const subject = s.name || "Reporte programado";
         const text = "Tu resumen operativo del día está disponible en Sanoa.";
         if (s.channel === "email") await sendEmail(origin, s.target, subject, text);
-        else await sendViaReminders(origin, s.org_id, s.channel, s.target, text);
+        else await sendViaReminders(origin, s.org_id, (s.channel as "sms"|"whatsapp"), s.target, text);
       }
 
       if (s.report === "agenda_alerts") {
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
           const subject = s.name || "Alertas de agenda";
           const text = msgs.join("\n");
           if (s.channel === "email") await sendEmail(origin, s.target, subject, text);
-          else await sendViaReminders(origin, s.org_id, s.channel, s.target, text);
+          else await sendViaReminders(origin, s.org_id, (s.channel as "sms"|"whatsapp"), s.target, text);
         }
       }
 

@@ -47,12 +47,12 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supa.rpc("reminders_logs_search", {
       p_org_id: org_id,
-      p_q: q ?? undefined,
-      p_status: status ?? undefined,
-      p_channel: channel ?? undefined,
+      p_q: (q) ?? undefined,
+      p_status: (status) ?? undefined,
+      p_channel: (channel) ?? undefined,
       p_date_field: dateField,
-      p_from: from ?? undefined,
-      p_to: to ?? undefined,
+      p_from: (from) ?? undefined,
+      p_to: (to) ?? undefined,
       p_limit: MAX,
       p_offset: 0,
     });
