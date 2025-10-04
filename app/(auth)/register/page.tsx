@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { supa as supabaseClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ export default function RegisterPage() {
     setLoading(true);
     setMsg(null);
     try {
-      const supabase = getSupabaseClient();
+      const supabase = supabaseClient;
       const { data, error } = await supabase.auth.signUp({
         email,
         password: pass,

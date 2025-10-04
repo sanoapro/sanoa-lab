@@ -158,7 +158,7 @@ function UpdatePasswordClient() {
               onChange={(e: any) => setP1(e.target.value)}
               placeholder="••••••••"
               required
-              invalid={Boolean(lengthError)}
+              aria-invalid={lengthError ? true : undefined}
               aria-describedby={lengthError ? "update-password-length" : undefined}
             />
           </Field>
@@ -179,7 +179,7 @@ function UpdatePasswordClient() {
               onChange={(e: any) => setP2(e.target.value)}
               placeholder="••••••••"
               required
-              invalid={Boolean(matchError)}
+              aria-invalid={matchError ? true : undefined}
               aria-describedby={matchError ? "update-password-match" : undefined}
             />
           </Field>

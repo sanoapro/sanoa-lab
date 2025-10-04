@@ -269,6 +269,55 @@ export type Database = Base & {
         Update: Partial<{ id: string; org_id: string; name: string; content: any; active: boolean | null; updated_at: string | null; doctor_id?: string | null }>;
       };
 
+      agenda_appointments: {
+        Row: {
+          id: string;
+          org_id: string;
+          provider_id: string;
+          patient_id: string;
+          starts_at: string;
+          ends_at: string;
+          tz: string | null;
+          location: string | null;
+          notes: string | null;
+          status: "scheduled" | "completed" | "cancelled" | "no_show" | string | null;
+          created_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          provider_id: string;
+          patient_id: string;
+          starts_at: string;
+          ends_at: string;
+          tz?: string | null;
+          location?: string | null;
+          notes?: string | null;
+          status?: "scheduled" | "completed" | "cancelled" | "no_show" | string | null;
+          created_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          org_id: string;
+          provider_id: string;
+          patient_id: string;
+          starts_at: string;
+          ends_at: string;
+          tz: string | null;
+          location: string | null;
+          notes: string | null;
+          status: "scheduled" | "completed" | "cancelled" | "no_show" | string | null;
+          created_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        }>;
+        Relationships: [];
+      };
+
       // Plantillas de laboratorios (mínimos)
       lab_templates: {
         Row: { id: string; org_id: string; name: string; body?: any; updated_at?: string | null; created_at?: string | null };

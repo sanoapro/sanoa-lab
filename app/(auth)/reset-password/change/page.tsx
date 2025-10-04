@@ -70,7 +70,7 @@ export default function ChangePasswordPage() {
               value={pass}
               onChange={(e: any) => setPass(e.target.value)}
               placeholder="••••••••"
-              invalid={Boolean(err)}
+              aria-invalid={err ? true : undefined}
               aria-describedby={err ? "change-password-error" : undefined}
             />
           </Field>
