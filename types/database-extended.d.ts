@@ -282,6 +282,160 @@ export type Database = Base & {
         Insert: { id?: string; org_id: string; assignment_id?: string | null; type?: string | null; created_at?: string | null; payload?: any | null };
         Update: Partial<{ id: string; org_id: string; assignment_id: string | null; type: string | null; created_at: string | null; payload: any | null }>;
       };
+
+      /**
+       * =======================
+       * AGENDAS (disponibilidad, overrides, citas, puntajes)
+       * =======================
+       */
+
+      agenda_availability: {
+        Row: {
+          id: string;
+          org_id: string;
+          provider_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+          slot_minutes: number | null;
+          tz: string;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          provider_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+          slot_minutes?: number | null;
+          tz: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          org_id: string;
+          provider_id: string;
+          weekday: number;
+          start_time: string;
+          end_time: string;
+          slot_minutes: number | null;
+          tz: string;
+          created_at: string | null;
+          updated_at: string | null;
+        }>;
+        Relationships: [];
+      };
+
+      agenda_slots_overrides: {
+        Row: {
+          id: string;
+          org_id: string;
+          provider_id: string;
+          date: string;
+          kind: string;
+          start_time: string;
+          end_time: string;
+          notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          provider_id: string;
+          date: string;
+          kind: string;
+          start_time: string;
+          end_time: string;
+          notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          org_id: string;
+          provider_id: string;
+          date: string;
+          kind: string;
+          start_time: string;
+          end_time: string;
+          notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        }>;
+        Relationships: [];
+      };
+
+      agenda_appointments: {
+        Row: {
+          id: string;
+          org_id: string;
+          provider_id: string;
+          patient_id: string | null;
+          starts_at: string;
+          ends_at: string;
+          status: string;
+          kind: string | null;
+          notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          provider_id: string;
+          patient_id?: string | null;
+          starts_at: string;
+          ends_at: string;
+          status?: string;
+          kind?: string | null;
+          notes?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          org_id: string;
+          provider_id: string;
+          patient_id: string | null;
+          starts_at: string;
+          ends_at: string;
+          status: string;
+          kind: string | null;
+          notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        }>;
+        Relationships: [];
+      };
+
+      agenda_ns_scores: {
+        Row: {
+          id: string;
+          org_id: string;
+          patient_id: string;
+          score: number;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          patient_id: string;
+          score: number;
+          updated_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          org_id: string;
+          patient_id: string;
+          score: number;
+          updated_at: string | null;
+        }>;
+        Relationships: [];
+      };
     };
 
     Functions: Public["Functions"] & {

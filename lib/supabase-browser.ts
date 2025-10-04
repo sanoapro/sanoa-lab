@@ -3,7 +3,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database-extended";
 
 const NOT_CONFIGURED_MSG = "Supabase no está configurado";
 
