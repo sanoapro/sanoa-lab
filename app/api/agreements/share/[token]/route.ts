@@ -5,16 +5,16 @@ import { jsonOk, jsonError } from "@/lib/http/validate";
 
 export async function GET(_req: NextRequest, { params }: { params: { token: string } }) {
   const svc = createServiceClient();
+  const supaAny = svc as any;
   const token = params.token;
 
-  const { data: link, error } = await svc
+  const { data: linkRow, error } = await supaAny
     .from("agreements_links")
-    .select(
-      "token, org_id, template_id, type, patient_id, provider_id, expires_at, used_at, status",
-    )
-    .eq("token", token)
-    .single();
-  if (error) return jsonError("NOT_FOUND", "Token inválido", 404);
+    .select("*")
+    .eq("token" as any, token)
+    .maybeSingle();
+  const link = linkRow as any;
+  if (error || !link) return jsonError("NOT_FOUND", "Token inválido", 404);
 
   const now = new Date();
   if (link.used_at) return jsonError("ALREADY_USED", "Este enlace ya fue utilizado", 410);
