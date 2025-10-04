@@ -9,12 +9,16 @@ type Props = {
   children?: ReactNode;
   title?: string;
   description?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 };
 
 export default function OrgInspector({
   children,
   title = "Selecciona una organización activa para continuar.",
   description = "El contenido se habilita cuando eliges una organización en el switcher.",
+  ctaHref,
+  ctaLabel = "Ir a organizaciones",
 }: Props) {
   const [ready, setReady] = useState<boolean | null>(null);
 
@@ -43,7 +47,17 @@ export default function OrgInspector({
       <div className="rounded-lg border border-border p-4 bg-card">
         <div className="text-base font-semibold mb-1">{title}</div>
         <div className="text-sm text-muted-foreground mb-3">{description}</div>
-        <OrgSwitcherBadge />
+        <div className="flex flex-wrap gap-2">
+          <OrgSwitcherBadge />
+          {ctaHref ? (
+            <a
+              href={ctaHref}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted"
+            >
+              {ctaLabel}
+            </a>
+          ) : null}
+        </div>
       </div>
     );
   }

@@ -30,11 +30,11 @@ export async function GET(req: NextRequest) {
       .eq("is_active" as any, true as any)
       .order("created_at", { ascending: false });
 
-    if (owner === "user") {
+    if (scope === "user") {
       query = query.eq("owner_kind" as any, "user" as any).eq("owner_id" as any, auth.user.id as any);
     }
 
-    if (owner === "org") {
+    if (scope === "org") {
       query = query.eq("owner_kind" as any, "org" as any);
     }
 

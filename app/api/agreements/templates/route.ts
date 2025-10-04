@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
   const q = parsed.data;
 
   // Base select
-  let sel = supa
+  let sel = supaAny
     .from("agreements_templates")
     .select("*", { count: "exact" })
     .eq("org_id" as any, q.org_id)
@@ -102,34 +102,37 @@ export async function GET(req: NextRequest) {
     const { data: au } = await supa.auth.getUser();
     let providerName = "Especialista";
     if (au?.user?.id) {
-      const { data: prof } = await supa
+      const { data: prof } = await supaAny
         .from("profiles")
         .select("full_name")
         .eq("id", au.user.id)
         .maybeSingle();
-      if (prof?.full_name) providerName = prof.full_name;
+      const profData = (prof ?? {}) as any;
+      if (profData?.full_name) providerName = profData.full_name;
     }
 
     // Patient
     let patientName = "Paciente";
     if (q.patient_id) {
-      const { data: pat } = await supa
+      const { data: pat } = await supaAny
         .from("patients")
         .select("full_name")
         .eq("id", q.patient_id)
         .maybeSingle();
-      if (pat?.full_name) patientName = pat.full_name;
+      const patData = (pat ?? {}) as any;
+      if (patData?.full_name) patientName = patData.full_name;
     }
 
     // Org
     let orgName = "Clínica";
     {
-      const { data: org } = await supa
+      const { data: org } = await supaAny
         .from("organizations")
         .select("name")
         .eq("id", q.org_id)
         .maybeSingle();
-      if (org?.name) orgName = org.name;
+      const orgData = (org ?? {}) as any;
+      if (orgData?.name) orgName = orgData.name;
     }
 
     const dt = new Date().toLocaleString(q.locale || "es-MX");
@@ -186,11 +189,11 @@ export async function POST(req: NextRequest) {
     created_by: au.user.id,
   };
 
-  if (raw && raw.id) {
+  if ((raw as any)?.id) {
     // Update by id + org
-    const { data, error } = await supa
+    const { data, error } = await supaAny
       .from("agreements_templates")
-      .update(payload)
+      .update(payload as any)
       .eq("id" as any, parsed.data.id!)
       .eq("org_id" as any, parsed.data.org_id)
       .select("*")
@@ -199,9 +202,9 @@ export async function POST(req: NextRequest) {
     return jsonOk(data);
   } else {
     // Upsert by unique (org_id, slug, provider_id)
-    const { data, error } = await supa
+    const { data, error } = await supaAny
       .from("agreements_templates")
-      .upsert(payload, { onConflict: "org_id,slug,provider_id" })
+      .upsert(payload as any, { onConflict: "org_id,slug,provider_id" })
       .select("*")
       .single();
     if (error) return jsonError("DB_ERROR", error.message, 400);

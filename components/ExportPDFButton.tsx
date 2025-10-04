@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   /** Referencia al nodo raíz a exportar */
-  targetRef?: React.RefObject<HTMLElement>;
+  targetRef?: React.RefObject<HTMLElement | null>;
   /** Alternativa: id del elemento si no usas ref */
   targetId?: string;
   /** Nombre de archivo (compatibilidad) */

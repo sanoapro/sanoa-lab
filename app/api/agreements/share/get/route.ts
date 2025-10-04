@@ -11,11 +11,12 @@ function interpolate(body: string, map: Record<string, string>): string {
 
 export async function GET(req: NextRequest) {
   const svc = createServiceClient();
+  const svcAny = svc as any;
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token");
   if (!token) return jsonError("BAD_REQUEST", "Falta token", 400);
 
-  const { data: acc } = await svc
+  const { data: acc } = await svcAny
     .from("agreements_acceptances")
     .select("id, status, token_expires_at, template_id, name_snapshot, template_version")
     .eq("token", token)
@@ -27,16 +28,17 @@ export async function GET(req: NextRequest) {
   if (acc.token_expires_at && new Date(acc.token_expires_at) < new Date())
     return jsonError("EXPIRED", "El enlace ha expirado", 410);
 
-  const { data: tmpl } = await svc
+  const { data: tmpl } = await svcAny
     .from("agreements_templates")
     .select("title, body")
-    .eq("id", acc.template_id)
+    .eq("id", (acc as any)?.template_id)
     .maybeSingle();
   if (!tmpl) return jsonError("NOT_FOUND", "Plantilla no disponible", 404);
 
+  const snapshot = ((acc as any)?.name_snapshot ?? {}) as Record<string, any>;
   const map: Record<string, string> = {
-    SPECIALIST_NAME: acc.name_snapshot?.specialist_name || "Especialista",
-    PATIENT_NAME: acc.name_snapshot?.patient_name || "Paciente",
+    SPECIALIST_NAME: snapshot?.specialist_name || "Especialista",
+    PATIENT_NAME: snapshot?.patient_name || "Paciente",
     DATE_ISO: new Date().toISOString().slice(0, 10),
     DATE_LONG: new Date().toLocaleDateString("es-MX", {
       year: "numeric",
@@ -44,6 +46,7 @@ export async function GET(req: NextRequest) {
       day: "numeric",
     }),
   };
-  const body = interpolate(tmpl.body, map);
-  return jsonOk({ title: tmpl.title, body });
+  const tmplData = (tmpl ?? {}) as any;
+  const body = interpolate(tmplData.body, map);
+  return jsonOk({ title: tmplData.title, body });
 }

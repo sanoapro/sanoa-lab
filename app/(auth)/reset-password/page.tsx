@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
               value={email}
               onChange={(e: any) => setEmail(e.target.value)}
               placeholder="tucorreo@ejemplo.com"
-              invalid={Boolean(err)}
+              aria-invalid={err ? true : undefined}
               aria-describedby={err ? "reset-email-error" : undefined}
             />
           </Field>

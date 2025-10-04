@@ -66,6 +66,123 @@ export type Database = {
         }
         Relationships: []
       }
+      agenda_appointments: {
+        Row: {
+          created_at: string | null
+          ends_at: string
+          id: string
+          notes: string | null
+          org_id: string
+          patient_id: string | null
+          provider_id: string | null
+          starts_at: string
+          status: string
+          tz: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          patient_id?: string | null
+          provider_id?: string | null
+          starts_at: string
+          status?: string
+          tz?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          patient_id?: string | null
+          provider_id?: string | null
+          starts_at?: string
+          status?: string
+          tz?: string | null
+        }
+        Relationships: []
+      }
+      agenda_availability: {
+        Row: {
+          end_time: string
+          org_id: string
+          provider_id: string
+          slot_minutes: number | null
+          start_time: string
+          tz: string | null
+          weekday: number
+        }
+        Insert: {
+          end_time: string
+          org_id: string
+          provider_id: string
+          slot_minutes?: number | null
+          start_time: string
+          tz?: string | null
+          weekday: number
+        }
+        Update: {
+          end_time?: string
+          org_id?: string
+          provider_id?: string
+          slot_minutes?: number | null
+          start_time?: string
+          tz?: string | null
+          weekday?: number
+        }
+        Relationships: []
+      }
+      agenda_ns_scores: {
+        Row: {
+          org_id: string
+          patient_id: string
+          score: number
+          updated_at: string | null
+        }
+        Insert: {
+          org_id: string
+          patient_id: string
+          score: number
+          updated_at?: string | null
+        }
+        Update: {
+          org_id?: string
+          patient_id?: string
+          score?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      agenda_slots_overrides: {
+        Row: {
+          date: string
+          end_time: string
+          kind: string
+          org_id: string
+          provider_id: string
+          start_time: string
+        }
+        Insert: {
+          date: string
+          end_time: string
+          kind: string
+          org_id: string
+          provider_id: string
+          start_time: string
+        }
+        Update: {
+          date?: string
+          end_time?: string
+          kind?: string
+          org_id?: string
+          provider_id?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
       agreements: {
         Row: {
           accepted_at: string | null
@@ -179,33 +296,87 @@ export type Database = {
       agreements_templates: {
         Row: {
           body: string
+          content: string | null
           created_at: string
           id: string
           is_active: boolean
           locale: string
+          org_id: string | null
+          provider_id: string | null
           title: string
           type: Database["public"]["Enums"]["agreement_type"]
           version: number
         }
         Insert: {
           body: string
+          content?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           locale?: string
+          org_id?: string | null
+          provider_id?: string | null
           title: string
           type: Database["public"]["Enums"]["agreement_type"]
           version?: number
         }
         Update: {
           body?: string
+          content?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           locale?: string
+          org_id?: string | null
+          provider_id?: string | null
           title?: string
           type?: Database["public"]["Enums"]["agreement_type"]
           version?: number
+        }
+        Relationships: []
+      }
+      agreements_links: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          org_id: string
+          patient_id: string | null
+          provider_id: string | null
+          status: string | null
+          template_id: string
+          template_version: number | null
+          token: string
+          type: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          org_id: string
+          patient_id?: string | null
+          provider_id?: string | null
+          status?: string | null
+          template_id: string
+          template_version?: number | null
+          token: string
+          type: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          org_id?: string
+          patient_id?: string | null
+          provider_id?: string | null
+          status?: string | null
+          template_id?: string
+          template_version?: number | null
+          token?: string
+          type?: string
+          used_at?: string | null
         }
         Relationships: []
       }
@@ -3330,6 +3501,8 @@ export type Database = {
           edad: number | null
           email: string | null
           full_name: string
+          name: string | null
+          display: string | null
           genero: string | null
           id: string
           nombre: string | null
@@ -3348,6 +3521,8 @@ export type Database = {
           edad?: number | null
           email?: string | null
           full_name: string
+          name?: string | null
+          display?: string | null
           genero?: string | null
           id?: string
           nombre?: string | null
@@ -3366,6 +3541,8 @@ export type Database = {
           edad?: number | null
           email?: string | null
           full_name?: string
+          name?: string | null
+          display?: string | null
           genero?: string | null
           id?: string
           nombre?: string | null

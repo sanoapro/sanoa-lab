@@ -10,6 +10,8 @@ export type FieldProps = {
   description?: ReactNode;
   /** @deprecated Usa `description` en su lugar */
   hint?: ReactNode;
+  error?: ReactNode;
+  errorId?: string;
   children: ReactNode;
 };
 
@@ -20,9 +22,12 @@ export function Field({
   className,
   description,
   hint,
+  error,
+  errorId,
   children,
 }: FieldProps) {
   const descId = (description ?? hint) && htmlFor ? `${htmlFor}-desc` : undefined;
+  const resolvedErrorId = error ? errorId ?? (htmlFor ? `${htmlFor}-error` : undefined) : undefined;
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -36,6 +41,11 @@ export function Field({
       {description ?? hint ? (
         <span id={descId} className="text-xs text-muted-foreground">
           {description ?? hint}
+        </span>
+      ) : null}
+      {error ? (
+        <span id={resolvedErrorId} className="text-xs text-destructive">
+          {error}
         </span>
       ) : null}
     </div>
