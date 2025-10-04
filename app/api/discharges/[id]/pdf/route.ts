@@ -21,7 +21,8 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const font = await pdf.embedFont(StandardFonts.Helvetica);
 
   page.drawText("ALTA MÉDICA", { x: 50, y: 800, size: 18, font, color: rgb(0, 0, 0) });
-  page.drawText(`Folio: ${dc.folio ?? dc.id}`, { x: 50, y: 780, size: 10, font });
+  const folio = (dc as any).folio ?? dc.id;
+  page.drawText(`Folio: ${folio}`, { x: 50, y: 780, size: 10, font });
   page.drawText(`Fecha: ${new Date(dc.created_at ?? Date.now()).toLocaleString()}`, {
     x: 50,
     y: 760,
