@@ -6,6 +6,7 @@ type OwnerKind = "user" | "org";
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
 
   try {
     const { data: auth } = await supa.auth.getUser();
@@ -15,26 +16,24 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const orgId = url.searchParams.get("org_id");
-    const owner = ((url.searchParams.get("owner") || "user") as OwnerKind) ?? "user";
+    const scopeParam = url.searchParams.get("scope") ?? url.searchParams.get("owner") ?? "user";
+    const scope = (scopeParam as OwnerKind) ?? "user";
 
     if (!orgId) {
       return badRequest("org_id requerido");
     }
 
-    let query = supa
-      .from<any>("lab_templates" as any)
-      .select("id, org_id, owner_kind, owner_id, title, items, is_active, created_at")
-      .eq("org_id", orgId)
-      .eq("is_active", true)
+    const q = supaAny
+      .from("lab_templates")
+      .select("*")
+      .eq("org_id" as any, orgId)
+      .eq("is_active" as any, true)
       .order("created_at", { ascending: false });
 
-    if (owner === "user") {
-      query = query.eq("owner_kind", "user").eq("owner_id", auth.user.id);
-    }
-
-    if (owner === "org") {
-      query = query.eq("owner_kind", "org");
-    }
+    const query =
+      scope === "user"
+        ? q.eq("owner_kind" as any, "user").eq("owner_id" as any, auth.user.id)
+        : q.eq("owner_kind" as any, "org");
 
     const { data, error } = await query;
     if (error) {
