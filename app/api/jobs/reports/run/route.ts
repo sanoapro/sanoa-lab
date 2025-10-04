@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
   }
 
   const svc = createServiceClient();
-  const { error: rpcError } = await svc.rpc("reports_schedules_run", {});
+  const { error: rpcError } = await svc.rpc("reports_schedules_run" as any, {});
 
   if (!rpcError) {
     return jsonOk({ queued: true, rpc: "reports_schedules_run" });
