@@ -26,6 +26,7 @@ const UpsertSchema = z.object({
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const qp = new URL(req.url).searchParams;
 
   const parsed = QuerySchema.safeParse({
@@ -41,11 +42,11 @@ export async function GET(req: NextRequest) {
   const provider_id = parsed.data.provider_id ?? me?.user?.id ?? null;
   if (!provider_id) return jsonError("UNAUTHORIZED", "No provider", 401);
 
-  const { data, error } = await supa
-    .from<any>("provider_branding" as any)
+  const { data, error } = await supaAny
+    .from("provider_branding")
     .select("*")
-    .eq("org_id", parsed.data.org_id)
-    .eq("provider_id", provider_id)
+    .eq("org_id" as any, parsed.data.org_id as any)
+    .eq("provider_id" as any, provider_id as any)
     .maybeSingle();
   if (error) return jsonError("DB_ERROR", error.message, 400);
 
@@ -54,6 +55,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const raw = await parseJson(req);
   const parsed = parseOrError(UpsertSchema, raw);
   if (!parsed.ok) return jsonError(parsed.error.code, parsed.error.message, 400);
@@ -64,8 +66,8 @@ export async function POST(req: NextRequest) {
 
   const row = { ...parsed.data, provider_id };
 
-  const { data, error } = await supa
-    .from<any>("provider_branding" as any)
+  const { data, error } = await supaAny
+    .from("provider_branding")
     .upsert(row, { onConflict: "org_id,provider_id" })
     .select("*")
     .single();
