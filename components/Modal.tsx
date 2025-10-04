@@ -42,7 +42,7 @@ export default function Modal({
         )}
         onClick={(e: any) => e.stopPropagation()}
       >
-        {(title || onClose) && (
+        {Boolean(title) && (
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="text-lg font-bold">{title}</h3>
             <button aria-label="Cerrar" onClick={onClose} className="btn-base ghost">✕</button>

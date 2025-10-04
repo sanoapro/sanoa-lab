@@ -20,7 +20,7 @@ export async function runReminderBatch(orgId?: string, limit: any = 20) {
 
   let q = supa
     .from("reminders")
-    .select("*")
+    .select("*").returns<any[]>()
     .in("status", ["scheduled", "retry"])
     .lte("next_run_at", now)
     .order("next_run_at", { ascending: true })
@@ -33,7 +33,7 @@ export async function runReminderBatch(orgId?: string, limit: any = 20) {
 
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
 
-  for (const r of due || []) {
+  for (const r of (due || [] as any[])) {
     try {
       // Carga plantilla si existe
       let body = "";

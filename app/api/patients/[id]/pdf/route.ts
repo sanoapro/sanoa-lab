@@ -112,7 +112,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ["Fecha de nacimiento", patient.dob ?? "—"],
       ["Creado en", patient.created_at ? new Date(patient.created_at).toLocaleString() : "—"],
       ["Tags", Array.isArray(patient.tags) && patient.tags.length ? patient.tags.join(", ") : "—"],
-      ["ID", patient.id],
+      ["ID", (patient.id ?? "")],
     ];
     lines.forEach(([k, v]: any, i: any) => {
       const y = y0 - i * (LH + 6);
