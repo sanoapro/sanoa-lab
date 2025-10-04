@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
 
     // Agrupar por tz para calcular "ahora" una sola vez por zona
     const tzGroups: Record<string, ReportSchedule[]> = {};
-    (schedules ?? []).forEach((sc: ReportSchedule) => {
+    (schedules ?? []).forEach((sc) => {
       const tz = sc.tz || "America/Mexico_City";
       (tzGroups[tz] ||= []).push(sc);
     });

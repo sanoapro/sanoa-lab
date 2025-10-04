@@ -5,10 +5,10 @@ import { jsonOk, jsonError } from "@/lib/http/validate";
 
 export async function GET(_req: NextRequest, { params }: { params: { token: string } }) {
   const svc = createServiceClient();
-  const supaAny = svc as any;
+  const svcAny = svc as any;
   const token = params.token;
 
-  const { data: linkRow, error } = await supaAny
+  const { data: linkRow, error } = await svcAny
     .from("agreements_links")
     .select("*")
     .eq("token" as any, token)
@@ -21,12 +21,14 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
   if (link.expires_at && new Date(link.expires_at) < now)
     return jsonError("EXPIRED", "Enlace expirado", 410);
 
-  const { data: tpl, error: eTpl } = await svc
+  const { data: tpl, error: eTpl } = await svcAny
     .from("agreements_templates")
     .select("id, org_id, type, title, description, content, provider_id")
     .eq("id", link.template_id)
     .single();
   if (eTpl) return jsonError("DB_ERROR", eTpl.message, 400);
+
+  const tplData = (tpl ?? {}) as any;
 
   // Entregamos sólo lo necesario para visualizar
   return jsonOk({
@@ -34,10 +36,10 @@ export async function GET(_req: NextRequest, { params }: { params: { token: stri
     type: link.type,
     org_id: link.org_id,
     template: {
-      id: tpl.id,
-      title: tpl.title,
-      description: tpl.description,
-      content: tpl.content,
+      id: tplData.id,
+      title: tplData.title,
+      description: tplData.description,
+      content: tplData.content,
     },
   });
 }

@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   // Obtenemos schedules activos
   const { data: schedules, error } = await svc
     .from("report_schedules")
-    .select("*").returns<any[]>()
+    .select("*")
     .eq("is_active", true);
   if (error)
     return NextResponse.json(

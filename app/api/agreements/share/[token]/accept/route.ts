@@ -12,12 +12,13 @@ const Body = z.object({
 
 export async function POST(req: NextRequest, { params }: { params: { token: string } }) {
   const svc = createServiceClient();
+  const svcAny = svc as any;
   const token = params.token;
   const raw = await parseJson(req);
   const p = parseOrError(Body, raw);
   if (!p.ok) return jsonError(p.error.code, p.error.message, 400);
 
-  const { data: link, error } = await svc
+  const { data: link, error } = await svcAny
     .from("agreements_links")
     .select("*")
     .eq("token", token)
@@ -29,34 +30,41 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   if (link.expires_at && new Date(link.expires_at) < now)
     return jsonError("EXPIRED", "Enlace expirado", 410);
 
-  const { data: tpl, error: eTpl } = await svc
+  const { data: tpl, error: eTpl } = await svcAny
     .from("agreements_templates")
     .select("id, org_id, type, version, title, content, provider_id")
-    .eq("id", link.template_id)
+    .eq("id", (link as any)?.template_id)
     .single();
   if (eTpl) return jsonError("DB_ERROR", eTpl.message, 400);
 
   // Registrar aceptación (snapshot del contenido)
+  const tplData = (tpl ?? {}) as any;
+  const linkData = (link ?? {}) as any;
   const acceptance = {
-    org_id: link.org_id,
-    template_id: link.template_id,
-    patient_id: link.patient_id,
-    specialist_id: link.provider_id,
-    signer_type: link.type === "specialist_platform" ? "specialist" : "patient",
-    signer_id: link.type === "specialist_platform" ? link.provider_id : link.patient_id,
+    org_id: linkData.org_id,
+    template_id: linkData.template_id,
+    patient_id: linkData.patient_id,
+    specialist_id: linkData.provider_id,
+    signer_type: linkData.type === "specialist_platform" ? "specialist" : "patient",
+    signer_id:
+      linkData.type === "specialist_platform" ? linkData.provider_id : linkData.patient_id,
     signer_name: p.data.full_name,
     accepted_at: new Date().toISOString(),
-    contract_type: (tpl as any)?.type ?? link.type,
-    template_version: (tpl as any)?.version ?? (link as any)?.template_version ?? null,
-    snapshot: { title: tpl.title, content: tpl.content, selections: p.data.extra ?? {} },
+    contract_type: tplData?.type ?? linkData.type,
+    template_version: tplData?.version ?? linkData?.template_version ?? null,
+    snapshot: {
+      title: tplData?.title,
+      content: tplData?.content,
+      selections: p.data.extra ?? {},
+    },
     ip: req.headers.get("x-forwarded-for") || null,
     user_agent: req.headers.get("user-agent") || null,
   } as any;
 
-  const { error: eAcc } = await svc.from("agreements_acceptances").insert(acceptance);
+  const { error: eAcc } = await svcAny.from("agreements_acceptances").insert(acceptance);
   if (eAcc) return jsonError("DB_ERROR", eAcc.message, 400);
 
-  const { error: eUpd } = await svc
+  const { error: eUpd } = await svcAny
     .from("agreements_links")
     .update({ used_at: new Date().toISOString(), status: "accepted" })
     .eq("token", token);

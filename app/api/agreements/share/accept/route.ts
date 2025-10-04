@@ -7,11 +7,12 @@ import { jsonError, jsonOk, parseJson } from "@/lib/http/validate";
 
 export async function POST(req: NextRequest) {
   const svc = createServiceClient();
+  const svcAny = svc as any;
   const body = await parseJson<{ token?: string; patient_name?: string }>(req);
   const token = body?.token;
   if (!token) return jsonError("BAD_REQUEST", "Falta token", 400);
 
-  const { data: acc } = await svc
+  const { data: acc } = await svcAny
     .from("agreements_acceptances")
     .select("id, status, token_expires_at, name_snapshot")
     .eq("token", token)
@@ -26,12 +27,15 @@ export async function POST(req: NextRequest) {
   const ua = (req.headers.get("user-agent") || "").slice(0, 500);
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
 
+  const baseSnapshot = ((acc as any)?.name_snapshot ?? {}) as Record<string, any>;
   const name_snapshot = {
-    ...(acc.name_snapshot || {}),
-    patient_name: (body?.patient_name || acc.name_snapshot?.patient_name || "Paciente").toString(),
+    ...baseSnapshot,
+    patient_name: (
+      body?.patient_name || baseSnapshot?.patient_name || "Paciente"
+    ).toString(),
   };
 
-  const { error: eUp } = await svc
+  const { error: eUp } = await svcAny
     .from("agreements_acceptances")
     .update({
       status: "accepted",
@@ -42,7 +46,7 @@ export async function POST(req: NextRequest) {
       user_agent: ua,
       ip_addr: ip,
     })
-    .eq("id", acc.id);
+    .eq("id", (acc as any)?.id);
 
   if (eUp) return jsonError("DB_ERROR", "No se pudo registrar aceptación", 500);
   return jsonOk({ accepted: true });
