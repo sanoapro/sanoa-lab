@@ -19,6 +19,7 @@ async function fetchAsUint8(url: string): Promise<Uint8Array | null> {
 
 export async function GET(req: NextRequest) {
   const supa = await getSupabaseServer();
+  const supaAny = supa as any;
   const qp = new URL(req.url).searchParams;
   const org_id = qp.get("org_id") ?? undefined;
   if (!org_id) return jsonError("BAD_REQUEST", "Falta org_id", 400);
@@ -27,11 +28,11 @@ export async function GET(req: NextRequest) {
   const provider_id = qp.get("provider_id") ?? me?.user?.id ?? null;
   if (!provider_id) return jsonError("UNAUTHORIZED", "No provider", 401);
 
-  const { data: pb, error } = await supa
-    .from<any>("provider_branding" as any)
+  const { data: pb, error } = await supaAny
+    .from("provider_branding")
     .select("*")
-    .eq("org_id", org_id)
-    .eq("provider_id", provider_id)
+    .eq("org_id" as any, org_id as any)
+    .eq("provider_id" as any, provider_id as any)
     .maybeSingle();
   if (error) return jsonError("DB_ERROR", error.message, 400);
 

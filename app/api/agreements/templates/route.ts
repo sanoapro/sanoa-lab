@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
   const q = parsed.data;
 
   // Base select
-  let sel = supaAny
+  let sel = supa
     .from("agreements_templates")
     .select("*", { count: "exact" })
     .eq("org_id" as any, q.org_id)
@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
 
   if (raw && raw.id) {
     // Update by id + org
-    const { data, error } = await supaAny
+    const { data, error } = await supa
       .from("agreements_templates")
       .update(payload)
       .eq("id" as any, parsed.data.id!)
@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
     return jsonOk(data);
   } else {
     // Upsert by unique (org_id, slug, provider_id)
-    const { data, error } = await supaAny
+    const { data, error } = await supa
       .from("agreements_templates")
       .upsert(payload, { onConflict: "org_id,slug,provider_id" })
       .select("*")
